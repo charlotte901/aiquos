@@ -17,7 +17,7 @@ test("every assessment has a five-stage journey and the blue route combines all 
 });
 
 test("the selected task template has real local IP artwork and all task surfaces", async () => {
-  await access(new URL("../public/assets/assessment-guides-crop.png", import.meta.url));
+  await access(new URL("../public/assets/crops/assessment-guides-crop.png", import.meta.url));
   const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
   for (const component of ["ObjectiveTask", "ConversationTask", "PracticalTask", "AssessmentMap", "AssessmentTask"]) {
     assert.match(source, new RegExp(`function ${component}|export function ${component}`));

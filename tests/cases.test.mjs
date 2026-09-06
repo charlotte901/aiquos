@@ -57,7 +57,7 @@ test("initial boot waits for the visible trio before it mounts preload layers", 
   const app = await readFile(new URL("../src/App.jsx", import.meta.url), "utf8");
   const screen = await readFile(new URL("../src/CaseScreen.jsx", import.meta.url), "utf8");
   assert.match(app, /const casesReady = bootedCases\.size === initialCaseIds\.current\.size/);
-  assert.match(app, /\[casesReady, active, loginView, transitionBusy, playing, visible, modal, preset\]/);
+  assert.match(app, /\[casesReady, active, transitionBusy, playing, visible, modal, preset, choosePreset\]/);
   assert.match(app, /preloadCases=\{casesReady\}/);
   assert.match(app, /is-case-booting/);
   assert.match(screen, /preload \? nextConfig : null/);

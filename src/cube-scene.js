@@ -34,7 +34,9 @@ export function createCubeScene(canvas, textures) {
     map.colorSpace = THREE.SRGBColorSpace;
     const mesh = new THREE.Mesh(
       geometry,
-      new THREE.MeshBasicMaterial({ map, transparent: true }),
+      // Discard the photo's antialiased fringe; translucent edge pixels read
+      // as a separate outline once the shell is a moving 3D surface.
+      new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: 0.5 }),
     );
     mesh.frustumCulled = false;
     scene.add(mesh);

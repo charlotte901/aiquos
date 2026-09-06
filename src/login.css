@@ -1,9 +1,9 @@
-/* The flat cube screen hosts the login; the palette follows the brand pink. */
+/* The standalone login card keeps the brand-pink palette on a black stage. */
 .login-surface {
-  position: absolute;
-  inset: 0 auto auto 0;
-  z-index: 5;
-  transform-origin: 0 0;
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  transform-origin: center;
   container: login / size;
   color: #332030;
   background:
@@ -18,8 +18,8 @@
 }
 .login-form {
   width: 100%;
-  max-width: 392px;
-  height: 100%;
+  max-width: min(520px, 100%);
+  height: auto;
   margin: 0 auto;
   padding: 18px 26px;
   display: flex;
@@ -27,9 +27,9 @@
   justify-content: safe center;
   gap: 16px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #e5aac4 transparent;
+  scrollbar-width: none;
 }
+.login-form::-webkit-scrollbar { display: none; }
 .login-form > * { flex-shrink: 0; }
 .login-heading {
   display: grid;

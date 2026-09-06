@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check } from "@phosphor-icons/react";
+import { ArrowLeft } from "@phosphor-icons/react";
 import { SourceCrop } from "./AssessmentHub";
 import { TestWordmark } from "./TestWordmark";
 import { CHOICES, CHOOSE_ART, CHOOSE_WORDMARK, getChooseLayout } from "./choose-layout";
 
-export function ChooseHub({ onBack, onTest, onProfile, busy }) {
+export function ChooseHub({ onBack, onTest, onReports, onProfile, busy }) {
   const [size, setSize] = useState(() => ({ width: innerWidth, height: innerHeight }));
-  const [selected, setSelected] = useState(null);
   useEffect(() => {
     const resize = () => setSize({ width: document.documentElement.clientWidth, height: innerHeight });
     window.addEventListener("resize", resize);
@@ -26,21 +25,12 @@ export function ChooseHub({ onBack, onTest, onProfile, busy }) {
           {CHOICES.map((item) => (
             <button key={item.id} className="choose-card"
               aria-label={`${item.title} · ${item.subtitle}`}
-              aria-pressed={item.id === "test" || item.id === "profile" ? undefined : selected === item.id}
               disabled={busy}
-              onClick={() => item.id === "test" ? onTest() : item.id === "profile" ? onProfile?.() : setSelected(item.id)}>
+              onClick={() => item.id === "test" ? onTest() : item.id === "reports" ? onReports?.() : item.id === "profile" ? onProfile?.() : null}>
               <SourceCrop crop={item.crop} source={CHOOSE_ART} width={1822} height={863} />
-              {selected === item.id && (
-                <span className="assessment-check">
-                  <Check size={18} weight="bold" />
-                </span>
-              )}
             </button>
           ))}
         </div>
-        <p className="choose-selection" role="status">
-          {selected === "reports" ? "报告查询尚未开放，先从测试闯关开始吧。" : ""}
-        </p>
       </div>
     </main>
   );

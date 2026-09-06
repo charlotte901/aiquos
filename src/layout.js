@@ -35,8 +35,15 @@ export function getViewportLayout(width, viewportHeight) {
   const brandTop = compact ? 114 : (height * 100) / 1024;
   const introTop = compact
     ? Math.max(cubeBottom + 88, height * 0.535)
-    : (height * 476) / 1024;
+    : // Align the explore button's center with the carousel toggle's center:
+      // the button sits 275.5 design px into the intro block (h2 3x42x1.15
+      // + 18 gap + p 2x17x1.65 + 31 gap + 51/2 button half), the toggle's
+      // center sits 17.5 design px below dots-top (cubeBottom + 2*cubeScale).
+      cubeBottom + 2 * cubeScale + (17.5 - 275.5) * unit;
   const introLeft = compact
+    ? clamp(width * 0.07, 22, 48)
+    : Math.max(36, (width * 72) / 1536);
+  const introRight = compact
     ? clamp(width * 0.07, 22, 48)
     : Math.max(36, (width * 72) / 1536);
   return {
@@ -53,6 +60,7 @@ export function getViewportLayout(width, viewportHeight) {
     brandY: brandTop - 100 * brandScale,
     introTop,
     introLeft,
+    introRight,
     variables: {
       "--page-height": `${height}px`,
       "--ui-scale": unit,
@@ -64,6 +72,7 @@ export function getViewportLayout(width, viewportHeight) {
       "--brand-y": `${brandTop - 100 * brandScale}px`,
       "--intro-top": `${introTop}px`,
       "--intro-left": `${introLeft}px`,
+      "--intro-right": `${introRight}px`,
       "--dots-left": `${cubeCenterX - (compact ? 41 : 75 * cubeScale)}px`,
       "--dots-top": `${cubeBottom + (compact ? 3 : 2 * cubeScale)}px`,
       "--cube-center": `${cubeCenterX}px`,

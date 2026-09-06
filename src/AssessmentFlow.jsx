@@ -13,6 +13,15 @@ import {
 } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
 import {
+  COMPREHENSIVE_LEVELS,
+  COMPREHENSIVE_QUESTION_COUNT,
+  COMPREHENSIVE_TYPE_LABELS,
+  createComprehensiveQuestions,
+  getComprehensiveLevel,
+  getReaction,
+  judgeComprehensiveAnswer,
+} from "./comprehensive-quiz";
+import {
   ASSESSMENT_THEMES,
   CONVERSATIONS,
   getStageMode,
@@ -23,7 +32,7 @@ import {
 import { generateArkImage, streamDeepSeek } from "./deepseek";
 import { MarkdownLite } from "./markdown-lite";
 
-const GUIDES = "/assets/assessment-guides-crop.png";
+const GUIDES = "/assets/crops/assessment-guides-crop.png";
 
 function Progress({ current, complete, onPick, disabled = false }) {
   return (
@@ -81,6 +90,9 @@ function Guides() {
 
 export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy }) {
   const theme = ASSESSMENT_THEMES[id];
+  const stageLabels = id === "comprehensive"
+    ? COMPREHENSIVE_LEVELS.map((level) => level.short)
+    : STAGE_LABELS;
   return (
     <main className="assessment-flow map-flow" style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
       <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
@@ -102,10 +114,10 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
                 className={`map-stage is-${state}`}
                 disabled={busy || number > complete}
                 onClick={() => onOpenStage(number)}
-                aria-label={`第 ${number} 关：${STAGE_LABELS[number - 1]}`}
+                aria-label={`第 ${number} 关：${stageLabels[number - 1]}`}
               >
                 <span className="map-stage-number">{state === "complete" ? <Check weight="bold" /> : number}</span>
-                <span>{STAGE_LABELS[number - 1]}</span>
+                <span>{stageLabels[number - 1]}</span>
               </button>
             );
           })}
@@ -116,13 +128,13 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
   );
 }
 
-function TaskHeader({ id, stage }) {
+function TaskHeader({ id, stage, direct = false }) {
   const theme = ASSESSMENT_THEMES[id];
-  const mode = getStageMode(id, stage);
-  const icons = { objective: Target, conversation: ChatCircleDots, practical: ListChecks };
+  const mode = id === "comprehensive" ? "comprehensive" : getStageMode(id, stage);
+  const icons = { objective: Target, conversation: ChatCircleDots, practical: ListChecks, comprehensive: ListChecks };
   const Icon = icons[mode];
-  const names = { objective: "判断题", conversation: "对话练习", practical: "Agent 实操" };
-  return <div className="task-heading"><Icon weight="fill" /><span>{theme.title} · 第 {stage} 关</span><strong>{names[mode]}</strong></div>;
+  const names = { objective: "判断题", conversation: "对话练习", practical: "Agent 实操", comprehensive: "综合闯关" };
+  return <div className="task-heading"><Icon weight="fill" /><span>{direct ? theme.title : `${theme.title} · 第 ${stage} 关`}</span><strong>{names[mode]}</strong></div>;
 }
 
 function ObjectiveTask({ stage, onComplete }) {
@@ -284,8 +296,179 @@ function PracticalTask({ stage, onComplete }) {
   </div>;
 }
 
-function TaskAction({ disabled, onClick, label }) {
-  return <button type="button" className="task-action" disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
+function TaskAction({ disabled, onClick, label, variant = "" }) {
+  return <button type="button" className={`task-action ${variant}`.trim()} disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
+}
+
+function CompletedHint({ count }) {
+  return <p className="completed-hint" role="status">已完成 {count} 题</p>;
+}
+
+function ComprehensiveTask({ stage, onComplete }) {
+  const level = getComprehensiveLevel(stage);
+  const [questions] = useState(() => createComprehensiveQuestions(level.id));
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selected, setSelected] = useState([]);
+  const [result, setResult] = useState(null);
+  const [reaction, setReaction] = useState("");
+  const [correctCount, setCorrectCount] = useState(0);
+  const [phase, setPhase] = useState("opening");
+  const [lineIndex, setLineIndex] = useState(0);
+  const taskRef = useRef(null);
+
+  const question = questions[questionIndex];
+  const isLastQuestion = questionIndex === COMPREHENSIVE_QUESTION_COUNT - 1;
+  const storyLines = phase === "ending"
+    ? level.ending.map((line) => ({
+      ...line,
+      text: line.text.replace("[X]", String(Math.max(1, correctCount))),
+    }))
+    : level.opening;
+  const storyLine = storyLines[lineIndex];
+
+  const advanceStory = () => {
+    if (lineIndex < storyLines.length - 1) {
+      setLineIndex((current) => current + 1);
+      return;
+    }
+    if (phase === "opening") {
+      setPhase("quiz");
+    } else {
+      onComplete();
+    }
+  };
+
+  const answer = (keys) => {
+    if (result) return;
+    const selectedKeys = [...new Set(keys)];
+    const answerResult = judgeComprehensiveAnswer(question, selectedKeys);
+    setResult(answerResult);
+    setReaction(getReaction(level, answerResult.correct));
+    if (answerResult.correct) setCorrectCount((current) => current + 1);
+  };
+
+  const nextQuestion = () => {
+    if (isLastQuestion) {
+      setPhase("ending");
+      setLineIndex(0);
+      return;
+    }
+    setQuestionIndex((current) => current + 1);
+    setSelected([]);
+    setResult(null);
+    setReaction("");
+  };
+
+  const speakerName = (who) => (who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你");
+  const isMulti = question?.type === "multi";
+  const canSubmit = isMulti && selected.length > 0 && !result;
+
+  useEffect(() => {
+    if (!result) return;
+    const timer = window.setTimeout(() => {
+      const task = taskRef.current;
+      const feedback = task?.querySelector(".quiz-feedback");
+      if (!task || !feedback) return;
+      const target = feedback.getBoundingClientRect().top
+        - task.getBoundingClientRect().top
+        + task.scrollTop
+        - 26;
+      task.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+    }, 40);
+    return () => window.clearTimeout(timer);
+  }, [result]);
+
+  const toggleMulti = (key) => {
+    if (result) return;
+    setSelected((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]);
+  };
+
+  return (
+    <div ref={taskRef} className="task-body comprehensive-task" data-phase={phase}>
+      {(phase === "opening" || phase === "ending") && (
+        <div
+          className="comprehensive-dialogue-screen"
+          role="button"
+          tabIndex={0}
+          aria-label={phase === "opening" ? "继续下一句对话" : "继续结尾对话"}
+          onClick={advanceStory}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              advanceStory();
+            }
+          }}
+        >
+          <div className="story-line">
+            <div className="story-eyebrow">
+              <span>{speakerName(storyLine.who)}</span>
+              <strong>{lineIndex + 1} / {storyLines.length}</strong>
+            </div>
+            <p>{storyLine.text}</p>
+            <span className="story-hint">
+              {phase === "ending" && lineIndex === storyLines.length - 1 ? "点击完成本关 ▾" : "点击继续 ▾"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {phase === "quiz" && question && (
+        <>
+          <h2>{question.q}</h2>
+          <p className="quiz-brief">
+            第 {questionIndex + 1} / {COMPREHENSIVE_QUESTION_COUNT} 题
+            <i aria-hidden="true">•</i>
+            {level.dims}
+          </p>
+          <div className="answer-options" role={isMulti ? "group" : "radiogroup"} aria-label={COMPREHENSIVE_TYPE_LABELS[question.type]}>
+            {question.options.map((option) => {
+              const isSelected = selected.includes(option.key);
+              const state = !result
+                ? isSelected ? " is-selected" : ""
+                : question.answer.includes(option.key)
+                  ? " is-correct"
+                  : isSelected ? " is-wrong" : "";
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  role={isMulti ? "checkbox" : "radio"}
+                  aria-checked={isMulti ? isSelected : isSelected}
+                  disabled={Boolean(result)}
+                  className={`comprehensive-option${state}`}
+                  onClick={() => isMulti ? toggleMulti(option.key) : answer([option.key])}
+                >
+                  <span>{option.key}</span>
+                  {option.text}
+                  {(isSelected || (result && question.answer.includes(option.key))) && <Check weight="bold" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {result && (
+            <div className={`quiz-feedback is-${result.correct ? "correct" : "wrong"}`} role="status">
+              <strong>{result.correct ? "回答正确" : result.partialCorrect ? "部分正确" : "回答不正确"}</strong>
+              <p className="quiz-feedback-answer"><b>正确答案：</b>{result.answerText}</p>
+              <p className="quiz-feedback-analysis"><b>解析：</b>{question.analysis}</p>
+              <div>
+                {question.dims.map((dim) => <span key={dim}>{dim}</span>)}
+              </div>
+              {result.correct && <span className="star-pop" aria-hidden="true">★</span>}
+            </div>
+          )}
+
+          {result && <div className="story-line is-inline"><p>{reaction}</p></div>}
+
+          <div className="comprehensive-actions">
+            {isMulti && !result
+              ? <TaskAction disabled={!canSubmit} onClick={() => answer(selected)} label="提交答案" variant="comprehensive" />
+              : result ? <TaskAction disabled={false} onClick={nextQuestion} label={isLastQuestion ? "完成本关" : "继续"} variant="comprehensive" /> : null}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 export function AssessmentTask({ id, stage, complete, onBack, onPick, onComplete, busy }) {
@@ -293,14 +476,20 @@ export function AssessmentTask({ id, stage, complete, onBack, onPick, onComplete
   const mode = getStageMode(id, stage);
   const taskKey = `${id}-${stage}-${mode}`;
   const props = { stage, onComplete: () => onComplete(stage) };
-  return <main className="assessment-flow task-flow" data-mode={mode} style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
-    <button className="flow-back" type="button" onClick={onBack} disabled={busy}><ArrowLeft weight="bold" /> 返回关卡地图</button>
-    <h1 className="flow-wordmark" aria-label="TEST! 测评关卡"><TestWordmark /></h1>
-    <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} />
-    <section className="task-panel" aria-label={`${theme.title}第 ${stage} 关`}>
+  const comprehensive = id === "comprehensive";
+  const displayMode = comprehensive ? "comprehensive" : mode;
+  const direct = !comprehensive;
+  return <main className="assessment-flow task-flow" data-mode={displayMode} data-direct={direct ? "true" : "false"} style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
+    <button className="flow-back" type="button" onClick={onBack} disabled={busy}><ArrowLeft weight="bold" /> {direct ? "返回测评选择" : "返回关卡地图"}</button>
+    <h1 className="flow-wordmark" aria-label={direct ? "TEST! 测评" : "TEST! 测评关卡"}><TestWordmark /></h1>
+    {direct && <CompletedHint count={Math.max(0, stage - 1)} />}
+    {comprehensive && <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} />}
+    <section className="task-panel" aria-label={direct ? `${theme.title}题目` : `${theme.title}第 ${stage} 关`}>
       <Guides />
-      <TaskHeader id={id} stage={stage} />
-      {mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
+      <TaskHeader id={id} stage={stage} direct={direct} />
+      {comprehensive
+        ? <ComprehensiveTask key={`${taskKey}-comprehensive`} {...props} />
+        : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>
   </main>;
 }

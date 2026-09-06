@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import {
+  getProfileDetailId,
   PROFILE_CARDS,
   PROFILE_ART,
   PROFILE_WORDMARK,
@@ -80,4 +81,14 @@ test("flight and strip transitions recognize the profile surfaces", async () => 
   assert.match(cards, /choose-wordmark, \.assessment-wordmark, \.profile-wordmark/);
   assert.match(strips, /assessment-card, \.choose-card, \.profile-card/);
   assert.match(strips, /assessment-wordmark, \.choose-wordmark, \.profile-wordmark/);
+});
+
+test("profile detail navigation keeps the selected card id in step", async () => {
+  assert.equal(getProfileDetailId("#center/works"), "works");
+  assert.equal(getProfileDetailId("#center/settings"), "settings");
+  assert.equal(getProfileDetailId("#profile"), null);
+  assert.match(
+    await readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
+    /setProfileDetailRoute\(nextProfileDetail\)/,
+  );
 });

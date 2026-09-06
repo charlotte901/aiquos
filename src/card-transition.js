@@ -1,4 +1,4 @@
-export const CARD_FLIGHT = { exit: 560, enter: 640, stagger: 65, overlap: 240 };
+export const CARD_FLIGHT = { exit: 520, enter: 620, stagger: 28, overlap: 260 };
 
 /** Entire cards travel beyond the viewport; no masks or cuts cross the artwork. */
 export function getCardFlight(kind, index, count, rect, viewport, reverse = false) {
@@ -7,7 +7,7 @@ export function getCardFlight(kind, index, count, rect, viewport, reverse = fals
   const distance = kind === "out"
     ? direction > 0 ? -rect.bottom - 60 : viewport.height - rect.top + 60
     : direction > 0 ? viewport.height - rect.top + 60 : -rect.bottom - 60;
-  const away = `translate3d(${spread * viewport.width * .12}px, ${distance}px, 0) rotate(${spread * 7 * direction}deg) scale(.88)`;
+  const away = `translate3d(${spread * viewport.width * .08}px, ${distance}px, 0) rotate(${spread * 5 * direction}deg) scale(.94)`;
   const rest = "translate3d(0, 0, 0) rotate(0deg) scale(1)";
   return {
     keyframes: kind === "out"
@@ -16,7 +16,7 @@ export function getCardFlight(kind, index, count, rect, viewport, reverse = fals
     options: {
       duration: kind === "out" ? CARD_FLIGHT.exit : CARD_FLIGHT.enter,
       delay: (kind === "out" ? 0 : CARD_FLIGHT.overlap) + index * CARD_FLIGHT.stagger,
-      easing: kind === "out" ? "cubic-bezier(.55,0,.8,.35)" : "cubic-bezier(.16,1,.3,1)",
+      easing: kind === "out" ? "cubic-bezier(.4,0,.2,1)" : "cubic-bezier(.22,1,.36,1)",
       fill: "both",
     },
   };
@@ -53,7 +53,7 @@ export async function animateCards(host, outgoing, incoming, scrollY = 0, revers
       animations.push(heading.animate(kind === "out"
         ? [{ opacity: 1, transform: rest }, { opacity: 0, transform: away }]
         : [{ opacity: 0, transform: away }, { opacity: 1, transform: rest }],
-      { duration: 320 * speed, delay: (kind === "out" ? 0 : 320) * speed, easing: "ease", fill: "both" }));
+      { duration: 300 * speed, delay: (kind === "out" ? 120 : CARD_FLIGHT.overlap) * speed, easing: "ease", fill: "both" }));
     }
   }
   const finish = () => animations.forEach((animation) => animation.finish());

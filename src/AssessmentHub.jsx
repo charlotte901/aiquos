@@ -77,6 +77,13 @@ export function AssessmentHub({ onBack, onStart, busy }) {
               disabled={busy}
             >
               <SourceCrop crop={item.crop} />
+              {item.id === "comprehensive" && (
+                <span className="assessment-title-overlay" aria-hidden="true">
+                  <strong>{item.title}</strong>
+                  <i />
+                  <small>{item.subtitle}</small>
+                </span>
+              )}
               {selected === item.id && (
                 <span className="assessment-check">
                   <Check size={18} weight="bold" />
