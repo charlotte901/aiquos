@@ -176,7 +176,7 @@ export function AwakeningReportModal({ open, onClose }) {
       <div className="report-modal" role="dialog" aria-modal="true" aria-labelledby="awakening-report-modal-title">
         <header className="report-modal-head">
           <div>
-            <em>综合能力闯关</em>
+            <em>综合测评</em>
             <h2 id="awakening-report-modal-title">智核觉醒报告</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="关闭觉醒报告">

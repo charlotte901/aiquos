@@ -311,16 +311,8 @@ export function SiteExperience() {
   }
 
   function openAssessmentMap(id) {
-    if (id !== "comprehensive") {
-      const previousProgress = progress[id] ?? 1;
-      // A finished direct run starts over; otherwise continue with the next
-      // question so the completed-count hint stays meaningful.
-      const stage = previousProgress > 5 ? 1 : previousProgress;
-      setAssessmentRoute({ id, stage, mode: "task" });
-      go("assessment-task", assessmentHash(id, stage));
-      return;
-    }
-    const stage = progress[id] ?? 1;
+    const previousProgress = progress[id] ?? 1;
+    const stage = Math.min(5, previousProgress);
     setAssessmentRoute({ id, stage, mode: "map" });
     go("assessment-map", assessmentHash(id));
   }
@@ -336,19 +328,8 @@ export function SiteExperience() {
     const id = assessmentRoute.id;
     const nextStage = Math.min(5, stage + 1);
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] ?? 1, nextStage) }));
-    if (id === "comprehensive") {
-      setAssessmentRoute({ id, stage: nextStage, mode: "map" });
-      go("assessment-map", assessmentHash(id));
-      return;
-    }
-    if (nextStage <= 5) {
-      setAssessmentRoute({ id, stage: nextStage, mode: "task" });
-      // The task view stays mounted between direct questions, so `go` would
-      // treat this as a no-op. Keep the shareable hash in step manually.
-      history.pushState(null, "", assessmentHash(id, nextStage));
-      return;
-    }
-    go("assessments", "#assessments");
+    setAssessmentRoute({ id, stage: nextStage, mode: "map" });
+    go("assessment-map", assessmentHash(id));
   }
 
   return (
@@ -481,9 +462,7 @@ export function SiteExperience() {
             id={assessmentRoute.id}
             stage={assessmentRoute.stage}
             complete={progress[assessmentRoute.id] ?? 1}
-            onBack={() => assessmentRoute.id === "comprehensive"
-              ? openAssessmentMap(assessmentRoute.id)
-              : go("assessments", "#assessments")}
+            onBack={() => openAssessmentMap(assessmentRoute.id)}
             onPick={openAssessmentStage}
             onComplete={completeAssessmentStage}
             busy={moving}

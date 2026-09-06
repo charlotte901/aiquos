@@ -3,8 +3,8 @@ export const ASSESSMENT_ART = "/assets/assessment-reference.png";
 export const ASSESSMENTS = [
   {
     id: "comprehensive",
-    title: "综合能力闯关",
-    subtitle: "Comprehensive Ability Challenge",
+    title: "综合测评",
+    subtitle: "Comprehensive Assessment",
     crop: [81, 343, 363, 420],
   },
   {

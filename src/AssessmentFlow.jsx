@@ -128,13 +128,13 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
   );
 }
 
-function TaskHeader({ id, stage, direct = false }) {
+function TaskHeader({ id, stage }) {
   const theme = ASSESSMENT_THEMES[id];
   const mode = id === "comprehensive" ? "comprehensive" : getStageMode(id, stage);
   const icons = { objective: Target, conversation: ChatCircleDots, practical: ListChecks, comprehensive: ListChecks };
   const Icon = icons[mode];
-  const names = { objective: "判断题", conversation: "对话练习", practical: "Agent 实操", comprehensive: "综合闯关" };
-  return <div className="task-heading"><Icon weight="fill" /><span>{direct ? theme.title : `${theme.title} · 第 ${stage} 关`}</span><strong>{names[mode]}</strong></div>;
+  const names = { objective: "判断题", conversation: "对话练习", practical: "Agent 实操", comprehensive: "综合测评" };
+  return <div className="task-heading"><Icon weight="fill" /><span>{`${theme.title} · 第 ${stage} 关`}</span><strong>{names[mode]}</strong></div>;
 }
 
 function ObjectiveTask({ stage, onComplete }) {
@@ -298,10 +298,6 @@ function PracticalTask({ stage, onComplete }) {
 
 function TaskAction({ disabled, onClick, label, variant = "" }) {
   return <button type="button" className={`task-action ${variant}`.trim()} disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
-}
-
-function CompletedHint({ count }) {
-  return <p className="completed-hint" role="status">已完成 {count} 题</p>;
 }
 
 function ComprehensiveTask({ stage, onComplete }) {
@@ -478,15 +474,13 @@ export function AssessmentTask({ id, stage, complete, onBack, onPick, onComplete
   const props = { stage, onComplete: () => onComplete(stage) };
   const comprehensive = id === "comprehensive";
   const displayMode = comprehensive ? "comprehensive" : mode;
-  const direct = !comprehensive;
-  return <main className="assessment-flow task-flow" data-mode={displayMode} data-direct={direct ? "true" : "false"} style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
-    <button className="flow-back" type="button" onClick={onBack} disabled={busy}><ArrowLeft weight="bold" /> {direct ? "返回测评选择" : "返回关卡地图"}</button>
-    <h1 className="flow-wordmark" aria-label={direct ? "TEST! 测评" : "TEST! 测评关卡"}><TestWordmark /></h1>
-    {direct && <CompletedHint count={Math.max(0, stage - 1)} />}
-    {comprehensive && <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} />}
-    <section className="task-panel" aria-label={direct ? `${theme.title}题目` : `${theme.title}第 ${stage} 关`}>
+  return <main className="assessment-flow task-flow" data-mode={displayMode} style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
+    <button className="flow-back" type="button" onClick={onBack} disabled={busy}><ArrowLeft weight="bold" /> 返回关卡地图</button>
+    <h1 className="flow-wordmark" aria-label="TEST! 测评关卡"><TestWordmark /></h1>
+    <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} />
+    <section className="task-panel" aria-label={`${theme.title}第 ${stage} 关`}>
       <Guides />
-      <TaskHeader id={id} stage={stage} direct={direct} />
+      <TaskHeader id={id} stage={stage} />
       {comprehensive
         ? <ComprehensiveTask key={`${taskKey}-comprehensive`} {...props} />
         : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}

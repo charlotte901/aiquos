@@ -122,7 +122,7 @@ const RECORD_LIBRARY = [
     { type: "对话测评", title: "需求澄清对话", score: "82 分", time: "14:30 · 18 分钟" },
   ],
   [
-    { type: "综合题", title: "综合能力闯关", score: "92 分", time: "08:30 · 34 分钟" },
+    { type: "综合题", title: "综合测评", score: "92 分", time: "08:30 · 34 分钟" },
     { type: "客观题", title: "提示词工程专项", score: "88 分", time: "10:12 · 15 分钟" },
   ],
 ];

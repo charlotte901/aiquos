@@ -1,5 +1,7 @@
 # Prototype Instructions
 
+Unified assessment stages (2026-09-06, latest): the comprehensive card is titled 综合测评 / Comprehensive Assessment. All four TEST cards now enter their own themed five-stage map; only `#assessment/<id>/level/<n>` is a task route. Every task exposes the top five-node progress trail and 返回关卡地图, uses the comprehensive task-panel sizing rules, returns to its map after each stage, and retains its own objective, conversation, or practical task content. This supersedes the earlier direct-run behavior and its 已完成 X 题 hint.
+
 Homepage copy alignment revision (2026-09-06, latest): the Home intro heading, supporting copy, and AI测评 button form one right-anchored block. Desktop and compact layouts preserve their original type scale and vertical rhythm while positioning the block against the page's right margin; no copy or CTA route changes.
 
 Avatar and record report revision (2026-09-06, latest): both CENTER 账号设置 and the homepage 账号 entry share the AccountSettings avatar uploader. A selected local image previews immediately in the profile card, replaces the nickname initial, remains local-only, and does not persist or transmit credentials or media. In CENTER 测评记录, a completed 综合能力闯关 record exposes 觉醒报告 and opens it as a local modal with radar, grade, scores, advice, and resources; scheduled future comprehensive records do not claim a report. The extracted report content continues to power the standalone #reports page without repeating its dialogue in the modal.

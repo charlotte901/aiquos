@@ -1,6 +1,6 @@
 export const ASSESSMENT_THEMES = {
   comprehensive: {
-    title: "综合能力闯关",
+    title: "综合测评",
     color: "#247cf1",
     glow: "#4b9cff",
     deep: "#155cca",
@@ -109,11 +109,6 @@ export function getAssessmentRoute() {
   if (!match) return null;
   const [, id, levelMarker, rawStage] = match;
   const stage = Math.max(1, Math.min(5, Number(rawStage || 1)));
-  if (id !== "comprehensive") {
-    // Non-comprehensive tests open straight into their questions; the bare
-    // assessment hash is itself a task route, never a stage-map route.
-    return { id, mode: "task", stage };
-  }
   return {
     id,
     mode: levelMarker === "level" ? "task" : "map",
