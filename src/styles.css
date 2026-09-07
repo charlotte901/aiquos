@@ -2,6 +2,7 @@
 @import "@fontsource/dm-sans/500.css";
 @import "@fontsource/dm-sans/600.css";
 @import "@fontsource/dm-sans/700.css";
+@import "@fontsource/dm-sans/900.css";
 @import "@fontsource/noto-sans-sc/chinese-simplified-500.css";
 @import "@fontsource/noto-sans-sc/chinese-simplified-600.css";
 @import "@fontsource/noto-sans-sc/chinese-simplified-700.css";
@@ -98,6 +99,11 @@ button:hover {
   opacity: 0;
   pointer-events: none;
 }
+.app.is-case-booting[data-tab="cases"] .design-canvas,
+.app.is-case-booting[data-tab="forum"] .design-canvas {
+  opacity: 1;
+  pointer-events: auto;
+}
 .pink-frame {
   position: absolute;
   inset: 8px 11px 10px;
@@ -115,7 +121,7 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 5;
+  z-index: 8;
 }
 .home-brand {
   display: block;
@@ -186,7 +192,9 @@ button:hover {
   transform: translateY(-2px);
 }
 .get-started {
-  width: 148px;
+  width: 122px;
+  height: 44px;
+  font-size: 14px;
 }
 .brand-display {
   position: absolute;
@@ -221,9 +229,11 @@ button:hover {
 }
 .intro-copy {
   position: absolute;
-  left: 72px;
+  left: auto;
+  right: 72px;
   top: 476px;
   z-index: 4;
+  text-align: right;
 }
 .intro-copy h2 {
   font-size: 42px;
@@ -242,6 +252,21 @@ button:hover {
 .explore {
   padding: 0 22px;
   width: 185px;
+}
+.home-account {
+  position: static;
+  width: auto;
+  min-width: 0;
+  height: calc(51px * var(--ui-scale, 1));
+  padding: 0 calc(25px * var(--ui-scale, 1));
+  background: #fff;
+  color: #030303;
+  font-size: calc(18px * var(--ui-scale, 1));
+}
+.home-account:hover {
+  background: #fff6f9;
+  color: #030303;
+  transform: translateY(-2px);
 }
 .social-proof {
   display: flex;

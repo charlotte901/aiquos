@@ -99,6 +99,49 @@
   background: #0005;
   backdrop-filter: blur(10px);
 }
+.assessment-title-overlay {
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(136px * var(--assessment-unit));
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0 calc(38px * var(--assessment-unit)) calc(45px * var(--assessment-unit));
+  background: linear-gradient(
+    180deg,
+    #4185f200 0%,
+    #4185f2cc 22%,
+    #3a79ec 38%,
+    #2d69dc 100%
+  );
+  color: #fff;
+  text-align: left;
+}
+.assessment-title-overlay strong {
+  font-size: calc(37px * var(--assessment-unit));
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: .015em;
+}
+.assessment-title-overlay i {
+  width: calc(238px * var(--assessment-unit));
+  height: 1px;
+  margin: calc(8px * var(--assessment-unit)) 0 calc(9px * var(--assessment-unit));
+  background: #fff;
+  opacity: .72;
+}
+.assessment-title-overlay small {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: calc(15px * var(--assessment-unit));
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: .94;
+}
 .assessment-selection {
   min-height: 20px;
   margin: 30px 0 0;

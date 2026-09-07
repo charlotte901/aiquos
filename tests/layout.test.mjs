@@ -44,12 +44,13 @@ for (const [width, height] of viewports) {
     }
   });
 }
-test("reference viewport keeps the original asset coordinates", () => {
+test("reference viewport keeps the calibrated asset and copy coordinates", () => {
   const layout = getViewportLayout(1536, 1024);
   assert.equal(layout.cubeScale, 1);
   assert.equal(layout.brandScale, 1);
   assert.equal(layout.cubeX, 0);
   assert.equal(layout.cubeY, 0);
   assert.equal(layout.introLeft, 72);
-  assert.equal(layout.introTop, 476);
+  assert.equal(layout.introRight, 72);
+  assert.equal(layout.introTop, 621);
 });

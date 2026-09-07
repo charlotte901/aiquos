@@ -12,7 +12,7 @@ import {
   getCardStripBounds,
 } from "../src/split-transition.js";
 
-test("four original assessment cards have source-bounded crops and unchanged copy", async () => {
+test("four original assessment cards have source-bounded crops and configured copy", async () => {
   assert.deepEqual(
     ASSESSMENTS.map((card) => card.title),
     ["综合测评", "客观题测评", "对话式测评", "实操任务测评"],

@@ -107,10 +107,12 @@ export function getStageMode(assessmentId, stage) {
 export function getAssessmentRoute() {
   const match = location.hash.match(/^#assessment\/(comprehensive|objective|conversation|practical)(?:\/(level)\/(\d))?$/);
   if (!match) return null;
+  const [, id, levelMarker, rawStage] = match;
+  const stage = Math.max(1, Math.min(5, Number(rawStage || 1)));
   return {
-    id: match[1],
-    mode: match[2] === "level" ? "task" : "map",
-    stage: Math.max(1, Math.min(5, Number(match[3] || 1))),
+    id,
+    mode: levelMarker === "level" ? "task" : "map",
+    stage,
   };
 }
 

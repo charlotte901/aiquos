@@ -17,7 +17,10 @@ export function loadCubeTextures() {
         const sourceContext = sourceCanvas.getContext("2d", { willReadFrequently: true });
         // Respect the photographed rounded silhouette. Sampling the rectangular
         // image without this alpha mask brought pink corner wedges into the turn.
-        sourceContext.clip(new Path2D("M 493 409 Q 490 383 516 372 L 786 286 Q 804 278 821 285 L 1105 373 Q 1133 382 1132 412 L 1123 720 Q 1124 744 1103 754 L 831 855 Q 813 862 791 852 L 516 750 Q 501 747 500 724 Z"));
+        // Keep this outline identical to .cube-shell: the source art's base
+        // extends below the cube, and the stale old mask turned that base
+        // into a loose pink edge while the shell rotated.
+        sourceContext.clip(new Path2D("M 493 409 Q 490 383 516 372 L 786 286 Q 804 278 821 285 L 1105 373 Q 1133 382 1132 412 L 1123 720 Q 1124 744 1103 754 L 1097 771 Q 1098 781 1078 788 L 831 872 Q 813 879 791 872 L 535 779 Q 519 773 520 754 Q 501 747 500 724 Z"));
         sourceContext.drawImage(source, 0, 0);
         const pixels = sourceContext.getImageData(0, 0, source.width, source.height).data;
         const result = {};

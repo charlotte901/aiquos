@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { CaseScreen } from "./CaseScreen";
 import { FACE_CORNERS, projectPlane, getCubeGeometry, CUBE_TURN_DURATION } from "./cube-geometry";
-import { faceVisible, screenQuad } from "./cube3d";
+import {
+  faceVisible,
+  screenQuad,
+} from "./cube3d";
 import { loadCubeTextures, TEXTURE_SIZE } from "./cube-textures";
 import {
   ArrowClockwise,
@@ -17,6 +20,7 @@ export const FACE_NAMES = {
   right: "右侧屏幕",
 };
 export { FACE_CORNERS, projectPlane } from "./cube-geometry";
+const CUBE_SETTLED_EVENT = "aiquos:cube-settled";
 function FocusClock() {
   const [seconds, setSeconds] = useState(25 * 60);
   const [running, setRunning] = useState(false);
@@ -256,7 +260,17 @@ export function ScreenContent({ config, onEdit, nextConfig, active = true, prelo
     );
   return null;
 }
-export function CubeDisplay({ faces, nextFaces, flattened = false, active = true, onMotionChange, loginContent, loginScreenSize, preloadCases = true, onCaseReady }) {
+export function CubeDisplay({
+  faces,
+  nextFaces,
+  flattened = false,
+  active = true,
+  onMotionChange,
+  loginContent,
+  loginScreenSize,
+  preloadCases = true,
+  onCaseReady,
+}) {
   const root = useRef(null);
   const progress = useRef(flattened ? 1 : 0);
   const [ready, setReady] = useState(false);
@@ -368,6 +382,7 @@ export function CubeDisplay({ faces, nextFaces, flattened = false, active = true
         setSettled(flattened);
         setTurning(false);
         onMotionChange?.(false);
+        node.dispatchEvent(new CustomEvent(CUBE_SETTLED_EVENT));
       }
     };
     if (!duration) {
@@ -377,6 +392,7 @@ export function CubeDisplay({ faces, nextFaces, flattened = false, active = true
       setSettled(flattened);
       setTurning(false);
       onMotionChange?.(false);
+      node.dispatchEvent(new CustomEvent(CUBE_SETTLED_EVENT));
       return () => {};
     }
     frame = requestAnimationFrame(tick);
@@ -420,7 +436,8 @@ export function CubeDisplay({ faces, nextFaces, flattened = false, active = true
           >
             {!original && (
               <ScreenContent config={faces[key]} nextConfig={nextFaces?.[key]}
-                active={active && !blankFaces} preload={preloadCases} onCaseReady={onCaseReady} />
+                active={active && !blankFaces}
+                preload={preloadCases} onCaseReady={onCaseReady} />
             )}
             {showLogin && key === "right" && (
               <div className="login-surface" style={{

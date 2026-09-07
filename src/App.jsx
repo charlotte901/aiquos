@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpRight,
-  ArrowLeft,
-  CaretRight,
   Pause,
   X,
   Play,
 } from "@phosphor-icons/react";
 import { Brand } from "./Brand";
 import { CubeDisplay } from "./CubeDisplay";
-import { LoginForm } from "./LoginForm";
-import { getFlatLayout, getLoginScreenSize } from "./cube-geometry";
+import { LibraryHub } from "./LibraryHub";
+import { getFlatLayout } from "./cube-geometry";
 import { getViewportLayout } from "./layout";
 import {
   CASES,
@@ -113,7 +111,18 @@ function Modal({ children, title, subtitle, onClose, className = "" }) {
 }
 
 
-export function App({ onLogin, onBack, onLoginComplete, loginView = false, active = true, transitionBusy = false, onCubeMotionChange }) {
+export function App({
+  onHome,
+  onAssessment,
+  onAccountSettings,
+  onCases,
+  onForum,
+  tab = "home",
+  flattened = false,
+  active = true,
+  transitionBusy = false,
+  onCubeMotionChange,
+}) {
   const [size, setSize] = useState({
     width: document.documentElement.clientWidth,
     height: window.innerHeight,
@@ -129,6 +138,7 @@ export function App({ onLogin, onBack, onLoginComplete, loginView = false, activ
   );
   const [visible, setVisible] = useState(() => !document.hidden);
   const [modal, setModal] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const casesReady = bootedCases.size === initialCaseIds.current.size;
   const handleCaseReady = useCallback((id) => {
     if (!initialCaseIds.current.has(id)) return;
@@ -136,6 +146,15 @@ export function App({ onLogin, onBack, onLoginComplete, loginView = false, activ
       ? previous
       : new Set([...previous, id]));
   }, []);
+  useEffect(() => {
+    setDetailOpen(false);
+  }, [tab]);
+  const choosePreset = useCallback((index) => {
+    if (!casesReady) return;
+    const next = normalizeCaseIndex(index);
+    setPreset(next);
+    setFaces(getCaseFaces(next));
+  }, [casesReady]);
   // Some embedded webviews never tick requestAnimationFrame inside iframes,
   // so scene frames can never arrive there. Reveal anyway after a bounded
   // wait instead of stranding the homepage behind the boot curtain forever;
@@ -164,7 +183,6 @@ export function App({ onLogin, onBack, onLoginComplete, loginView = false, activ
     if (
       !casesReady ||
       !active ||
-      loginView ||
       transitionBusy ||
       !playing ||
       !visible ||
@@ -173,12 +191,10 @@ export function App({ onLogin, onBack, onLoginComplete, loginView = false, activ
     )
       return;
     const timer = setTimeout(() => {
-      const next = normalizeCaseIndex(preset + 1);
-      setPreset(next);
-      setFaces(getCaseFaces(next));
+      choosePreset(preset + 1);
     }, CASE_INTERVAL);
     return () => clearTimeout(timer);
-  }, [casesReady, active, loginView, transitionBusy, playing, visible, modal, preset]);
+  }, [casesReady, active, transitionBusy, playing, visible, modal, preset, choosePreset]);
   useEffect(() => {
     const resize = () => {
       const next = {
@@ -202,13 +218,65 @@ export function App({ onLogin, onBack, onLoginComplete, loginView = false, activ
   }, []);
   const layout = getViewportLayout(size.width, size.height);
   const flat = getFlatLayout(size.width, size.height);
-  const loginScreenSize = getLoginScreenSize(size.width, size.height);
-  function choosePreset(index) {
-    if (!casesReady) return;
-    const next = normalizeCaseIndex(index);
-    setPreset(next);
-    setFaces(getCaseFaces(next));
-  }
+  const siteHeader = (
+    <header className="site-header">
+      <a
+        href="#home"
+        className="home-brand"
+        aria-label="AIQUOS 首页"
+        onClick={(e) => {
+          e.preventDefault();
+          if (tab === "home") reset();
+          else onHome?.();
+        }}
+      >
+        <Brand compact />
+      </a>
+      <nav aria-label="Main navigation">
+        <a
+          className={tab === "home" && !modal ? "active" : ""}
+          href="#home"
+          onClick={(e) => {
+            e.preventDefault();
+            if (tab === "home") setModal(null);
+            else onHome?.();
+          }}
+        >
+          Home
+        </a>
+        <a
+          className={tab === "cases" ? "active" : ""}
+          href="#cases"
+          onClick={(e) => {
+            e.preventDefault();
+            onCases?.();
+          }}
+        >
+          Cases
+        </a>
+        <a
+          className={tab === "forum" ? "active" : ""}
+          href="#forum"
+          onClick={(e) => {
+            e.preventDefault();
+            onForum?.();
+          }}
+        >
+          Forum
+        </a>
+      </nav>
+      {tab === "home" && (
+        <button
+          className="pill-button home-account"
+          onClick={onAccountSettings}
+          disabled={transitionBusy}
+          aria-label="账号"
+        >
+          账号
+        </button>
+      )}
+    </header>
+  );
   function reset() {
     choosePreset(0);
     setPlaying(true);
@@ -216,161 +284,111 @@ export function App({ onLogin, onBack, onLoginComplete, loginView = false, activ
   }
   return (
     <main
-      className={`app ${loginView ? "is-login-view" : ""} ${casesReady ? "is-cases-ready" : "is-case-booting"}`}
+      className={`app ${casesReady ? "is-cases-ready" : "is-case-booting"}`}
       data-layout={layout.compact ? "compact" : "wide"}
+      data-tab={tab}
       aria-busy={!casesReady}
       style={{ ...layout.variables, "--flat-x": `${flat.x}px`, "--flat-y": `${flat.y}px`, "--flat-scale": flat.scale }}
+      data-detail-open={detailOpen ? "true" : undefined}
     >
       <div className="canvas-space">
         <section
           className="design-canvas"
           aria-label="AIQUOS creative learning playground"
-          inert={!casesReady}
+          inert={!casesReady && tab === "home"}
         >
           <ReferenceBackground />
-          <header className="site-header">
-            <a
-              href="#home"
-              className="home-brand"
-              aria-label="AIQUOS 首页"
-              onClick={(e) => {
-                e.preventDefault();
-                if (loginView) onBack();
-                else reset();
-              }}
-            >
-              <Brand compact />
-            </a>
-            <nav aria-label="Main navigation" inert={loginView} aria-hidden={loginView}>
-              <a
-                className={!modal ? "active" : ""}
-                href="#home"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setModal(null);
-                }}
-              >
-                Home
-              </a>
-              <a
-                href="#cases"
-                onClick={(e) => {
-                  e.preventDefault();
-                  reset();
-                }}
-              >
-                Cases
-              </a>
-              <a
-                href="#forum"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setModal("about");
-                }}
-              >
-                Forum
-              </a>
-            </nav>
-            <button
-              className="pill-button get-started"
-              onClick={loginView ? onBack : onLogin}
-              disabled={transitionBusy}
-              aria-label={loginView ? "返回首页" : "登录，旋转立方体"}
-            >
-              {loginView ? <><ArrowLeft size={18} /> 返回首页</> : "登录"}
-            </button>
-          </header>
-          <div className="home-hero-art" aria-hidden={loginView}><Brand /></div>
-          <div className="intro-copy" inert={loginView} aria-hidden={loginView}>
-            <h2>
-              AI 时代，
-              <br />
-              你的实力
-              <br />
-              到哪一步？
-            </h2>
-            <p>
-              用真实任务，检验你的 AI 能力。
-              <br />
-              从精准提问，到把想法变成作品。
-            </p>
-            <button
-              className="pill-button explore"
-              onClick={() => {
-                choosePreset(0);
-                setPlaying(true);
-              }}
-            >
-              探索案例
-              <ArrowUpRight size={24} weight="bold" />
-            </button>
-          </div>
-          <div className="cube-position">
-            <CubeDisplay faces={faces} nextFaces={nextFaces} flattened={loginView}
-              active={active && visible} onMotionChange={onCubeMotionChange}
-              loginScreenSize={loginScreenSize}
-              preloadCases={casesReady}
-              onCaseReady={handleCaseReady}
-              loginContent={<LoginForm onLogin={onLoginComplete} />} />
-          </div>
-          <section className="case-carousel" aria-label="案例轮播" inert={loginView} aria-hidden={loginView}>
-            <div className="case-carousel-controls">
-              <div className="carousel-dots" aria-label="选择案例">
-                {CASES.map((item, i) => (
-                  <button
-                    key={item.id}
-                    aria-label={`展示${item.name}`}
-                    title={item.name}
-                    aria-pressed={preset === i}
-                    className={preset === i ? "selected" : ""}
-                    onClick={() => choosePreset(i)}
-                  />
-                ))}
-              </div>
+          {tab === "home" && siteHeader}
+          <div className="home-stage" inert={tab !== "home"} aria-hidden={tab !== "home"}>
+            <div className="home-hero-art"><Brand /></div>
+            <div className="intro-copy">
+              <h2>
+                AI 时代
+                <br />
+                你的实力
+                <br />
+                到哪一步
+              </h2>
+              <p>
+                用真实任务，检验你的 AI 能力。
+                <br />
+                从精准提问，到把想法变成作品。
+              </p>
               <button
-                className="carousel-toggle"
-                aria-label={
-                  playing && preset >= 0 ? "暂停案例轮播" : "继续案例轮播"
-                }
-                onClick={() => {
-                  if (preset < 0) {
-                    choosePreset(0);
-                    setPlaying(true);
-                  } else setPlaying(!playing);
-                }}
+                className="pill-button explore"
+                onClick={onAssessment}
+                disabled={transitionBusy}
+                aria-label="AI测评"
               >
-                {playing && preset >= 0 ? (
-                  <Pause weight="fill" />
-                ) : (
-                  <Play weight="fill" />
-                )}
+                AI测评
+                <ArrowUpRight size={24} weight="bold" />
               </button>
             </div>
-            <p className="case-current">
-              <span>
-                {preset >= 0
-                  ? `${String(preset + 1).padStart(2, "0")} / ${String(CASES.length).padStart(2, "0")}`
-                  : "CUSTOM"}
-              </span>
-              <strong>{preset >= 0 ? CASES[preset].name : "自定义屏幕"}</strong>
-            </p>
-            <p className="case-playback-state">
-              {preset < 0
-                ? "已保留你的内容 · 点击播放恢复案例"
-                : playing
-                  ? "每 15 秒切换 · 三面联播"
-                  : "轮播已暂停 · 案例继续播放"}
-            </p>
-          </section>
-          <button
-            className="next-slide"
-            inert={loginView}
-            aria-hidden={loginView}
-            aria-label="下一组屏幕内容"
-            onClick={() => choosePreset(preset + 1)}
-          >
-            <CaretRight size={34} weight="bold" />
-          </button>
+            <div className="cube-position">
+              <CubeDisplay faces={faces} nextFaces={nextFaces}
+                flattened={flattened}
+                active={active && visible && tab === "home"}
+                onMotionChange={onCubeMotionChange}
+                preloadCases={casesReady}
+                onCaseReady={handleCaseReady} />
+            </div>
+            <section className="case-carousel" aria-label="案例轮播">
+              <div className="case-carousel-controls">
+                <div className="carousel-dots" aria-label="选择案例">
+                  {CASES.map((item, i) => (
+                    <button
+                      key={item.id}
+                      aria-label={`展示${item.name}`}
+                      title={item.name}
+                      aria-pressed={preset === i}
+                      className={preset === i ? "selected" : ""}
+                      onClick={() => choosePreset(i)}
+                    />
+                  ))}
+                </div>
+                <button
+                  className="carousel-toggle"
+                  aria-label={
+                    playing && preset >= 0 ? "暂停案例轮播" : "继续案例轮播"
+                  }
+                  onClick={() => {
+                    if (preset < 0) {
+                      choosePreset(0);
+                      setPlaying(true);
+                    } else setPlaying(!playing);
+                  }}
+                >
+                  {playing && preset >= 0 ? (
+                    <Pause weight="fill" />
+                  ) : (
+                    <Play weight="fill" />
+                  )}
+                </button>
+              </div>
+              <p className="case-current">
+                <span>
+                  {preset >= 0
+                    ? `${String(preset + 1).padStart(2, "0")} / ${String(CASES.length).padStart(2, "0")}`
+                    : "CUSTOM"}
+                </span>
+                <strong>{preset >= 0 ? CASES[preset].name : "自定义屏幕"}</strong>
+              </p>
+              <p className="case-playback-state">
+                {preset < 0
+                  ? "已保留你的内容 · 点击播放恢复案例"
+                  : playing
+                    ? "每 15 秒切换 · 三面联播"
+                    : "轮播已暂停 · 案例继续播放"}
+              </p>
+            </section>
+          </div>
+          {tab !== "home" && (
+            <div className="home-tab-screen" aria-label={`${tab} content`}>
+              {!detailOpen && siteHeader}
+              {tab === "cases" && <LibraryHub variant="cases" onDetailChange={setDetailOpen} />}
+              {tab === "forum" && <LibraryHub variant="forum" onDetailChange={setDetailOpen} />}
+            </div>
+          )}
         </section>
       </div>
       {modal === "about" && (

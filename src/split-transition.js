@@ -28,7 +28,9 @@ export function measureAssessmentBands(root) {
 /** Capture sandboxed WebGL screens after their next rendered frame. No same-origin
  * privilege is granted: each child explicitly returns its own canvas pixels. */
 export async function collectSceneFrames(root) {
-  const frames = [...root.querySelectorAll("iframe")];
+  // Hidden next-group layers are deliberately paused and need not respond.
+  // Waiting for them delays every transition by the capture timeout.
+  const frames = [...root.querySelectorAll(".case-layer.is-visible iframe")];
   const images = new Map();
   if (!frames.length) return images;
   const requestId = crypto.randomUUID();

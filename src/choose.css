@@ -62,14 +62,17 @@
 .card-flight-layer { position: absolute; inset: 0; pointer-events: none; }
 .card-flight-layer .experience-panel,
 .card-flight-layer .choose-screen,
-.card-flight-layer .assessment-screen { background: transparent !important; overflow: visible; }
+.card-flight-layer .assessment-screen,
+.card-flight-layer .profile-screen { background: transparent !important; overflow: visible; }
 .card-flight-layer .assessment-back,
 .card-flight-layer .assessment-selection,
-.card-flight-layer .choose-selection { visibility: hidden; }
+.card-flight-layer .choose-selection,
+.card-flight-layer .profile-selection { visibility: hidden; }
 .card-flight-layer * { transition: none !important; animation: none !important; }
 .card-flight-layer button:hover { transform: none; box-shadow: none; }
 .card-flight-layer .choose-card,
-.card-flight-layer .assessment-card { will-change: transform, opacity; }
+.card-flight-layer .assessment-card,
+.card-flight-layer .profile-card { will-change: transform, opacity; }
 @media (prefers-reduced-motion: reduce) {
   .choose-card { transition: none; }
   .choose-card:hover { transform: none; }

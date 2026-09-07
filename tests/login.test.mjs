@@ -47,9 +47,10 @@ test("login canvas inverse scaling retains native control dimensions at all size
   }
 });
 
-test("form completion opens the choose step before the assessment view", async () => {
+test("AI测评 always opens login and submission opens the choose step", async () => {
   const experience = await readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8");
-  assert.match(experience, /onLoginComplete=\{\(\) => go\("choose"\)\}/);
+  assert.match(experience, /onAssessment=\{\(\) => go\("login"\)\}/);
+  assert.match(experience, /onLogin=\{\(\) => \{\s*go\("choose"\);\s*\}\}/);
   assert.match(experience, /onTest=\{\(\) => go\("assessments"\)\}/);
-  assert.match(experience, /loginView=\{view !== "home" \|\| holdingLogin\}/);
+  assert.doesNotMatch(experience, /hasLoginSession|startLoginSession|auth-session|expiresAt|sessionStorage/);
 });

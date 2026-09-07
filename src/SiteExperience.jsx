@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { ArrowLeft } from "@phosphor-icons/react";
 import { App } from "./App";
 import { AssessmentHub } from "./AssessmentHub";
 import { AssessmentMap, AssessmentTask } from "./AssessmentFlow";
+import { AccountSettings } from "./AccountSettings";
 import { ChooseHub } from "./ChooseHub";
+import { AwakeningReport } from "./AwakeningReport";
 import { ProfileHub } from "./ProfileHub";
+import { ProfileDetail } from "./ProfileDetail";
+import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
+import { getProfileDetailId, getProfileDetailRoute } from "./profile-layout";
 import { animateCards } from "./card-transition";
+import { CUBE_TURN_DURATION } from "./cube-geometry";
 import {
   animateStrips,
   collectSceneFrames,
@@ -13,11 +21,17 @@ import {
   holdView,
   measureAssessmentBands,
 } from "./split-transition";
+import { animateScrollPage } from "./transitions";
 
 const route = () => {
   const assessment = getAssessmentRoute();
   if (assessment) return assessment.mode === "task" ? "assessment-task" : "assessment-map";
+  if (getProfileDetailRoute()) return "profile-detail";
   if (location.hash === "#assessments") return "assessments";
+  if (location.hash === "#cases") return "cases";
+  if (location.hash === "#forum") return "forum";
+  if (location.hash === "#account-settings") return "account-settings";
+  if (location.hash === "#reports") return "reports";
   if (location.hash === "#choose") return "choose";
   if (location.hash === "#profile") return "profile";
   return location.hash === "#login" ? "login" : "home";
@@ -25,23 +39,67 @@ const route = () => {
 
 const PANEL = {
   home: "cube",
-  login: "cube",
+  login: "login-page",
   choose: "choose",
   assessments: "assessments",
+  cases: "cube",
+  forum: "cube",
+  "account-settings": "account-settings",
+  reports: "reports",
+  "profile-detail": "profile-detail",
   profile: "profile",
   "assessment-map": "assessment-flow",
   "assessment-task": "assessment-flow",
 };
-// login → choose keeps the three-band strip pull; the choose ↔ assessments
-// hop flies whole cards out and in. Back from choose reveals the still-flat
-// login surface first so the cube can rotate home after the strips land.
-const STRIP_MOVES = new Set(["login>choose", "choose>home"]);
+// CHOOSE keeps the cube still; its strip pull uses the live homepage as the
+// outgoing surface. Return moves pull the same bands back. Login scrolls and
+// choose/test/center pages fly whole cards.
+const SCROLL_MOVES = new Set([
+  "home>login",
+  "login>home",
+  "cases>login",
+  "forum>login",
+]);
+const STRIP_MOVES = new Set([
+  "home>choose",
+  "login>choose",
+  "choose>login",
+  "choose>home",
+]);
+const REVERSE_STRIP_MOVES = new Set(["choose>login", "choose>home"]);
+const CARD_MOVES = new Set([
+  "choose>assessments",
+  "assessments>choose",
+  "choose>profile",
+  "profile>choose",
+]);
+
+function waitForCubeSettle() {
+  return new Promise((resolve) => {
+    const cube = document.querySelector(".cube-display");
+    if (!cube) {
+      resolve();
+      return;
+    }
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      cube.removeEventListener("aiquos:cube-settled", finish);
+      resolve();
+    };
+    const timeout = setTimeout(finish, CUBE_TURN_DURATION * 4 + 1000);
+    cube.addEventListener("aiquos:cube-settled", finish, { once: true });
+  });
+}
 
 export function SiteExperience() {
   const [view, setView] = useState(route);
   const [assessmentRoute, setAssessmentRoute] = useState(
     () => getAssessmentRoute() ?? { id: "comprehensive", stage: 1, mode: "map" },
   );
+  const [profileDetailRoute, setProfileDetailRoute] = useState(() => getProfileDetailRoute());
   const [progress, setProgress] = useState({
     comprehensive: 1,
     objective: 1,
@@ -49,10 +107,10 @@ export function SiteExperience() {
     practical: 1,
   });
   const [moving, setMoving] = useState(false);
-  const [holdingLogin, setHoldingLogin] = useState(false);
   const [cubeMounted, setCubeMounted] = useState(
-    () => route() === "home" || route() === "login",
+    () => ["home", "login", "cases", "forum"].includes(route()),
   );
+  const [homeShellFlat, setHomeShellFlat] = useState(() => route() === "choose");
   const panels = useRef({});
   const stage = useRef(null);
   const busy = useRef(false);
@@ -60,7 +118,12 @@ export function SiteExperience() {
     const pop = () => {
       const nextAssessment = getAssessmentRoute();
       if (nextAssessment) setAssessmentRoute(nextAssessment);
-      setView(route());
+      setProfileDetailRoute(getProfileDetailRoute());
+      const nextView = route();
+      if (nextView === "login" && location.hash === "#choose") {
+        history.replaceState(null, "", "#login");
+      }
+      setView(nextView);
     };
     window.addEventListener("popstate", pop);
     window.addEventListener("hashchange", pop);
@@ -70,7 +133,12 @@ export function SiteExperience() {
     };
   }, []);
   useEffect(() => {
-    if (view === "home" || view === "login") setCubeMounted(true);
+    if (["home", "login", "cases", "forum"].includes(view)) {
+      setCubeMounted(true);
+    }
+    if (view === "login" && location.hash === "#choose") {
+      history.replaceState(null, "", "#login");
+    }
     document.title = view === "assessments"
       ? "AIQUOS — 选择测评方式"
       : view === "assessment-map"
@@ -79,8 +147,18 @@ export function SiteExperience() {
           ? "AIQUOS — AI 能力测评"
       : view === "choose"
         ? "AIQUOS — 选择你的下一步"
+        : view === "reports"
+          ? "AIQUOS — 智核觉醒报告"
         : view === "profile"
           ? "AIQUOS — 个人中心"
+        : view === "profile-detail"
+          ? "AIQUOS — 个人中心"
+        : view === "cases"
+          ? "AIQUOS — 案例库"
+        : view === "forum"
+          ? "AIQUOS — 社区论坛"
+        : view === "account-settings"
+          ? "AIQUOS — 账号设置"
         : view === "login"
           ? "AIQUOS — 登录"
           : "AIQUOS — 你的 AI 实力到哪一步？";
@@ -93,38 +171,96 @@ export function SiteExperience() {
           ? ".flow-wordmark"
         : view === "choose"
           ? ".choose-wordmark"
-          : view === "profile"
-            ? ".profile-wordmark"
-          : view === "login"
+        : view === "reports"
+          ? ".report-back"
+        : view === "profile"
+          ? ".profile-wordmark"
+        : view === "profile-detail"
+          ? ".detail-back"
+        : view === "cases" || view === "forum"
+          ? ".home-brand"
+        : view === "account-settings"
+          ? ".account-settings-title"
+        : view === "login"
             ? ".login-title"
             : ".home-brand";
       document.querySelector(target)?.focus({ preventScroll: true });
     }
   }, [moving, view]);
+  // CHOOSE itself never turns the cube. Keep the homepage shell flat while it
+  // is hidden behind CHOOSE, then let the post-strip return rotate it back.
+  useEffect(() => {
+    if (view === "choose") setHomeShellFlat(true);
+    else if (!busy.current) setHomeShellFlat(false);
+  }, [view]);
+
+  const handleShellMotion = (active) => {
+    setMoving(active || busy.current);
+  };
+  const nextFrame = () => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  );
 
   async function go(next, hash = `#${next}`) {
     if (busy.current || next === view) return;
     const fromPanel = panels.current[PANEL[view]];
     const toPanel = panels.current[PANEL[next]];
+    const move = `${view}>${next}`;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const nextProfileDetail = next === "profile-detail" ? getProfileDetailId(hash) : null;
+    const shouldAnimate = SCROLL_MOVES.has(move)
+      || STRIP_MOVES.has(move)
+      || CARD_MOVES.has(move);
     setCubeMounted(true);
-    // home ↔ login share one panel: the cube's own 900 ms turn is the
-    // transition, so a frozen overlay would only hide it.
-    if (reduce || fromPanel === toPanel || !stage.current) {
+    if (reduce || !stage.current || !shouldAnimate) {
+      setProfileDetailRoute(nextProfileDetail);
       setView(next);
       window.scrollTo(0, 0);
       history.pushState(null, "", hash);
       return;
     }
-    busy.current = true;
-    setMoving(true);
-    const move = `${view}>${next}`;
-    try {
-      const scrollY = window.scrollY;
+      busy.current = true;
+      setMoving(true);
+      const scrollPage = SCROLL_MOVES.has(move);
+      try {
+        if (scrollPage && document.startViewTransition) {
+          const reverse = move === "login>home";
+          document.documentElement.dataset.verticalTransition = reverse
+            ? "reverse"
+            : "forward";
+          const transition = document.startViewTransition(() => {
+            flushSync(() => setView(next));
+            history.pushState(null, "", hash);
+            window.scrollTo(0, 0);
+          });
+          await transition.finished.catch(() => {});
+          return;
+        }
+        const scrollY = window.scrollY;
+        if (scrollPage) {
+        const outgoing = await freezeView(
+          fromPanel,
+          await collectSceneFrames(fromPanel),
+        );
+        holdView(stage.current, outgoing, scrollY);
+        setView(next);
+        window.scrollTo(0, 0);
+        history.pushState(null, "", hash);
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+        const incoming = await freezeView(
+          toPanel,
+          await collectSceneFrames(toPanel),
+        );
+        await animateScrollPage(stage.current, outgoing, incoming, scrollY, move === "login>home");
+        return;
+      }
+
       // The seams must cut card whitespace, so measure whichever side carries
       // cards while it is still laid out on screen.
       const cardPage = (node) =>
-        node.querySelector(".choose-card, .assessment-card");
+        node.querySelector(".choose-card, .assessment-card, .profile-card");
       const boundsFrom = cardPage(fromPanel)
         ? measureAssessmentBands(fromPanel)
         : null;
@@ -133,7 +269,7 @@ export function SiteExperience() {
         await collectSceneFrames(fromPanel),
       );
       holdView(stage.current, outgoing, scrollY);
-      if (next === "home") setHoldingLogin(true);
+      setProfileDetailRoute(nextProfileDetail);
       setView(next);
       window.scrollTo(0, 0);
       history.pushState(null, "", hash);
@@ -147,20 +283,36 @@ export function SiteExperience() {
         toPanel,
         await collectSceneFrames(toPanel),
       );
-      await (STRIP_MOVES.has(move)
-        ? animateStrips(stage.current, outgoing, incoming, scrollY, next === "home", boundaries)
-        : animateCards(stage.current, outgoing, incoming, scrollY, next === "choose"));
+      if (STRIP_MOVES.has(move)) {
+        await animateStrips(
+          stage.current,
+          outgoing,
+          incoming,
+          scrollY,
+          REVERSE_STRIP_MOVES.has(move),
+          boundaries,
+        );
+        if (move === "choose>home") {
+          setHomeShellFlat(false);
+          await nextFrame();
+          await waitForCubeSettle();
+          await nextFrame();
+        }
+      } else {
+        await animateCards(stage.current, outgoing, incoming, scrollY, next === "choose");
+      }
     } finally {
+      delete document.documentElement.dataset.verticalTransition;
       stage.current?.replaceChildren();
       stage.current?.classList.remove("is-running");
-      setHoldingLogin(false);
       busy.current = false;
       setMoving(false);
     }
   }
 
   function openAssessmentMap(id) {
-    const stage = progress[id] ?? 1;
+    const previousProgress = progress[id] ?? 1;
+    const stage = Math.min(5, previousProgress);
     setAssessmentRoute({ id, stage, mode: "map" });
     go("assessment-map", assessmentHash(id));
   }
@@ -187,19 +339,51 @@ export function SiteExperience() {
         ref={(node) => {
           panels.current.cube = node;
         }}
-        hidden={view === "choose" || view === "assessments" || view === "profile" || view === "assessment-map" || view === "assessment-task"}
+        hidden={!["home", "cases", "forum"].includes(view)}
       >
-        {(cubeMounted || view === "home" || view === "login") && (
+        {cubeMounted && (
           <App
-            onLogin={() => go("login")}
-            onBack={() => go("home")}
-            onLoginComplete={() => go("choose")}
-            loginView={view !== "home" || holdingLogin}
-            active={view === "home" || view === "login"}
+            tab={["cases", "forum"].includes(view) ? view : "home"}
+            onHome={() => go("home")}
+            onAssessment={() => go("login")}
+            onAccountSettings={() => go("account-settings")}
+            onCases={() => go("cases")}
+            onForum={() => go("forum")}
+            active={view === "home"}
+            flattened={homeShellFlat}
             transitionBusy={moving}
-            onCubeMotionChange={setMoving}
+            onCubeMotionChange={handleShellMotion}
           />
         )}
+      </div>
+      <div
+        className="experience-panel"
+        ref={(node) => {
+          panels.current["account-settings"] = node;
+        }}
+        hidden={view !== "account-settings"}
+      >
+        <AccountSettings onBack={() => go("home")} onLogout={() => go("home")} busy={moving} />
+      </div>
+      <div
+        className="experience-panel"
+        ref={(node) => {
+          panels.current["login-page"] = node;
+        }}
+        hidden={view !== "login"}
+      >
+        <section className="login-screen" aria-label="登录">
+          <button className="pill-button login-back" onClick={() => go("home")} disabled={moving}>
+            <ArrowLeft size={18} /> 返回首页
+          </button>
+          <div className="login-stage">
+            <div className="login-surface">
+              <LoginForm onLogin={() => {
+                go("choose");
+              }} />
+            </div>
+          </div>
+        </section>
       </div>
       <div
         className="experience-panel"
@@ -211,6 +395,7 @@ export function SiteExperience() {
         <ChooseHub
           onBack={() => go("home")}
           onTest={() => go("assessments")}
+          onReports={() => go("reports")}
           onProfile={() => go("profile")}
           busy={moving}
         />
@@ -231,7 +416,30 @@ export function SiteExperience() {
         }}
         hidden={view !== "profile"}
       >
-        <ProfileHub onBack={() => go("choose")} busy={moving} />
+        <ProfileHub onBack={() => go("choose")} onOpen={(id) => go("profile-detail", `#center/${id}`)} busy={moving} />
+      </div>
+      <div
+        className="experience-panel"
+        ref={(node) => {
+          panels.current.reports = node;
+        }}
+        hidden={view !== "reports"}
+      >
+        <AwakeningReport active={view === "reports"} onBack={() => go("choose")} busy={moving} />
+      </div>
+      <div
+        className="experience-panel"
+        ref={(node) => {
+          panels.current["profile-detail"] = node;
+        }}
+        hidden={view !== "profile-detail"}
+      >
+        <ProfileDetail
+          id={profileDetailRoute ?? "organizations"}
+          onBack={() => go("profile")}
+          onHome={() => go("home")}
+          busy={moving}
+        />
       </div>
       <div
         className="experience-panel"

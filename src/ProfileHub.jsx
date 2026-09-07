@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check } from "@phosphor-icons/react";
+import { ArrowLeft } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
 import { PROFILE_CARDS, PROFILE_ART, PROFILE_WORDMARK, getProfileLayout } from "./profile-layout";
 
@@ -26,12 +26,12 @@ function ProfileCardArt({ crop }) {
       source.onload = null;
     };
   }, [x, y, width, height]);
+  if (!src) return null;
   return <img className="profile-art" src={src} alt="" draggable="false" />;
 }
 
-export function ProfileHub({ onBack, busy }) {
+export function ProfileHub({ onBack, onOpen, busy }) {
   const [size, setSize] = useState(() => ({ width: innerWidth, height: innerHeight }));
-  const [selected, setSelected] = useState(null);
   useEffect(() => {
     const resize = () => setSize({ width: document.documentElement.clientWidth, height: innerHeight });
     window.addEventListener("resize", resize);
@@ -51,23 +51,13 @@ export function ProfileHub({ onBack, busy }) {
           {PROFILE_CARDS.map((item) => (
             <button key={item.id} className="profile-card"
               aria-label={`${item.title} · ${item.subtitle}`}
-              aria-pressed={selected === item.id}
+              aria-pressed={undefined}
               disabled={busy}
-              onClick={() => setSelected(item.id)}>
+              onClick={() => onOpen?.(item.id)}>
               <ProfileCardArt crop={item.crop} />
-              {selected === item.id && (
-                <span className="assessment-check">
-                  <Check size={18} weight="bold" />
-                </span>
-              )}
             </button>
           ))}
         </div>
-        <p className="profile-selection" role="status">
-          {selected
-            ? `${PROFILE_CARDS.find((item) => item.id === selected).title}即将开放，敬请期待。`
-            : ""}
-        </p>
       </div>
     </main>
   );
