@@ -76,3 +76,22 @@ export function selectAdaptiveQuestion({ questions, levelId, session, rng = Math
     },
   };
 }
+
+export function createAdaptiveController(questions, { rng = Math.random } = {}) {
+  let session = createAdaptiveSession();
+
+  return {
+    select(levelId, stage) {
+      session = startAdaptiveStage(session, stage);
+      const selected = selectAdaptiveQuestion({ questions, levelId, session, rng });
+      session = selected.session;
+      return selected.question;
+    },
+    record(outcome) {
+      session = applyAdaptiveOutcome(session, outcome);
+    },
+    reset() {
+      session = createAdaptiveSession();
+    },
+  };
+}

@@ -94,6 +94,7 @@ export const COMPREHENSIVE_LEVELS = [
 ];
 
 export const COMPREHENSIVE_QUESTION_COUNT = 5;
+export const COMPREHENSIVE_QUESTIONS = questionBank.questions;
 
 const REACTIONS = {
   "林教授": {
@@ -120,15 +121,6 @@ const REACTIONS = {
 
 export function getComprehensiveLevel(stage) {
   return COMPREHENSIVE_LEVELS[Math.max(0, Math.min(COMPREHENSIVE_LEVELS.length - 1, stage - 1))];
-}
-
-export function createComprehensiveQuestions(levelId) {
-  const pool = questionBank.questions.filter((question) => question.levelId === levelId);
-  return [...pool]
-    .map((question) => ({ question, order: Math.random() }))
-    .sort((left, right) => left.order - right.order)
-    .slice(0, COMPREHENSIVE_QUESTION_COUNT)
-    .map((item) => item.question);
 }
 
 export function getReaction(level, isCorrect) {

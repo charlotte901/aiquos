@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import questionBank from "../src/comprehensive-questions.json" with { type: "json" };
 import {
   applyAdaptiveOutcome,
+  createAdaptiveController,
   createAdaptiveSession,
   selectAdaptiveQuestion,
   startAdaptiveStage,
@@ -138,4 +139,26 @@ test("selection clamps invalid random values to a valid shortlist index", () => 
     selectAdaptiveQuestion({ questions, levelId: "academy", session: createAdaptiveSession(), rng: () => Number.NaN }).question.id,
     "q1",
   );
+});
+
+test("the controller carries routing across stages and reset starts a new medium route", () => {
+  const questions = [
+    candidate("academy-medium-1", "medium", ["D1", "D2"], "single", "academy"),
+    candidate("academy-medium-2", "medium", ["D3", "D4"], "judge", "academy"),
+    candidate("academy-high", "high", ["D5", "D6"], "multi", "academy"),
+    candidate("labyrinth-medium", "medium", ["D1", "D3"], "single", "labyrinth"),
+    candidate("labyrinth-high", "high", ["D2", "D4"], "judge", "labyrinth"),
+  ];
+  const controller = createAdaptiveController(questions, { rng: () => 0 });
+
+  assert.equal(controller.select("academy", 1).difficulty, "medium");
+  controller.record("correct");
+  assert.equal(controller.select("academy", 1).difficulty, "medium");
+  controller.record("correct");
+  assert.equal(controller.select("academy", 1).difficulty, "high");
+  controller.record("correct");
+  assert.equal(controller.select("labyrinth", 2).difficulty, "high");
+
+  controller.reset();
+  assert.equal(controller.select("labyrinth", 2).difficulty, "medium");
 });
