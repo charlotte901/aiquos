@@ -33,7 +33,7 @@
 - Modify `src/comprehensive-quiz.js`: 移除旧的一次性五题随机抽取接口，继续提供关卡内容、即时判题和反馈文案。
 - Modify `src/AssessmentFlow.jsx`: 综合测评逐题请求和空题池错误状态。
 - Modify `src/SiteExperience.jsx`: 使用 ref 保存并重置跨关卡自适应会话。
-- Modify `tests/assessment-flow.test.mjs`: 锁定 React 集成边界与“仅综合测评”约束。
+- Modify `tests/comprehensive-adaptive.test.mjs`: 通过真实控制器行为锁定跨关卡延续和重置边界。
 - Modify `README.md`: 把综合测评说明更新为本地逐题自适应，并明确无评分和无持久化。
 
 ---
@@ -373,44 +373,84 @@ git commit -m "feat: add adaptive comprehensive selector"
 - Modify: `src/comprehensive-quiz.js:125-132`
 - Modify: `src/AssessmentFlow.jsx:13-20,303-468,470-485`
 - Modify: `src/SiteExperience.jsx:97-108,313-333,410,451-469`
-- Modify: `tests/assessment-flow.test.mjs`
+- Modify: `src/comprehensive-adaptive.js`
+- Modify: `tests/comprehensive-adaptive.test.mjs`
 - Modify: `README.md`
 
 **Interfaces:**
-- Consumes: Task 2 的四个纯函数。
-- Produces: `SiteExperience.selectComprehensiveQuestion(levelId, stage): Question | null`。
-- Produces: `SiteExperience.recordComprehensiveOutcome(outcome): void`。
+- Consumes: Task 2 的四个纯函数和综合题库数组。
+- Produces: `createAdaptiveController(questions, { rng? })`，包含 `select(levelId, stage)`、`record(outcome)` 和 `reset()`。
+- Produces: `SiteExperience.selectComprehensiveQuestion(levelId, stage): Question | null`，内部调用控制器的 `select`。
+- Produces: `SiteExperience.recordComprehensiveOutcome(outcome): void`，内部调用控制器的 `record`。
 - `AssessmentTask` 新增 `onSelectComprehensiveQuestion` 和 `onRecordComprehensiveOutcome`，只传给 `ComprehensiveTask`。
 
-- [ ] **Step 1: 写入会失败的 React 集成契约测试**
+- [ ] **Step 1: 写入会失败的跨关卡控制器行为测试**
 
-扩展 `tests/assessment-flow.test.mjs`：
+扩展 `tests/comprehensive-adaptive.test.mjs`。该测试通过选出的真实题目验证跨关卡延续和重置，不检查源码文本：
 
 ```js
-test("comprehensive questions are selected one at a time from a cross-stage session", async () => {
-  const [flow, experience, quiz] = await Promise.all([
-    readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8"),
-    readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
-    readFile(new URL("../src/comprehensive-quiz.js", import.meta.url), "utf8"),
-  ]);
+import { createAdaptiveController } from "../src/comprehensive-adaptive.js";
 
-  assert.doesNotMatch(quiz, /createComprehensiveQuestions/);
-  assert.match(flow, /onSelectComprehensiveQuestion\(level\.id, stage\)/);
-  assert.match(flow, /onRecordComprehensiveOutcome\(outcome\)/);
-  assert.match(experience, /useRef\(createAdaptiveSession\(\)\)/);
-  assert.match(experience, /startAdaptiveStage/);
-  assert.match(experience, /selectAdaptiveQuestion/);
-  assert.match(experience, /adaptiveSession\.current = createAdaptiveSession\(\)/);
+test("the controller carries routing across stages and reset starts a new medium route", () => {
+  const questions = [
+    candidate("academy-medium-1", "medium", ["D1", "D2"], "single", "academy"),
+    candidate("academy-medium-2", "medium", ["D3", "D4"], "judge", "academy"),
+    candidate("academy-high", "high", ["D5", "D6"], "multi", "academy"),
+    candidate("labyrinth-medium", "medium", ["D1", "D3"], "single", "labyrinth"),
+    candidate("labyrinth-high", "high", ["D2", "D4"], "judge", "labyrinth"),
+  ];
+  const controller = createAdaptiveController(questions, { rng: () => 0 });
+
+  assert.equal(controller.select("academy", 1).difficulty, "medium");
+  controller.record("correct");
+  assert.equal(controller.select("academy", 1).difficulty, "medium");
+  controller.record("correct");
+  assert.equal(controller.select("academy", 1).difficulty, "high");
+  controller.record("correct");
+  assert.equal(controller.select("labyrinth", 2).difficulty, "high");
+
+  controller.reset();
+  assert.equal(controller.select("labyrinth", 2).difficulty, "medium");
 });
 ```
 
-- [ ] **Step 2: 运行测试并确认旧的一次性抽题接口导致失败**
+- [ ] **Step 2: 运行测试并确认缺少控制器导出而失败**
 
-Run: `node --test tests/assessment-flow.test.mjs`
+Run: `node --test tests/comprehensive-adaptive.test.mjs`
 
-Expected: FAIL because `createComprehensiveQuestions` is still present and the adaptive callbacks do not exist.
+Expected: FAIL because `createAdaptiveController` is not exported.
 
-- [ ] **Step 3: 从题库模块移除旧的一次性随机五题函数**
+- [ ] **Step 3: 实现经过真实行为测试的状态控制器**
+
+在 `src/comprehensive-adaptive.js` 增加：
+
+```js
+export function createAdaptiveController(questions, { rng = Math.random } = {}) {
+  let session = createAdaptiveSession();
+  return {
+    select(levelId, stage) {
+      session = startAdaptiveStage(session, stage);
+      const selected = selectAdaptiveQuestion({ questions, levelId, session, rng });
+      session = selected.session;
+      return selected.question;
+    },
+    record(outcome) {
+      session = applyAdaptiveOutcome(session, outcome);
+    },
+    reset() {
+      session = createAdaptiveSession();
+    },
+  };
+}
+```
+
+- [ ] **Step 4: 运行控制器测试并确认通过**
+
+Run: `node --test tests/comprehensive-adaptive.test.mjs`
+
+Expected: PASS, controller selects medium, medium, high, carries high into stage two after regression, and returns to medium after reset.
+
+- [ ] **Step 5: 从题库模块移除旧的一次性随机五题函数**
 
 在 `src/comprehensive-quiz.js` 删除 `createComprehensiveQuestions`，继续导出 `COMPREHENSIVE_QUESTION_COUNT`、关卡内容、反馈和 `judgeComprehensiveAnswer`。额外导出原始题目数组供 `SiteExperience` 的选择器使用：
 
@@ -418,26 +458,19 @@ Expected: FAIL because `createComprehensiveQuestions` is still present and the a
 export const COMPREHENSIVE_QUESTIONS = questionBank.questions;
 ```
 
-- [ ] **Step 4: 在 SiteExperience 建立跨关卡 ref 和两个回调**
+- [ ] **Step 6: 在 SiteExperience 建立跨关卡控制器 ref 和两个回调**
 
-在 `src/SiteExperience.jsx` 导入 Task 2 接口与 `COMPREHENSIVE_QUESTIONS`，在组件状态附近创建：
+在 `src/SiteExperience.jsx` 导入 `createAdaptiveController` 与 `COMPREHENSIVE_QUESTIONS`，在组件状态附近创建：
 
 ```js
-const adaptiveSession = useRef(createAdaptiveSession());
+const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
 
 function selectComprehensiveQuestion(levelId, stage) {
-  const started = startAdaptiveStage(adaptiveSession.current, stage);
-  const selected = selectAdaptiveQuestion({
-    questions: COMPREHENSIVE_QUESTIONS,
-    levelId,
-    session: started,
-  });
-  adaptiveSession.current = selected.session;
-  return selected.question;
+  return adaptiveController.current.select(levelId, stage);
 }
 
 function recordComprehensiveOutcome(outcome) {
-  adaptiveSession.current = applyAdaptiveOutcome(adaptiveSession.current, outcome);
+  adaptiveController.current.record(outcome);
 }
 ```
 
@@ -445,7 +478,7 @@ function recordComprehensiveOutcome(outcome) {
 
 ```js
 function startAssessment(id) {
-  if (id === "comprehensive") adaptiveSession.current = createAdaptiveSession();
+  if (id === "comprehensive") adaptiveController.current.reset();
   openAssessmentMap(id);
 }
 ```
@@ -457,7 +490,7 @@ onSelectComprehensiveQuestion={selectComprehensiveQuestion}
 onRecordComprehensiveOutcome={recordComprehensiveOutcome}
 ```
 
-- [ ] **Step 5: 把 ComprehensiveTask 改成逐题请求**
+- [ ] **Step 7: 把 ComprehensiveTask 改成逐题请求**
 
 修改签名：
 
@@ -502,7 +535,7 @@ setReaction("");
 
 如果 `phase === "quiz"` 且 `question === null`，显示 `role="alert"` 的“当前关卡暂无可用题目，请返回关卡地图后重试。”，不显示完成按钮，也不调用 `onComplete`。
 
-- [ ] **Step 6: 从 AssessmentTask 只向综合题组件转发新回调**
+- [ ] **Step 8: 从 AssessmentTask 只向综合题组件转发新回调**
 
 给 `AssessmentTask` 增加两个属性，并在综合分支中传入：
 
@@ -517,20 +550,20 @@ setReaction("");
 
 客观题、对话式和实操任务分支不接收这些属性。
 
-- [ ] **Step 7: 更新 README 的综合测评说明**
+- [ ] **Step 9: 更新 README 的综合测评说明**
 
 把“每关随机抽五题”说明改为：综合测评每关仍为五题，系统根据前序作答逐题调整难度，并兼顾六维覆盖、题型变化和防重复；状态只存在于本次综合测评内，不生成或保存分数、等级及报告。不要改写其他测评或首页说明。
 
-- [ ] **Step 8: 运行集成测试并修正最小实现直至通过**
+- [ ] **Step 10: 运行集成相关测试并确认通过**
 
 Run: `node --test tests/assessment-flow.test.mjs tests/comprehensive-adaptive.test.mjs`
 
-Expected: PASS, all tests in both files pass with 0 failures.
+Expected: PASS, existing assessment flow tests and new adaptive behavior tests all pass with 0 failures.
 
-- [ ] **Step 9: 提交 React 集成**
+- [ ] **Step 11: 提交 React 集成**
 
 ```bash
-git add src/comprehensive-quiz.js src/AssessmentFlow.jsx src/SiteExperience.jsx tests/assessment-flow.test.mjs README.md
+git add src/comprehensive-adaptive.js src/comprehensive-quiz.js src/AssessmentFlow.jsx src/SiteExperience.jsx tests/comprehensive-adaptive.test.mjs README.md
 git commit -m "feat: adapt comprehensive questions across stages"
 ```
 
