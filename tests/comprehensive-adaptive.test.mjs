@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import questionBank from "../src/comprehensive-questions.json" with { type: "json" };
+import {
+  applyAdaptiveOutcome,
+  createAdaptiveSession,
+  selectAdaptiveQuestion,
+  startAdaptiveStage,
+} from "../src/comprehensive-adaptive.js";
 
 const DIFFICULTIES = ["low", "medium", "high"];
 const LEVELS = ["academy", "labyrinth", "workshop", "station", "court"];
@@ -33,4 +39,103 @@ test("the comprehensive bank has explicit balanced difficulty metadata", () => {
       );
     }
   }
+});
+
+test("adaptive routing starts in the middle and applies bounded evidence", () => {
+  const initial = createAdaptiveSession();
+  assert.equal(initial.position, 1);
+  assert.equal(applyAdaptiveOutcome(initial, "correct").position, 1.4);
+  assert.equal(applyAdaptiveOutcome(initial, "partial").position, 1);
+  assert.equal(applyAdaptiveOutcome(initial, "wrong").position, 0.6);
+
+  let high = initial;
+  let low = initial;
+  for (let index = 0; index < 10; index += 1) {
+    high = applyAdaptiveOutcome(high, "correct");
+    low = applyAdaptiveOutcome(low, "wrong");
+  }
+  assert.equal(high.position, 2);
+  assert.equal(low.position, 0);
+});
+
+test("a new stage partially regresses once toward medium", () => {
+  const high = { ...createAdaptiveSession(), position: 2 };
+  const stageOne = startAdaptiveStage(high, 1);
+  const stageTwo = startAdaptiveStage(stageOne, 2);
+  assert.equal(stageOne.position, 2);
+  assert.equal(stageTwo.position, 1.65);
+  assert.deepEqual(startAdaptiveStage(stageTwo, 2), stageTwo);
+});
+
+function candidate(id, difficulty, dimKeys, type = "single", levelId = "academy") {
+  return { id, difficulty, dimKeys, type, levelId };
+}
+
+test("selection favors difficulty before under-covered dimensions and type variety", () => {
+  const session = {
+    ...createAdaptiveSession(),
+    position: 1.8,
+    dimensionCounts: { D1: 4, D2: 4, D3: 0, D4: 0, D5: 2, D6: 2 },
+    lastType: "single",
+  };
+  const questions = [
+    candidate("medium-gap", "medium", ["D3", "D4"], "judge"),
+    candidate("high-covered", "high", ["D1", "D2"], "single"),
+    candidate("high-gap", "high", ["D3", "D4"], "single"),
+    candidate("high-gap-varied", "high", ["D3", "D4"], "judge"),
+  ];
+
+  const result = selectAdaptiveQuestion({ questions, levelId: "academy", session, rng: () => 0 });
+
+  assert.equal(result.question.id, "high-gap-varied");
+  assert.deepEqual(result.session.usedQuestionIds, ["high-gap-varied"]);
+  assert.equal(result.session.dimensionCounts.D3, 1);
+  assert.equal(result.session.dimensionCounts.D4, 1);
+  assert.equal(result.session.typeCounts.judge, 1);
+  assert.equal(result.session.lastType, "judge");
+});
+
+test("selection excludes used and foreign-level questions", () => {
+  const session = { ...createAdaptiveSession(), usedQuestionIds: ["used"] };
+  const questions = [
+    candidate("used", "medium", ["D1", "D2"]),
+    candidate("foreign", "medium", ["D1", "D2"], "single", "court"),
+    candidate("fresh", "medium", ["D1", "D2"]),
+  ];
+
+  assert.equal(
+    selectAdaptiveQuestion({ questions, levelId: "academy", session, rng: () => 0 }).question.id,
+    "fresh",
+  );
+});
+
+test("selection randomizes within the top three and returns null for an empty pool", () => {
+  const questions = [1, 2, 3, 4].map((number) =>
+    candidate(`q${number}`, "medium", ["D1", "D2"]),
+  );
+
+  assert.equal(
+    selectAdaptiveQuestion({ questions, levelId: "academy", session: createAdaptiveSession(), rng: () => 0.999 }).question.id,
+    "q3",
+  );
+
+  const initial = createAdaptiveSession();
+  const empty = selectAdaptiveQuestion({ questions: [], levelId: "academy", session: initial });
+  assert.equal(empty.question, null);
+  assert.equal(empty.session, initial);
+});
+
+test("selection clamps invalid random values to a valid shortlist index", () => {
+  const questions = [1, 2, 3].map((number) =>
+    candidate(`q${number}`, "medium", ["D1", "D2"]),
+  );
+
+  assert.equal(
+    selectAdaptiveQuestion({ questions, levelId: "academy", session: createAdaptiveSession(), rng: () => -2 }).question.id,
+    "q1",
+  );
+  assert.equal(
+    selectAdaptiveQuestion({ questions, levelId: "academy", session: createAdaptiveSession(), rng: () => Number.NaN }).question.id,
+    "q1",
+  );
 });
