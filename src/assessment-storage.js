@@ -40,6 +40,12 @@ function hasUniqueStrings(values) {
     && new Set(values).size === values.length;
 }
 
+function isPlainObject(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
 function validLocation(location, questionIds) {
   if (!location || typeof location !== "object" || Array.isArray(location)) return false;
   if (Object.keys(location).sort().join(",") !== "currentQuestionId,feedback,lineIndex,phase,selectedKeys") return false;
@@ -73,6 +79,7 @@ function validResult(result, attempt) {
     if (dimension.score !== null && (!Number.isInteger(dimension.score) || dimension.score < 0 || dimension.score > 100)) return false;
     if (!Number.isInteger(dimension.evidenceCount) || dimension.evidenceCount < 0) return false;
     if (dimension.evidenceCount !== attempt.responses.filter((response) => response.dimKeys.includes(dimension.key)).length) return false;
+    if ((dimension.evidenceCount === 0) !== (dimension.score === null)) return false;
     resultDimensionKeys.add(dimension.key);
   }
   const complete = attempt.answeredCount === TOTAL_QUESTIONS
@@ -106,10 +113,15 @@ function validAttempt(attempt, { history = false } = {}) {
     if (attempt.seed !== null && (!Number.isInteger(attempt.seed) || attempt.seed < 0 || attempt.seed > 0xffffffff)) return false;
   } else {
     if (attempt.questionIds.length > TOTAL_QUESTIONS || attempt.seed !== null) return false;
+    if (attempt.adaptiveSession !== null && !isPlainObject(attempt.adaptiveSession)) return false;
   }
   if (attempt.responses.some((response) => !validResponse(response, attempt.questionIds))) return false;
   if (new Set(attempt.responses.map((response) => response.questionId)).size !== attempt.responses.length) return false;
   if (!validLocation(attempt.location, attempt.questionIds) || !validResult(attempt.result, attempt)) return false;
+  if (attempt.assessmentType === "objective" && attempt.location.currentQuestionId !== null) {
+    const currentPaperId = attempt.questionIds[(attempt.currentStage - 1) * 5 + attempt.currentQuestionIndex];
+    if (attempt.location.currentQuestionId !== currentPaperId) return false;
+  }
   if (attempt.status === "not_started" && (attempt.answeredCount !== 0 || attempt.completedAt !== null)) return false;
   if (attempt.status === "in_progress" && (attempt.answeredCount === 0 || attempt.completedAt !== null)) return false;
   if (attempt.status === "completed" && (attempt.answeredCount !== TOTAL_QUESTIONS || !isValidTimestamp(attempt.completedAt))) return false;

@@ -341,8 +341,11 @@ test("storage recovers from malformed history, draft fields, evidence, result, l
     ["mismatched count", (() => { const state = structuredClone(validDraft); state.drafts.objective.answeredCount = 2; return state; })()],
     ["malformed result", (() => { const state = structuredClone(validDraft); state.drafts.objective.result.dimensions = []; return state; })()],
     ["result status inconsistent with response count", (() => { const state = structuredClone(validDraft); state.drafts.objective.result.status = "not_started"; return state; })()],
+    ["score without dimension evidence", (() => { const state = structuredClone(validDraft); state.drafts.objective.result.dimensions[2].score = 100; return state; })()],
     ["malformed location", (() => { const state = structuredClone(validDraft); state.drafts.objective.location.selectedKeys = "A"; return state; })()],
+    ["objective cursor names another paper question", (() => { const state = structuredClone(validDraft); state.drafts.objective.location.currentQuestionId = "q-2"; return state; })()],
     ["missing required attempt field", (() => { const state = structuredClone(validComprehensive); delete state.drafts.comprehensive.adaptiveSession; return state; })()],
+    ["scalar adaptive session", (() => { const state = structuredClone(validComprehensive); state.drafts.comprehensive.adaptiveSession = 42; return state; })()],
   ];
   for (const [name, invalidState] of cases) {
     const values = new Map([[STORAGE_KEY, JSON.stringify(invalidState)]]);
