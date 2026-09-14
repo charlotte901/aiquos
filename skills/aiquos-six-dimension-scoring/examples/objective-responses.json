@@ -1,0 +1,1064 @@
+{
+  "totalQuestions": 25,
+  "responses": [
+    {
+      "question": {
+        "id": "q026",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "要求AI以JSON等结构化格式输出，相较于自然语言其主要优势是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "JSON格式占用的存储空间更小"
+          },
+          {
+            "key": "B",
+            "text": "JSON格式能完全避免AI产生幻觉"
+          },
+          {
+            "key": "C",
+            "text": "AI使用JSON格式时生成速度更快"
+          },
+          {
+            "key": "D",
+            "text": "结构化输出便于程序解析和自动化处理"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "结构化格式输出使AI生成内容具有明确的字段和层级，便于程序自动解析和后续流程处理。",
+        "dims": [
+          "提示词工程",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D2",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q027",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "使用AI生成图片时，主要的版权风险来源是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI生成的图片自动进入公共领域"
+          },
+          {
+            "key": "B",
+            "text": "训练数据中可能包含受版权保护的图像"
+          },
+          {
+            "key": "C",
+            "text": "只有商业用途才存在版权侵权问题"
+          },
+          {
+            "key": "D",
+            "text": "AI生成图片的版权完全归AI公司所有"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "版权风险主要来自训练数据：若训练集含受版权保护的图像，AI生成内容可能构成衍生作品。",
+        "dims": [
+          "AI结果评估与优化",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D4",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:01:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q028",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "AI模型中\"参数\"与\"超参数\"的核心区别是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "参数是人为设定的超参数是自动学习的"
+          },
+          {
+            "key": "B",
+            "text": "参数是训练中学习的超参数是人为设定的"
+          },
+          {
+            "key": "C",
+            "text": "两者完全相同只是叫法不同"
+          },
+          {
+            "key": "D",
+            "text": "超参数比参数数量更多影响更大"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "参数是模型训练中通过数据自动学习的权重；超参数是训练前人为设定的配置（如学习率、批次大小）。",
+        "dims": [
+          "AI基础认知",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D1",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:02:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q029",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "single",
+        "q": "使用AI辅助分析时，\"确认偏误\"（confirmation bias）的主要风险表现是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI只确认正确答案忽略错误信息"
+          },
+          {
+            "key": "B",
+            "text": "用户倾向于接受符合自己预期的AI输出"
+          },
+          {
+            "key": "C",
+            "text": "AI会自动确认用户身份保护安全"
+          },
+          {
+            "key": "D",
+            "text": "AI反复确认同一问题导致效率降低"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "确认偏误是人机协作中的认知风险：用户倾向于接受符合预期的AI输出，而忽略与预期不符的正确信息。",
+        "dims": [
+          "AI结果评估与优化",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D4",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:03:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q030",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "提示词中设定角色（如\"你是一位律师\"）的作用机制是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI会自动调取该职业的专业数据库"
+          },
+          {
+            "key": "B",
+            "text": "角色设定引导AI采用特定的语言风格"
+          },
+          {
+            "key": "C",
+            "text": "设定角色后AI的回答将具有法律效力"
+          },
+          {
+            "key": "D",
+            "text": "角色设定是AI识别用户身份的安全机制"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "角色设定引导AI以特定职业视角和语言风格回答，使输出更符合该领域的专业表达习惯。",
+        "dims": [
+          "提示词工程",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D2",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:04:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q031",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "multi",
+        "q": "以下哪些场景适合使用AI进行数据分析？（多选）",
+        "options": [
+          {
+            "key": "A",
+            "text": "从大量文本中提取关键信息和趋势"
+          },
+          {
+            "key": "B",
+            "text": "生成数据可视化图表的初步方案"
+          },
+          {
+            "key": "C",
+            "text": "替代数据科学家做出最终商业决策"
+          },
+          {
+            "key": "D",
+            "text": "对结构化数据进行初步的模式识别"
+          }
+        ],
+        "answer": [
+          "A",
+          "B",
+          "D"
+        ],
+        "analysis": "AI适合信息提取（A）、可视化方案（B）、模式识别（D）。最终商业决策需人类综合判断（C错误）。",
+        "dims": [
+          "AI工具使用",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D3",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "A",
+        "B",
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:05:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q032",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "judge",
+        "q": "零样本提示是指不给AI提供任何任务示例，仅通过指令描述来完成任务。",
+        "options": [
+          {
+            "key": "A",
+            "text": "正确"
+          },
+          {
+            "key": "B",
+            "text": "错误"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "零样本提示不提供任何示例，仅依靠清晰的任务描述指令引导AI。少样本则通过提供示例来引导。",
+        "dims": [
+          "AI基础认知",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D1",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:06:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q033",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "使用AI处理任务时，遵循\"最小必要原则\"的含义是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "使用最简单基础的AI模型来完成任务"
+          },
+          {
+            "key": "B",
+            "text": "只向AI提供完成任务所需的最小信息量"
+          },
+          {
+            "key": "C",
+            "text": "尽量减少AI的使用频率以降低风险"
+          },
+          {
+            "key": "D",
+            "text": "只在任务最关键的环节使用AI"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "最小必要原则要求只提供完成任务所必需的最小信息量，避免输入与任务无关的敏感数据。",
+        "dims": [
+          "人机协同解决问题",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D5",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:07:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q034",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "single",
+        "q": "AI系统的内容安全过滤机制主要目标是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "提升AI生成内容的文学性和可读性"
+          },
+          {
+            "key": "B",
+            "text": "阻止AI生成有害违规或不当内容"
+          },
+          {
+            "key": "C",
+            "text": "过滤掉AI输出中的语法错误和错别字"
+          },
+          {
+            "key": "D",
+            "text": "确保AI回复的内容不超出字数限制"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "内容安全过滤通过在输入和输出两端设置过滤规则，阻止AI生成有害、违规或不当内容。",
+        "dims": [
+          "AI工具使用",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D3",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:08:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q035",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "以下关于AI训练中“监督学习”与“无监督学习”的表述，哪项正确？",
+        "options": [
+          {
+            "key": "A",
+            "text": "监督学习用标注数据，无监督学习用无标注数据"
+          },
+          {
+            "key": "B",
+            "text": "监督学习效果一定比无监督学习更好"
+          },
+          {
+            "key": "C",
+            "text": "监督学习需要GPU，无监督学习不需要"
+          },
+          {
+            "key": "D",
+            "text": "监督学习用于图像，无监督学习用于文本"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "监督学习使用带标签的训练数据学习输入到输出的映射；无监督学习从无标签数据中发现内在结构和模式。",
+        "dims": [
+          "AI基础认知",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D1",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:09:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q036",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "对AI生成的新闻摘要进行事实核查时，最重要的一步是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "检查摘要的语法和拼写是否正确"
+          },
+          {
+            "key": "B",
+            "text": "将关键信息与原始信源交叉比对"
+          },
+          {
+            "key": "C",
+            "text": "确认AI工具的版本是否是最新的"
+          },
+          {
+            "key": "D",
+            "text": "检查摘要的字数是否符合要求"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "AI生成的摘要可能包含幻觉性信息，必须将关键事实与原始信源交叉比对，而非仅检查表面格式。",
+        "dims": [
+          "AI工具使用",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D3",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:10:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q037",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "AI模型被称为\"黑盒\"（black box）主要是指什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI模型使用黑色服务器机箱运行"
+          },
+          {
+            "key": "B",
+            "text": "AI模型的安全等级属于最高机密"
+          },
+          {
+            "key": "C",
+            "text": "AI模型的内部决策过程难以被理解"
+          },
+          {
+            "key": "D",
+            "text": "AI模型不对外公开API接口"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "深度学习模型的内部决策路径复杂且不透明，难以追溯具体是如何从输入得到输出，这被称为\"黑盒\"特性。",
+        "dims": [
+          "AI基础认知",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D1",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:11:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q038",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "提示词中使用分隔符（如###或---）的主要目的是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "让AI识别指令与数据的边界"
+          },
+          {
+            "key": "B",
+            "text": "测试AI是否能识别特殊字符"
+          },
+          {
+            "key": "C",
+            "text": "增加提示词的视觉美观度"
+          },
+          {
+            "key": "D",
+            "text": "防止AI生成有害内容"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "分隔符帮助AI区分提示词中的不同部分（如指令、上下文、示例数据），提升AI对输入结构的理解精度。",
+        "dims": [
+          "提示词工程",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D2",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:12:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q039",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "judge",
+        "q": "使用AI批量生成虚假好评用于产品营销是合规的AI使用方式。",
+        "options": [
+          {
+            "key": "A",
+            "text": "正确"
+          },
+          {
+            "key": "B",
+            "text": "错误"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "使用AI批量生成虚假好评属于欺诈消费者行为，违反广告法和电商平台规则，不属于合规的AI使用方式。",
+        "dims": [
+          "AI工具使用",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D3",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:13:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q040",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "AI输出的内容格式完美但事实错误，这说明什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "格式规范等同于内容准确"
+          },
+          {
+            "key": "B",
+            "text": "格式质量不能替代事实核查"
+          },
+          {
+            "key": "C",
+            "text": "AI的格式能力说明其可信"
+          },
+          {
+            "key": "D",
+            "text": "只要格式正确就能直接使用"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "AI擅长生成格式规范的内容，但格式完美不代表事实正确。格式质量与事实准确性是两个独立维度，必须分别核查。",
+        "dims": [
+          "AI结果评估与优化",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D4",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:14:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q041",
+        "difficulty": "medium",
+        "levelId": "academy",
+        "type": "single",
+        "q": "在AI语境下，\"微调\"（fine-tuning）指的是什么操作？",
+        "options": [
+          {
+            "key": "A",
+            "text": "在特定领域数据上训练预训练模型"
+          },
+          {
+            "key": "B",
+            "text": "卸载并重新安装AI软件的整个过程"
+          },
+          {
+            "key": "C",
+            "text": "在生成后手动编辑修改AI的回复"
+          },
+          {
+            "key": "D",
+            "text": "调整使用AI时显示器的亮度参数"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "微调是在已有预训练模型基础上，使用特定领域数据进一步训练，使模型在特定任务中表现更专业。",
+        "dims": [
+          "AI基础认知",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D1",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:15:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q042",
+        "difficulty": "medium",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "在自然语言处理（NLP）中，\"标记化\"（tokenization）指的是什么过程？",
+        "options": [
+          {
+            "key": "A",
+            "text": "将文本分解为更小单元以供模型处理"
+          },
+          {
+            "key": "B",
+            "text": "添加安全令牌以保护AI输出安全"
+          },
+          {
+            "key": "C",
+            "text": "创建用于AI访问的用户认证令牌"
+          },
+          {
+            "key": "D",
+            "text": "将文本数据转换为加密货币代币"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "标记化是将文本分解为词、子词或字符等更小处理单元的过程，是AI模型处理文本的第一步。",
+        "dims": [
+          "AI基础认知",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D1",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:16:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q043",
+        "difficulty": "medium",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "\"检索增强生成\"（RAG）对提示词工程的主要价值是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "自动修复软件代码中的语法错误"
+          },
+          {
+            "key": "B",
+            "text": "生成用于测试目的的随机模拟数据"
+          },
+          {
+            "key": "C",
+            "text": "访问外部知识源以支撑回复准确性"
+          },
+          {
+            "key": "D",
+            "text": "自动压缩文件以节省存储空间"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "RAG让AI在生成回复前先从外部知识库检索相关信息，增强回答准确性和时效性，减少幻觉。",
+        "dims": [
+          "AI基础认知",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D1",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:17:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q044",
+        "difficulty": "medium",
+        "levelId": "station",
+        "type": "single",
+        "q": "在AI语境中，\"向量嵌入\"（vector embedding）是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "一种针对AI系统的恶意软件程序"
+          },
+          {
+            "key": "B",
+            "text": "一种压缩文件以节省存储的方法"
+          },
+          {
+            "key": "C",
+            "text": "捕捉语义含义的数据的数值表示"
+          },
+          {
+            "key": "D",
+            "text": "将AI芯片物理嵌入硬件设备方式"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "向量嵌入将文本、图片等转换为高维数值向量，使语义相近的内容在向量空间中距离也相近。",
+        "dims": [
+          "AI工具使用",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D3",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:18:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q045",
+        "difficulty": "medium",
+        "levelId": "court",
+        "type": "judge",
+        "q": "AI生成内容中引用的论文如果格式规范详细，就说明论文真实存在。",
+        "options": [
+          {
+            "key": "A",
+            "text": "正确"
+          },
+          {
+            "key": "B",
+            "text": "错误"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "AI可能编造格式规范、信息详细的虚假引用，这是典型的幻觉现象。必须在学术数据库中验证其真实性。",
+        "dims": [
+          "提示词工程",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D2",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:19:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q046",
+        "difficulty": "medium",
+        "levelId": "academy",
+        "type": "multi",
+        "q": "关于\"提示链\"（prompt chaining），以下哪些描述正确？（多选）",
+        "options": [
+          {
+            "key": "A",
+            "text": "将复杂任务分解为连续的AI步骤"
+          },
+          {
+            "key": "B",
+            "text": "每步输出作为下一步的输入"
+          },
+          {
+            "key": "C",
+            "text": "能提升AI处理复杂任务的能力"
+          },
+          {
+            "key": "D",
+            "text": "要求必须使用多个不同的AI模型"
+          }
+        ],
+        "answer": [
+          "A",
+          "B",
+          "C"
+        ],
+        "analysis": "提示链将任务分解为连续步骤（A），每步输出供下一步使用（B），提升复杂任务能力（C）。D错误——同一模型即可。",
+        "dims": [
+          "提示词工程",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D2",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "A",
+        "B",
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:20:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q047",
+        "difficulty": "medium",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "以下哪类任务最适合在商业环境中使用AI自动化？",
+        "options": [
+          {
+            "key": "A",
+            "text": "立即替换所有客户服务岗位的人员"
+          },
+          {
+            "key": "B",
+            "text": "设定组织文化和价值观的导向"
+          },
+          {
+            "key": "C",
+            "text": "对公司方向做最终战略决策判断"
+          },
+          {
+            "key": "D",
+            "text": "总结大量文档并提取关键见解"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "AI擅长处理大量文本的总结和信息提取等规则化任务，而设定文化、做战略决策需要人类判断力。",
+        "dims": [
+          "人机协同解决问题",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D5",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:21:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q048",
+        "difficulty": "medium",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "在没有明确治理框架下部署AI的最大风险是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI会拒绝回答用户的提问"
+          },
+          {
+            "key": "B",
+            "text": "员工会停止使用电子邮件"
+          },
+          {
+            "key": "C",
+            "text": "AI系统的运行速度变缓慢"
+          },
+          {
+            "key": "D",
+            "text": "各团队违规使用不受管理的风险"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "缺乏治理框架的AI部署导致各团队自行其是、标准不一、违规风险不受控。AI治理是合规基础。",
+        "dims": [
+          "人机协同解决问题",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D5",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:22:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q049",
+        "difficulty": "medium",
+        "levelId": "station",
+        "type": "single",
+        "q": "什么是\"AI用例评估\"（use case assessment）？",
+        "options": [
+          {
+            "key": "A",
+            "text": "对AI在工作流中价值与风险的评估"
+          },
+          {
+            "key": "B",
+            "text": "购买AI软件之前的法定必经程序"
+          },
+          {
+            "key": "C",
+            "text": "没有实际应用的营销术语概念"
+          },
+          {
+            "key": "D",
+            "text": "衡量AI处理数据速度的基准测试"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "AI用例评估是系统性地分析AI在特定工作流中能带来的价值、所需投入和潜在风险的过程。",
+        "dims": [
+          "人机协同解决问题",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D5",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:23:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q050",
+        "difficulty": "medium",
+        "levelId": "court",
+        "type": "single",
+        "q": "计算AI实施的ROI时，哪些因素常被忽视？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI用户界面的整体配色方案设计"
+          },
+          {
+            "key": "B",
+            "text": "公司现有员工的总体数量规模"
+          },
+          {
+            "key": "C",
+            "text": "变革管理培训和工作流重设成本"
+          },
+          {
+            "key": "D",
+            "text": "软件许可和云服务的采购费用"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "AI实施ROI常忽视变革管理、员工培训和流程重设等隐性成本，导致评估过于乐观。",
+        "dims": [
+          "人机协同解决问题",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D5",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:24:00.000Z"
+    }
+  ]
+}
