@@ -1,4 +1,4 @@
-import questionBank from "./comprehensive-questions.json";
+import { QUESTION_BANK } from "./question-bank.js";
 
 export const COMPREHENSIVE_LEVELS = [
   {
@@ -94,7 +94,7 @@ export const COMPREHENSIVE_LEVELS = [
 ];
 
 export const COMPREHENSIVE_QUESTION_COUNT = 5;
-export const COMPREHENSIVE_QUESTIONS = questionBank.questions;
+export const COMPREHENSIVE_QUESTIONS = QUESTION_BANK;
 
 const REACTIONS = {
   "林教授": {
