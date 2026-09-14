@@ -32,8 +32,15 @@ function normalizeLocation(location = {}) {
     phase: location.phase ?? null,
     lineIndex: location.lineIndex ?? 0,
     selectedKeys: Array.isArray(location.selectedKeys) ? [...location.selectedKeys] : [],
-    feedback: location.feedback ?? null,
+    feedback: location.feedback === null || location.feedback === undefined ? null : clone(location.feedback),
   };
+}
+
+function requireTimestamp(timestamp, label) {
+  if (typeof timestamp !== "string" || !timestamp || !Number.isFinite(Date.parse(timestamp))) {
+    throw new Error(`${label} timestamp is invalid/${label} 时间无效`);
+  }
+  return timestamp;
 }
 
 function emptyResult() {
@@ -41,7 +48,7 @@ function emptyResult() {
 }
 
 function sortedHistory(history) {
-  return history.toSorted((left, right) => String(right.completedAt).localeCompare(String(left.completedAt)));
+  return history.toSorted((left, right) => Date.parse(right.completedAt) - Date.parse(left.completedAt));
 }
 
 function reportRefForDraft(type) {
@@ -59,6 +66,15 @@ function expectedObjectiveId(attempt, location) {
     throw new Error("Objective paper position is invalid/试卷位置无效");
   }
   return { id: attempt.questionIds[(stage - 1) * 5 + index], stage, index };
+}
+
+function requestedComprehensivePosition(attempt, location) {
+  const stage = location.currentStage ?? location.stage ?? attempt.currentStage;
+  const index = location.currentQuestionIndex ?? location.questionIndex ?? attempt.currentQuestionIndex;
+  if (!Number.isInteger(stage) || !Number.isInteger(index) || stage < 1 || stage > 5 || index < 0 || index > 4) {
+    throw new Error("Comprehensive question position is invalid/综合测评位置无效");
+  }
+  return { stage, index };
 }
 
 function assertAttemptShape(attempt) {
@@ -94,7 +110,7 @@ export function createAttempt(options = {}) {
   } = options;
   requireAssessmentType(assessmentType);
   if (!id || typeof id !== "string") throw new Error("测评记录需要 id/attempt id required");
-  if (!startedAt || typeof startedAt !== "string") throw new Error("测评记录需要开始时间/startedAt required");
+  requireTimestamp(startedAt, "startedAt");
   if (!Array.isArray(questionIds)) throw new TypeError("题目序列无效/question IDs must be an array");
   if (assessmentType === "objective" && questionIds.length !== TOTAL_QUESTIONS) {
     throw new Error("Objective paper must contain 25 question IDs/客观试卷必须有 25 题");
@@ -142,8 +158,11 @@ export function selectAttemptQuestion(attempt, questionId, location = {}) {
     if (expected.id !== questionId) throw new Error("Question is not at the saved paper position/题目不在已保存的试卷位置");
     selected.currentStage = expected.stage;
     selected.currentQuestionIndex = expected.index;
-  } else if (!selected.questionIds.includes(questionId)) {
-    selected.questionIds.push(questionId);
+  } else {
+    const position = requestedComprehensivePosition(selected, location);
+    selected.currentStage = position.stage;
+    selected.currentQuestionIndex = position.index;
+    if (!selected.questionIds.includes(questionId)) selected.questionIds.push(questionId);
   }
   selected.location = normalizeLocation({ ...selected.location, ...location, currentQuestionId: questionId });
   return selected;
@@ -166,6 +185,7 @@ export function recordAttemptResponse(attempt, payload = {}) {
   if (attempt.assessmentType === "comprehensive" && !attempt.questionIds.includes(question.id)) {
     throw new Error("Selected comprehensive question was not persisted/综合题目未保存");
   }
+  requireTimestamp(payload.answeredAt, "answeredAt");
   const evidence = createResponseEvidence(question, payload.selectedKeys, payload.answeredAt);
   const responses = [...clone(attempt.responses), evidence];
   const result = scoreAssessment(responses, { totalQuestions: TOTAL_QUESTIONS });
@@ -191,6 +211,7 @@ export function recordAttemptResponse(attempt, payload = {}) {
 
 export function completeAttempt(attempt, completedAt) {
   assertAttemptShape(attempt);
+  requireTimestamp(completedAt, "completedAt");
   if (attempt.status === "completed") return clone(attempt);
   const result = scoreAssessment(attempt.responses, { totalQuestions: TOTAL_QUESTIONS });
   if (attempt.responses.length !== TOTAL_QUESTIONS || !isCompleteResult(result)) {

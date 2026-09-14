@@ -117,6 +117,27 @@ test("comprehensive selection persists an unanswered question once and responses
   }), /current question|当前题目/i);
 });
 
+test("comprehensive selection persists a non-default resume position through storage", () => {
+  let attempt = createAttempt({ id: "adaptive-position", assessmentType: "comprehensive", startedAt });
+  attempt = selectAttemptQuestion(attempt, "q-7", {
+    currentStage: 4,
+    currentQuestionIndex: 3,
+    phase: "question",
+    lineIndex: 6,
+  });
+  const state = putDraft(createAssessmentState(), attempt);
+  const values = new Map();
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  saveAssessmentState(storage, state, completedAt);
+  const loaded = loadAssessmentState(storage, completedAt);
+
+  assert.equal(loaded.warning, null);
+  assert.equal(loaded.state.drafts.comprehensive.currentStage, 4);
+  assert.equal(loaded.state.drafts.comprehensive.currentQuestionIndex, 3);
+  assert.equal(loaded.state.drafts.comprehensive.location.currentQuestionId, "q-7");
+  assert.equal(loaded.state.drafts.comprehensive.location.lineIndex, 6);
+});
+
 test("objective selection only accepts its fixed paper position and never alters it", () => {
   const attempt = objectiveAttempt();
   assert.throws(() => selectAttemptQuestion(attempt, "not-on-paper", { currentStage: 1, currentQuestionIndex: 0 }), /paper|试卷/i);
@@ -210,6 +231,55 @@ test("a finalized history snapshot cannot be changed through the prior draft ref
   assert.deepEqual(state.history[0].responses[0].selectedKeys, ["A"]);
 });
 
+test("nested feedback is isolated from caller input, earlier attempts, and history snapshots", () => {
+  const creationFeedback = { detail: { source: "creation" } };
+  const created = createAttempt({
+    id: "feedback", assessmentType: "objective", startedAt, questionIds: paperIds, seed: 7,
+    location: { feedback: creationFeedback },
+  });
+  creationFeedback.detail.source = "mutated caller";
+  const selectionFeedback = { detail: { source: "selection" } };
+  const selected = selectAttemptQuestion(created, "q-1", { currentStage: 1, currentQuestionIndex: 0, feedback: selectionFeedback });
+  selectionFeedback.detail.source = "mutated selection caller";
+  const updateFeedback = { detail: { source: "update" } };
+  const updated = updateAttemptLocation(selected, { feedback: updateFeedback });
+  updateFeedback.detail.source = "mutated update caller";
+  const responseFeedback = { detail: { source: "response" } };
+  const answered = recordAttemptResponse(updated, {
+    question: paperQuestions[0], selectedKeys: ["A"], answeredAt: startedAt, stage: 1, questionIndex: 0, feedback: responseFeedback,
+  });
+  responseFeedback.detail.source = "mutated response caller";
+
+  assert.equal(created.location.feedback.detail.source, "creation");
+  assert.equal(selected.location.feedback.detail.source, "selection");
+  assert.equal(updated.location.feedback.detail.source, "update");
+  assert.equal(answered.location.feedback.detail.source, "response");
+
+  let completed = completedAttempt("feedback-history");
+  completed = updateAttemptLocation(completed, { feedback: { detail: { source: "history" } } });
+  let state = putDraft(createAssessmentState(), completed);
+  state = finalizeDraft(state, "objective", completedAt);
+  completed.location.feedback.detail.source = "mutated draft";
+  assert.equal(state.history[0].location.feedback.detail.source, "history");
+});
+
+test("completion validates timestamps and orders offset timestamps by their instants", () => {
+  let incomplete = objectiveAttempt("missing-time");
+  for (let index = 0; index < paperQuestions.length; index += 1) incomplete = answer(incomplete, index);
+  assert.throws(() => completeAttempt(incomplete), /timestamp|时间/i);
+  assert.throws(() => completeAttempt(incomplete, "not-a-time"), /timestamp|时间/i);
+
+  let first = objectiveAttempt("offset-earlier");
+  for (let index = 0; index < paperQuestions.length; index += 1) first = answer(first, index);
+  let second = objectiveAttempt("utc-later");
+  for (let index = 0; index < paperQuestions.length; index += 1) second = answer(second, index);
+  let state = putDraft(createAssessmentState(), first);
+  state = finalizeDraft(state, "objective", "2026-09-14T09:00:00+01:00");
+  state = putDraft(state, second);
+  state = finalizeDraft(state, "objective", "2026-09-14T08:30:00.000Z");
+  assert.deepEqual(state.history.map((item) => item.id), ["utc-later", "offset-earlier"]);
+});
+
 test("storage serializes a valid state and preserves a distinct loaded copy", () => {
   const values = new Map();
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
@@ -257,6 +327,44 @@ test("storage rejects a draft stored under the wrong assessment type", () => {
   const loaded = loadAssessmentState(storage, completedAt);
   assert.deepEqual(loaded.state, createAssessmentState());
   assert.match(loaded.warning, /恢复|损坏/i);
+});
+
+test("storage recovers from malformed history, draft fields, evidence, result, location, and counts", () => {
+  const validDraft = putDraft(createAssessmentState(), answer(objectiveAttempt("malformed"), 0));
+  const validComprehensive = putDraft(createAssessmentState(), createAttempt({
+    id: "malformed-comprehensive", assessmentType: "comprehensive", startedAt,
+  }));
+  const cases = [
+    ["null history", { ...createAssessmentState(), history: [null] }],
+    ["incomplete objective paper", (() => { const state = structuredClone(validDraft); state.drafts.objective.questionIds.pop(); return state; })()],
+    ["malformed evidence", (() => { const state = structuredClone(validDraft); state.drafts.objective.responses[0].credit = "one"; return state; })()],
+    ["mismatched count", (() => { const state = structuredClone(validDraft); state.drafts.objective.answeredCount = 2; return state; })()],
+    ["malformed result", (() => { const state = structuredClone(validDraft); state.drafts.objective.result.dimensions = []; return state; })()],
+    ["result status inconsistent with response count", (() => { const state = structuredClone(validDraft); state.drafts.objective.result.status = "not_started"; return state; })()],
+    ["malformed location", (() => { const state = structuredClone(validDraft); state.drafts.objective.location.selectedKeys = "A"; return state; })()],
+    ["missing required attempt field", (() => { const state = structuredClone(validComprehensive); delete state.drafts.comprehensive.adaptiveSession; return state; })()],
+  ];
+  for (const [name, invalidState] of cases) {
+    const values = new Map([[STORAGE_KEY, JSON.stringify(invalidState)]]);
+    const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+    const loaded = loadAssessmentState(storage, completedAt);
+    assert.deepEqual(loaded.state, createAssessmentState(), name);
+    assert.match(loaded.warning, /恢复|损坏/i, name);
+  }
+});
+
+test("bank-incompatible yet structurally valid drafts load for explicit compatibility handling", () => {
+  const unknownIds = Array.from({ length: 25 }, (_, index) => `retired-${index + 1}`);
+  const state = putDraft(createAssessmentState(), createAttempt({
+    id: "retired-paper", assessmentType: "objective", startedAt, questionIds: unknownIds, seed: 3,
+  }));
+  const values = new Map([[STORAGE_KEY, JSON.stringify(state)]]);
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const loaded = loadAssessmentState(storage, completedAt);
+
+  assert.equal(loaded.warning, null);
+  assert.equal(loaded.state.drafts.objective.id, "retired-paper");
+  assert.equal(checkDraftCompatibility(loaded.state.drafts.objective, paperQuestions, QUESTION_BANK_VERSION).compatible, false);
 });
 
 test("quota failures leave the in-memory state intact and expose a save warning", () => {
