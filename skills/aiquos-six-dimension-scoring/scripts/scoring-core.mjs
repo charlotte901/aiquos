@@ -26,7 +26,7 @@ export function validateQuestion(question) {
   if (new Set(question.answer).size !== question.answer.length) throw new Error("重复答案/duplicate answer");
   if (question.answer.some((key) => !optionKeys.includes(key))) throw new Error("答案包含未知选项/answer option missing");
   if (!Array.isArray(question.dimKeys) || question.dimKeys.length === 0) throw new Error("维度不能为空/dimKeys required");
-  if (new Set(question.dimKeys).size !== question.dimKeys.length || question.dimKeys.some((key) => !DIMENSION_KEYS.has(key))) {
+  if (question.dimKeys.some((key) => !DIMENSION_KEYS.has(key))) {
     throw new Error("未知维度/unknown dimension");
   }
   return true;
@@ -127,7 +127,7 @@ export function scoreAssessment(evidence, { totalQuestions }) {
   const overallScore = complete ? Math.round(dimensions.reduce((sum, item) => sum + item.score, 0) / DIMENSIONS.length) : null;
   return {
     scoringVersion: SCORING_VERSION,
-    status: evidence.length === 0 ? "not_started" : evidence.length === totalQuestions ? "completed" : "in_progress",
+    status: evidence.length === 0 ? "not_started" : complete ? "completed" : "in_progress",
     answeredCount: evidence.length,
     totalQuestions,
     dimensions,

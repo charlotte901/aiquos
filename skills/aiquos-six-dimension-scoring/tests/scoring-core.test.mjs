@@ -81,3 +81,30 @@ test("a complete 25-response result uses the equal mean of all six dimensions", 
   assert.equal(result.overallScore, expected);
   assert.equal(result.grade, gradeOverall(expected));
 });
+
+test("full response count without all dimensions remains incomplete", () => {
+  const evidence = Array.from({ length: 25 }, (_, index) => ({
+    questionId: `one-dimension-${index + 1}`,
+    type: "single",
+    difficulty: "medium",
+    dimKeys: ["D1"],
+    selectedKeys: ["A"],
+    credit: 1,
+    answeredAt: `2026-09-14T02:${String(index).padStart(2, "0")}:00.000Z`,
+  }));
+  const result = scoreAssessment(evidence, { totalQuestions: 25 });
+  assert.equal(result.status, "in_progress");
+  assert.equal(result.overallScore, null);
+  assert.equal(result.grade, null);
+  assert.equal(result.dimensions.find((item) => item.key === "D1").evidenceCount, 25);
+  assert.equal(result.dimensions.find((item) => item.key === "D2").score, null);
+});
+
+test("response evidence deduplicates repeated valid dimension keys", () => {
+  const evidence = createResponseEvidence(
+    { ...multi, id: "duplicate-dimensions", dimKeys: ["D2", "D2", "D4"] },
+    ["A", "B", "D"],
+    "2026-09-14T03:00:00.000Z",
+  );
+  assert.deepEqual(evidence.dimKeys, ["D2", "D4"]);
+});
