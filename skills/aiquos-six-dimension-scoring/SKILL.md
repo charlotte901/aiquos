@@ -14,7 +14,7 @@ Use this Skill when an assessment needs deterministic, difficulty-adjusted score
 3. For a JSON response file, run `node scripts/score-responses.mjs <responses.json>`. The CLI normalizes each submitted answer into response evidence and prints the evidence and score result.
 4. Before changing difficulty anchors, the `N(0,1)` prior, multiple-choice partial credit, or the percentage mapping, read [references/scoring-model.md](references/scoring-model.md).
 5. Before connecting a new assessment, read [references/input-output-schema.md](references/input-output-schema.md).
-6. For live Attempt results, completion, and immutable history behavior, read [references/integration-guide.md](references/integration-guide.md).
+6. For version-aware live Attempt results, completion, and immutable history behavior, read [references/integration-guide.md](references/integration-guide.md).
 
 ## Stable contract
 
