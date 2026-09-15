@@ -1,15 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
+  ArrowRight,
+  ArrowClockwise,
+  ArrowCounterClockwise,
+  ArrowDown,
+  ArrowUp,
   BookmarkSimple,
   CaretDown,
   CaretLeft,
   CaretRight,
   ChartBar,
   ChatsCircle,
+  Article,
   GraduationCap,
+  Image,
+  Minus,
+  Plus,
   MagnifyingGlass,
   SignOut,
+  Stack,
   Trophy,
   Users,
 } from "@phosphor-icons/react";
@@ -17,19 +27,20 @@ import { AccountSettings } from "./AccountSettings";
 import { CaseDetail } from "./CaseArchive";
 import { ForumDetail } from "./ForumBoard";
 import { AwakeningReportModal } from "./AwakeningReport";
+import { useAccount } from "./account-store";
 import { PROFILE_DETAILS } from "./profile-layout";
 import { getViewportLayout } from "./layout";
 import {
   removeFavorite,
   useFavorites,
 } from "./favorites-store";
-
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
-const TODAY = new Date(2026, 8, 6);
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
 const CLASS_LIBRARY = [
   {
     id: "ai-class-1",
@@ -77,6 +88,7 @@ const CLASS_SCORE_BINS = [
 const WORKS = [
   {
     id: "city-flow",
+    category: "article",
     title: "城市通勤可视化",
     type: "数据叙事",
     year: "2026.08",
@@ -86,6 +98,7 @@ const WORKS = [
   },
   {
     id: "prompt-playbook",
+    category: "prompt",
     title: "结构化提示词手册",
     type: "AI 方法",
     year: "2026.08",
@@ -95,6 +108,7 @@ const WORKS = [
   },
   {
     id: "campus-guide",
+    category: "article",
     title: "校园 AI 工作坊方案",
     type: "课程设计",
     year: "2026.07",
@@ -104,12 +118,72 @@ const WORKS = [
   },
   {
     id: "weekly-report",
+    category: "prompt",
     title: "周报改写实验",
     type: "写作实验",
     year: "2026.07",
     summary: "同一份口语周报被改写成五个不同受众的版本。",
     detail: "分别面向项目组、管理层、新成员、外部合作者和未来的自己。实验重点是比较事实保留度、语气变化和决策信息的清晰度。",
     result: "沉淀出一份 6 项事实核对清单。",
+  },
+];
+const PROMPT_WORKS = WORKS.filter((work) => work.category === "prompt");
+const ARTICLE_WORKS = WORKS.filter((work) => work.category === "article");
+const WORK_IMAGE_CARDS = [
+  {
+    id: "image-city",
+    title: "城市流动",
+    tag: "Data Story",
+    image: "/assets/cases/21.webp",
+    x: 2,
+    y: 12,
+    width: 32,
+    rotation: -7,
+    z: 2,
+  },
+  {
+    id: "image-prompt",
+    title: "提示词卡组",
+    tag: "Prompt Lab",
+    image: "/assets/cases/7.webp",
+    x: 17,
+    y: 40,
+    width: 22,
+    rotation: 4,
+    z: 4,
+  },
+  {
+    id: "image-workshop",
+    title: "工作坊现场",
+    tag: "Learning",
+    image: "/assets/cases/12.webp",
+    x: 42,
+    y: 7,
+    width: 24,
+    rotation: -3,
+    z: 5,
+  },
+  {
+    id: "image-report",
+    title: "周报改写",
+    tag: "Writing",
+    image: "/assets/cases/17.webp",
+    x: 63,
+    y: 9,
+    width: 34,
+    rotation: 5,
+    z: 3,
+  },
+  {
+    id: "image-collage",
+    title: "图像拼贴",
+    tag: "Visual",
+    image: "/assets/cases/2.webp",
+    x: 62,
+    y: 50,
+    width: 26,
+    rotation: 8,
+    z: 1,
   },
 ];
 const RECORD_OFFSETS = [-11, -5, 0, 2, 6, 13, 21, 34];
@@ -166,6 +240,187 @@ function getClassScoreBins(score) {
   }));
 }
 
+function clampImageCard(card, board) {
+  const angle = Math.abs(card.rotation) * Math.PI / 180;
+  const aspect = card.ratio || 4 / 3;
+  const cardWidth = (card.width / 100) * board.width;
+  const cardHeight = cardWidth / aspect;
+  const boundWidth = Math.abs(cardWidth * Math.cos(angle)) + Math.abs(cardHeight * Math.sin(angle));
+  const boundHeight = Math.abs(cardWidth * Math.sin(angle)) + Math.abs(cardHeight * Math.cos(angle));
+  const marginX = ((boundWidth - cardWidth) / 2 / board.width) * 100;
+  const marginY = ((boundHeight - cardHeight) / 2 / board.height) * 100;
+  const minX = marginX;
+  const minY = marginY;
+  const maxX = Math.max(minX, 100 - card.width - marginX);
+  const maxY = Math.max(minY, 100 - ((cardWidth / aspect) / board.height) * 100 - marginY);
+  const nextX = Number.isFinite(card.x) ? card.x : minX;
+  const nextY = Number.isFinite(card.y) ? card.y : minY;
+
+  return {
+    ...card,
+    x: Math.max(minX, Math.min(maxX, nextX)),
+    y: Math.max(minY, Math.min(maxY, nextY)),
+  };
+}
+
+function fitImageCard(card, board) {
+  const angle = Math.abs(card.rotation) * Math.PI / 180;
+  const aspect = card.ratio || 4 / 3;
+  const verticalFactor = (Math.abs(Math.sin(angle)) + Math.abs(Math.cos(angle))) / aspect;
+  const maxWidthPercent = ((board.height * .78) / board.width) * 100 / verticalFactor;
+
+  return { ...card, width: Math.min(card.width, maxWidthPercent) };
+}
+
+function createImageBoardControls(cards, setCards, drag, setDrag, boardRef) {
+  return {
+    updateImageRatio(id, ratio) {
+      const board = boardRef.current?.getBoundingClientRect();
+      if (!board || !Number.isFinite(ratio) || ratio <= 0) return;
+
+      setCards((current) => current.map((card) => {
+        if (card.id !== id) return card;
+        const fitted = fitImageCard({ ...card, ratio }, board);
+        return clampImageCard(fitted, board);
+      }));
+    },
+    resizeImageCard(id, direction) {
+      const board = boardRef.current?.getBoundingClientRect();
+      if (!board) return;
+
+      setCards((current) => current.map((card) => {
+        if (card.id !== id) return card;
+        const width = Math.max(16, Math.min(46, card.width + (direction === "larger" ? 4 : -4)));
+        const fitted = fitImageCard({ ...card, width }, board);
+        return clampImageCard(fitted, board);
+      }));
+    },
+    beginImageDrag(event, id) {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDrag({
+        id,
+        pointerId: event.pointerId,
+        pointerX: event.clientX,
+        pointerY: event.clientY,
+      });
+    },
+    moveImageDrag(event) {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+
+      const board = boardRef.current?.getBoundingClientRect();
+      if (!board) return;
+
+      const offsetX = ((event.clientX - drag.pointerX) / board.width) * 100;
+      const offsetY = ((event.clientY - drag.pointerY) / board.height) * 100;
+      const dragId = drag.id;
+
+      setCards((current) => current.map((card) => {
+        if (card.id !== dragId) return card;
+        return clampImageCard({ ...card, x: card.x + offsetX, y: card.y + offsetY }, board);
+      }));
+      setDrag({ ...drag, pointerX: event.clientX, pointerY: event.clientY });
+    },
+    endImageDrag(event) {
+      if (drag?.pointerId === event.pointerId) setDrag(null);
+    },
+    rotateImageCard(id, offset) {
+      setCards((current) => current.map((card) => (
+        card.id === id ? { ...card, rotation: card.rotation + offset } : card
+      )));
+    },
+    moveImageLayer(id, direction) {
+      setCards((current) => {
+        const target = current.find((card) => card.id === id);
+        if (!target) return current;
+
+        const nextLayer = direction === "front"
+          ? Math.max(...current.map((card) => card.z)) + 1
+          : Math.min(...current.map((card) => card.z)) - 1;
+
+        return [...current]
+          .map((card) => (card.id === id ? { ...card, z: nextLayer } : card))
+          .sort((left, right) => left.z - right.z)
+          .map((card, index) => ({ ...card, z: index + 1 }));
+      });
+    },
+  };
+}
+
+const FAVORITE_IMAGE_LAYOUTS = [
+  { x: 3, y: 12, width: 31, rotation: -7 },
+  { x: 26, y: 40, width: 23, rotation: 5 },
+  { x: 39, y: 7, width: 27, rotation: -3 },
+  { x: 59, y: 16, width: 34, rotation: 4 },
+  { x: 58, y: 50, width: 27, rotation: 8 },
+  { x: 5, y: 52, width: 22, rotation: 3 },
+  { x: 31, y: 26, width: 25, rotation: -5 },
+];
+
+function getFavoriteImageCards(favorites) {
+  const cards = [];
+  favorites.forEach((favorite) => {
+    const images = favorite.images?.length ? favorite.images : favorite.image ? [favorite.image] : [];
+
+    images.forEach((image, imageIndex) => {
+      const index = cards.length;
+      cards.push({
+        id: `${favorite.id}-${imageIndex}`,
+        image,
+        title: "收藏图片",
+        ...FAVORITE_IMAGE_LAYOUTS[index % FAVORITE_IMAGE_LAYOUTS.length],
+        z: index + 1,
+      });
+    });
+  });
+  return cards;
+}
+
+/** 图片板块摆放按账号持久化：aiquos-board:<板块>:<accountId>。 */
+function loadBoardLayout(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveBoardLayout(key, map) {
+  try {
+    localStorage.setItem(key, JSON.stringify(map));
+  } catch {
+    /* 存储不可用时仅保留内存态 */
+  }
+}
+
+function boardLayoutMap(cards) {
+  const map = {};
+  cards.forEach((card) => {
+    map[card.id] = { x: card.x, y: card.y, width: card.width, rotation: card.rotation, z: card.z, ratio: card.ratio };
+  });
+  return map;
+}
+
+function applyBoardLayout(cards, map) {
+  return cards.map((card) => {
+    const saved = map[card.id];
+    if (!saved) return card;
+    return {
+      ...card,
+      x: Number.isFinite(saved.x) ? saved.x : card.x,
+      y: Number.isFinite(saved.y) ? saved.y : card.y,
+      width: Number.isFinite(saved.width) && saved.width > 0 ? saved.width : card.width,
+      rotation: Number.isFinite(saved.rotation) ? saved.rotation : card.rotation,
+      z: Number.isFinite(saved.z) ? saved.z : card.z,
+      ratio: Number.isFinite(saved.ratio) ? saved.ratio : card.ratio,
+    };
+  });
+}
+
 function useViewportLayout() {
   const [layout, setLayout] = useState(() =>
     getViewportLayout(document.documentElement.clientWidth, window.innerHeight),
@@ -185,20 +440,88 @@ function useViewportLayout() {
 
 export function ProfileDetail({ id, onBack, onHome, busy }) {
   const detail = PROFILE_DETAILS[id];
+  const { accountId } = useAccount();
+  const worksLayoutKey = `aiquos-board:works:${accountId}`;
+  const favoriteLayoutKey = `aiquos-board:favorites:${accountId}`;
   const viewportLayout = useViewportLayout();
   const [cursor, setCursor] = useState({ year: TODAY.getFullYear(), month: TODAY.getMonth() });
   const [selected, setSelected] = useState(TODAY);
   const [openWork, setOpenWork] = useState(0);
+  const [worksTab, setWorksTab] = useState("images");
+  const [imageCards, setImageCards] = useState(() => applyBoardLayout(WORK_IMAGE_CARDS, loadBoardLayout(worksLayoutKey)));
+  const [imageDrag, setImageDrag] = useState(null);
   const [favoriteId, setFavoriteId] = useState(null);
+  const [favoritesView, setFavoritesView] = useState("list");
+  const [openFavorite, setOpenFavorite] = useState(-1);
+  const [favoriteImageCards, setFavoriteImageCards] = useState([]);
+  const [favoriteImageDrag, setFavoriteImageDrag] = useState(null);
+  const [favoriteLayouts, setFavoriteLayouts] = useState(() => loadBoardLayout(favoriteLayoutKey));
   const [favoriteActivity, setFavoriteActivity] = useState({});
   const [activeClass, setActiveClass] = useState(CLASS_LIBRARY[0]);
   const [classQuery, setClassQuery] = useState("");
   const [classSearch, setClassSearch] = useState(null);
   const [classNotice, setClassNotice] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
+  const [recordDrafts, setRecordDrafts] = useState({});
+  const [recordEntries, setRecordEntries] = useState({});
+  const worksBoardRef = useRef(null);
+  const favoriteBoardRef = useRef(null);
   const favorites = useFavorites();
+  const favoriteImageCount = getFavoriteImageCards(favorites).length;
+  useEffect(() => {
+    if (id !== "records") return;
+    setCursor({ year: TODAY.getFullYear(), month: TODAY.getMonth() });
+    setSelected(TODAY);
+  }, [id]);
+  useEffect(() => {
+    if (id !== "favorites" || favoritesView !== "images") return;
+    const nextCards = getFavoriteImageCards(favorites);
+
+    setFavoriteImageCards(nextCards.map((card) => {
+      const saved = favoriteLayouts[card.id];
+      return {
+        ...card,
+        x: Number.isFinite(saved?.x) ? saved.x : card.x,
+        y: Number.isFinite(saved?.y) ? saved.y : card.y,
+        width: Number.isFinite(saved?.width) && saved.width > 0 ? saved.width : card.width,
+        rotation: Number.isFinite(saved?.rotation) ? saved.rotation : card.rotation,
+        z: saved?.z ?? card.z,
+      };
+    }));
+
+    const timer = window.setTimeout(() => {
+      const board = favoriteBoardRef.current?.getBoundingClientRect();
+      if (!board) return;
+
+      setFavoriteImageCards((current) => current.map((card) => (
+        clampImageCard(fitImageCard(card, board), board)
+      )));
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [id, favorites, favoritesView, favoriteLayouts]);
+
+  // 拖拽 / 缩放 / 旋转 / 层级一旦变化就按账号落盘，刷新后自动恢复。
+  useEffect(() => {
+    saveBoardLayout(worksLayoutKey, boardLayoutMap(imageCards));
+  }, [worksLayoutKey, imageCards]);
+
+  useEffect(() => {
+    saveBoardLayout(favoriteLayoutKey, boardLayoutMap(favoriteImageCards));
+  }, [favoriteLayoutKey, favoriteImageCards]);
+
+  // 账号更换（系统换发新 ID）时，重新装载该账号上一次的摆放。
+  useEffect(() => {
+    setImageCards(applyBoardLayout(WORK_IMAGE_CARDS, loadBoardLayout(worksLayoutKey)));
+  }, [worksLayoutKey]);
+
+  useEffect(() => {
+    setFavoriteLayouts(loadBoardLayout(favoriteLayoutKey));
+  }, [favoriteLayoutKey]);
   const selectedKey = dateKey(selected);
   const records = ASSESSMENT_RECORDS[selectedKey] ?? [];
+  const recordDraft = recordDrafts[selectedKey] ?? "";
+  const selectedRecordEntries = recordEntries[selectedKey] ?? [];
   const cells = getCalendarCells(cursor.year, cursor.month);
   const activeFavorite = favorites.find((item) => item.id === favoriteId);
   const activeFavoriteActivity = favoriteActivity[activeFavorite?.id] ?? {
@@ -209,6 +532,43 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
   const updateFavoriteActivity = (itemId, next) => {
     setFavoriteActivity((current) => ({ ...current, [itemId]: next }));
   };
+
+  const updateRecordDraft = (content) => {
+    setRecordDrafts((current) => ({ ...current, [selectedKey]: content }));
+  };
+
+  const addRecordEntry = () => {
+    const content = recordDraft.trim();
+    if (!content) return;
+
+    setRecordEntries((current) => ({
+      ...current,
+      [selectedKey]: [
+        {
+          id: `${Date.now()}`,
+          time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }),
+          content,
+        },
+        ...(current[selectedKey] ?? []),
+      ],
+    }));
+    updateRecordDraft("");
+  };
+
+  const worksImageControls = createImageBoardControls(
+    imageCards,
+    setImageCards,
+    imageDrag,
+    setImageDrag,
+    worksBoardRef,
+  );
+  const favoriteImageControls = createImageBoardControls(
+    favoriteImageCards,
+    setFavoriteImageCards,
+    favoriteImageDrag,
+    setFavoriteImageDrag,
+    favoriteBoardRef,
+  );
 
   const searchClass = (event) => {
     event.preventDefault();
@@ -316,9 +676,10 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
 
   return (
     <main
-      className="profile-detail-screen"
+      className={`profile-detail-screen${id === "favorites" && favoritesView === "images" ? " is-image-view" : ""}`}
       style={{ "--detail-color": detail.color }}
       data-screen={id}
+      data-view={id === "favorites" ? favoritesView : undefined}
       aria-label={`${detail.title}详情`}
     >
       <button
@@ -331,7 +692,7 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
         <ArrowLeft size={20} weight="bold" />
       </button>
       {id === "organizations" && (
-        <section className="profile-detail-panel" aria-label="我的组织">
+        <section className="profile-detail-panel organization-panel" aria-label="我的组织">
           <header className="detail-panel-head organization-head">
             <div className="organization-title">
               <p>MY ORGANIZATION</p>
@@ -433,104 +794,273 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
       )}
 
       {id === "works" && (
-        <section className="profile-detail-panel" aria-label="我的作品">
-          <header className="detail-panel-head">
-            <p>MY WORKS</p>
-            <h1>我的作品</h1>
-            <span>点击展开作品的过程、方法与成果。</span>
-          </header>
-          <div className="work-accordion">
-            {WORKS.map((work, index) => {
-              const isOpen = openWork === index;
-              return (
-                <article key={work.id} className={isOpen ? "is-open" : undefined}>
-                  <button type="button" aria-expanded={isOpen} onClick={() => setOpenWork(isOpen ? -1 : index)}>
+        <section className="works-dashboard" aria-label="我的作品">
+          <aside className="works-rail">
+            <nav className="works-menu" aria-label="作品分类">
+              {[
+                { id: "images", label: "图片", meta: `${WORK_IMAGE_CARDS.length} 件`, icon: Image },
+                { id: "prompts", label: "提示词", meta: `${PROMPT_WORKS.length} 份`, icon: ChatsCircle },
+                { id: "articles", label: "文章", meta: `${ARTICLE_WORKS.length} 篇`, icon: Article },
+              ].map((item) => {
+                const Icon = item.icon;
+                const selected = worksTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={selected ? "is-selected" : undefined}
+                    aria-current={selected ? "true" : undefined}
+                    onClick={() => {
+                      setWorksTab(item.id);
+                      setOpenWork(0);
+                    }}
+                  >
+                    <i>
+                      <Icon size={26} weight="bold" />
+                    </i>
                     <span>
-                      <strong>{work.title}</strong>
-                      <small>{work.type} · {work.year}</small>
+                      <strong>{item.label}</strong>
                     </span>
-                    <CaretDown weight="bold" />
                   </button>
-                  {isOpen && (
-                    <div className="work-detail">
-                      <p>{work.summary}</p>
-                      <p>{work.detail}</p>
-                      <strong>{work.result}</strong>
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+                );
+              })}
+            </nav>
+          </aside>
+
+          <div className="works-canvas">
+            {worksTab === "images" ? (
+              <div className="works-board" ref={worksBoardRef}>
+                {imageCards.map((card) => {
+                  const active = imageDrag?.id === card.id;
+                  return (
+                    <article
+                      key={card.id}
+                      className={`works-board-card${active ? " is-dragging" : ""}`}
+                      style={{
+                        left: `${card.x}%`,
+                        top: `${card.y}%`,
+                        zIndex: card.z,
+                        transform: `rotate(${card.rotation}deg)`,
+                        "--base-width": `${card.width}%`,
+                      }}
+                      onPointerDown={(event) => worksImageControls.beginImageDrag(event, card.id)}
+                      onPointerMove={worksImageControls.moveImageDrag}
+                      onPointerUp={worksImageControls.endImageDrag}
+                      onPointerCancel={worksImageControls.endImageDrag}
+                    >
+                      <img src={card.image} alt="" draggable={false} decoding="async" onLoad={(event) => {
+                        const image = event.currentTarget;
+                        worksImageControls.updateImageRatio(card.id, image.naturalWidth / image.naturalHeight);
+                      }} />
+
+                      <div className="works-card-tools">
+                        <button type="button" aria-label={`缩小图片：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => worksImageControls.resizeImageCard(card.id, "smaller")}>
+                          <Minus size={14} weight="bold" />
+                        </button>
+                        <button type="button" aria-label={`放大图片：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => worksImageControls.resizeImageCard(card.id, "larger")}>
+                          <Plus size={14} weight="bold" />
+                        </button>
+                        <button type="button" aria-label={`逆时针旋转：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => worksImageControls.rotateImageCard(card.id, -8)}>
+                          <ArrowCounterClockwise size={14} weight="bold" />
+                        </button>
+                        <button type="button" aria-label={`顺时针旋转：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => worksImageControls.rotateImageCard(card.id, 8)}>
+                          <ArrowClockwise size={14} weight="bold" />
+                        </button>
+                        <button type="button" aria-label={`置顶图层：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => worksImageControls.moveImageLayer(card.id, "front")}>
+                          <ArrowUp size={14} weight="bold" />
+                        </button>
+                        <button type="button" aria-label={`下移图层：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => worksImageControls.moveImageLayer(card.id, "back")}>
+                          <ArrowDown size={14} weight="bold" />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="work-accordion">
+                {(worksTab === "prompts" ? PROMPT_WORKS : ARTICLE_WORKS).map((work, index) => {
+                  const isOpen = openWork === index;
+                  return (
+                    <article key={work.id} className={isOpen ? "is-open" : undefined}>
+                      <button type="button" aria-expanded={isOpen} onClick={() => setOpenWork(isOpen ? -1 : index)}>
+                        <span>
+                          <strong>{work.title}</strong>
+                          <small>{work.type} · {work.year}</small>
+                        </span>
+                        <CaretDown weight="bold" />
+                      </button>
+                      {isOpen && (
+                        <div className="work-detail">
+                          <p>{work.summary}</p>
+                          <p>{work.detail}</p>
+                          <strong>{work.result}</strong>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       )}
 
       {id === "favorites" && (
         <section className="profile-favorites" aria-label="我的收藏">
-          <div className="favorites-head">
-            <div>
-              <p>MY FAVORITES</p>
-              <h1>我的收藏</h1>
-            </div>
-            <span>{favorites.length} 条内容</span>
+          <div className="favorites-view-switch" role="group" aria-label="收藏显示方式">
+            <button
+              type="button"
+              className={favoritesView === "list" ? "is-selected" : undefined}
+              onClick={() => setFavoritesView("list")}
+            >
+              <BookmarkSimple size={16} weight="bold" />
+              收藏内容
+            </button>
+            <button
+              type="button"
+              className={favoritesView === "images" ? "is-selected" : undefined}
+              onClick={() => setFavoritesView("images")}
+            >
+              <Stack size={16} weight="bold" />
+              收藏图片
+            </button>
           </div>
-          {favorites.length === 0 ? (
-            <div className="favorites-empty">
-              <BookmarkSimple size={28} />
-              <strong>还没有收藏</strong>
-              <p>打开 Cases 或 Forum 详情页，点击“收藏”按钮，内容会显示在这里。</p>
-            </div>
-          ) : (
-            <div className="forum-masonry favorites-masonry">
-              {favorites.map((item) => (
-                <article
-                  key={item.id}
-                  className="forum-card favorite-card"
-                  style={{
-                    "--card-color": item.color,
-                    "--card-ink": item.ink,
-                    "--card-line": item.line,
-                    "--card-accent": item.accent,
-                  }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`展开收藏：${item.title}`}
-                  onClick={() => setFavoriteId(item.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setFavoriteId(item.id);
-                    }
-                  }}
-                >
-                  <span className="forum-card-media" aria-hidden="true">
-                    <img src={item.image} alt="" loading="lazy" decoding="async" draggable="false" />
-                  </span>
-                  <div className="forum-card-body">
-                    <span className="forum-tag">{item.tag}</span>
-                    <h3 className="forum-card-title">{item.title}</h3>
-                    <p className="forum-card-summary">{item.summary}</p>
+
+          {favoritesView === "images" ? (
+            favoriteImageCount === 0 ? (
+              <div className="favorites-image-empty">
+                <Stack size={34} weight="bold" />
+                <strong>还没有收藏图片</strong>
+                <p>收藏带图片的论坛或案例后，图片会出现在这里。</p>
+              </div>
+            ) : (
+              <div className="favorites-image-dashboard">
+                <div className="favorites-canvas">
+                  <div className="works-board favorites-board" ref={favoriteBoardRef}>
+                    {favoriteImageCards.map((card) => {
+                      const active = favoriteImageDrag?.id === card.id;
+                      return (
+                        <article
+                          key={card.id}
+                          className={`works-board-card${active ? " is-dragging" : ""}`}
+                          style={{
+                            left: `${card.x}%`,
+                            top: `${card.y}%`,
+                            zIndex: card.z,
+                            transform: `rotate(${card.rotation}deg)`,
+                            "--base-width": `${card.width}%`,
+                          }}
+                          onPointerDown={(event) => favoriteImageControls.beginImageDrag(event, card.id)}
+                          onPointerMove={favoriteImageControls.moveImageDrag}
+                          onPointerUp={favoriteImageControls.endImageDrag}
+                          onPointerCancel={favoriteImageControls.endImageDrag}
+                        >
+                          <img
+                            src={card.image}
+                            alt=""
+                            draggable={false}
+                            decoding="async"
+                            onLoad={(event) => {
+                              const image = event.currentTarget;
+                              favoriteImageControls.updateImageRatio(card.id, image.naturalWidth / image.naturalHeight);
+                            }}
+                          />
+
+                          <div className="works-card-tools">
+                            <button type="button" aria-label={`缩小图片：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => favoriteImageControls.resizeImageCard(card.id, "smaller")}>
+                              <Minus size={14} weight="bold" />
+                            </button>
+                            <button type="button" aria-label={`放大图片：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => favoriteImageControls.resizeImageCard(card.id, "larger")}>
+                              <Plus size={14} weight="bold" />
+                            </button>
+                            <button type="button" aria-label={`逆时针旋转：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => favoriteImageControls.rotateImageCard(card.id, -8)}>
+                              <ArrowCounterClockwise size={14} weight="bold" />
+                            </button>
+                            <button type="button" aria-label={`顺时针旋转：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => favoriteImageControls.rotateImageCard(card.id, 8)}>
+                              <ArrowClockwise size={14} weight="bold" />
+                            </button>
+                            <button type="button" aria-label={`置顶图层：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => favoriteImageControls.moveImageLayer(card.id, "front")}>
+                              <ArrowUp size={14} weight="bold" />
+                            </button>
+                            <button type="button" aria-label={`下移图层：${card.title}`} onPointerDown={(event) => event.stopPropagation()} onClick={() => favoriteImageControls.moveImageLayer(card.id, "back")}>
+                              <ArrowDown size={14} weight="bold" />
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
-                  <footer className="forum-card-meta">
-                    <strong>{item.author}</strong>
-                    <time>{item.createdAt}</time>
-                    <span>评论量<b>{item.comments.length.toLocaleString("zh-CN")}</b></span>
-                    <span>点赞量<b>{item.likes.toLocaleString("zh-CN")}</b></span>
-                    <button
-                      type="button"
-                      className="favorite-remove"
-                      aria-label={`取消收藏：${item.title}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        removeFavorite(item.id);
-                      }}
-                    >
-                      移除
-                    </button>
-                  </footer>
-                </article>
-              ))}
-            </div>
+                </div>
+              </div>
+            )
+          ) : (
+            <>
+              <div className="favorites-head">
+                <div>
+                  <p>MY FAVORITES</p>
+                  <h1>我的收藏</h1>
+                </div>
+                <span>{favorites.length} 条内容</span>
+              </div>
+
+              {favorites.length === 0 ? (
+                <div className="favorites-empty">
+                  <BookmarkSimple size={28} />
+                  <strong>还没有收藏</strong>
+                  <p>打开 Cases 或 Forum 详情页，点击“收藏”按钮，内容会显示在这里。</p>
+                </div>
+              ) : (
+                <div className="favorites-accordion">
+                  {favorites.map((item, index) => {
+                    const isOpen = openFavorite === index;
+                    return (
+                      <article key={item.id} className={isOpen ? "is-open" : undefined}>
+                        <div className="favorite-accordion-head">
+                          <button
+                            type="button"
+                            className="favorite-expand"
+                            aria-expanded={isOpen}
+                            onClick={() => setOpenFavorite(isOpen ? -1 : index)}
+                          >
+                            <span>
+                              <strong>{item.title}</strong>
+                              <small>{item.tag} · {item.comments.length} 条评论</small>
+                            </span>
+                            <CaretDown weight="bold" />
+                          </button>
+                          <button
+                            type="button"
+                            className="favorite-open"
+                            aria-label={`进入${item.kind === "case" ? "案例" : "论坛"}详情：${item.title}`}
+                            onClick={() => setFavoriteId(item.id)}
+                          >
+                            <ArrowRight size={19} weight="bold" />
+                          </button>
+                        </div>
+
+                        {isOpen && (
+                          <div className="favorite-accordion-body">
+                            <p>{item.summary}</p>
+                            <footer>
+                              <span>{item.author} · {item.createdAt}</span>
+                              <button
+                                type="button"
+                                className="favorite-remove"
+                                aria-label={`取消收藏：${item.title}`}
+                                onClick={() => removeFavorite(item.id)}
+                              >
+                                移除
+                              </button>
+                            </footer>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </section>
       )}
@@ -564,10 +1094,39 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
                     onClick={() => setSelected(date)}
                   >
                     <span>{date.getDate()}</span>
-                    {ASSESSMENT_RECORDS[key] && <i className="has-record" aria-hidden="true" />}
+                    {(ASSESSMENT_RECORDS[key] || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
                   </button>
                 );
               })}
+            </div>
+            <div className="record-composer">
+              <label htmlFor="record-composer-input">我的记录</label>
+              <textarea
+                id="record-composer-input"
+                value={recordDraft}
+                onChange={(event) => updateRecordDraft(event.target.value)}
+                placeholder={`写给 ${selected.getMonth() + 1}月${selected.getDate()}日的一段记录...`}
+                rows={3}
+              />
+              <div className="record-composer-actions">
+                {selectedRecordEntries.length > 0 && (
+                  <span>{selectedRecordEntries.length} 条记录</span>
+                )}
+                <button type="button" onClick={addRecordEntry} disabled={!recordDraft.trim()}>
+                  <Plus size={14} weight="bold" />
+                  保存记录
+                </button>
+              </div>
+              {selectedRecordEntries.length > 0 && (
+                <ul aria-label="我的记录列表">
+                  {selectedRecordEntries.map((entry) => (
+                    <li key={entry.id}>
+                      <small>{entry.time}</small>
+                      <p>{entry.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
           <div className="records-panel">

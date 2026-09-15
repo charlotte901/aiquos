@@ -160,7 +160,7 @@
   display: flex;
   flex-direction: column;
   width: min(66.8vw, 1120px);
-  height: min(67.2dvh, 632px);
+  height: 80dvh;
   margin: clamp(104px, 13vh, 154px) auto 0;
   padding: clamp(40px, 4.15vw, 52px) clamp(40px, 3.4vw, 56px) clamp(28px, 3.4vw, 40px);
   border-radius: clamp(36px, 3.5vw, 52px);
@@ -174,7 +174,7 @@
 .task-heading { display: flex; align-items: center; gap: 10px; color: #3e4c61; font-size: 14px; font-weight: 700; }
 .task-heading > svg { width: 21px; height: 21px; color: var(--assessment-color); }
 .task-heading strong { margin-left: auto; font-size: 12px; }
-.task-body { display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, 2.1vh, 25px); }
+.task-body { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, 2.1vh, 25px); }
 .task-body { animation: task-content-in 380ms 110ms cubic-bezier(.16,1,.3,1) both; }
 .task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(22px, 2.1vw, 29px); line-height: 1.2; letter-spacing: -.045em; }
 .answer-options { display: grid; gap: 8px; width: 100%; margin-top: clamp(15px, 2vh, 21px); }
@@ -278,15 +278,17 @@
 .story-line {
   width: min(100%, 860px);
   margin-top: 16px;
-  padding: 18px 20px;
+  padding: 14px 18px;
   border: 1.5px solid color-mix(in srgb, var(--assessment-color) 17%, #fff);
   border-radius: 26px;
   background: color-mix(in srgb, var(--assessment-soft) 43%, #fff);
+  cursor: pointer;
+  pointer-events: auto;
 }
 .story-line.is-inline { margin-top: 10px; padding: 14px 18px; }
 .story-line.is-inline p {
   min-height: 0;
-  max-height: none;
+  max-height: 4.6em;
   margin: 7px 0 0;
   line-height: 1.55;
 }
@@ -300,8 +302,8 @@
   font-weight: 800;
 }
 .story-line p {
-  min-height: 3.2em;
-  max-height: 8.2em;
+  min-height: 0;
+  max-height: 4.6em;
   margin: 11px 0 15px;
   overflow-y: auto;
   scrollbar-width: none;
@@ -325,14 +327,21 @@
   --assessment-soft: #e9f2ff;
   --assessment-deep: #155cca;
   position: fixed;
-  inset: 0;
+  left: 50%;
+  bottom: clamp(32px, 6dvh, 52px);
+  width: min(66.8vw, 1120px);
+  transform: translateX(-50%);
   z-index: 7;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
-  padding: clamp(58px, 7vh, 90px) clamp(22px, 3.5vw, 60px) 24px;
+  padding: 0 clamp(40px, 3.4vw, 56px) clamp(24px, 3vh, 34px);
   background: transparent;
-  cursor: pointer;
+  pointer-events: none;
+}
+.comprehensive-dialogue-screen .story-line {
+  background: #fff;
+  box-shadow: 0 10px 22px #0000001a, 0 26px 64px color-mix(in srgb, var(--assessment-color) 26%, #00000026);
 }
 .story-hint {
   display: block;
@@ -451,12 +460,12 @@
 @media (min-width: 841px) {
   .task-flow .task-panel {
     position: absolute;
-    top: clamp(270px, 30dvh, 310px);
-    bottom: clamp(28px, 3.8dvh, 36px);
+    top: 16dvh;
+    bottom: auto;
     left: 0;
     right: 0;
     width: min(66.8vw, 1120px);
-    height: auto;
+    height: 80dvh;
     margin: 0 auto;
     transform: none;
     animation: none;
@@ -472,29 +481,29 @@
 .task-composer input { min-width: 0; flex: 1; border: 0; outline: 0; color: #263243; background: transparent; }
 .task-composer button, .agent-send { display: grid; place-items: center; width: 56px; height: 56px; margin-right: 7px; border-radius: 50%; color: #fff; background: var(--assessment-color); }
 .task-composer button svg, .agent-send svg { width: 25px; height: 25px; }
-.agent-brief { max-width: 720px; margin: 7px 0 0; color: #687382; font-size: 14px; line-height: 1.45; }
+.agent-brief { max-width: 720px; margin: 7px 0 0; color: #687382; font-size: 16px; line-height: 1.45; }
 .agent-workspace { display: grid; grid-template-columns: minmax(232px, .62fr) minmax(0, 1.1fr); flex: 1; min-height: 0; gap: 16px; margin-top: 15px; }
 .agent-checklist, .agent-canvas { min-height: 0; padding: 17px; border: 2px solid color-mix(in srgb, var(--assessment-color) 23%, #fff); border-radius: 23px; background: #fff; overflow: auto; }
 .agent-checklist { display: flex; flex-direction: column; gap: 11px; }
-.agent-section-heading { display: flex; align-items: center; gap: 7px; color: var(--assessment-color); font-size: 12px; font-weight: 800; letter-spacing: .03em; }
+.agent-section-heading { display: flex; align-items: center; gap: 7px; color: var(--assessment-color); font-size: 14px; font-weight: 800; letter-spacing: .03em; }
 .agent-section-heading svg { width: 18px; height: 18px; }
 .agent-checklist ul { display: grid; gap: 7px; padding: 0; margin: 0; list-style: none; }
-.agent-checklist li { position: relative; padding-left: 13px; color: #405061; font-size: 12px; font-weight: 700; line-height: 1.35; }
+.agent-checklist li { position: relative; padding-left: 13px; color: #405061; font-size: 14px; font-weight: 700; line-height: 1.35; }
 .agent-checklist li::before { content: ""; position: absolute; left: 0; top: .49em; width: 5px; height: 5px; border-radius: 50%; background: var(--assessment-color); }
-.source-toggle { width: max-content; padding: 0; color: var(--assessment-color); background: transparent; font-size: 12px; font-weight: 800; }
-.source-copy { margin: 0; color: #687382; font-size: 11px; line-height: 1.55; }
-.agent-canvas { display: flex; flex-direction: column; gap: 11px; color: color-mix(in srgb, var(--assessment-color) 44%, #fff); font-size: 13px; font-weight: 700; }
+.source-toggle { width: max-content; padding: 0; color: var(--assessment-color); background: transparent; font-size: 14px; font-weight: 800; }
+.source-copy { margin: 0; color: #687382; font-size: 13px; line-height: 1.55; white-space: pre-wrap; }
+.agent-canvas { display: flex; flex-direction: column; gap: 11px; color: color-mix(in srgb, var(--assessment-color) 44%, #fff); font-size: 14px; font-weight: 700; }
 .agent-empty { display: grid; flex: 1; place-content: center; justify-items: center; gap: 9px; min-height: 0; color: color-mix(in srgb, var(--assessment-color) 48%, #fff); text-align: center; line-height: 1.45; }
 .agent-empty svg { width: 26px; height: 26px; }
-.agent-output { margin: 0; overflow: auto; color: #3f4b59; font-size: 13px; line-height: 1.62; font-weight: 600; display: grid; gap: 8px; align-content: start; }
+.agent-output { margin: 0; overflow: auto; color: #3f4b59; font-size: 15px; line-height: 1.62; font-weight: 600; display: grid; gap: 8px; align-content: start; }
 .agent-output strong { font-weight: 800; }
 .agent-output code { padding: 1px 6px; border-radius: 6px; background: #f1f3f6; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .agent-output .md-heading { margin: 0; font-weight: 800; font-size: 1.05em; }
 .agent-output .md-quote { margin: 0; color: #687382; }
 .agent-image { width: 100%; min-height: 0; flex: 1; object-fit: cover; border-radius: 14px; background: var(--assessment-soft); }
-.agent-error { margin: 7px 0 -2px; color: #d7462e; font-size: 12px; font-weight: 700; }
+.agent-error { margin: 7px 0 -2px; color: #d7462e; font-size: 13px; font-weight: 700; }
 .agent-composer { width: 100%; min-height: 62px; margin-top: 14px; padding-left: 20px; background: #fff; }
-.agent-composer textarea { width: 100%; height: 38px; min-height: 38px; resize: none; border: 0; outline: 0; color: #263243; background: transparent; line-height: 1.5; padding-top: 9px; }
+.agent-composer textarea { width: 100%; height: 38px; min-height: 38px; resize: none; border: 0; outline: 0; color: #263243; background: transparent; font-size: 15px; line-height: 1.5; padding-top: 9px; }
 .agent-send { flex: 0 0 auto; border: 0; }
 .agent-send:disabled { color: #fff; background: #dfe4e7; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
@@ -535,12 +544,12 @@
   .level-map, .task-panel { width: 100%; min-height: 0; height: auto; margin-top: 90px; border-radius: 30px; }
   .task-flow .task-panel {
     position: absolute;
-    top: clamp(210px, 26dvh, 260px);
-    bottom: 24px;
+    top: 16dvh;
+    bottom: auto;
     left: 0;
     right: 0;
     width: 100%;
-    height: auto;
+    height: 80dvh;
     margin: 0;
     transform: none;
     animation: none;
@@ -549,7 +558,7 @@
     animation: none;
     transform: none;
   }
-  .comprehensive-dialogue-screen { padding-top: 56px; }
+  .comprehensive-dialogue-screen { width: 100%; padding: 0 22px 34px; }
   .level-map { padding: 38px 24px 52px; }
   .map-path { grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 0; margin-top: 54px; }
   .map-path::before { left: 7%; right: 7%; }
@@ -575,3 +584,62 @@
 }
 .thinking-hint { display: inline-flex; align-items: center; gap: 9px; color: #687382; font-size: .94em; font-weight: 600; }
 .thinking-hint .reply-spinner { width: 17px; height: 17px; color: var(--assessment-color); }
+
+/* === 对话进行时：只有对话框保持清晰，其余全部虚化为背景 === */
+.task-flow .flow-wordmark,
+.task-flow .level-progress,
+.task-flow .task-panel .assessment-guides,
+.task-flow .task-heading,
+.task-flow .task-body > * {
+  transition: filter 320ms ease, opacity 320ms ease;
+}
+
+/* 综合测评剧情对话（开头/结尾）：按 data-phase 触发 */
+.assessment-flow:has(.task-body[data-phase="opening"]) .flow-wordmark,
+.assessment-flow:has(.task-body[data-phase="ending"]) .flow-wordmark,
+.assessment-flow:has(.task-body[data-phase="opening"]) .level-progress,
+.assessment-flow:has(.task-body[data-phase="ending"]) .level-progress,
+.assessment-flow:has(.task-body[data-phase="opening"]) .task-panel .assessment-guides,
+.assessment-flow:has(.task-body[data-phase="ending"]) .task-panel .assessment-guides,
+.assessment-flow:has(.task-body[data-phase="opening"]) .task-heading,
+.assessment-flow:has(.task-body[data-phase="ending"]) .task-heading,
+.assessment-flow:has(.task-body[data-phase="opening"]) .task-body > :not(.comprehensive-dialogue-screen),
+.assessment-flow:has(.task-body[data-phase="ending"]) .task-body > :not(.comprehensive-dialogue-screen) {
+  filter: blur(7px) saturate(.85);
+  opacity: .75;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-flow .flow-wordmark,
+  .task-flow .level-progress,
+  .task-flow .task-panel .assessment-guides,
+  .task-flow .task-heading,
+  .task-flow .task-body > * {
+    transition: none;
+  }
+}
+
+/* === v2：剧情答题框本体也虚化（磨砂玻璃），向导图滤镜组合修正 === */
+.assessment-flow:has(.task-body[data-phase="opening"]) .task-panel .assessment-guides,
+.assessment-flow:has(.task-body[data-phase="ending"]) .task-panel .assessment-guides {
+  filter: blur(6px) saturate(.85) brightness(0) invert(1);
+}
+
+.assessment-flow:has(.task-body[data-phase="opening"]) .task-panel,
+.assessment-flow:has(.task-body[data-phase="ending"]) .task-panel {
+  background: color-mix(in srgb, #ffffff 45%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(.9);
+  backdrop-filter: blur(12px) saturate(.9);
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--assessment-color) 16%, #00000018);
+}
+
+/* === 对话框字体放大 === */
+.conversation-task .chat-bubble p { font-size: clamp(19px, 1.45vw, 23px); line-height: 1.7; }
+.conversation-task .chat-bubble.is-feedback p { font-size: clamp(19px, 1.45vw, 23px); }
+.conversation-task .chat-bubble span { font-size: 14px; }
+.conversation-task .task-composer input { font-size: 20px; }
+.story-line p { font-size: 19px; line-height: 1.75; }
+.story-eyebrow { font-size: 14px; }
+.story-hint { font-size: 14px; }

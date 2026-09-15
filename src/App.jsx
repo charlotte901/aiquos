@@ -303,11 +303,11 @@ export function App({
             <div className="home-hero-art"><Brand /></div>
             <div className="intro-copy">
               <h2>
-                AI 时代
+                AI 时代，
                 <br />
                 你的实力
                 <br />
-                到哪一步
+                到哪一步？
               </h2>
               <p>
                 用真实任务，检验你的 AI 能力。

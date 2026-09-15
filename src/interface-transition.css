@@ -217,7 +217,7 @@ body:has(.site-experience[data-view="login"]) {
 }
 
 .account-settings-layout {
-  width: min(840px, calc(100% - 40px));
+  width: min(1440px, calc(100% - 64px));
   margin: 0 auto;
   padding: 112px 0 48px;
 }

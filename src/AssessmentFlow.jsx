@@ -24,8 +24,6 @@ import {
   ASSESSMENT_THEMES,
   CONVERSATIONS,
   getStageMode,
-  PRACTICAL_TASKS,
-  QUESTIONS,
   STAGE_LABELS,
 } from "./assessment-flow";
 import { generateArkImage, streamDeepSeek } from "./deepseek";
@@ -136,21 +134,205 @@ function TaskHeader({ id, stage }) {
   return <div className="task-heading"><Icon weight="fill" /><span>{`${theme.title} · 第 ${stage} 关`}</span><strong>{names[mode]}</strong></div>;
 }
 
-function ObjectiveTask({ stage, onComplete }) {
-  const [choice, setChoice] = useState(null);
-  const question = QUESTIONS[stage - 1];
-  return <div className="task-body objective-task">
-    <h2>{question.prompt}</h2>
-    <div className="answer-options" role="radiogroup" aria-label="答案选项">
-      {question.options.map((option, index) => (
-        <button key={option} type="button" role="radio" aria-checked={choice === index} className={choice === index ? "is-selected" : ""} onClick={() => setChoice(index)}>
-          <span>{String.fromCharCode(65 + index)}</span>{option}
-          {choice === index && <Check weight="bold" />}
-        </button>
-      ))}
+function getStorySpeaker(level, who) {
+  return who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你";
+}
+
+function TaskStoryDialogue({ level, phase, lines, lineIndex, onAdvance }) {
+  const line = lines[lineIndex];
+  return (
+    <div
+      className="comprehensive-dialogue-screen"
+      role="button"
+      tabIndex={0}
+      aria-label={phase === "opening" ? "继续下一句对话" : "继续结尾对话"}
+      onClick={onAdvance}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onAdvance();
+        }
+      }}
+    >
+      <div className="story-line">
+        <div className="story-eyebrow">
+          <span>{getStorySpeaker(level, line.who)}</span>
+          <strong>{lineIndex + 1} / {lines.length}</strong>
+        </div>
+        <p>{line.text}</p>
+        <span className="story-hint">
+          {phase === "ending" && lineIndex === lines.length - 1 ? "点击完成本关 ▾" : "点击继续 ▾"}
+        </span>
+      </div>
     </div>
-    <TaskAction disabled={choice === null} onClick={onComplete} label="提交答案" />
-  </div>;
+  );
+}
+
+function ObjectiveTask({ stage, onComplete }) {
+  const taskRef = useRef(null);
+  const level = getComprehensiveLevel(stage);
+  const [questions, setQuestions] = useState([]);
+  const [questionStatus, setQuestionStatus] = useState("loading");
+  const [reloadToken, setReloadToken] = useState(0);
+  const [selected, setSelected] = useState([]);
+  const [result, setResult] = useState(null);
+  const [phase, setPhase] = useState("opening");
+  const [lineIndex, setLineIndex] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const levelId = getComprehensiveLevel(stage).id;
+  const question = questions[questionIndex];
+  const storyLines = phase === "ending" ? level.ending : level.opening;
+
+  const advanceStory = () => {
+    if (lineIndex < storyLines.length - 1) {
+      setLineIndex((current) => current + 1);
+      return;
+    }
+    if (phase === "opening") {
+      setPhase("quiz");
+      return;
+    }
+    onComplete();
+  };
+
+  useEffect(() => {
+    let active = true;
+    setQuestionStatus("loading");
+    fetch(`/api/objective-questions?levelId=${encodeURIComponent(levelId)}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("题目加载失败。");
+        const payload = await response.json();
+        if (!Array.isArray(payload.questions) || payload.questions.length === 0) {
+          throw new Error("题目数据不完整。");
+        }
+        if (!active) return;
+        setQuestions(payload.questions);
+        setQuestionStatus("ready");
+      })
+      .catch(() => {
+        if (active) setQuestionStatus("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [levelId, reloadToken]);
+
+  const answer = (keys) => {
+    if (result || !question) return;
+    setResult(judgeComprehensiveAnswer(question, [...new Set(keys)]));
+  };
+
+  const nextQuestion = () => {
+    if (questionIndex === questions.length - 1) {
+      setPhase("ending");
+      setLineIndex(0);
+      return;
+    }
+    setQuestionIndex((current) => current + 1);
+    setSelected([]);
+    setResult(null);
+  };
+
+  const toggleMulti = (key) => {
+    if (result) return;
+    setSelected((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]);
+  };
+
+  useEffect(() => {
+    if (!result) return;
+    const timer = window.setTimeout(() => {
+      const task = taskRef.current;
+      const feedback = task?.querySelector(".quiz-feedback");
+      if (!task || !feedback) return;
+      const target = feedback.getBoundingClientRect().top
+        - task.getBoundingClientRect().top
+        + task.scrollTop
+        - 26;
+      task.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+    }, 40);
+    return () => window.clearTimeout(timer);
+  }, [result]);
+
+  if (!question) {
+    return <div className="task-body objective-task">
+      <div className="agent-empty quiz-loading">
+        {questionStatus === "error" ? (
+          <>
+            <span>题目加载失败。</span>
+            <button className="source-toggle" type="button" onClick={() => setReloadToken((current) => current + 1)}>重新加载</button>
+          </>
+        ) : (
+          <>
+            <CircleNotch className="reply-spinner" weight="bold" />
+            <span>正在准备题目…</span>
+          </>
+        )}
+      </div>
+    </div>;
+  }
+
+  const isMulti = question.type === "multi";
+  const isSelected = (key) => selected.includes(key);
+  const optionState = (key) => {
+    if (!result) return isSelected(key) ? " is-selected" : "";
+    return question.answer.includes(key)
+      ? " is-correct"
+      : isSelected(key) ? " is-wrong" : "";
+  };
+
+  return (
+    <div ref={taskRef} className="task-body objective-task comprehensive-task" data-phase={phase}>
+      {phase !== "quiz" && (
+        <TaskStoryDialogue
+          level={level}
+          phase={phase}
+          lines={storyLines}
+          lineIndex={lineIndex}
+          onAdvance={advanceStory}
+        />
+      )}
+
+      <h2>{question.q}</h2>
+      <p className="quiz-brief">
+        第 {questionIndex + 1} / {questions.length} 题
+        <i aria-hidden="true">•</i>
+        {question.dims.join(" · ")}
+      </p>
+      <div className="answer-options" role={isMulti ? "group" : "radiogroup"} aria-label="答案选项">
+        {question.options.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            role={isMulti ? "checkbox" : "radio"}
+            aria-checked={isSelected(option.key)}
+            disabled={Boolean(result)}
+            className={`comprehensive-option${optionState(option.key)}`}
+            onClick={() => isMulti ? toggleMulti(option.key) : answer([option.key])}
+          >
+            <span>{option.key}</span>
+            {option.text}
+            {(isSelected(option.key) || (result && question.answer.includes(option.key))) && <Check weight="bold" />}
+          </button>
+        ))}
+      </div>
+
+      {result && (
+        <div className={`quiz-feedback is-${result.correct ? "correct" : "wrong"}`} role="status">
+          <strong>{result.correct ? "回答正确" : result.partialCorrect ? "部分正确" : "回答不正确"}</strong>
+          <p className="quiz-feedback-answer"><b>正确答案：</b>{result.answerText}</p>
+          <p className="quiz-feedback-analysis"><b>解析：</b>{question.analysis}</p>
+          <div>{question.dims.map((dim) => <span key={dim}>{dim}</span>)}</div>
+          {result.correct && <span className="star-pop" aria-hidden="true">★</span>}
+        </div>
+      )}
+
+      <div className="comprehensive-actions">
+        {isMulti && !result
+          ? <TaskAction disabled={selected.length === 0} onClick={() => answer(selected)} label="提交答案" variant="comprehensive" />
+          : result ? <TaskAction onClick={nextQuestion} label={questionIndex === questions.length - 1 ? "完成本关" : "继续"} variant="comprehensive" /> : null}
+      </div>
+    </div>
+  );
 }
 
 function ConversationTask({ stage, onComplete }) {
@@ -241,16 +423,81 @@ function ConversationTask({ stage, onComplete }) {
 }
 
 function PracticalTask({ stage, onComplete }) {
+  const level = getComprehensiveLevel(stage);
+  const [tasks, setTasks] = useState([]);
+  const [taskStatus, setTaskStatus] = useState("loading");
+  const [reloadToken, setReloadToken] = useState(0);
   const [draft, setDraft] = useState("");
   const [showSource, setShowSource] = useState(false);
   const [output, setOutput] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState("");
-  const task = PRACTICAL_TASKS[stage - 1];
+  const [phase, setPhase] = useState("opening");
+  const [lineIndex, setLineIndex] = useState(0);
+  const levelId = getComprehensiveLevel(stage).id;
+  const task = tasks[0];
+  const storyLines = phase === "ending" ? level.ending : level.opening;
+
+  const advanceStory = () => {
+    if (lineIndex < storyLines.length - 1) {
+      setLineIndex((current) => current + 1);
+      return;
+    }
+    if (phase === "opening") {
+      setPhase("quiz");
+      return;
+    }
+    onComplete();
+  };
+
+  useEffect(() => {
+    let active = true;
+    setTaskStatus("loading");
+    fetch(`/api/practical-tasks?levelId=${encodeURIComponent(levelId)}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("任务加载失败。");
+        const payload = await response.json();
+        if (!Array.isArray(payload.tasks) || payload.tasks.length === 0) {
+          throw new Error("任务数据不完整。");
+        }
+        if (!active) return;
+        setTasks(payload.tasks);
+        setTaskStatus("ready");
+      })
+      .catch(() => {
+        if (active) setTaskStatus("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [levelId, reloadToken]);
+
+  if (!task) {
+    return <div className="task-body practical-task">
+      <div className="agent-empty quiz-loading">
+        {taskStatus === "error" ? (
+          <>
+            <span>任务加载失败。</span>
+            <button className="source-toggle" type="button" onClick={() => setReloadToken((current) => current + 1)}>重新加载</button>
+          </>
+        ) : (
+          <>
+            <CircleNotch className="reply-spinner" weight="bold" />
+            <span>正在准备实操任务…</span>
+          </>
+        )}
+      </div>
+    </div>;
+  }
+
   const isImageTask = task.outputType === "image";
   const run = async () => {
-    if (output || imageUrl) return onComplete();
+    if (output || imageUrl) {
+      setPhase("ending");
+      setLineIndex(0);
+      return;
+    }
     const prompt = draft.trim();
     if (!prompt || isRunning) return;
     setError("");
@@ -275,14 +522,23 @@ function PracticalTask({ stage, onComplete }) {
       setIsRunning(false);
     }
   };
-  return <div className="task-body practical-task">
+  return <div className="task-body practical-task" data-phase={phase}>
+    {phase !== "quiz" && (
+      <TaskStoryDialogue
+        level={level}
+        phase={phase}
+        lines={storyLines}
+        lineIndex={lineIndex}
+        onAdvance={advanceStory}
+      />
+    )}
     <h2>{task.title}</h2>
     <p className="agent-brief">{task.goal}</p>
     <div className="agent-workspace">
       <section className="agent-checklist" aria-label="任务要求">
         <div className="agent-section-heading"><ClipboardText weight="fill" /><span>交付标准</span></div>
         <ul>{task.requirements.map((item) => <li key={item}>{item}</li>)}</ul>
-        <button className="source-toggle" type="button" onClick={() => setShowSource((value) => !value)}>{showSource ? "收起原始汇报" : "查看原始口语汇报"}</button>
+        <button className="source-toggle" type="button" onClick={() => setShowSource((value) => !value)}>{showSource ? "收起原始素材" : "查看原始素材"}</button>
         {showSource && <p className="source-copy">{task.source}</p>}
       </section>
       <section className="agent-canvas" aria-live="polite" aria-label="Agent 工作区域">
