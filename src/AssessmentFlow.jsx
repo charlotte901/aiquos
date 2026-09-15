@@ -331,6 +331,7 @@ function ComprehensiveTask({
   onSelectComprehensiveQuestion,
   onComprehensiveAnswer,
   onComprehensiveProgress,
+  onRecordComprehensiveOutcome,
 }) {
   const level = getComprehensiveLevel(stage);
   const initialState = useRef(null);
@@ -399,13 +400,17 @@ function ComprehensiveTask({
       : answerResult.partialCorrect
         ? "partial"
         : "wrong";
-    onComprehensiveAnswer?.({
-      question,
-      selectedKeys,
-      adaptiveOutcome: outcome,
-      stage,
-      questionIndex,
-    });
+    if (onComprehensiveAnswer) {
+      onComprehensiveAnswer({
+        question,
+        selectedKeys,
+        adaptiveOutcome: outcome,
+        stage,
+        questionIndex,
+      });
+    } else {
+      onRecordComprehensiveOutcome?.(outcome);
+    }
     setPhase("feedback");
     setSelected(selectedKeys);
     setResult(answerResult);
@@ -581,6 +586,7 @@ export function AssessmentTask({
   onSelectComprehensiveQuestion,
   onComprehensiveAnswer,
   onComprehensiveProgress,
+  onRecordComprehensiveOutcome,
   busy,
 }) {
   const theme = ASSESSMENT_THEMES[id];
@@ -604,6 +610,7 @@ export function AssessmentTask({
           onSelectComprehensiveQuestion={onSelectComprehensiveQuestion}
           onComprehensiveAnswer={onComprehensiveAnswer}
           onComprehensiveProgress={onComprehensiveProgress}
+          onRecordComprehensiveOutcome={onRecordComprehensiveOutcome}
         />
         : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>

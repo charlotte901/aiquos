@@ -43,9 +43,9 @@ test("the comprehensive task restores draft location and emits answer and progre
   assert.match(source, /attempt\.currentQuestionIndex/);
   assert.match(source, /location\.selectedKeys/);
   assert.match(source, /location\.feedback/);
-  assert.match(source, /onComprehensiveAnswer\?\.\(\{\s*question,\s*selectedKeys,\s*adaptiveOutcome: outcome,\s*stage,\s*questionIndex,\s*\}\)/);
+  assert.match(source, /if \(onComprehensiveAnswer\) \{\s*onComprehensiveAnswer\(\{\s*question,\s*selectedKeys,\s*adaptiveOutcome: outcome,\s*stage,\s*questionIndex,\s*\}\);\s*\} else \{\s*onRecordComprehensiveOutcome\?\.\(outcome\);\s*\}/);
   assert.match(source, /onComprehensiveProgress\?\.\(\{[\s\S]*?phase:[\s\S]*?lineIndex:[\s\S]*?selectedKeys:[\s\S]*?feedback:[\s\S]*?stage,[\s\S]*?questionIndex:/);
-  assert.doesNotMatch(source, /onRecordComprehensiveOutcome/);
+  assert.match(source, /onRecordComprehensiveOutcome=\{onRecordComprehensiveOutcome\}/);
 
   for (const surface of [
     "comprehensive-dialogue-screen",
