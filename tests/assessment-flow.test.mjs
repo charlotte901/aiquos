@@ -35,6 +35,29 @@ test("the selected task template has real local IP artwork and all task surfaces
   assert.match(source, /查看原始口语汇报/);
 });
 
+test("the comprehensive task restores draft location and emits answer and progress payloads", async () => {
+  const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
+
+  assert.match(source, /function ComprehensiveTask\(\{[\s\S]*?attempt,[\s\S]*?onComprehensiveAnswer,[\s\S]*?onComprehensiveProgress,/);
+  assert.match(source, /location\.currentQuestionId/);
+  assert.match(source, /attempt\.currentQuestionIndex/);
+  assert.match(source, /location\.selectedKeys/);
+  assert.match(source, /location\.feedback/);
+  assert.match(source, /onComprehensiveAnswer\?\.\(\{\s*question,\s*selectedKeys,\s*adaptiveOutcome: outcome,\s*stage,\s*questionIndex,\s*\}\)/);
+  assert.match(source, /onComprehensiveProgress\?\.\(\{[\s\S]*?phase:[\s\S]*?lineIndex:[\s\S]*?selectedKeys:[\s\S]*?feedback:[\s\S]*?stage,[\s\S]*?questionIndex:/);
+  assert.doesNotMatch(source, /onRecordComprehensiveOutcome/);
+
+  for (const surface of [
+    "comprehensive-dialogue-screen",
+    "quiz-feedback",
+    "quiz-feedback-analysis",
+    "toggleMulti",
+    "onSelectComprehensiveQuestion",
+  ]) {
+    assert.match(source, new RegExp(surface));
+  }
+});
+
 test("bare assessment routes open maps while level routes open tasks", () => {
   const originalLocation = globalThis.location;
   globalThis.location = { hash: "#assessment/objective" };

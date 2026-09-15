@@ -77,8 +77,48 @@ export function selectAdaptiveQuestion({ questions, levelId, session, rng = Math
   };
 }
 
-export function createAdaptiveController(questions, { rng = Math.random } = {}) {
-  let session = createAdaptiveSession();
+function isCountMap(value, keys) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actualKeys = Object.keys(value);
+  return actualKeys.length === keys.length
+    && keys.every((key) => Number.isInteger(value[key]) && value[key] >= 0);
+}
+
+function cloneAdaptiveSession(session, questions) {
+  const knownQuestionIds = new Set(questions.map((question) => question.id));
+  const validPosition = Number.isFinite(session?.position)
+    && session.position >= DIFFICULTY_INDEX.low
+    && session.position <= DIFFICULTY_INDEX.high;
+  const validUsedIds = Array.isArray(session?.usedQuestionIds)
+    && session.usedQuestionIds.every((id) => typeof id === "string" && id && knownQuestionIds.has(id))
+    && new Set(session.usedQuestionIds).size === session.usedQuestionIds.length;
+  const validLastType = session?.lastType === null || TYPES.includes(session?.lastType);
+  const validStage = session?.activeStage === null
+    || (Number.isInteger(session?.activeStage) && session.activeStage >= 1 && session.activeStage <= 5);
+
+  if (
+    !validPosition
+    || !validUsedIds
+    || !isCountMap(session?.dimensionCounts, DIMENSION_KEYS)
+    || !isCountMap(session?.typeCounts, TYPES)
+    || !validLastType
+    || !validStage
+  ) {
+    throw new TypeError("Invalid adaptive session");
+  }
+
+  return {
+    position: session.position,
+    usedQuestionIds: [...session.usedQuestionIds],
+    dimensionCounts: { ...session.dimensionCounts },
+    typeCounts: { ...session.typeCounts },
+    lastType: session.lastType,
+    activeStage: session.activeStage,
+  };
+}
+
+export function createAdaptiveController(questions, { rng = Math.random, initialSession } = {}) {
+  let session = cloneAdaptiveSession(initialSession ?? createAdaptiveSession(), questions);
 
   return {
     select(levelId, stage) {
@@ -89,6 +129,13 @@ export function createAdaptiveController(questions, { rng = Math.random } = {}) 
     },
     record(outcome) {
       session = applyAdaptiveOutcome(session, outcome);
+    },
+    snapshot() {
+      return cloneAdaptiveSession(session, questions);
+    },
+    restore(nextSession) {
+      session = cloneAdaptiveSession(nextSession, questions);
+      return cloneAdaptiveSession(session, questions);
     },
     reset() {
       session = createAdaptiveSession();
