@@ -326,3 +326,228 @@ Result: exit code 0 with no whitespace errors. Git printed only LF-to-CRLF conve
 - Vite continues to report the pre-existing generated-chunk-size advisory for chunks above 500 kB. It does not fail the build and is unrelated to Task 7.
 - The project does not currently include a mounted React/browser interaction harness. Durable lifecycle behavior is exercised through real pure orchestration and public domain APIs, while component wiring/confirmation markup is covered by the repository's existing source-contract test style. A later browser QA pass can additionally exercise refresh during selection/feedback and keyboard focus inside the confirmation dialogs.
 - The completed assessment intentionally returns to the assessment chooser because Task 8 has not yet wired the report/history destination. The immutable completed record and `latestReportRef` are ready for that task.
+
+## Fix Round 1 — Guard Task Mounts and Browser Storage Acquisition
+
+### Review findings
+
+Review of Task 7 found two defects on base `6d2c210`:
+
+1. **Critical — hidden assessment panel still mounted an invalid task.** The assessment flow panel used the HTML `hidden` attribute, but its render ternary selected `<AssessmentTask>` for every view other than `assessment-map`. React still evaluates and mounts children under a hidden ancestor. An empty-storage home mount therefore created `ComprehensiveTask` with no draft/controller; completed or direct/back task URLs could do the same after `finalizeDraft` had cleared the draft.
+2. **Important — the browser storage getter escaped storage guards.** `SiteExperience` evaluated `localStorage` before calling `loadScoredAssessments` or `persistScoredState`. When the Window `localStorage` property getter itself threw, the guarded `getItem`/`setItem` helpers were never entered.
+
+The earlier commits were preserved. This round changes only `src/assessment-orchestration.js`, `src/SiteExperience.jsx`, `tests/assessment-flow.test.mjs`, and this appended report.
+
+### Root-cause evidence
+
+The JSX boundary on the reviewed base was:
+
+```text
+hidden={view !== "assessment-map" && view !== "assessment-task"}
+...
+) : view === "assessment-map" ? (
+  <AssessmentMap ... />
+) : (
+  <AssessmentTask ... />
+)
+```
+
+Thus `home`, `assessments`, and all other non-map views selected the task branch despite the ancestor being hidden. Separately, `finalizeDraft` correctly set `next.drafts[type] = null`, making a completed task-history URL invalid for mounting.
+
+The getter boundary was reproduced with a throwing property getter and an instrumented wrapper around `loadScoredAssessments`:
+
+```powershell
+node --input-type=module -e "import { loadScoredAssessments } from './src/assessment-orchestration.js'; let entered = false; const browser = {}; Object.defineProperty(browser, 'localStorage', { get() { throw new Error('denied'); } }); const call = (storage) => { entered = true; return loadScoredAssessments(storage); }; try { call(browser.localStorage); } catch (error) { console.log(JSON.stringify({ message: error.message, helperEntered: entered })); }"
+```
+
+Exact output:
+
+```text
+{"message":"denied","helperEntered":false}
+```
+
+This proves acquisition must be guarded before the storage object is passed to the existing load/save helpers.
+
+### RED — behavior regressions
+
+Before production changes, five behavior regressions and one integration contract assertion were added:
+
+- empty-storage `home` does not render or redirect an assessment task;
+- a direct scored task route without a draft redirects before rendering;
+- browser Back after completion redirects rather than mounting the cleared Attempt;
+- a throwing browser `localStorage` getter loads empty in-memory state with a warning;
+- unavailable storage still publishes the next in-memory state during a save transition;
+- `SiteExperience` consumes the tested render-eligibility and guarded-storage helpers.
+
+Command:
+
+```powershell
+node --test tests/assessment-flow.test.mjs
+```
+
+Exact RED summary:
+
+```text
+tests 22
+suites 0
+pass 16
+fail 6
+cancelled 0
+skipped 0
+todo 0
+duration_ms 253.1316
+```
+
+The five behavior tests failed because `resolveAssessmentTaskEntry` and `loadBrowserScoredAssessments` were undefined. The integration assertion failed because `SiteExperience` had not consumed those helpers. These were expected missing-behavior failures, not syntax or fixture errors.
+
+### GREEN — guarded browser storage
+
+`loadBrowserScoredAssessments(browser)` now acquires `browser.localStorage` inside a try/catch. Getter failure or absent storage returns:
+
+- a safe empty scored-assessment state;
+- null storage;
+- a persistent in-memory-only warning;
+- null restored sessions.
+
+`persistScoredState` still publishes the next state before any storage action. When acquisition was unavailable, it returns the carried warning and skips I/O; the state remains live in React/ref memory.
+
+Command:
+
+```powershell
+node --test --test-name-pattern="browser storage|unavailable browser storage" tests/assessment-flow.test.mjs
+```
+
+Exact output summary:
+
+```text
+tests 2
+suites 0
+pass 2
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 146.3495
+```
+
+### GREEN — task render eligibility
+
+The pure `resolveAssessmentTaskEntry(view, type, state, session)` boundary now returns a literal render/redirect decision:
+
+- non-task views: do not render and do not redirect;
+- conversation/practical task views: render through their unchanged non-scored path;
+- scored task without a draft, including a completed Attempt reached through Back: do not render and redirect to `assessments`;
+- scored task with a draft: render only when its restored session is compatible;
+- incompatible scored task: do not render and do not redirect, allowing the existing explicit restart-confirmation block to render.
+
+Command:
+
+```powershell
+node --test --test-name-pattern="empty-storage home|direct scored task route|browser Back after completion" tests/assessment-flow.test.mjs
+```
+
+Exact output summary:
+
+```text
+tests 3
+suites 0
+pass 3
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 196.7199
+```
+
+`SiteExperience` computes this decision before rendering the assessment panel. `<AssessmentTask>` is now behind `taskEntry.renderTask`; no hidden or invalid route can mount it. A missing/completed scored task URL is replaced with `#assessments` in an effect after the render was already gated, avoiding both an invalid mount and a browser Back loop.
+
+The full assessment-flow regression file then passed:
+
+```powershell
+node --test tests/assessment-flow.test.mjs
+```
+
+```text
+tests 22
+suites 0
+pass 22
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 226.8916
+```
+
+### Final verification after Fix Round 1
+
+Focused Task 7/dependency command:
+
+```powershell
+node --test tests/assessment-attempt.test.mjs tests/assessment-flow.test.mjs tests/comprehensive-adaptive.test.mjs tests/objective-paper.test.mjs
+```
+
+Exact summary:
+
+```text
+tests 61
+suites 0
+pass 61
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 348.7528
+```
+
+Full regression command:
+
+```powershell
+node --test
+```
+
+Exact summary:
+
+```text
+tests 134
+suites 0
+pass 134
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 6139.7826
+```
+
+Production build command:
+
+```powershell
+npm exec -- vite build
+```
+
+Exact relevant output:
+
+```text
+vite v6.4.2 building for production...
+✓ 4632 modules transformed.
+✓ built in 9.41s
+```
+
+The build exited 0. The existing generated-chunk-size advisory above 500 kB remains unchanged; there were no build errors.
+
+### Fix Round 1 self-review
+
+- Confirmed `SiteExperience` no longer evaluates `localStorage` directly for load or save.
+- Confirmed the getter is read once inside `loadBrowserScoredAssessments`, and the getter-throwing test asserts that exact count.
+- Confirmed a storage-acquisition failure still returns valid empty state and an explicit user-visible in-memory-only warning.
+- Confirmed `persistScoredState` invokes its publication callback before checking the unavailable-storage warning, so every subsequent answer/progress/restart/completion transition remains live in memory.
+- Confirmed the render helper is behavioral and independently tested; the Site source assertion only verifies integration with that tested decision boundary.
+- Confirmed `home` and all other non-task views return `renderTask: false` regardless of the assessment route's default value.
+- Confirmed missing and completed scored drafts return a chooser redirect, while incompatible drafts remain on the confirmation path and are not silently discarded.
+- Confirmed the first render after direct URL or browser Back is gated before the redirect effect runs, so neither `ComprehensiveTask` nor `ObjectiveQuizTask` can mount against a null draft.
+- Confirmed conversation and practical task routes remain renderable without a scored draft/session.
+- Confirmed no earlier commits were rewritten and the force-added report was only appended as directed.
+
+### Remaining concerns after Fix Round 1
+
+- The repository still has no mounted React DOM test harness. The pure render-decision tests protect the route behavior and the integration assertion proves `SiteExperience` consumes the helper, while the Vite build validates the JSX/hook integration.
+- The existing Vite chunk-size advisory remains unrelated to Task 7.

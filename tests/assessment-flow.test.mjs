@@ -19,6 +19,15 @@ const orchestration = await import("../src/assessment-orchestration.js").catch((
 const instant = "2026-09-14T10:00:00.000Z";
 const byId = new Map(QUESTION_BANK.map((question) => [question.id, question]));
 
+function resolveTaskEntry(view, type, state, session = null) {
+  assert.equal(
+    typeof orchestration.resolveAssessmentTaskEntry,
+    "function",
+    "task render eligibility must be implemented",
+  );
+  return orchestration.resolveAssessmentTaskEntry(view, type, state, session);
+}
+
 function storedFlow(initial = createAssessmentState()) {
   assert.equal(typeof orchestration.loadScoredAssessments, "function", "scored orchestration must be implemented");
   const values = new Map([[STORAGE_KEY, JSON.stringify(initial)]]);
@@ -64,6 +73,70 @@ function answerObjective(flow, count = 1) {
     }, { answeredAt: instant }));
   }
 }
+
+test("empty-storage home does not render or redirect an assessment task", () => {
+  assert.deepEqual(
+    resolveTaskEntry("home", "comprehensive", createAssessmentState()),
+    { renderTask: false, redirect: null },
+  );
+});
+
+test("a direct scored task route without a draft redirects before rendering", () => {
+  assert.deepEqual(
+    resolveTaskEntry("assessment-task", "objective", createAssessmentState()),
+    { renderTask: false, redirect: "assessments" },
+  );
+});
+
+test("browser storage getter failures load a safe in-memory state with a warning", () => {
+  assert.equal(
+    typeof orchestration.loadBrowserScoredAssessments,
+    "function",
+    "guarded browser storage loading must be implemented",
+  );
+  let getterReads = 0;
+  const browser = {};
+  Object.defineProperty(browser, "localStorage", {
+    get() {
+      getterReads += 1;
+      throw new Error("storage denied");
+    },
+  });
+  const loaded = orchestration.loadBrowserScoredAssessments(browser);
+  assert.equal(getterReads, 1);
+  assert.deepEqual(loaded.state, createAssessmentState());
+  assert.equal(loaded.storage, null);
+  assert.match(loaded.warning, /存储|记录/);
+  assert.match(loaded.storageWarning, /存储|记录/);
+});
+
+test("an unavailable browser storage object still publishes the next state", () => {
+  assert.equal(
+    typeof orchestration.loadBrowserScoredAssessments,
+    "function",
+    "guarded browser storage loading must be implemented",
+  );
+  const browser = {};
+  Object.defineProperty(browser, "localStorage", {
+    get() { throw new Error("storage denied"); },
+  });
+  const loaded = orchestration.loadBrowserScoredAssessments(browser);
+  const started = orchestration.startScoredAssessment(loaded.state, "comprehensive", {
+    id: "memory-only",
+    startedAt: instant,
+    rng: () => 0,
+  });
+  let published = null;
+  const saved = orchestration.persistScoredState(
+    loaded.storage,
+    started.state,
+    (state) => { published = state; },
+    loaded.storageWarning,
+  );
+  assert.equal(published, started.state);
+  assert.equal(saved.state, started.state);
+  assert.match(saved.warning, /存储|保存/);
+});
 
 test("objective starts persist a paper once and resume its seed, IDs, selection and feedback", () => {
   const flow = storedFlow();
@@ -196,6 +269,20 @@ test("stage completion requires its five answers and only stage five finalizes 2
   assert.equal(resolveLatestReport(flow.state).id, "objective-flow");
 });
 
+test("browser Back after completion redirects instead of remounting the cleared task", () => {
+  const flow = storedFlow();
+  const started = flow.start("objective");
+  for (let stage = 1; stage <= 5; stage += 1) {
+    answerObjective(flow, 5);
+    flow.commit(orchestration.completeScoredStage(flow.state, "objective", stage, instant).state);
+  }
+  assert.equal(flow.state.drafts.objective, null);
+  assert.deepEqual(
+    resolveTaskEntry("assessment-task", "objective", flow.state, started.session),
+    { renderTask: false, redirect: "assessments" },
+  );
+});
+
 test("later answers in an older draft cannot steal latest and restart clears only its type", () => {
   const flow = storedFlow();
   flow.start("objective");
@@ -227,7 +314,10 @@ test("SiteExperience keeps unscored conversation and practical progress and wire
   assert.match(source, /onProgress=\{updateAssessmentProgress\}/);
   assert.match(source, /attempt=\{assessmentState\.drafts\[assessmentRoute\.id\]\}/);
   assert.match(source, /storageWarning/);
-  assert.match(source, /loadScoredAssessments/);
+  assert.match(source, /loadBrowserScoredAssessments/);
+  assert.match(source, /resolveAssessmentTaskEntry/);
+  assert.match(source, /taskEntry\.renderTask/);
+  assert.match(source, /taskEntry\.redirect === "assessments"/);
   assert.match(source, /if \(completed\.completed\)[\s\S]*?go\("assessments"\)/);
   assert.match(source, /isScoredAssessment\(assessmentRoute\.id\)[\s\S]*?!assessmentStateRef\.current\.drafts\[assessmentRoute\.id\]/);
   assert.doesNotMatch(source, /adaptiveController\.current\.reset\(\)/);

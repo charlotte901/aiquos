@@ -17,9 +17,17 @@ import { QUESTION_BANK, QUESTION_BANK_VERSION } from "./question-bank.js";
 
 const questionsById = new Map(QUESTION_BANK.map((question) => [question.id, question]));
 const emptyLocation = { currentQuestionId: null, phase: null, lineIndex: 0, selectedKeys: [], feedback: null };
+const STORAGE_UNAVAILABLE_WARNING = "浏览器存储不可用，测评进度将仅保留在本次打开期间。";
 
 export function isScoredAssessment(type) {
   return type === "comprehensive" || type === "objective";
+}
+
+export function resolveAssessmentTaskEntry(view, type, state, session = null) {
+  if (view !== "assessment-task") return { renderTask: false, redirect: null };
+  if (!isScoredAssessment(type)) return { renderTask: true, redirect: null };
+  if (!state?.drafts?.[type]) return { renderTask: false, redirect: "assessments" };
+  return { renderTask: session?.compatible === true, redirect: null };
 }
 
 function requireDraft(state, type) {
@@ -77,6 +85,27 @@ export function loadScoredAssessments(storage) {
   };
 }
 
+export function loadBrowserScoredAssessments(browser = globalThis) {
+  let storage;
+  try {
+    storage = browser?.localStorage;
+    if (!storage) throw new Error("browser storage unavailable");
+  } catch {
+    const loaded = loadScoredAssessments(null);
+    return {
+      ...loaded,
+      storage: null,
+      storageWarning: STORAGE_UNAVAILABLE_WARNING,
+      warning: STORAGE_UNAVAILABLE_WARNING,
+    };
+  }
+  return {
+    ...loadScoredAssessments(storage),
+    storage,
+    storageWarning: null,
+  };
+}
+
 export function startScoredAssessment(state, type, { id, startedAt, seed, rng } = {}) {
   if (!isScoredAssessment(type)) throw new Error("未知的计分测评类型");
   const draft = state.drafts[type];
@@ -101,8 +130,9 @@ export function startScoredAssessment(state, type, { id, startedAt, seed, rng } 
 }
 
 // SiteExperience publishes to its live ref and React state before attempting I/O.
-export function persistScoredState(storage, state, publish) {
+export function persistScoredState(storage, state, publish, storageWarning = null) {
   publish(state);
+  if (storageWarning) return { state, warning: storageWarning };
   return saveAssessmentState(storage, state);
 }
 

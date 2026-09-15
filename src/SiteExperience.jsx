@@ -15,8 +15,9 @@ import { restartDraft } from "./assessment-attempt";
 import {
   completeScoredStage,
   isScoredAssessment,
-  loadScoredAssessments,
+  loadBrowserScoredAssessments,
   persistScoredState,
+  resolveAssessmentTaskEntry,
   scoredAssessmentProgress,
   selectComprehensiveQuestion as selectPersistedComprehensiveQuestion,
   startScoredAssessment,
@@ -113,7 +114,7 @@ export function SiteExperience() {
     () => getAssessmentRoute() ?? { id: "comprehensive", stage: 1, mode: "map" },
   );
   const [profileDetailRoute, setProfileDetailRoute] = useState(() => getProfileDetailRoute());
-  const [initialAssessments] = useState(() => loadScoredAssessments(localStorage));
+  const [initialAssessments] = useState(() => loadBrowserScoredAssessments(globalThis));
   const [assessmentState, setAssessmentState] = useState(initialAssessments.state);
   const assessmentStateRef = useRef(initialAssessments.state);
   const scoredSessions = useRef(initialAssessments.sessions);
@@ -138,6 +139,20 @@ export function SiteExperience() {
   const panels = useRef({});
   const stage = useRef(null);
   const busy = useRef(false);
+  const taskEntry = resolveAssessmentTaskEntry(
+    view,
+    assessmentRoute.id,
+    assessmentState,
+    scoredSessions.current[assessmentRoute.id],
+  );
+  useEffect(() => {
+    if (taskEntry.redirect === "assessments") {
+      history.replaceState(null, "", "#assessments");
+      window.scrollTo(0, 0);
+      setBlockedDraft(null);
+      setView("assessments");
+    }
+  }, [taskEntry.redirect]);
   useEffect(() => {
     const pop = () => {
       const nextAssessment = getAssessmentRoute();
@@ -342,10 +357,15 @@ export function SiteExperience() {
   }
 
   function persistAssessmentState(nextState) {
-    const saved = persistScoredState(localStorage, nextState, (publishedState) => {
-      assessmentStateRef.current = publishedState;
-      setAssessmentState(publishedState);
-    });
+    const saved = persistScoredState(
+      initialAssessments.storage,
+      nextState,
+      (publishedState) => {
+        assessmentStateRef.current = publishedState;
+        setAssessmentState(publishedState);
+      },
+      initialAssessments.storageWarning,
+    );
     setStorageWarning(saved.warning);
   }
 
@@ -596,7 +616,7 @@ export function SiteExperience() {
             onRestart={restartAssessment}
             busy={moving}
           />
-        ) : (
+        ) : taskEntry.renderTask ? (
           <AssessmentTask
             id={assessmentRoute.id}
             stage={assessmentRoute.stage}
@@ -613,7 +633,7 @@ export function SiteExperience() {
             onProgress={updateAssessmentProgress}
             busy={moving}
           />
-        )}
+        ) : null}
       </div>
       {storageWarning && <p className="assessment-storage-warning" role="alert">{storageWarning}</p>}
       <div className="split-transition" ref={stage} aria-hidden="true" />
