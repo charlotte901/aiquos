@@ -32,7 +32,7 @@ test("the selected task template has real local IP artwork and all task surfaces
   assert.match(source, /streamDeepSeek/);
   assert.match(source, /generateArkImage/);
   assert.match(source, /agent-image/);
-  assert.match(source, /查看原始口语汇报/);
+  assert.match(source, /查看原始素材/);
 });
 
 test("bare assessment routes open maps while level routes open tasks", () => {

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
 import test from "node:test";
 import worker from "../worker/index.js";
+import { createObjectiveQuestions, handleObjectiveQuestions } from "../worker/objective-quiz.js";
+import { createPracticalTasks, handlePracticalTasks } from "../worker/practical-tasks.js";
 
 test("serves existing static assets without a fallback", async () => {
   const calls = [];
@@ -59,6 +61,60 @@ test("does not turn missing API or write requests into the app shell", async () 
     assert.equal(response.status, 404);
     assert.equal(calls, 1);
   }
+});
+
+test("serves objective questions from both marked banks without source metadata", async () => {
+  assert.equal(createObjectiveQuestions("academy", "human", () => .12).length, 5);
+  assert.equal(createObjectiveQuestions("academy", "ai", () => .2).length, 5);
+
+  const response = await handleObjectiveQuestions(
+    new Request("https://example.test/api/objective-questions?levelId=academy"),
+  );
+  const { questions } = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(questions.length, 5);
+  assert.deepEqual(
+    questions.map((question) => Object.keys(question).sort()),
+    Array.from({ length: 5 }, () => ["analysis", "answer", "dims", "options", "q", "type"]),
+  );
+  assert.ok(!JSON.stringify(questions).includes('"origin"'));
+});
+
+test("serves practical tasks from both marked banks without source metadata", async () => {
+  assert.equal(createPracticalTasks("academy", "human", () => .2).length, 2);
+  assert.equal(createPracticalTasks("academy", "ai", () => .2).length, 3);
+
+  const tasks = createPracticalTasks("academy", "all", () => .2);
+  assert.equal(tasks.length, 5);
+  assert.ok(tasks.every((task) => task.requirements.length > 0 && task.source.length > 0));
+  assert.ok(tasks.every((task) => !["ai", "human"].includes(task.source)));
+
+  const response = await handlePracticalTasks(
+    new Request("https://example.test/api/practical-tasks?levelId=academy"),
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.tasks.length, 5);
+  assert.ok(!JSON.stringify(payload).includes("standardPrompt"));
+  assert.ok(!JSON.stringify(payload).includes('"origin"'));
+});
+
+test("routes direct assessment banks through the worker", async () => {
+  const objectiveResponse = await worker.fetch(
+    new Request("https://example.test/api/objective-questions?levelId=court"),
+    { ASSETS: { fetch: async () => new Response("missing", { status: 404 }) } },
+  );
+  assert.equal(objectiveResponse.status, 200);
+  assert.equal((await objectiveResponse.json()).questions.length, 5);
+
+  const practicalResponse = await worker.fetch(
+    new Request("https://example.test/api/practical-tasks?levelId=workshop"),
+    { ASSETS: { fetch: async () => new Response("missing", { status: 404 }) } },
+  );
+  assert.equal(practicalResponse.status, 200);
+  assert.equal((await practicalResponse.json()).tasks.length, 5);
 });
 
 test("emits the files required by Sites packaging", async () => {
