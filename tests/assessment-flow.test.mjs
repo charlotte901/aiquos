@@ -19,7 +19,7 @@ test("every assessment has a five-stage journey and the blue route combines all 
 test("the selected task template has real local IP artwork and all task surfaces", async () => {
   await access(new URL("../public/assets/crops/assessment-guides-crop.png", import.meta.url));
   const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
-  for (const component of ["ObjectiveTask", "ConversationTask", "PracticalTask", "AssessmentMap", "AssessmentTask"]) {
+  for (const component of ["ConversationTask", "PracticalTask", "AssessmentMap", "AssessmentTask"]) {
     assert.match(source, new RegExp(`function ${component}|export function ${component}`));
   }
   assert.match(source, /assessment-guides-crop\.png/);
@@ -56,6 +56,24 @@ test("the comprehensive task restores draft location and emits answer and progre
   ]) {
     assert.match(source, new RegExp(surface));
   }
+});
+
+test("objective assessment uses a five-question bank task with feedback", async () => {
+  const [task, flow, data] = await Promise.all([
+    readFile(new URL("../src/ObjectiveQuizTask.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/assessment-flow.js", import.meta.url), "utf8"),
+  ]);
+  assert.match(task, /第 \{questionIndex \+ 1\} \/ 5 题/);
+  assert.match(task, /回答正确/);
+  assert.match(task, /部分正确/);
+  assert.match(task, /正确答案/);
+  assert.match(task, /question\.analysis/);
+  assert.match(task, /question\.type === "multi"/);
+  assert.match(task, /onAnswer\(\{/);
+  assert.match(task, /onComplete\(\)/);
+  assert.match(flow, /<ObjectiveQuizTask/);
+  assert.doesNotMatch(data, /export const QUESTIONS/);
 });
 
 test("bare assessment routes open maps while level routes open tasks", () => {

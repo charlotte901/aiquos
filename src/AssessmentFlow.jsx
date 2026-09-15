@@ -12,6 +12,7 @@ import {
   Target,
 } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
+import { ObjectiveQuizTask } from "./ObjectiveQuizTask";
 import {
   COMPREHENSIVE_LEVELS,
   COMPREHENSIVE_QUESTION_COUNT,
@@ -26,7 +27,6 @@ import {
   CONVERSATIONS,
   getStageMode,
   PRACTICAL_TASKS,
-  QUESTIONS,
   STAGE_LABELS,
 } from "./assessment-flow";
 import { generateArkImage, streamDeepSeek } from "./deepseek";
@@ -135,23 +135,6 @@ function TaskHeader({ id, stage }) {
   const Icon = icons[mode];
   const names = { objective: "判断题", conversation: "对话练习", practical: "Agent 实操", comprehensive: "综合测评" };
   return <div className="task-heading"><Icon weight="fill" /><span>{`${theme.title} · 第 ${stage} 关`}</span><strong>{names[mode]}</strong></div>;
-}
-
-function ObjectiveTask({ stage, onComplete }) {
-  const [choice, setChoice] = useState(null);
-  const question = QUESTIONS[stage - 1];
-  return <div className="task-body objective-task">
-    <h2>{question.prompt}</h2>
-    <div className="answer-options" role="radiogroup" aria-label="答案选项">
-      {question.options.map((option, index) => (
-        <button key={option} type="button" role="radio" aria-checked={choice === index} className={choice === index ? "is-selected" : ""} onClick={() => setChoice(index)}>
-          <span>{String.fromCharCode(65 + index)}</span>{option}
-          {choice === index && <Check weight="bold" />}
-        </button>
-      ))}
-    </div>
-    <TaskAction disabled={choice === null} onClick={onComplete} label="提交答案" />
-  </div>;
 }
 
 function ConversationTask({ stage, onComplete }) {
@@ -579,10 +562,13 @@ export function AssessmentTask({
   id,
   stage,
   attempt,
+  questions,
   complete,
   onBack,
   onPick,
   onComplete,
+  onAnswer,
+  onProgress,
   onSelectComprehensiveQuestion,
   onComprehensiveAnswer,
   onComprehensiveProgress,
@@ -612,7 +598,17 @@ export function AssessmentTask({
           onComprehensiveProgress={onComprehensiveProgress}
           onRecordComprehensiveOutcome={onRecordComprehensiveOutcome}
         />
-        : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
+        : mode === "objective"
+          ? <ObjectiveQuizTask
+            key={taskKey}
+            stage={stage}
+            questions={questions}
+            attempt={attempt}
+            onAnswer={onAnswer}
+            onProgress={onProgress}
+            onComplete={() => onComplete(stage)}
+          />
+          : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>
   </main>;
 }
