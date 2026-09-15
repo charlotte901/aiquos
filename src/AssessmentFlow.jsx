@@ -88,22 +88,47 @@ function Guides() {
   return <canvas ref={canvas} className="assessment-guides" width="900" height="620" role="img" aria-label="两位测评向导" />;
 }
 
-export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy }) {
+export function AssessmentMap({ id, current, complete, canRestart = false, onBack, onOpenStage, onRestart, busy }) {
   const theme = ASSESSMENT_THEMES[id];
+  const [confirmingRestart, setConfirmingRestart] = useState(false);
   const stageLabels = id === "comprehensive"
     ? COMPREHENSIVE_LEVELS.map((level) => level.short)
     : STAGE_LABELS;
+  const onConfirmRestart = () => {
+    setConfirmingRestart(false);
+    onRestart?.(id);
+  };
   return (
     <main className="assessment-flow map-flow" style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
-      <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
+      <button className="flow-back" type="button" onClick={onBack} disabled={busy || confirmingRestart}>
         <ArrowLeft weight="bold" /> 返回测评选择
       </button>
       <h1 className="flow-wordmark" aria-label="TEST! 闯关地图"><TestWordmark /></h1>
-      <Progress current={current} complete={complete} onPick={onOpenStage} disabled={busy} />
+      <Progress current={current} complete={complete} onPick={onOpenStage} disabled={busy || confirmingRestart} />
       <section className="level-map" aria-label={`${theme.title}关卡地图`}>
         <p className="map-kicker">{theme.title}</p>
         <h2>从这一关开始</h2>
         <p>{theme.description}</p>
+        {canRestart && !confirmingRestart && (
+          <button
+            className="assessment-restart-trigger"
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmingRestart(true)}
+          >
+            重新开始本次测评
+          </button>
+        )}
+        {canRestart && confirmingRestart && (
+          <section className="assessment-restart-panel" role="dialog" aria-modal="true" aria-labelledby="restart-title">
+            <h3 id="restart-title">重新开始{theme.title}？</h3>
+            <p>未完成的回答将被移除，已完成的历史记录不会受到影响。</p>
+            <div>
+              <button type="button" disabled={busy} onClick={() => setConfirmingRestart(false)}>取消</button>
+              <button type="button" disabled={busy} onClick={onConfirmRestart}>确认重新开始</button>
+            </div>
+          </section>
+        )}
         <div className="map-path" role="list" aria-label="五个闯关节点">
           {[1, 2, 3, 4, 5].map((number) => {
             const state = number < current ? "complete" : number === current ? "active" : "locked";
@@ -112,7 +137,7 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
                 key={number}
                 type="button"
                 className={`map-stage is-${state}`}
-                disabled={busy || number > complete}
+                disabled={busy || confirmingRestart || number > complete}
                 onClick={() => onOpenStage(number)}
                 aria-label={`第 ${number} 关：${stageLabels[number - 1]}`}
               >
@@ -390,20 +415,21 @@ function ComprehensiveTask({
         adaptiveOutcome: outcome,
         stage,
         questionIndex,
+        feedback: storedFeedback(answerResult, nextReaction, nextCorrectCount),
       });
     } else {
       onRecordComprehensiveOutcome?.(outcome);
+      persistProgress({
+        phase: "feedback",
+        selectedKeys,
+        feedback: storedFeedback(answerResult, nextReaction, nextCorrectCount),
+      });
     }
     setPhase("feedback");
     setSelected(selectedKeys);
     setResult(answerResult);
     setReaction(nextReaction);
     setCorrectCount(nextCorrectCount);
-    persistProgress({
-      phase: "feedback",
-      selectedKeys,
-      feedback: storedFeedback(answerResult, nextReaction, nextCorrectCount),
-    });
   };
 
   const nextQuestion = () => {

@@ -92,6 +92,33 @@
 .map-kicker { margin: 0 0 8px; font-weight: 800; font-size: 14px; letter-spacing: .08em; }
 .level-map h2 { margin: 0; font-size: clamp(28px, 3.1vw, 48px); letter-spacing: -.06em; line-height: 1; }
 .level-map > p:not(.map-kicker) { max-width: 390px; margin: 14px 0 0; color: #657080; line-height: 1.55; }
+.assessment-restart-trigger {
+  margin-top: 18px;
+  padding: 0 0 3px;
+  border-bottom: 1px solid currentColor;
+  color: var(--assessment-deep);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 800;
+}
+.assessment-restart-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  width: min(430px, calc(100% - 48px));
+  padding: 27px;
+  border: 1px solid color-mix(in srgb, var(--assessment-color) 20%, #dce2e8);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 70px #1b2a3d33;
+  transform: translate(-50%, -50%);
+}
+.assessment-restart-panel h3 { margin: 0; color: #182235; font-size: 23px; }
+.assessment-restart-panel p { margin: 11px 0 0; color: #657080; line-height: 1.55; }
+.assessment-restart-panel > div { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.assessment-restart-panel button { padding: 9px 15px; border-radius: 999px; color: #4c596a; background: #edf0f3; font-weight: 750; }
+.assessment-restart-panel button:last-child { color: #fff; background: var(--assessment-color); }
 .map-path {
   position: relative;
   display: grid;

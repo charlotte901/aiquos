@@ -12,6 +12,19 @@ function clone(value) {
   return structuredClone(value);
 }
 
+function deepFreeze(value) {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+export function freezeAssessmentHistory(state) {
+  deepFreeze(state.history);
+  return state;
+}
+
 function requireAssessmentType(type) {
   if (!ASSESSMENT_TYPES.has(type)) throw new Error("未知测评类型/unknown assessment type");
 }
@@ -233,7 +246,7 @@ export function putDraft(state, attempt) {
   if ((previous?.answeredCount ?? 0) === 0 && attempt.answeredCount === 1) {
     next.latestReportRef = reportRefForDraft(attempt.assessmentType);
   }
-  return next;
+  return freezeAssessmentHistory(next);
 }
 
 export function finalizeDraft(state, type, completedAt) {
@@ -245,7 +258,7 @@ export function finalizeDraft(state, type, completedAt) {
   next.drafts[type] = null;
   next.history = sortedHistory([...next.history, clone(completed)]);
   next.latestReportRef = reportRefForHistory(completed.id);
-  return next;
+  return freezeAssessmentHistory(next);
 }
 
 export function restartDraft(state, type) {
@@ -255,7 +268,7 @@ export function restartDraft(state, type) {
   if (next.latestReportRef?.kind === "draft" && next.latestReportRef.assessmentType === type) {
     next.latestReportRef = null;
   }
-  return next;
+  return freezeAssessmentHistory(next);
 }
 
 export function resolveLatestReport(state) {

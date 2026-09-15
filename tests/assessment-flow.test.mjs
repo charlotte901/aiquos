@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
-import { createAttempt, recordAttemptResponse, selectAttemptQuestion } from "../src/assessment-attempt.js";
+import { createAssessmentState, createAttempt, putDraft, recordAttemptResponse, resolveLatestReport, restartDraft, selectAttemptQuestion } from "../src/assessment-attempt.js";
 import { ASSESSMENT_THEMES, getAssessmentRoute, getStageMode, STAGE_LABELS } from "../src/assessment-flow.js";
 import {
   advanceObjectiveQuestionState,
@@ -9,7 +9,249 @@ import {
   mapObjectiveStageQuestions,
 } from "../src/objective-quiz-state.js";
 import { createObjectivePaper } from "../src/objective-paper.js";
-import { QUESTION_BANK } from "../src/question-bank.js";
+import { QUESTION_BANK, QUESTION_BANK_VERSION } from "../src/question-bank.js";
+import { STORAGE_KEY, loadAssessmentState } from "../src/assessment-storage.js";
+
+const orchestration = await import("../src/assessment-orchestration.js").catch((error) => {
+  if (error.code === "ERR_MODULE_NOT_FOUND") return {};
+  throw error;
+});
+const instant = "2026-09-14T10:00:00.000Z";
+const byId = new Map(QUESTION_BANK.map((question) => [question.id, question]));
+
+function storedFlow(initial = createAssessmentState()) {
+  assert.equal(typeof orchestration.loadScoredAssessments, "function", "scored orchestration must be implemented");
+  const values = new Map([[STORAGE_KEY, JSON.stringify(initial)]]);
+  let reads = 0;
+  let writes = 0;
+  let failWrites = false;
+  const storage = {
+    getItem(key) { reads += 1; return values.get(key) ?? null; },
+    setItem(key, value) { writes += 1; if (failWrites) throw new Error("quota"); values.set(key, value); },
+  };
+  const loaded = orchestration.loadScoredAssessments(storage);
+  let state = loaded.state;
+  let warning = loaded.warning;
+  const commit = (next) => {
+    const saved = orchestration.persistScoredState(storage, next, (value) => { state = value; });
+    warning = saved.warning;
+  };
+  return {
+    storage, loaded, commit,
+    get state() { return state; },
+    get warning() { return warning; },
+    get reads() { return reads; },
+    get writes() { return writes; },
+    failWrites() { failWrites = true; },
+    start(type, id = `${type}-flow`) {
+      const started = orchestration.startScoredAssessment(state, type, { id, startedAt: instant, seed: 11, rng: () => 0 });
+      if (!started.blocked && started.state !== state) commit(started.state);
+      return started;
+    },
+  };
+}
+
+function answerObjective(flow, count = 1) {
+  for (let index = 0; index < count; index += 1) {
+    const draft = flow.state.drafts.objective;
+    const offset = draft.answeredCount;
+    const question = byId.get(draft.questionIds[offset]);
+    const stage = Math.floor(offset / 5) + 1;
+    const questionIndex = offset % 5;
+    flow.commit(orchestration.updateScoredProgress(flow.state, "objective", { question, stage, questionIndex }));
+    flow.commit(orchestration.submitScoredAnswer(flow.state, "objective", {
+      question, selectedKeys: question.answer, stage, questionIndex,
+    }, { answeredAt: instant }));
+  }
+}
+
+test("objective starts persist a paper once and resume its seed, IDs, selection and feedback", () => {
+  const flow = storedFlow();
+  const started = flow.start("objective");
+  assert.equal(flow.reads, 1);
+  assert.equal(flow.writes, 1);
+  assert.equal(started.session.paper.questionIds.length, 25);
+  const ids = [...flow.state.drafts.objective.questionIds];
+  answerObjective(flow);
+  const reloaded = orchestration.loadScoredAssessments(flow.storage);
+  const resumed = orchestration.startScoredAssessment(reloaded.state, "objective", { seed: 999, id: "must-not-replace", startedAt: instant });
+  assert.equal(resumed.state, reloaded.state);
+  assert.equal(resumed.state.drafts.objective.id, "objective-flow");
+  assert.deepEqual(resumed.session.paper.questionIds, ids);
+  assert.deepEqual(resumed.state.drafts.objective.location.selectedKeys, byId.get(ids[0]).answer);
+  assert.equal(resumed.state.drafts.objective.location.feedback.correct, true);
+});
+
+test("both incompatible drafts are retained and objective seed/ID mismatches also block resume", () => {
+  const seed11 = createObjectivePaper(QUESTION_BANK, { seed: 11 });
+  let state = putDraft(createAssessmentState(), createAttempt({
+    id: "bad-seed", assessmentType: "objective", startedAt: instant, seed: 12, questionIds: seed11.questionIds,
+  }));
+  state = putDraft(state, { ...createAttempt({ id: "old-bank", assessmentType: "comprehensive", startedAt: instant }), questionBankVersion: "retired-bank" });
+  const before = structuredClone(state);
+  const flow = storedFlow(state);
+  for (const type of ["objective", "comprehensive"]) {
+    assert.equal(flow.loaded.sessions[type].compatible, false);
+    const started = flow.start(type);
+    assert.ok(started.blocked);
+    assert.equal(started.state, flow.state);
+  }
+  assert.deepEqual(flow.state, before);
+  assert.equal(flow.writes, 0);
+  assert.match(flow.loaded.sessions.objective.reason, /试卷|seed|顺序/);
+  assert.match(flow.loaded.sessions.comprehensive.reason, /版本/);
+});
+
+test("missing or inconsistent comprehensive snapshots block without recreating routing state", () => {
+  let state = putDraft(createAssessmentState(), createAttempt({ id: "missing-session", assessmentType: "comprehensive", startedAt: instant }));
+  const flow = storedFlow(state);
+  assert.equal(flow.start("comprehensive").session.controller, null);
+  assert.equal(flow.loaded.sessions.comprehensive.compatible, false);
+  assert.equal(flow.writes, 0);
+});
+
+test("comprehensive selects and saves before answering, then records adaptive outcome and evidence once", () => {
+  const flow = storedFlow();
+  const { session } = flow.start("comprehensive");
+  const selected = orchestration.selectComprehensiveQuestion(flow.state, session.controller, { stage: 1, questionIndex: 0 });
+  flow.commit(selected.state);
+  const persisted = loadAssessmentState(flow.storage).state.drafts.comprehensive;
+  assert.equal(persisted.location.currentQuestionId, selected.question.id);
+  assert.deepEqual(persisted.adaptiveSession.usedQuestionIds, [selected.question.id]);
+  assert.equal(persisted.responses.length, 0);
+  const before = flow.writes;
+  const payload = { question: selected.question, selectedKeys: selected.question.answer, stage: 1, questionIndex: 0, adaptiveOutcome: "wrong", feedback: { reaction: "保留反馈" } };
+  flow.commit(orchestration.submitScoredAnswer(flow.state, "comprehensive", payload, { controller: session.controller, answeredAt: instant }));
+  assert.equal(flow.writes - before, 1);
+  assert.equal(flow.state.drafts.comprehensive.responses.length, 1);
+  assert.equal(flow.state.drafts.comprehensive.adaptiveSession.position, 1.4);
+  assert.equal(flow.state.drafts.comprehensive.location.feedback.result.correct, true);
+  assert.equal(flow.state.drafts.comprehensive.location.feedback.reaction, "保留反馈");
+  const repeated = orchestration.submitScoredAnswer(flow.state, "comprehensive", payload, { controller: session.controller, answeredAt: instant });
+  assert.equal(repeated, flow.state);
+  assert.equal(session.controller.snapshot().position, 1.4);
+  const reloaded = orchestration.loadScoredAssessments(flow.storage);
+  const resumed = orchestration.selectComprehensiveQuestion(reloaded.state, reloaded.sessions.comprehensive.controller, { stage: 1, questionIndex: 0 });
+  assert.equal(resumed.question.id, selected.question.id);
+  assert.equal(resumed.state, reloaded.state);
+  assert.deepEqual(reloaded.sessions.comprehensive.controller.snapshot(), session.controller.snapshot());
+});
+
+test("invalid or premature comprehensive submissions never advance adaptive state", () => {
+  const flow = storedFlow();
+  const { session } = flow.start("comprehensive");
+  const selected = orchestration.selectComprehensiveQuestion(flow.state, session.controller, { stage: 1, questionIndex: 0 });
+  flow.commit(selected.state);
+  const before = session.controller.snapshot();
+  assert.throws(() => orchestration.selectComprehensiveQuestion(flow.state, session.controller, { stage: 1, questionIndex: 1 }), /回答|answer/);
+  assert.throws(() => orchestration.submitScoredAnswer(flow.state, "comprehensive", {
+    question: selected.question, selectedKeys: ["invalid-key"], stage: 1, questionIndex: 0,
+  }, { controller: session.controller, answeredAt: instant }));
+  assert.deepEqual(session.controller.snapshot(), before);
+  assert.equal(flow.state.drafts.comprehensive.responses.length, 0);
+});
+
+test("story and selection progress persist without evidence, even when saving fails", () => {
+  const flow = storedFlow();
+  const { session } = flow.start("comprehensive");
+  const selected = orchestration.selectComprehensiveQuestion(flow.state, session.controller, { stage: 1, questionIndex: 0 });
+  flow.commit(selected.state);
+  flow.commit(orchestration.updateScoredProgress(flow.state, "comprehensive", { stage: 1, questionIndex: 0, phase: "opening", lineIndex: 2, selectedKeys: [selected.question.options[0].key] }));
+  assert.equal(flow.state.drafts.comprehensive.responses.length, 0);
+  assert.equal(flow.state.drafts.comprehensive.location.lineIndex, 2);
+  flow.failWrites();
+  flow.commit(orchestration.submitScoredAnswer(flow.state, "comprehensive", {
+    question: selected.question, selectedKeys: selected.question.answer, stage: 1, questionIndex: 0,
+  }, { controller: session.controller, answeredAt: instant }));
+  assert.equal(flow.state.drafts.comprehensive.responses.length, 1);
+  assert.equal(resolveLatestReport(flow.state).id, "comprehensive-flow");
+  assert.match(flow.warning, /保存/);
+});
+
+test("stage completion requires its five answers and only stage five finalizes 25 responses", () => {
+  const flow = storedFlow();
+  flow.start("objective");
+  assert.throws(() => orchestration.completeScoredStage(flow.state, "objective", 1, instant), /5|五/);
+  for (let stage = 1; stage <= 5; stage += 1) {
+    answerObjective(flow, 5);
+    const result = orchestration.completeScoredStage(flow.state, "objective", stage, instant);
+    flow.commit(result.state);
+    assert.equal(result.completed, stage === 5);
+    assert.equal(result.stage, Math.min(5, stage + 1));
+    assert.equal(flow.state.history.length, stage === 5 ? 1 : 0);
+    if (stage < 5) {
+      assert.equal(flow.state.drafts.objective.currentStage, stage + 1);
+      assert.equal(flow.state.drafts.objective.currentQuestionIndex, 0);
+      assert.equal(flow.state.drafts.objective.location.feedback, null);
+      assert.equal(loadAssessmentState(flow.storage).warning, null);
+    }
+  }
+  assert.equal(flow.state.drafts.objective, null);
+  assert.equal(flow.state.history[0].status, "completed");
+  assert.equal(Object.isFrozen(flow.state.history[0].responses[0]), true);
+  assert.equal(resolveLatestReport(flow.state).id, "objective-flow");
+  flow.start("objective", "objective-fresh");
+  assert.equal(flow.state.drafts.objective.answeredCount, 0);
+  assert.equal(flow.state.history.length, 1);
+  assert.equal(resolveLatestReport(flow.state).id, "objective-flow");
+});
+
+test("later answers in an older draft cannot steal latest and restart clears only its type", () => {
+  const flow = storedFlow();
+  flow.start("objective");
+  answerObjective(flow);
+  const { session } = flow.start("comprehensive");
+  const selected = orchestration.selectComprehensiveQuestion(flow.state, session.controller, { stage: 1, questionIndex: 0 });
+  flow.commit(selected.state);
+  flow.commit(orchestration.submitScoredAnswer(flow.state, "comprehensive", { question: selected.question, selectedKeys: selected.question.answer, stage: 1, questionIndex: 0 }, { controller: session.controller, answeredAt: instant }));
+  answerObjective(flow);
+  assert.equal(resolveLatestReport(flow.state).id, "comprehensive-flow");
+  const other = structuredClone(flow.state.drafts.objective);
+  flow.commit(restartDraft(flow.state, "comprehensive"));
+  const restarted = flow.start("comprehensive", "new-comprehensive");
+  assert.deepEqual(flow.state.drafts.objective, other);
+  assert.equal(flow.state.drafts.comprehensive.answeredCount, 0);
+  assert.deepEqual(restarted.session.controller.snapshot().usedQuestionIds, []);
+});
+
+test("SiteExperience keeps unscored conversation and practical progress and wires durable callbacks", async () => {
+  const source = await readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8");
+  assert.match(source, /conversation:\s*1/);
+  assert.match(source, /practical:\s*1/);
+  assert.match(source, /assessmentRoute\.id === "conversation"|id === "conversation"/);
+  assert.match(source, /assessmentRoute\.id === "practical"|id === "practical"/);
+  assert.match(source, /questions=\{QUESTION_BANK\}/);
+  assert.match(source, /onComprehensiveAnswer=\{submitAssessmentAnswer\}/);
+  assert.match(source, /onComprehensiveProgress=\{updateAssessmentProgress\}/);
+  assert.match(source, /onAnswer=\{submitAssessmentAnswer\}/);
+  assert.match(source, /onProgress=\{updateAssessmentProgress\}/);
+  assert.match(source, /attempt=\{assessmentState\.drafts\[assessmentRoute\.id\]\}/);
+  assert.match(source, /storageWarning/);
+  assert.match(source, /loadScoredAssessments/);
+  assert.match(source, /if \(completed\.completed\)[\s\S]*?go\("assessments"\)/);
+  assert.match(source, /isScoredAssessment\(assessmentRoute\.id\)[\s\S]*?!assessmentStateRef\.current\.drafts\[assessmentRoute\.id\]/);
+  assert.doesNotMatch(source, /adaptiveController\.current\.reset\(\)/);
+});
+
+test("scored drafts can restart only through an explicit confirmation UI", async () => {
+  const [flow, hub, experience] = await Promise.all([
+    readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/AssessmentHub.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(flow, /重新开始本次测评/);
+  assert.match(flow, /未完成的回答将被移除/);
+  assert.match(flow, /onConfirmRestart/);
+  assert.match(hub, /blockedDraft\.reason/);
+  assert.match(hub, /export function BlockedDraftPanel/);
+  assert.match(hub, /确认重新开始/);
+  assert.match(hub, /onConfirmRestart/);
+  assert.match(experience, /initialAssessments\.sessions\[assessmentRoute\.id\]/);
+  assert.match(experience, /blockedDraft\?\.type === assessmentRoute\.id/);
+  assert.match(experience, /<BlockedDraftPanel/);
+  assert.match(experience, /onRestart=\{restartAssessment\}/);
+  assert.match(experience, /onConfirmRestart=\{restartAssessment\}/);
+});
 
 function answeredObjectiveStage() {
   const paper = createObjectivePaper(QUESTION_BANK, { seed: 17 });
@@ -82,13 +324,16 @@ test("the selected task template has real local IP artwork and all task surfaces
 
 test("the comprehensive task restores draft location and emits answer and progress payloads", async () => {
   const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
+  const answerBlock = source.slice(source.indexOf("const answer = (keys) =>"), source.indexOf("const nextQuestion = () =>"));
 
   assert.match(source, /function ComprehensiveTask\(\{[\s\S]*?attempt,[\s\S]*?onComprehensiveAnswer,[\s\S]*?onComprehensiveProgress,/);
   assert.match(source, /location\.currentQuestionId/);
   assert.match(source, /attempt\.currentQuestionIndex/);
   assert.match(source, /location\.selectedKeys/);
   assert.match(source, /location\.feedback/);
-  assert.match(source, /if \(onComprehensiveAnswer\) \{\s*onComprehensiveAnswer\(\{\s*question,\s*selectedKeys,\s*adaptiveOutcome: outcome,\s*stage,\s*questionIndex,\s*\}\);\s*\} else \{\s*onRecordComprehensiveOutcome\?\.\(outcome\);\s*\}/);
+  assert.match(answerBlock, /if \(onComprehensiveAnswer\) \{[\s\S]*?onComprehensiveAnswer\(\{[\s\S]*?question,[\s\S]*?selectedKeys,[\s\S]*?adaptiveOutcome: outcome,[\s\S]*?feedback:/);
+  assert.match(answerBlock, /\} else \{[\s\S]*?onRecordComprehensiveOutcome\?\.\(outcome\);[\s\S]*?persistProgress\(/);
+  assert.equal(answerBlock.match(/persistProgress\(/g)?.length, 1);
   assert.match(source, /onComprehensiveProgress\?\.\(\{[\s\S]*?phase:[\s\S]*?lineIndex:[\s\S]*?selectedKeys:[\s\S]*?feedback:[\s\S]*?stage,[\s\S]*?questionIndex:/);
   assert.match(source, /onRecordComprehensiveOutcome=\{onRecordComprehensiveOutcome\}/);
 

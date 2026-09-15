@@ -31,7 +31,27 @@ function question(index) {
 }
 
 const paperQuestions = Array.from({ length: 25 }, (_, index) => question(index));
+const PAPER_QUESTIONS = paperQuestions;
 const paperIds = paperQuestions.map((item) => item.id);
+
+function payloadFor(question, stage, questionIndex) {
+  return { question, selectedKeys: question.answer, answeredAt: startedAt, stage, questionIndex };
+}
+
+function stateWithCompletedAttempt(assessmentType, id) {
+  let attempt = createAttempt({
+    id, assessmentType, startedAt,
+    questionIds: assessmentType === "objective" ? paperIds : [],
+    seed: assessmentType === "objective" ? 11 : null,
+  });
+  for (const [index, item] of PAPER_QUESTIONS.entries()) {
+    const stage = Math.floor(index / 5) + 1;
+    const questionIndex = index % 5;
+    attempt = selectAttemptQuestion(attempt, item.id, { stage, questionIndex });
+    attempt = recordAttemptResponse(attempt, payloadFor(item, stage, questionIndex));
+  }
+  return finalizeDraft(putDraft(createAssessmentState(), attempt), assessmentType, completedAt);
+}
 
 function objectiveAttempt(id = "attempt-1") {
   return createAttempt({
@@ -84,6 +104,32 @@ test("the first response makes a draft the live report and completion freezes hi
   assert.equal(state.history.length, 1);
   assert.equal(state.latestReportRef.kind, "history");
   assert.equal(state.history[0].status, "completed");
+});
+
+test("a newer objective draft replaces the report without deleting comprehensive history", () => {
+  let state = stateWithCompletedAttempt("comprehensive", "completed-comprehensive");
+  const historyBefore = structuredClone(state.history);
+  let objective = objectiveAttempt("objective-draft");
+  state = putDraft(state, objective);
+  assert.equal(resolveLatestReport(state).id, "completed-comprehensive");
+  objective = selectAttemptQuestion(objective, PAPER_QUESTIONS[0].id, { stage: 1, questionIndex: 0 });
+  objective = recordAttemptResponse(objective, payloadFor(PAPER_QUESTIONS[0], 1, 0));
+  state = putDraft(state, objective);
+  assert.equal(resolveLatestReport(state).id, "objective-draft");
+  assert.deepEqual(state.history, historyBefore);
+  const restarted = restartDraft(state, "objective");
+  assert.equal(restarted.drafts.objective, null);
+  assert.deepEqual(restarted.history, historyBefore);
+});
+
+test("completed history remains deeply frozen through new drafts and restart", () => {
+  let state = stateWithCompletedAttempt("comprehensive", "frozen-comprehensive");
+  for (const next of [state, putDraft(state, objectiveAttempt()), restartDraft(state, "objective")]) {
+    assert.equal(Object.isFrozen(next.history), true);
+    assert.equal(Object.isFrozen(next.history[0].result.dimensions[0]), true);
+    assert.equal(Object.isFrozen(next.history[0].responses[0].selectedKeys), true);
+    assert.throws(() => { next.history[0].responses[0].selectedKeys[0] = "B"; }, TypeError);
+  }
 });
 
 test("assessment types keep independent drafts and later updates cannot steal the live report reference", () => {
