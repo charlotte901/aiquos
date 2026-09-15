@@ -11,6 +11,8 @@ import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
+import { createAdaptiveController } from "./comprehensive-adaptive";
+import { COMPREHENSIVE_QUESTIONS } from "./comprehensive-quiz";
 import { getProfileDetailId, getProfileDetailRoute } from "./profile-layout";
 import { animateCards } from "./card-transition";
 import { CUBE_TURN_DURATION } from "./cube-geometry";
@@ -106,6 +108,7 @@ export function SiteExperience() {
     conversation: 1,
     practical: 1,
   });
+  const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
   const [moving, setMoving] = useState(false);
   const [cubeMounted, setCubeMounted] = useState(
     () => ["home", "login", "cases", "forum"].includes(route()),
@@ -317,6 +320,24 @@ export function SiteExperience() {
     go("assessment-map", assessmentHash(id));
   }
 
+  function startAssessment(id) {
+    if (id === "comprehensive") adaptiveController.current.reset();
+    openAssessmentMap(id);
+  }
+
+  function leaveAssessmentMap() {
+    if (assessmentRoute.id === "comprehensive") adaptiveController.current.reset();
+    go("assessments");
+  }
+
+  function selectComprehensiveQuestion(levelId, stage) {
+    return adaptiveController.current.select(levelId, stage);
+  }
+
+  function recordComprehensiveOutcome(outcome) {
+    adaptiveController.current.record(outcome);
+  }
+
   function openAssessmentStage(stage) {
     const complete = progress[assessmentRoute.id] ?? 1;
     if (stage > complete) return;
@@ -407,7 +428,7 @@ export function SiteExperience() {
         }}
         hidden={view !== "assessments"}
       >
-        <AssessmentHub onBack={() => go("choose")} onStart={openAssessmentMap} busy={moving} />
+        <AssessmentHub onBack={() => go("choose")} onStart={startAssessment} busy={moving} />
       </div>
       <div
         className="experience-panel"
@@ -453,7 +474,7 @@ export function SiteExperience() {
             id={assessmentRoute.id}
             current={progress[assessmentRoute.id] ?? 1}
             complete={progress[assessmentRoute.id] ?? 1}
-            onBack={() => go("assessments")}
+            onBack={leaveAssessmentMap}
             onOpenStage={openAssessmentStage}
             busy={moving}
           />
@@ -465,6 +486,8 @@ export function SiteExperience() {
             onBack={() => openAssessmentMap(assessmentRoute.id)}
             onPick={openAssessmentStage}
             onComplete={completeAssessmentStage}
+            onSelectComprehensiveQuestion={selectComprehensiveQuestion}
+            onRecordComprehensiveOutcome={recordComprehensiveOutcome}
             busy={moving}
           />
         )}

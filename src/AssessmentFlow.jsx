@@ -16,7 +16,6 @@ import {
   COMPREHENSIVE_LEVELS,
   COMPREHENSIVE_QUESTION_COUNT,
   COMPREHENSIVE_TYPE_LABELS,
-  createComprehensiveQuestions,
   getComprehensiveLevel,
   getReaction,
   judgeComprehensiveAnswer,
@@ -300,9 +299,14 @@ function TaskAction({ disabled, onClick, label, variant = "" }) {
   return <button type="button" className={`task-action ${variant}`.trim()} disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
 }
 
-function ComprehensiveTask({ stage, onComplete }) {
+function ComprehensiveTask({
+  stage,
+  onComplete,
+  onSelectComprehensiveQuestion,
+  onRecordComprehensiveOutcome,
+}) {
   const level = getComprehensiveLevel(stage);
-  const [questions] = useState(() => createComprehensiveQuestions(level.id));
+  const [question, setQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState([]);
   const [result, setResult] = useState(null);
@@ -311,8 +315,8 @@ function ComprehensiveTask({ stage, onComplete }) {
   const [phase, setPhase] = useState("opening");
   const [lineIndex, setLineIndex] = useState(0);
   const taskRef = useRef(null);
+  const questionRequested = useRef(false);
 
-  const question = questions[questionIndex];
   const isLastQuestion = questionIndex === COMPREHENSIVE_QUESTION_COUNT - 1;
   const storyLines = phase === "ending"
     ? level.ending.map((line) => ({
@@ -341,6 +345,12 @@ function ComprehensiveTask({ stage, onComplete }) {
     setResult(answerResult);
     setReaction(getReaction(level, answerResult.correct));
     if (answerResult.correct) setCorrectCount((current) => current + 1);
+    const outcome = answerResult.correct
+      ? "correct"
+      : answerResult.partialCorrect
+        ? "partial"
+        : "wrong";
+    onRecordComprehensiveOutcome(outcome);
   };
 
   const nextQuestion = () => {
@@ -349,6 +359,7 @@ function ComprehensiveTask({ stage, onComplete }) {
       setLineIndex(0);
       return;
     }
+    setQuestion(onSelectComprehensiveQuestion(level.id, stage));
     setQuestionIndex((current) => current + 1);
     setSelected([]);
     setResult(null);
@@ -358,6 +369,12 @@ function ComprehensiveTask({ stage, onComplete }) {
   const speakerName = (who) => (who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你");
   const isMulti = question?.type === "multi";
   const canSubmit = isMulti && selected.length > 0 && !result;
+
+  useEffect(() => {
+    if (questionRequested.current) return;
+    questionRequested.current = true;
+    setQuestion(onSelectComprehensiveQuestion(level.id, stage));
+  }, [level.id, onSelectComprehensiveQuestion, stage]);
 
   useEffect(() => {
     if (!result) return;
@@ -406,6 +423,10 @@ function ComprehensiveTask({ stage, onComplete }) {
             </span>
           </div>
         </div>
+      )}
+
+      {phase === "quiz" && !question && (
+        <p className="agent-error" role="alert">当前关卡暂无可用题目，请返回关卡地图后重试。</p>
       )}
 
       {phase === "quiz" && question && (
@@ -467,7 +488,17 @@ function ComprehensiveTask({ stage, onComplete }) {
   );
 }
 
-export function AssessmentTask({ id, stage, complete, onBack, onPick, onComplete, busy }) {
+export function AssessmentTask({
+  id,
+  stage,
+  complete,
+  onBack,
+  onPick,
+  onComplete,
+  onSelectComprehensiveQuestion,
+  onRecordComprehensiveOutcome,
+  busy,
+}) {
   const theme = ASSESSMENT_THEMES[id];
   const mode = getStageMode(id, stage);
   const taskKey = `${id}-${stage}-${mode}`;
@@ -482,7 +513,12 @@ export function AssessmentTask({ id, stage, complete, onBack, onPick, onComplete
       <Guides />
       <TaskHeader id={id} stage={stage} />
       {comprehensive
-        ? <ComprehensiveTask key={`${taskKey}-comprehensive`} {...props} />
+        ? <ComprehensiveTask
+          key={`${taskKey}-comprehensive`}
+          {...props}
+          onSelectComprehensiveQuestion={onSelectComprehensiveQuestion}
+          onRecordComprehensiveOutcome={onRecordComprehensiveOutcome}
+        />
         : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>
   </main>;

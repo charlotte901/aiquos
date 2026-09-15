@@ -50,6 +50,6 @@ test("assessment cards now open their working five-stage flow", async () => {
     readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
   ]);
   assert.match(hub, /onStart\?\.\(item\.id\)/);
-  assert.match(experience, /onStart=\{openAssessmentMap\}/);
+  assert.match(experience, /onStart=\{startAssessment\}/);
   assert.match(experience, /assessmentHash\(assessmentRoute\.id, stage\)/);
 });
