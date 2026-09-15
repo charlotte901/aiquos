@@ -1,7 +1,52 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { createAttempt, recordAttemptResponse, selectAttemptQuestion } from "../src/assessment-attempt.js";
 import { ASSESSMENT_THEMES, getAssessmentRoute, getStageMode, STAGE_LABELS } from "../src/assessment-flow.js";
+import {
+  advanceObjectiveQuestionState,
+  deriveObjectiveQuestionState,
+  mapObjectiveStageQuestions,
+} from "../src/objective-quiz-state.js";
+import { createObjectivePaper } from "../src/objective-paper.js";
+import { QUESTION_BANK } from "../src/question-bank.js";
+
+function answeredObjectiveStage() {
+  const paper = createObjectivePaper(QUESTION_BANK, { seed: 17 });
+  const byId = new Map(QUESTION_BANK.map((question) => [question.id, question]));
+  let attempt = createAttempt({
+    id: "reopen-objective-stage",
+    assessmentType: "objective",
+    startedAt: "2026-09-14T08:00:00.000Z",
+    questionIds: paper.questionIds,
+    seed: paper.seed,
+  });
+  for (let questionIndex = 0; questionIndex < 5; questionIndex += 1) {
+    const question = byId.get(paper.questionIds[questionIndex]);
+    attempt = selectAttemptQuestion(attempt, question.id, {
+      currentStage: 1,
+      currentQuestionIndex: questionIndex,
+      selectedKeys: question.answer,
+      feedback: null,
+    });
+    attempt = recordAttemptResponse(attempt, {
+      question,
+      selectedKeys: question.answer,
+      answeredAt: `2026-09-14T08:0${questionIndex + 1}:00.000Z`,
+      stage: 1,
+      questionIndex,
+      feedback: { persisted: true },
+    });
+  }
+  const nextQuestion = byId.get(paper.questionIds[5]);
+  attempt = selectAttemptQuestion(attempt, nextQuestion.id, {
+    currentStage: 2,
+    currentQuestionIndex: 0,
+    selectedKeys: [nextQuestion.options[0].key],
+    feedback: null,
+  });
+  return { attempt, paper };
+}
 
 test("every assessment has a five-stage journey and the blue route combines all three task modes", () => {
   for (const theme of Object.values(ASSESSMENT_THEMES)) {
@@ -74,6 +119,34 @@ test("objective assessment uses a five-question bank task with feedback", async 
   assert.match(task, /onComplete\(\)/);
   assert.match(flow, /<ObjectiveQuizTask/);
   assert.doesNotMatch(data, /export const QUESTIONS/);
+});
+
+test("reopening a completed objective stage rehydrates every saved response without another answer", () => {
+  const { attempt } = answeredObjectiveStage();
+  const stageQuestions = mapObjectiveStageQuestions(QUESTION_BANK, attempt, 1);
+  let answerCalls = 0;
+  let state = deriveObjectiveQuestionState(attempt, 1, stageQuestions, 0);
+
+  for (let questionIndex = 0; questionIndex < 5; questionIndex += 1) {
+    if (!state.submitted) answerCalls += 1;
+    assert.equal(state.questionIndex, questionIndex);
+    assert.deepEqual(state.selectedKeys, stageQuestions[questionIndex].answer);
+    assert.equal(state.feedback.correct, true);
+    if (questionIndex < 4) {
+      state = advanceObjectiveQuestionState(attempt, 1, stageQuestions, state);
+    }
+  }
+
+  assert.equal(answerCalls, 0);
+  const selectionOnly = deriveObjectiveQuestionState(
+    attempt,
+    2,
+    mapObjectiveStageQuestions(QUESTION_BANK, attempt, 2),
+    0,
+  );
+  assert.deepEqual(selectionOnly.selectedKeys, attempt.location.selectedKeys);
+  assert.equal(selectionOnly.feedback, null);
+  assert.equal(selectionOnly.submitted, false);
 });
 
 test("bare assessment routes open maps while level routes open tasks", () => {
