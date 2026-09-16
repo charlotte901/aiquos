@@ -593,6 +593,7 @@ export function SiteExperience() {
       >
         <ProfileDetail
           id={profileDetailRoute ?? "organizations"}
+          assessmentHistory={assessmentState.history}
           onBack={() => go("profile")}
           onHome={() => go("home")}
           busy={moving}

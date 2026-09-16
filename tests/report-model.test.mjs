@@ -34,6 +34,50 @@ const COMPLETED_ATTEMPT = {
     })), overallScore: 71, grade: "B",
   },
 };
+const HISTORY = [
+  { ...COMPLETED_ATTEMPT, id: "c-new", assessmentType: "comprehensive", completedAt: "2026-09-14T10:00:00.000Z", result: { ...COMPLETED_ATTEMPT.result, overallScore: 83, grade: "A" } },
+  { ...COMPLETED_ATTEMPT, id: "o-new", assessmentType: "objective", completedAt: "2026-09-14T09:00:00.000Z", result: { ...COMPLETED_ATTEMPT.result, overallScore: 71, grade: "B" } },
+  { ...COMPLETED_ATTEMPT, id: "c-old", assessmentType: "comprehensive", completedAt: "2026-08-20T09:00:00.000Z", result: { ...COMPLETED_ATTEMPT.result, overallScore: 65, grade: "C" } },
+];
+
+test("history filters by type and groups completed records newest-first by Chinese month", () => {
+  assert.equal(typeof reportModel.filterReportHistory, "function");
+  assert.equal(typeof reportModel.groupReportHistory, "function");
+  assert.deepEqual(
+    reportModel.filterReportHistory(HISTORY.toReversed(), "comprehensive").map((item) => item.id),
+    ["c-new", "c-old"],
+  );
+  const groups = reportModel.groupReportHistory(HISTORY.toReversed());
+  assert.deepEqual(groups.map((group) => [group.key, group.label]), [
+    ["2026-09", "2026年9月"],
+    ["2026-08", "2026年8月"],
+  ]);
+  assert.deepEqual(groups[0].records.map((item) => item.id), ["c-new", "o-new"]);
+});
+
+test("history selection initializes to the newest visible record and falls back after filtering", () => {
+  assert.equal(typeof reportModel.resolveReportHistorySelection, "function");
+  assert.equal(reportModel.resolveReportHistorySelection(HISTORY.toReversed(), "all", null)?.id, "c-new");
+  assert.equal(reportModel.resolveReportHistorySelection(HISTORY, "comprehensive", "o-new")?.id, "c-new");
+  assert.equal(reportModel.resolveReportHistorySelection(HISTORY, "objective", "o-new")?.id, "o-new");
+  assert.equal(reportModel.resolveReportHistorySelection(HISTORY, "missing-type", "c-new"), null);
+});
+
+test("a malformed history record is isolated instead of breaking or hiding valid records", () => {
+  assert.equal(typeof reportModel.groupReportHistory, "function");
+  const groups = reportModel.groupReportHistory([
+    { id: "broken", completedAt: null },
+    ...HISTORY.toReversed(),
+    { ...COMPLETED_ATTEMPT, id: "bad-grade", result: { ...COMPLETED_ATTEMPT.result, grade: null } },
+    { ...COMPLETED_ATTEMPT, id: "draft", status: "in_progress", completedAt: null },
+  ]);
+  assert.deepEqual(groups.flatMap((group) => group.records).map((item) => item.id), ["c-new", "o-new", "c-old", "broken", "bad-grade"]);
+  const broken = groups.flatMap((group) => group.records).find((item) => item.id === "broken");
+  assert.equal(broken.unavailable, true);
+  assert.equal(groups.flatMap((group) => group.records).find((item) => item.id === "bad-grade").unavailable, true);
+  assert.equal(groups.at(-1).label, "数据不可用");
+  assert.equal(groups.flatMap((group) => group.records).some((item) => item.id === "draft"), false);
+});
 
 test("no Attempt has an explicit empty view and cannot export a demo report", () => {
   const view = buildReportView(null);
@@ -166,10 +210,70 @@ const { code } = await transform(source, { loader: "jsx", jsx: "automatic", form
 const compiled = { exports: {} };
 const require = createRequire(import.meta.url);
 new Function("require", "module", "exports", code)(
-  (name) => name === "./report-model.js" ? reportModel : name === "@phosphor-icons/react" ? icons : require(name), compiled, compiled.exports,
+  (name) => name === "./report-model.js"
+    ? reportModel
+    : name === "./ReportHistory"
+      ? { ReportHistory: () => null }
+      : name === "@phosphor-icons/react"
+        ? icons
+        : require(name), compiled, compiled.exports,
 );
 const { AwakeningReport, AwakeningReportContent, AwakeningReportModal } = compiled.exports;
 const render = (Component, props) => renderToStaticMarkup(createElement(Component, props));
+
+async function compileReportHistory() {
+  const historySource = await readFile(new URL("../src/ReportHistory.jsx", import.meta.url), "utf8");
+  const transformed = await transform(historySource, { loader: "jsx", jsx: "automatic", format: "cjs" });
+  const historyModule = { exports: {} };
+  new Function("require", "module", "exports", transformed.code)(
+    (name) => name === "./report-model.js" ? reportModel : name === "@phosphor-icons/react" ? icons : require(name),
+    historyModule,
+    historyModule.exports,
+  );
+  return historyModule.exports;
+}
+
+test("history cards expose filters, frozen values, malformed isolation and the exact selected snapshot", async () => {
+  const { ReportHistory } = await compileReportHistory();
+  const selected = HISTORY[1];
+  const opened = [];
+  const html = render(ReportHistory, {
+    history: [{ id: "broken", completedAt: null }, ...HISTORY],
+    selectedId: selected.id,
+    filter: "all",
+    onFilter() {},
+    onSelect() {},
+    onOpen: (report) => opened.push(report),
+  });
+  for (const text of ["全部", "综合测评", "客观题测评", "2026年9月", "2026年8月", "25/25", "83%", "71%", "65%", "最新", "数据不可用", "查看完整报告"]) {
+    assert.ok(html.includes(text), `missing history content: ${text}`);
+  }
+  assert.match(html, /aria-selected="true"/);
+  assert.match(html, /disabled=""/);
+
+  const tree = ReportHistory({
+    history: HISTORY,
+    selectedId: selected.id,
+    filter: "all",
+    onFilter() {},
+    onSelect() {},
+    onOpen: (report) => opened.push(report),
+  });
+  const visit = (node) => {
+    if (!node || typeof node !== "object") return;
+    if (typeof node.type === "function") {
+      visit(node.type(node.props));
+      return;
+    }
+    if (node.props?.className === "report-history-open") node.props.onClick();
+    const children = node.props?.children;
+    for (const child of Array.isArray(children) ? children : [children]) visit(child);
+  };
+  visit(tree);
+  assert.equal(opened.length, 1);
+  assert.equal(opened[0], selected);
+  assert.equal(opened[0].result.overallScore, 71);
+});
 
 test("shared report content renders an empty state instead of fixed demo scores", () => {
   const html = render(AwakeningReportContent, { report: null });
@@ -201,6 +305,18 @@ test("completed shared content and profile-compatible modal use the selected sna
     assert.match(html, /客观题测评/);
     assert.doesNotMatch(html, /小源/);
   }
+});
+
+test("historical modal uses neutral selected-report context and omits the current-page history prompt", () => {
+  const historical = HISTORY[0];
+  const html = render(AwakeningReportModal, { report: historical, open: true, onClose() {} });
+  assert.match(html, /83%/);
+  assert.match(html, /综合测评/);
+  assert.match(html, /所选报告/);
+  assert.doesNotMatch(html, /最新测评|查看历史记录|完成测评后将在这里持续积累/);
+  assert.match(html, /保存截图/);
+  assert.match(html, /保存 PDF/);
+  assert.match(html, /aria-label="关闭觉醒报告"/);
 });
 
 test("the current report shows storage warnings, dialogue and a recent-history entry before guidance", () => {
@@ -235,6 +351,18 @@ test("report styling stacks responsively and isolates the selected modal report 
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /@media print[\s\S]*?\.profile-detail-screen\[data-screen="records"\]:has\(\.report-modal-overlay\)/);
+});
+
+test("history styling uses a sticky desktop preview, mobile preview-first order, focus rings and print exclusion", async () => {
+  const css = await readFile(new URL("../src/awakening-report.css", import.meta.url), "utf8");
+  assert.match(css, /\.report-history-layout\s*\{[\s\S]*?grid-template-areas:\s*"list preview"/);
+  assert.match(css, /\.report-history-preview\s*\{[\s\S]*?position:\s*sticky;[\s\S]*?top:/);
+  assert.match(css, /\.report-history-card\[data-type="comprehensive"\][\s\S]*?#(?:247cf1|155cca)/i);
+  assert.match(css, /\.report-history-card\[data-type="objective"\][\s\S]*?#(?:18a66a|168457)/i);
+  assert.match(css, /\.report-history-filters button:focus-visible[\s\S]*?outline:/);
+  assert.match(css, /@media \(max-width:\s*780px\)[\s\S]*?\.report-history-layout\s*\{[\s\S]*?grid-template-areas:\s*"preview"\s*"list"/);
+  const printCss = css.slice(css.indexOf("@media print"));
+  assert.match(printCss, /\.report-history,[\s\S]*?\{\s*display:\s*none/);
 });
 
 test("print releases current-report and selected-modal ancestors for multi-page content", async () => {

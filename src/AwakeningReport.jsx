@@ -6,7 +6,9 @@ import {
   buildReportSvg,
   buildReportView,
   radarGeometry,
+  resolveReportHistorySelection,
 } from "./report-model.js";
+import { ReportHistory } from "./ReportHistory";
 
 const DIALOGUE_LINES = [
   "这是你的最新测评：智核觉醒报告。",
@@ -214,11 +216,12 @@ function ReportGuidance({ view }) {
 
 export function AwakeningReportContent({ report, compact = false, history = [], onStartAssessment }) {
   const view = buildReportView(report);
+  const selectedContext = compact;
   return (
     <section className="awakening-report-card" data-compact={compact} aria-label="智核觉醒报告结果">
       <header className="report-overview-head">
         <div>
-          <span>{view.hasReport ? "最新测评" : "能力报告"}</span>
+          <span>{view.hasReport ? (selectedContext ? "所选报告" : "最新测评") : "能力报告"}</span>
           <h1>{view.title}</h1>
         </div>
         <dl>
@@ -234,7 +237,7 @@ export function AwakeningReportContent({ report, compact = false, history = [], 
             <ReportRadar view={view} />
             <ReportScores view={view} />
           </div>
-          <ReportHistoryEntry count={history.length} />
+          {!selectedContext && <ReportHistoryEntry count={history.length} />}
           <ReportGuidance view={view} />
         </>
       ) : (
@@ -302,10 +305,20 @@ export function AwakeningReport({
   active = false,
 }) {
   const [lineIndex, setLineIndex] = useState(0);
+  const [historyFilter, setHistoryFilter] = useState("all");
+  const [selectedHistoryId, setSelectedHistoryId] = useState(
+    () => resolveReportHistorySelection(history, "all", null)?.id ?? null,
+  );
+  const [historicalReport, setHistoricalReport] = useState(null);
 
   useEffect(() => {
     if (!active) setLineIndex(0);
   }, [active, report?.id]);
+
+  useEffect(() => {
+    const selected = resolveReportHistorySelection(history, historyFilter, selectedHistoryId);
+    if ((selected?.id ?? null) !== selectedHistoryId) setSelectedHistoryId(selected?.id ?? null);
+  }, [history, historyFilter, selectedHistoryId]);
 
   const advanceDialogue = () => {
     if (lineIndex < DIALOGUE_LINES.length - 1) setLineIndex((current) => current + 1);
@@ -348,6 +361,22 @@ export function AwakeningReport({
         report={report}
         history={history}
         onStartAssessment={onStartAssessment}
+      />
+      <ReportHistory
+        history={history}
+        selectedId={selectedHistoryId}
+        filter={historyFilter}
+        onFilter={(nextFilter) => {
+          setHistoryFilter(nextFilter);
+          setSelectedHistoryId(resolveReportHistorySelection(history, nextFilter, selectedHistoryId)?.id ?? null);
+        }}
+        onSelect={setSelectedHistoryId}
+        onOpen={setHistoricalReport}
+      />
+      <AwakeningReportModal
+        report={historicalReport}
+        open={Boolean(historicalReport)}
+        onClose={() => setHistoricalReport(null)}
       />
     </main>
   );

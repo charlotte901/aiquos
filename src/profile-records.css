@@ -187,6 +187,14 @@
   font-weight: 700;
 }
 
+.records-panel li[data-type="comprehensive"] > span {
+  background: #247cf1;
+}
+
+.records-panel li[data-type="objective"] > span {
+  background: #18a66a;
+}
+
 .records-panel h2,
 .records-panel li p {
   margin: 0;
@@ -226,6 +234,11 @@
 
 .record-report-button:active {
   transform: scale(.97);
+}
+
+.record-report-button:focus-visible {
+  outline: 3px solid #0b65db;
+  outline-offset: 3px;
 }
 
 .records-empty {

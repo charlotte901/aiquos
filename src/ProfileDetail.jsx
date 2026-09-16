@@ -17,6 +17,7 @@ import { AccountSettings } from "./AccountSettings";
 import { CaseDetail } from "./CaseArchive";
 import { ForumDetail } from "./ForumBoard";
 import { AwakeningReportModal } from "./AwakeningReport";
+import { filterReportHistory } from "./report-model.js";
 import { PROFILE_DETAILS } from "./profile-layout";
 import { getViewportLayout } from "./layout";
 import {
@@ -122,11 +123,10 @@ const RECORD_LIBRARY = [
     { type: "对话测评", title: "需求澄清对话", score: "82 分", time: "14:30 · 18 分钟" },
   ],
   [
-    { type: "综合题", title: "综合测评", score: "92 分", time: "08:30 · 34 分钟" },
     { type: "客观题", title: "提示词工程专项", score: "88 分", time: "10:12 · 15 分钟" },
   ],
 ];
-const ASSESSMENT_RECORDS = Object.fromEntries(RECORD_OFFSETS.map((offset, index) => {
+const DEMONSTRATION_RECORDS = Object.fromEntries(RECORD_OFFSETS.map((offset, index) => {
   const date = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + offset);
   const status = offset <= 0 ? "已完成" : "已安排";
   return [
@@ -141,6 +141,38 @@ const ASSESSMENT_RECORDS = Object.fromEntries(RECORD_OFFSETS.map((offset, index)
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function dateFromKey(key) {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function buildProfileAssessmentRecords(assessmentHistory = []) {
+  const records = {};
+  for (const report of filterReportHistory(assessmentHistory, "all")) {
+    if (report.unavailable) continue;
+    const completed = new Date(report.completedAt);
+    const key = dateKey(completed);
+    const time = new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(completed);
+    const type = report.assessmentType === "comprehensive" ? "综合测评" : "客观题测评";
+    if (!records[key]) records[key] = [];
+    records[key].push({
+      id: report.id,
+      assessmentType: report.assessmentType,
+      type,
+      title: `${type} · 智核觉醒报告`,
+      score: `${report.result.overallScore}%`,
+      time: `${time} · ${report.answeredCount}/${report.totalQuestions}`,
+      status: "已完成",
+      report,
+    });
+  }
+  return records;
 }
 
 function getCalendarCells(year, month) {
@@ -183,11 +215,14 @@ function useViewportLayout() {
   return layout;
 }
 
-export function ProfileDetail({ id, onBack, onHome, busy }) {
+export function ProfileDetail({ id, assessmentHistory = [], onBack, onHome, busy }) {
   const detail = PROFILE_DETAILS[id];
   const viewportLayout = useViewportLayout();
-  const [cursor, setCursor] = useState({ year: TODAY.getFullYear(), month: TODAY.getMonth() });
-  const [selected, setSelected] = useState(TODAY);
+  const realAssessmentRecords = buildProfileAssessmentRecords(assessmentHistory);
+  const newestAssessmentKey = Object.keys(realAssessmentRecords)[0] ?? null;
+  const initialRecordDate = newestAssessmentKey ? dateFromKey(newestAssessmentKey) : TODAY;
+  const [cursor, setCursor] = useState({ year: initialRecordDate.getFullYear(), month: initialRecordDate.getMonth() });
+  const [selected, setSelected] = useState(initialRecordDate);
   const [openWork, setOpenWork] = useState(0);
   const [favoriteId, setFavoriteId] = useState(null);
   const [favoriteActivity, setFavoriteActivity] = useState({});
@@ -195,16 +230,26 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
   const [classQuery, setClassQuery] = useState("");
   const [classSearch, setClassSearch] = useState(null);
   const [classNotice, setClassNotice] = useState("");
-  const [reportOpen, setReportOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
   const favorites = useFavorites();
   const selectedKey = dateKey(selected);
-  const records = ASSESSMENT_RECORDS[selectedKey] ?? [];
+  const records = [
+    ...(realAssessmentRecords[selectedKey] ?? []),
+    ...(DEMONSTRATION_RECORDS[selectedKey] ?? []),
+  ];
   const cells = getCalendarCells(cursor.year, cursor.month);
   const activeFavorite = favorites.find((item) => item.id === favoriteId);
   const activeFavoriteActivity = favoriteActivity[activeFavorite?.id] ?? {
     liked: false,
     comments: activeFavorite?.comments ?? [],
   };
+
+  useEffect(() => {
+    if (!newestAssessmentKey) return;
+    const newestDate = dateFromKey(newestAssessmentKey);
+    setCursor({ year: newestDate.getFullYear(), month: newestDate.getMonth() });
+    setSelected(newestDate);
+  }, [newestAssessmentKey]);
 
   const updateFavoriteActivity = (itemId, next) => {
     setFavoriteActivity((current) => ({ ...current, [itemId]: next }));
@@ -564,7 +609,7 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
                     onClick={() => setSelected(date)}
                   >
                     <span>{date.getDate()}</span>
-                    {ASSESSMENT_RECORDS[key] && <i className="has-record" aria-hidden="true" />}
+                    {(realAssessmentRecords[key]?.length || DEMONSTRATION_RECORDS[key]?.length) && <i className="has-record" aria-hidden="true" />}
                   </button>
                 );
               })}
@@ -578,17 +623,17 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
             {records.length ? (
               <ul>
                 {records.map((record) => (
-                  <li key={record.title}>
+                  <li key={record.id ?? `${record.title}-${record.time}`} data-type={record.assessmentType}>
                     <span>{record.type}</span>
                     <div>
                       <h2>{record.title}</h2>
                       <p>{record.time} · {record.score} · {record.status}</p>
-                      {record.type === "综合题" && record.status === "已完成" && (
+                      {record.report && (
                         <button
                           type="button"
                           className="record-report-button"
                           aria-haspopup="dialog"
-                          onClick={() => setReportOpen(true)}
+                          onClick={() => setSelectedReport(record.report)}
                         >
                           觉醒报告
                         </button>
@@ -606,7 +651,11 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
           </div>
         </section>
       )}
-      <AwakeningReportModal open={reportOpen} onClose={() => setReportOpen(false)} />
+      <AwakeningReportModal
+        report={selectedReport}
+        open={Boolean(selectedReport)}
+        onClose={() => setSelectedReport(null)}
+      />
     </main>
   );
 }

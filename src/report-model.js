@@ -1,6 +1,7 @@
 import { DIMENSIONS } from "../skills/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
 const TYPE_LABELS = { comprehensive: "综合测评", objective: "客观题测评" };
+const COMPLETED_GRADES = new Set(["S", "A", "B", "C", "D"]);
 const ADVICE = {
   D1: "补齐模型类型与能力边界，用一句话说清每个工具适合什么任务。",
   D2: "继续训练结构化提示：目标、背景、约束、示例和验收标准分开写。",
@@ -15,6 +16,66 @@ export const REPORT_RESOURCES = [
   { key: "D3", tag: "工具实战", title: "联网检索与文件分析挑战", result: "提升工具使用 · 预计 35 分钟" },
   { key: "D6", tag: "伦理案例", title: "偏见、隐私与版权审查实验室", result: "强化伦理合规 · 预计 30 分钟" },
 ];
+
+function isCompletedHistoryRecord(record) {
+  if (!record || typeof record !== "object") return false;
+  if (typeof record.id !== "string" || !record.id) return false;
+  if (record.status !== "completed" || !TYPE_LABELS[record.assessmentType]) return false;
+  if (!Number.isFinite(Date.parse(record.completedAt))) return false;
+  if (record.answeredCount !== 25 || record.totalQuestions !== 25) return false;
+  if (!Array.isArray(record.result?.dimensions) || record.result.dimensions.length !== DIMENSIONS.length) return false;
+  if (!Number.isFinite(record.result.overallScore) || record.result.overallScore < 0 || record.result.overallScore > 100) return false;
+  if (!COMPLETED_GRADES.has(record.result.grade)) return false;
+  return DIMENSIONS.every(({ key }) => {
+    const dimension = record.result.dimensions.find((item) => item?.key === key);
+    return Number.isFinite(dimension?.score) && dimension.score >= 0 && dimension.score <= 100;
+  });
+}
+
+function normalizedReportHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history.flatMap((record, index) => {
+    if (record?.status && record.status !== "completed") return [];
+    if (isCompletedHistoryRecord(record)) return [record];
+    const value = record && typeof record === "object" ? record : {};
+    return [{ ...value, id: value.id || `unavailable-${index + 1}`, unavailable: true }];
+  });
+}
+
+export function filterReportHistory(history, filter = "all") {
+  const records = normalizedReportHistory(history);
+  const filtered = filter === "all"
+    ? records
+    : records.filter((record) => record.assessmentType === filter);
+  return filtered.toSorted((left, right) => {
+    if (left.unavailable !== right.unavailable) return left.unavailable ? 1 : -1;
+    if (left.unavailable) return 0;
+    return Date.parse(right.completedAt) - Date.parse(left.completedAt);
+  });
+}
+
+export function groupReportHistory(history) {
+  const groups = new Map();
+  const unavailable = [];
+  for (const record of filterReportHistory(history, "all")) {
+    if (record.unavailable) {
+      unavailable.push(record);
+      continue;
+    }
+    const date = new Date(record.completedAt);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    if (!groups.has(key)) groups.set(key, { key, label: `${date.getFullYear()}年${date.getMonth() + 1}月`, records: [] });
+    groups.get(key).records.push(record);
+  }
+  const result = [...groups.values()];
+  if (unavailable.length) result.push({ key: "unavailable", label: "数据不可用", records: unavailable });
+  return result;
+}
+
+export function resolveReportHistorySelection(history, filter = "all", selectedId = null) {
+  const visible = filterReportHistory(history, filter).filter((record) => !record.unavailable);
+  return visible.find((record) => record.id === selectedId) ?? visible[0] ?? null;
+}
 
 function orderedDimensions(dimensions = []) {
   return DIMENSIONS.map((metadata) => {
