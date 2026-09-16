@@ -126,22 +126,33 @@ const RECORD_LIBRARY = [
     { type: "客观题", title: "提示词工程专项", score: "88 分", time: "10:12 · 15 分钟" },
   ],
 ];
-const DEMONSTRATION_RECORDS = Object.fromEntries(RECORD_OFFSETS.map((offset, index) => {
-  const date = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + offset);
-  const status = offset <= 0 ? "已完成" : "已安排";
-  return [
-    dateKey(date),
-    RECORD_LIBRARY[index % RECORD_LIBRARY.length].map((record) => ({
-      ...record,
-      score: offset <= 0 ? record.score : "待完成",
-      status,
-    })),
-  ];
-}));
+const FUTURE_COMPREHENSIVE_RECORD = {
+  type: "综合测评", title: "综合测评", score: "待完成", time: "08:30 · 34 分钟",
+};
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
+
+export function buildDemonstrationRecords(today = TODAY) {
+  return Object.fromEntries(RECORD_OFFSETS.map((offset, index) => {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+    const status = offset <= 0 ? "已完成" : "已安排";
+    const scheduled = offset === 13
+      ? [FUTURE_COMPREHENSIVE_RECORD, ...RECORD_LIBRARY[index % RECORD_LIBRARY.length]]
+      : RECORD_LIBRARY[index % RECORD_LIBRARY.length];
+    return [
+      dateKey(date),
+      scheduled.map((record) => ({
+        ...record,
+        score: offset <= 0 ? record.score : "待完成",
+        status,
+      })),
+    ];
+  }));
+}
+
+const DEMONSTRATION_RECORDS = buildDemonstrationRecords();
 
 function dateFromKey(key) {
   const [year, month, day] = key.split("-").map(Number);

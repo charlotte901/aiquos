@@ -1,6 +1,7 @@
 import { DIMENSIONS } from "../skills/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
 const TYPE_LABELS = { comprehensive: "综合测评", objective: "客观题测评" };
+const HISTORY_ASSESSMENT_TYPES = new Set(["comprehensive", "objective"]);
 const COMPLETED_GRADES = new Set(["S", "A", "B", "C", "D"]);
 const ADVICE = {
   D1: "补齐模型类型与能力边界，用一句话说清每个工具适合什么任务。",
@@ -20,22 +21,37 @@ export const REPORT_RESOURCES = [
 function isCompletedHistoryRecord(record) {
   if (!record || typeof record !== "object") return false;
   if (typeof record.id !== "string" || !record.id) return false;
-  if (record.status !== "completed" || !TYPE_LABELS[record.assessmentType]) return false;
-  if (!Number.isFinite(Date.parse(record.completedAt))) return false;
+  if (record.status !== "completed" || !HISTORY_ASSESSMENT_TYPES.has(record.assessmentType)) return false;
+  if (typeof record.completedAt !== "string" || !record.completedAt.trim() || !Number.isFinite(Date.parse(record.completedAt))) return false;
   if (record.answeredCount !== 25 || record.totalQuestions !== 25) return false;
+  if (!Array.isArray(record.responses) || record.responses.length !== 25) return false;
+  const responseIds = record.responses.map((response) => response?.questionId);
+  if (responseIds.some((id) => typeof id !== "string" || !id.trim()) || new Set(responseIds).size !== responseIds.length) return false;
   if (!Array.isArray(record.result?.dimensions) || record.result.dimensions.length !== DIMENSIONS.length) return false;
-  if (!Number.isFinite(record.result.overallScore) || record.result.overallScore < 0 || record.result.overallScore > 100) return false;
+  if (!Number.isInteger(record.result.overallScore) || record.result.overallScore < 0 || record.result.overallScore > 100) return false;
   if (!COMPLETED_GRADES.has(record.result.grade)) return false;
   return DIMENSIONS.every(({ key }) => {
     const dimension = record.result.dimensions.find((item) => item?.key === key);
-    return Number.isFinite(dimension?.score) && dimension.score >= 0 && dimension.score <= 100;
+    return Number.isFinite(dimension?.score) && dimension.score >= 0 && dimension.score <= 100
+      && Number.isInteger(dimension.evidenceCount) && dimension.evidenceCount >= 0;
   });
+}
+
+function isKnownInProgressDraft(record) {
+  return record
+    && typeof record === "object"
+    && !Array.isArray(record)
+    && typeof record.id === "string"
+    && record.id
+    && HISTORY_ASSESSMENT_TYPES.has(record.assessmentType)
+    && record.status === "in_progress"
+    && record.completedAt === null;
 }
 
 function normalizedReportHistory(history) {
   if (!Array.isArray(history)) return [];
   return history.flatMap((record, index) => {
-    if (record?.status && record.status !== "completed") return [];
+    if (isKnownInProgressDraft(record)) return [];
     if (isCompletedHistoryRecord(record)) return [record];
     const value = record && typeof record === "object" ? record : {};
     return [{ ...value, id: value.id || `unavailable-${index + 1}`, unavailable: true }];

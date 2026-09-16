@@ -959,6 +959,9 @@ body:has(.site-experience[data-view="reports"])::-webkit-scrollbar {
   .site-experience[data-view="reports"],
   .site-experience[data-view="reports"] > .experience-panel:not([hidden]),
   .site-experience[data-view="reports"] .awakening-screen,
+  .site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-overlay,
+  .site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal,
+  .site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-body,
   html:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay),
   body:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay),
   body:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay) #root,
@@ -977,14 +980,19 @@ body:has(.site-experience[data-view="reports"])::-webkit-scrollbar {
   html,
   body,
   .awakening-screen,
+  .site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay),
   .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) {
     background: #fff;
   }
 
   .awakening-screen { padding: 0; color: #111; }
+  .site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) {
+    padding: 0;
+  }
   .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) {
     padding: 0;
   }
+  .site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) > :not(.report-modal-overlay) { display: none !important; }
   .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) > :not(.report-modal-overlay) { display: none !important; }
   .report-modal-overlay { position: static; display: block; padding: 0; background: #fff; backdrop-filter: none; }
   .report-modal { display: block; width: 100%; padding: 0; box-shadow: none; }

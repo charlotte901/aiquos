@@ -96,11 +96,16 @@ test("profile detail navigation keeps the selected card id in step", async () =>
   );
 });
 
+const profileResponses = () => Array.from(
+  { length: 25 },
+  (_, index) => ({ questionId: `profile-question-${index + 1}` }),
+);
 const PROFILE_HISTORY = [
   {
     id: "profile-comprehensive", assessmentType: "comprehensive", status: "completed",
     startedAt: "2026-09-14T08:00:00.000Z", completedAt: "2026-09-14T10:03:00.000Z",
     answeredCount: 25, totalQuestions: 25,
+    responses: profileResponses(),
     result: {
       dimensions: [72, 68, 75, 70, 66, 74].map((score, index) => ({ key: `D${index + 1}`, score, evidenceCount: 6 })),
       overallScore: 83, grade: "A",
@@ -110,6 +115,7 @@ const PROFILE_HISTORY = [
     id: "profile-objective", assessmentType: "objective", status: "completed",
     startedAt: "2026-08-20T08:00:00.000Z", completedAt: "2026-08-20T09:12:00.000Z",
     answeredCount: 25, totalQuestions: 25,
+    responses: profileResponses(),
     result: {
       dimensions: [62, 64, 67, 69, 71, 73].map((score, index) => ({ key: `D${index + 1}`, score, evidenceCount: 5 })),
       overallScore: 68, grade: "C",
@@ -152,6 +158,18 @@ test("profile record mapping uses real completed dates, types, scores and report
   assert.equal(records["2026-09-14"][0].score, "83%");
   assert.equal(records["2026-08-20"][0].type, "客观题测评");
   assert.equal(records["2026-08-20"][0].report, PROFILE_HISTORY[1]);
+});
+
+test("profile keeps the future comprehensive demonstration schedule without restoring the fixed completed 92-point record", async () => {
+  const { buildDemonstrationRecords } = await compileProfileDetail();
+  assert.equal(typeof buildDemonstrationRecords, "function");
+  const records = buildDemonstrationRecords(new Date(2026, 8, 6));
+  const futureComprehensive = records["2026-09-19"].find((record) => record.title === "综合测评");
+  assert.deepEqual(
+    futureComprehensive,
+    { type: "综合测评", title: "综合测评", score: "待完成", time: "08:30 · 34 分钟", status: "已安排" },
+  );
+  assert.equal(records["2026-09-06"].some((record) => record.title === "综合测评" && record.score === "92 分"), false);
 });
 
 test("profile receives persisted assessment history and opens the selected real snapshot", async () => {

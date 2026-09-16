@@ -25,9 +25,14 @@ const IN_PROGRESS_ATTEMPT = {
     ], overallScore: null, grade: null,
   },
 };
+const completedResponses = () => Array.from(
+  { length: 25 },
+  (_, index) => ({ questionId: `history-question-${index + 1}` }),
+);
 const COMPLETED_ATTEMPT = {
   ...IN_PROGRESS_ATTEMPT, id: "complete-1", status: "completed", answeredCount: 25,
   completedAt: "2026-09-14T08:30:00.000Z",
+  responses: completedResponses(),
   result: {
     dimensions: IN_PROGRESS_ATTEMPT.result.dimensions.map((item) => ({
       ...item, score: item.score ?? 74, evidenceCount: Math.max(item.evidenceCount, 6),
@@ -77,6 +82,31 @@ test("a malformed history record is isolated instead of breaking or hiding valid
   assert.equal(groups.flatMap((group) => group.records).find((item) => item.id === "bad-grade").unavailable, true);
   assert.equal(groups.at(-1).label, "数据不可用");
   assert.equal(groups.flatMap((group) => group.records).some((item) => item.id === "draft"), false);
+});
+
+test("history accepts only explicit completed 25-response snapshots and quarantines every malformed neighbor", () => {
+  const duplicateResponses = completedResponses();
+  duplicateResponses[24] = { questionId: duplicateResponses[0].questionId };
+  const normalized = reportModel.filterReportHistory([
+    HISTORY[0],
+    { ...COMPLETED_ATTEMPT, id: "numeric-completed-at", completedAt: 0 },
+    { ...COMPLETED_ATTEMPT, id: "prototype-type", assessmentType: "constructor" },
+    { ...COMPLETED_ATTEMPT, id: "missing-response-snapshot", responses: undefined },
+    { ...COMPLETED_ATTEMPT, id: "duplicate-response-id", responses: duplicateResponses },
+    { ...COMPLETED_ATTEMPT, id: "unknown-status", status: "complete" },
+    { ...COMPLETED_ATTEMPT, id: "known-draft", status: "in_progress", completedAt: null },
+    HISTORY[1],
+  ]);
+
+  assert.deepEqual(
+    normalized.filter((record) => !record.unavailable).map((record) => record.id),
+    ["c-new", "o-new"],
+  );
+  assert.deepEqual(
+    normalized.filter((record) => record.unavailable).map((record) => record.id).sort(),
+    ["duplicate-response-id", "missing-response-snapshot", "numeric-completed-at", "prototype-type", "unknown-status"],
+  );
+  assert.equal(normalized.some((record) => record.id === "known-draft"), false);
 });
 
 test("no Attempt has an explicit empty view and cannot export a demo report", () => {
@@ -413,4 +443,40 @@ test("print releases current-report and selected-modal ancestors for multi-page 
     .map((item) => item.declarations)
     .join("\n");
   assert.match(modal, /display:\s*block\s*;/);
+});
+
+test("printing a selected history modal hides a different current report and releases the selected modal for pagination", async () => {
+  const current = {
+    ...HISTORY[1],
+    id: "current-report-for-print",
+    result: { ...HISTORY[1].result, overallScore: 71, grade: "B" },
+  };
+  const selected = {
+    ...HISTORY[0],
+    id: "selected-history-for-print",
+    result: { ...HISTORY[0].result, overallScore: 83, grade: "A" },
+  };
+  const currentHtml = render(AwakeningReportContent, { report: current, history: [selected] });
+  const selectedHtml = render(AwakeningReportModal, { report: selected, open: true, onClose() {} });
+  assert.equal(buildReportView(current).id, "current-report-for-print");
+  assert.equal(buildReportView(selected).id, "selected-history-for-print");
+  assert.match(currentHtml, /71%/);
+  assert.doesNotMatch(currentHtml, /83%/);
+  assert.match(selectedHtml, /83%/);
+  assert.doesNotMatch(selectedHtml, /71%/);
+
+  const css = await readFile(new URL("../src/awakening-report.css", import.meta.url), "utf8");
+  const printCss = css.slice(css.indexOf("@media print"));
+  assert.match(
+    printCss,
+    /\.site-experience\[data-view="reports"\] \.awakening-screen:has\(\.report-modal-overlay\) > :not\(\.report-modal-overlay\)\s*\{\s*display:\s*none\s*!important\s*;/,
+  );
+  for (const selector of [
+    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-overlay',
+    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal',
+    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-body',
+  ]) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    assert.match(printCss, new RegExp(`${escaped}[\\s\\S]*?height:\\s*auto\\s*!important;[\\s\\S]*?max-height:\\s*none\\s*!important;[\\s\\S]*?overflow:\\s*visible\\s*!important;`));
+  }
 });
