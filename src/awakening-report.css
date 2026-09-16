@@ -650,31 +650,74 @@ body:has(.site-experience[data-view="reports"])::-webkit-scrollbar {
 }
 
 @media print {
+  html:has(.site-experience[data-view="reports"]),
+  body:has(.site-experience[data-view="reports"]),
+  body:has(.site-experience[data-view="reports"]) #root,
+  .site-experience[data-view="reports"],
+  .site-experience[data-view="reports"] > .experience-panel:not([hidden]),
+  .site-experience[data-view="reports"] .awakening-screen,
+  html:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay),
+  body:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay),
+  body:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay) #root,
+  .site-experience:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay),
+  .site-experience:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay) > .experience-panel:not([hidden]),
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay),
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal-overlay,
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal,
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal-body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   html,
   body,
-  .awakening-screen {
-    height: auto;
-    overflow: visible;
+  .awakening-screen,
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) {
     background: #fff;
   }
 
-  .awakening-screen { min-height: auto; padding: 0; color: #111; }
-  .profile-detail-screen:has(.report-modal-overlay) {
-    min-height: 0;
+  .awakening-screen { padding: 0; color: #111; }
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) {
     padding: 0;
-    background: #fff;
   }
-  .profile-detail-screen:has(.report-modal-overlay) > :not(.report-modal-overlay) { display: none !important; }
+  .profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) > :not(.report-modal-overlay) { display: none !important; }
   .report-modal-overlay { position: static; display: block; padding: 0; background: #fff; backdrop-filter: none; }
-  .report-modal { width: 100%; max-height: none; padding: 0; box-shadow: none; }
+  .report-modal { display: block; width: 100%; padding: 0; box-shadow: none; }
   .report-modal-head { display: none; }
-  .report-modal-body { margin: 0; overflow: visible; }
+  .report-modal-body { margin: 0; }
   .report-back,
   .report-actions,
   .awakening-dialogue,
   .report-history-entry,
   .report-storage-warning { display: none; }
-  .awakening-report-card { width: 100%; padding: 20px; box-shadow: none; border: 1px solid #bbb; }
-  .report-hero { grid-template-columns: .9fr 1.1fr; break-inside: avoid; }
-  .report-guidance { break-before: page; }
+  .awakening-report-card,
+  .report-guidance,
+  .advice-list,
+  .resource-list {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .awakening-report-card {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid #bbb;
+    box-shadow: none;
+    break-inside: auto;
+  }
+  .report-hero { grid-template-columns: .9fr 1.1fr; break-inside: auto; }
+  .report-guidance {
+    display: block;
+    break-before: page;
+    break-inside: auto;
+  }
+  .report-guidance > div + div { margin-top: 24px; }
+  .advice-list,
+  .resource-list { display: block; }
+  .advice-list li,
+  .resource-list li { break-inside: avoid; page-break-inside: avoid; }
+  .advice-list li + li,
+  .resource-list li + li { margin-top: 10px; }
 }

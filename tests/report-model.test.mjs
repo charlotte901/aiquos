@@ -234,5 +234,55 @@ test("report styling stacks responsively and isolates the selected modal report 
   assert.match(css, /@media \(max-width: 980px\)[\s\S]*?\.report-hero\s*\{\s*grid-template-columns:\s*1fr/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
-  assert.match(css, /@media print[\s\S]*?\.profile-detail-screen:has\(\.report-modal-overlay\)/);
+  assert.match(css, /@media print[\s\S]*?\.profile-detail-screen\[data-screen="records"\]:has\(\.report-modal-overlay\)/);
+});
+
+test("print releases current-report and selected-modal ancestors for multi-page content", async () => {
+  const css = await readFile(new URL("../src/awakening-report.css", import.meta.url), "utf8");
+  const media = css.slice(css.indexOf("@media print"));
+  const printCss = media.slice(media.indexOf("{") + 1, media.lastIndexOf("}"));
+  const rules = [...printCss.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selectors, declarations]) => ({
+    selectors: selectors.split(",").map((selector) => selector.trim()),
+    declarations,
+  }));
+  const expectRelease = (selector, { minHeight = true } = {}) => {
+    const rule = rules.find((item) => item.selectors.includes(selector));
+    assert.ok(rule, `missing print release rule for ${selector}`);
+    assert.match(rule.declarations, /height:\s*auto(?:\s*!important)?\s*;/, `${selector} must release height`);
+    assert.match(rule.declarations, /max-height:\s*none(?:\s*!important)?\s*;/, `${selector} must release max-height`);
+    if (minHeight) assert.match(rule.declarations, /min-height:\s*0(?:\s*!important)?\s*;/, `${selector} must release min-height`);
+    assert.match(rule.declarations, /overflow:\s*visible(?:\s*!important)?\s*;/, `${selector} must release overflow`);
+  };
+
+  for (const selector of [
+    'html:has(.site-experience[data-view="reports"])',
+    'body:has(.site-experience[data-view="reports"])',
+    'body:has(.site-experience[data-view="reports"]) #root',
+    '.site-experience[data-view="reports"]',
+    '.site-experience[data-view="reports"] > .experience-panel:not([hidden])',
+    '.site-experience[data-view="reports"] .awakening-screen',
+    'html:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay)',
+    'body:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay)',
+    'body:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay) #root',
+    '.site-experience:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay)',
+    '.site-experience:has(.profile-detail-screen[data-screen="records"] .report-modal-overlay) > .experience-panel:not([hidden])',
+    '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay)',
+    '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal-overlay',
+    '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal',
+    '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal-body',
+  ]) expectRelease(selector);
+
+  for (const selector of [".awakening-report-card", ".report-guidance", ".advice-list", ".resource-list"]) {
+    expectRelease(selector, { minHeight: false });
+  }
+  const guidance = rules
+    .filter((item) => item.selectors.includes(".report-guidance"))
+    .map((item) => item.declarations)
+    .join("\n");
+  assert.match(guidance, /break-inside:\s*auto\s*;/);
+  const modal = rules
+    .filter((item) => item.selectors.includes(".report-modal"))
+    .map((item) => item.declarations)
+    .join("\n");
+  assert.match(modal, /display:\s*block\s*;/);
 });
