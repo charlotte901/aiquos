@@ -11,7 +11,7 @@ import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
-import { restartDraft } from "./assessment-attempt";
+import { resolveLatestReport, restartDraft } from "./assessment-attempt";
 import {
   completeScoredStage,
   isScoredAssessment,
@@ -574,7 +574,15 @@ export function SiteExperience() {
         }}
         hidden={view !== "reports"}
       >
-        <AwakeningReport active={view === "reports"} onBack={() => go("choose")} busy={moving} />
+        <AwakeningReport
+          report={resolveLatestReport(assessmentState)}
+          history={assessmentState.history}
+          storageWarning={storageWarning}
+          active={view === "reports"}
+          onBack={() => go("choose")}
+          onStartAssessment={() => go("assessments")}
+          busy={moving}
+        />
       </div>
       <div
         className="experience-panel"
@@ -635,7 +643,7 @@ export function SiteExperience() {
           />
         ) : null}
       </div>
-      {storageWarning && <p className="assessment-storage-warning" role="alert">{storageWarning}</p>}
+      {storageWarning && view !== "reports" && <p className="assessment-storage-warning" role="alert">{storageWarning}</p>}
       <div className="split-transition" ref={stage} aria-hidden="true" />
     </div>
   );
