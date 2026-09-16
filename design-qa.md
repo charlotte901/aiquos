@@ -1,8 +1,472 @@
 # AIQUOS visual verification
 
-final result: blocked
+## Revision: the departing stamp hands its box to the corner peek (2026-09-15)
 
-## Latest revision: readable streamed conversation feedback (2026-09-04)
+Reported symptom, and it was **direction-dependent** — which is what made it worth measuring rather than re-reasoning: going **forward** a page, the **top-left** stamp is wrong; going **back** a page, the **bottom-right** one is. In both cases it sits at the wrong home for a moment and then shrinks and slides up-and-right (backwards) / left-and-down (forwards) into place.
+
+Both directions were sampled frame by frame (every rAF, click and sample in one injection) and the defect is a single-frame discontinuity at the hand-off, not a timing wobble:
+
+| | last frame of the sweep | first settled frame | jump |
+|---|---|---|---|
+| next page → top-left | `[-14, -10, 257, 313]` | `[-93, 48, 186, 228]` | 79px left, 58px down, **71px narrower** |
+| prev page → bottom-right | `[1196, 620, 258, 313]` | `[1347, 625, 186, 228]` | **115px right**, 38px up, **72px narrower** |
+
+The second row *is* the reported "shrinks, moves up, moves right" — to the pixel.
+
+**Cause 1 — the landing pose was guessed.** The two corner peeks are the sweep's landing strip and launch pad: the case leaving the centre reappears as the peek on the side it flew out toward, and the case arriving was that peek one frame earlier. The exit direction in the code already matched the destination corner, but the endpoint was three hand-aimed constants — `42vw` / `35vh` / a landing scale of `0.74` — and the real corner sits at `50vw` / `33.3vh` (top-left), `50vw` / `30.8vh` (bottom-right) and a scale of `0.5478`. So the stamp reached the end of its flight a corner-width short, the moving scene unmounted, and the settled peek appeared under it.
+
+**Cause 2 — the frame arrived but its contents did not.** The centre stamp wears the full body (artwork over a title/tags/year caption) and the corner peek wears the compact one (artwork filling the frame, only the year in the corner). Matching the outer box alone is not enough: the picture *inside* the frame re-lays itself out on the next frame, so the artwork changes size and the caption vanishes. The frame's outline matched; its interior was 100% different.
+
+**Cause 3 — the display words never left the screen.** They are pushed `62vw`, but they sit at the *centre* of the poster, so clearing the edge costs half the poster plus the whole word (`≈78vw` here). The shortfall left the last letter — a `~70×85px` slab of pink display type — sitting at the frame's edge to blink out at the cut.
+
+**Fix.** All three are now **measured off the settled composition** at the moment a page change starts (`measureCornerPoses`), and the whole sweep consumes the measurement:
+
+- position, scale, tilt and landing opacity of each leg come from the corner box it is heading for;
+- the travelling stamp carries **both bodies** and cross-fades them by the flight (`PosterStamp morph`), so the artwork and caption resolve continuously; the compact rules moved from `.poster-stamp.is-compact` onto `.poster-stamp-content.is-compact` so both bodies can coexist;
+- the word clearance comes from the words' own boxes, both of them, since they are different lengths.
+
+Measuring rather than restating matters because these rules carry layout overrides this file would otherwise have to duplicate: the corner's horizontal anchor is `translateX(-50%)` on wide layouts but `translateX(-76%)` in compact, which puts the compact corner centre at `-35.7px` instead of `0` — a hard-coded `-50vw` would have been 35px wrong there, and a hard-coded word clearance would have been 16vw short.
+
+Verified after the fix, same sampler, both layouts, both directions:
+
+| | wide 1440×900 | compact 390×844 |
+|---|---|---|
+| next page | dx **0**, dy **0**, dW **0** | dx 1.0, dy −0.5, dW 0 |
+| prev page | dx **0**, dy **0**, dW **0** | dx 0.0, dy 0.5, dW 0 |
+
+(the ±1px in compact is sub-pixel rounding on a 140px box)
+
+And the hand-off measured as changed pixels between the frame before the cut and the settled frame, over the whole 1440×900 viewport:
+
+| | whole frame | departing corner |
+|---|---|---|
+| original | 75,249px (5.81%) | 59,693px |
+| + landing pose | 40,201px (3.10%) | 24,645px |
+| + contents and words | **17,835px (1.38%)** | **2,279px** |
+
+mirrored for a backwards page: 77,734 → 39,150 → **17,364px (1.34%)** overall, 62,294 → **1,923px** in the departing corner. What is left in that corner is a hairline of antialiasing along the stamp's edge.
+
+Regression test added: `a page change lands the departing stamp on the corner it is about to become` in `tests/cases.test.mjs` — it pins the measured poses as the source of every endpoint, pins the word clearance as measured, pins that the moved stamp carries both bodies, forbids the seven guessed constants from coming back, and pins that the measurement happens once per page change (mid-flight the settled composition is gone, so re-measuring would read the travelling stamp's own box). **Teeth verified**: restoring `* 42 * travel` on the x offset fails it.
+
+Evidence in the workspace outputs: `cases-poster-handoff-before-after.png` (corner crops of the frame before the cut and the settled frame, both directions, before and after, with the corner's true landing box drawn in red so the mismatch is checkable by eye) and `cases-poster-handoff-mask-topleft.png` / `-mask-bottomright.png` (the changed pixels painted red, at each stage of the fix). The settled column is byte-identical before and after, which is the sanity check that only the transition changed.
+
+**Reduced motion unchanged**: sampled with `prefers-reduced-motion` forced on — both travelling stamps hold at `[554, 257, 331]` (no travel at all) for the full 180ms, then the composition settles at ~200ms.
+
+**Still discontinuous, and not fixed — reported rather than claimed:** the *arriving-side* corner peek appears from nothing at the cut, and the *departing-side* one vanishes at the start. A page change only puts **two** stamps in flight (the old centre flying out, the new centre flying in), so the two corner slots that change identity still swap instantly. Measured as a constant ~13,700px at that corner in every stage of this fix — the numbers above show it unchanged, which is how it was identified as a separate thing rather than a leftover. Closing it means putting four stamps in flight, i.e. a real carousel, which is a different piece of work. It is far less visible than the reported defect: the corner stamps are half off-screen, at 0.92 opacity, and the background wipes across them at the same moment.
+
+## Revision: cross-viewport overlapping-text audit (2026-09-15)
+
+The compact credit collision was found by accident, so the same check was made systematic. Every short text run (line box ≤ 26px — display type layered over artwork is intentional here) in the topmost screen is measured with a **Range over its own text nodes** and compared pairwise, across nine viewports plus the case-library index and the journey editor.
+
+Result: **0 collisions** everywhere.
+
+| surface | viewports | runs | 3D-skipped | collisions |
+|---|---|---|---|---|
+| Cases poster | 1440×900 | 15 | 3 | 0 |
+| Cases poster | 1280×800 | 15 | 3 | 0 |
+| Cases poster | 1100×760 | 15 | 3 | 0 |
+| Cases poster | 1024×700 | 15 | 3 | 0 |
+| Cases poster | 900×600 | 15 | 3 | 0 |
+| Cases poster | 834×1112 | 12 | 3 | 0 |
+| Cases poster | 430×932 | 12 | 3 | 0 |
+| Cases poster | 390×844 | 12 | 3 | 0 |
+| Cases poster | 360×780 | 12 | 3 | 0 |
+| case-library index | 1440×900 / 390×844 / 360×780 | 39 / 33 / 30 | 0 | 0 |
+| journey editor | 1440×900 / 390×844 / 360×780 | 15 / 17 / 15 | 0 | 0 |
+
+Three measurement traps had to be fixed before the result meant anything, and the first two produced false positives that would have been reported as defects:
+
+1. **Element boxes instead of ink boxes.** A caption inside a full-width row has a border box that overlaps its neighbours while its glyphs do not — the first pass claimed two titles "overlapped by 250px" when their boxes are 460px apart. Fixed with `range.selectNodeContents(el)`.
+2. **Walking the whole document.** A covered screen stays in the DOM with `visibility: visible`, so the poster's `INDEX 01` and `01 / 10` "collided" with the index panel painted over them. Fixed by scoping the walk to the topmost screen (`[role="dialog"]` → panel → tab container) and skipping `[inert]` subtrees.
+3. **3D-projected runs.** For a `matrix3d` element the returned box is the axis-aligned box of the skewed quad, so two stacked lines on a sheared plane always "overlap" while reading fine. The home page's cube-face case labels hit this (the label sits in `.screen-plane.top` under `matrix3d`). Such runs are skipped **and counted**, so coverage stays honest rather than silently passing.
+
+**Not covered, recorded as not covered rather than as a pass:** the four text runs inside the poster's main card (title / `Branding, Website` / `2025` / `OPEN CASE`) — the card carries a `matrix3d` tilt, so its boxes are not usable; the full-viewport screenshots show them clearly stacked with no overlap. The home page's cube-face labels are likewise unaudited.
+
+**The audit was proven to have teeth** before the clean result was trusted: restoring `bottom: 7px` on the compact credit immediately produced
+
+```
+!! TEETH 390x844  root=home-tab-screen  runs=12  3d-skipped=3  collisions=1
+   "SCROLL · SWIPE · DRAG" [case-poster-mode] [18, 825, 110, 10]
+   "Aiquos Identity Refresh" [] [119, 827, 113, 10]   -> 9x8px
+```
+
+and restoring `26px` returned it to 0. The script is saved as a reusable tool at `~/.workbuddy/skills/agent-browser-animation-frames/scripts/audit_text_overlap.py`; the write-up is `text-overlap-audit.md` in the workspace outputs.
+
+final result: passed
+
+## Latest revision: the compact credit bar no longer prints over the interaction hint (2026-09-15)
+
+Found while verifying the jump fix. At 390×844 the poster carries two lines on its bottom edge: the interaction hint `SCROLL · SWIPE · DRAG` and the credit bar `SPATIAL LEARNING TOOLKIT … 2025`. The hint is `.case-poster-mode { left: 18px; bottom: 9px }` (box x 18–128, y 825–835); the credit is centred at 50% with `width: 82vw` and `bottom: 7px`, so it starts at x=35 and runs to x=355 — straight through the hint. Measured overlap: 93px horizontally, 8px vertically, and the zoomed crop showed the `G` of `DRAG` printed on the `S` of `SPATIAL`. Not merely boxes touching: real overlapping ink.
+
+Fix: one rule lifting the credit above the hint on the compact poster.
+
+```css
+.app[data-layout="compact"][data-tab="cases"] .case-poster-credit {
+  bottom: 26px;
+}
+```
+
+Result at 390×844: hint y 825–835 (unchanged, still on the bottom edge), credit y 808–818 — a 7px gap, both lines fully readable. Wide layout is untouched: at 1440×900 the hint is at x 46–183 and the credit at x 460–980, already separated horizontally (`overlapX: -277`), so they can share a baseline there.
+
+Evidence: `cases-poster-credit-compact-fix.png` — the bottom 44px of 390×844, before and after.
+
+Regression test added: `"the compact credit bar sits above the interaction hint, not on top of it"` reads both `bottom` values out of `responsive.css` and requires the compact credit to clear the hint by at least a 10px line box plus a gap. Confirmed to have teeth: setting it back to `7px` fails it. Cases suite 19/19, full suite 91/92, `npx vite build` compiles; the single failure is the pre-existing Sites packaging test, which needs the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: the left peek stamp no longer flies in while the right one appears (2026-09-15)
+
+Request: **"现在右侧的动画非常流畅但是左侧的这个动画就变得很跳跃"** — after the mirroring pass the two stamps were geometrically symmetric but no longer *temporally* symmetric: on a page change the bottom-right stamp simply appeared in place while the top-left one slid in from off-screen.
+
+Sampled every animation frame from inside the page (`requestAnimationFrame`, sample and click issued in one shell call so CLI latency cannot split them), 1440×900, one page change on the right arrow. Each sample is the stamp's bounding box as `[left, top, width]`:
+
+| ms after the swap | top-left stamp | bottom-right stamp |
+|---|---|---|
+| 0 | `[-675, -239, 141]` | `[1347, 625, 186]` |
+| 84 | `[-403, -105, 162]` | `[1347, 625, 186]` |
+| 167 | `[-179, 5, 180]` | `[1347, 625, 186]` |
+| 300 | `[-93, 48, 186]` | `[1347, 625, 186]` |
+
+The whole peek pair is unmounted for the ~850ms the transition is busy, and comes back together — but the top-left one came back at `x = -675` with the travelling stamp's mid-flight `--stamp-scale` (0.72) still on it, and its own `transition: transform 300ms` then walked it into place over 283ms. The bottom-right one was already correct in the very first frame. Both stamps also carried the wrong y (`-239` vs `48`).
+
+**Cause — positional recycling of unkeyed children.** The stage swaps a moving scene for the stable scene in the same DOM position, so React matches the children *by index*. A moving scene's child list is `[words, travelling-stamp <button>]`; the stable scene's is `[words, previous-peek <button>, next-peek <button>, feature <button>]`. Index 1 of the moving scene — the travelling `<button class="case-poster-feature">` holding the in-flight transform — was recycled straight into the stable scene's **previous-peek `<button>`**. The next-peek and feature slots (indices 2 and 3) had no counterpart in a two-child moving scene, so they mounted fresh and looked right.
+
+**Fix** — an explicit `key` on every child of both scenes: `words`, `peek-previous`, `peek-next`, `feature`, `hero`, `travelling-stamp`. Nothing else changed; no CSS, no timings. Re-sampling with the same probe, the pair now vanishes and reappears **already in place in the same frame**:
+
+| ms | top-left stamp | bottom-right stamp |
+|---|---|---|
+| 367603 | `[-93, 47.6, 186.1]` | `[1347, 624.6, 186.1]` |
+
+Only the normal panel fade-up remains, and the centre stamp's 1.15s travel is untouched.
+
+The intro entrance was checked separately: on a cold load into Cases, `hero` and `intro` are 1 and all three of `prev`, `next`, `feature` fade 0 → 1 together with their geometry fixed, settling at the mirrored positions (`prev [-93, 48, 186]`, `next [1347, 625, 186]`, `feature [554, 257, 331]`). Console after a reload and two arrow presses: only Vite's connect lines and the React DevTools notice — no key warnings.
+
+Evidence frames (transition duration temporarily stretched to 10s with an injected `transition-duration` rule so a CLI screenshot can land mid-flight; the comparison is like-for-like because both halves were captured the same way):
+
+- `cases-poster-peek-jump-desktop.png` — four rows: top-left before, bottom-right before, top-left after, bottom-right after, at 2.0 / 6.0 / 7.5 / 9.0 / 10.5s and settled. Before, the top-left corner is still empty at 2.0s **and** 6.0s, then crawls in from the left edge; the bottom-right corner is already final at 2.0s. After, both corners are final at 2.0s and never move.
+- `cases-poster-peek-jump-before.png` / `-after.png` — the 6.0s frame at full viewport, the clearest single-moment pair.
+
+Regression test added: `"scene children are individually keyed so a page change cannot recycle a slot"` slices the two scene renderers out of `CaseArchive.jsx` and pins each key list, then asserts the moving and stable key spaces do not intersect. Confirmed to have teeth: stripping the six `key` attributes fails it with `Expected values to be strictly deep-equal` on the stable list. Cases suite 18/18, full suite 90/91, `npx vite build` compiles; the single failure is the pre-existing Sites packaging test, which needs the Codex-only `.openai/hosting.json`.
+
+Re-checked across configurations with the same per-frame probe (first live frame = the frame the peek pair remounts):
+
+| configuration | first live frame | already settled? | off-screen frames |
+|---|---|---|---|
+| 1440×900 wide, next arrow | 938ms | yes | 0 |
+| 1440×900 wide, prev arrow | 944ms | yes | 0 |
+| 390×844 compact, next arrow | 944ms | yes | 0 |
+| 390×844 compact, prev arrow | 948ms | yes | 0 |
+| 1440×900 wide, reduced motion | 206ms | yes | 0 |
+
+The compact pair lands at `prev [-105, 159, 140]` / `next [355, 514, 140]` on a 390×844 viewport: 35px visible on each side (25% each) and an exact reflection about the scene centre (`prev.top + next.bottom = 159 + 654 = 813 = a + b`). Under reduced motion the pair is unmounted for ~190ms, matching the 180ms reduced duration, and remounts in place.
+
+One environment note for future runs: the shared browser had a second tab steal focus mid-check (a different app at `127.0.0.1:5273`), which silently makes every reading come from the wrong page. Always confirm `location.href` before trusting a sample, and re-select the app tab with the stable id (`agent-browser tab t1`) rather than a positional index.
+
+final result: passed
+
+## Latest revision: the two corner peek stamps are now a true mirror (2026-09-15)
+
+Request: **"目前的轮播效果不对称，也就是左上角和右下角的卡片不对称，我希望以左上角的这种效果为准"** — the top-left and bottom-right peek stamps read as different cards. The previous stamp is the reference and the next stamp is now its point reflection about the poster centre.
+
+Three values were off, all in `.case-poster-peek.is-next`:
+
+| property | before | after | mirror source |
+|---|---|---|---|
+| vertical anchor (wide) | `bottom: -4.5%` | `bottom: 5.5%` | `.is-previous { top: 5.5% }` |
+| horizontal offset (wide) | `translateX(60%)` | `translateX(50%)` | `.is-previous { translateX(-50%) }` |
+| vertical anchor (compact) | `bottom: 5%` | `bottom: 19%` | `.is-previous { top: 19% }` |
+| hover pop-in | `translateX(54%)` | `translateX(44%)` | `.is-previous:hover { translateX(-44%) }` |
+
+The tilt (`∓1.2deg`) and the compact `translateX(±76%)` were already mirrored and were left alone. Measured at 1440×900 before the change, `next` sat 18px further out and **42px past the bottom edge** (box y 715–942 on a 900px-tall poster) while `prev` sat 48px inside it — so one corner was cut off and the other was not.
+
+Result — the reflection error is the sum of the two centres minus twice the scene centre, and it is 0 on both axes:
+
+| viewport | layout | Δcentre x | Δcentre y | prev visible | next visible | next past bottom |
+|---|---|---|---|---|---|---|
+| 1280×800 | wide | 0 | 0 | 50% | 50% | 0 (42px clear) |
+| 1440×900 | wide | 0 | 0 | 50% | 50% | 0 (48px clear) |
+| 1024×700 | wide | 0 | 0 | 50% | 50% | 0 (37px clear) |
+| 900×600 | wide | 0 | 0 | 50% | 50% | 0 (32px clear) |
+| 1600×560 | wide | 0 | 0 | 50% | 50% | 0 (29px clear) |
+| 1100×760 | wide | 0 | 0 | 50% | 50% | 0 (40px clear) |
+| 390×844 | compact | 0 | 0 | 25% | 25% | 0 |
+
+Before, `prev`/`next` showed 50% / 40% of their width at 1440; now both show exactly 50%, and the compact pair moved from cy ∓(−177, +296) to a symmetric ∓177.
+
+There were 4 duplicate rule pairs for these two stamps (two wide, two compact) plus a hover pair inside `@media (hover: hover) and (pointer: fine)`; all were brought into agreement so a later cleanup cannot resurrect the asymmetry.
+
+**Also fixed on request of the same rule — the wide-layout arrows.** The prev/next arrows were inset with two different formulas, `.is-left { left: clamp(32px, 4.5vw, 70px) }` against `.is-right { right: clamp(54px, 7vw, 108px) }`. That 2.5vw difference reproduces exactly at every width: the PREV box started 65 / 58 / 50 / 41px from the left edge and the NEXT box ended 101 / 90 / 77 / 63px from the right at 1440 / 1280 / 1100 / 900 — always 36 / 32 / 27 / 22px apart. Both boxes are 109px wide with identical internals (a 46px circle plus a 37px label), so only the outer edge differed, and the ink clusters (71–168 on the left, 1236–1333 on the right) were not mirror images. The right arrow now reads `right: clamp(32px, 4.5vw, 70px)`, taking the left arrow as the reference, the same way the corner stamps do. Verified 0 difference at 1280×800 (58/58), 1100×760 (50/50), 900×600 (41/41), 1600×560 (70/70) and 390×844 compact (22/22); at 1440×900 both circles now sit 71px from their edge. The bottom-right stamp is at y 625–850 while the arrows are centred at y 483, so the 36px shift cannot collide with it, and the dashed route reads no worse than it already did behind the left arrow. Evidence: `cases-poster-arrow-inset-fix.png`. Regression test `"the two carousel arrows share one inset formula in every layout"` compares the two declarations in both the wide and compact rules; confirmed to have teeth (restoring `clamp(54px, 7vw, 108px)` fails it).
+
+Evidence frames: `cases-poster-peek-symmetry-desktop-before.png` / `-desktop-after.png` (1440×900) and `-compact-before.png` / `-compact-after.png` (390×844), each pair captured from the same page state with the old values re-injected so the comparison is like-for-like.
+
+Suites: the 17 Cases tests pass, including a new test that reads every `.case-poster-peek.is-previous` / `.is-next` rule pair (base and hover) and asserts `bottom` equals the mirrored `top` and that `translateX` and `rotate` flip sign. Confirmed to have teeth: re-introducing `bottom: -4.5%` fails it with "(base) #2: bottom must mirror top". Full suite 89/90 and `npx vite build` compiles; the one failure is the pre-existing Sites packaging test, which needs the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: the case-library header stops letting rows bleed through (2026-09-15)
+
+Found while verifying the journey editor below: making the list long enough to scroll exposed two defects in the sticky `CASE LIBRARY` header.
+
+- **A bare band above the plate.** The header is `position: sticky; top: 0`, but the dialog's own `padding-top` (34px wide / 26px compact) puts the sticky box below it, so scrolled rows kept painting into that band — a sliced row of control buttons sat above the wordmark. Fixed with `box-shadow: 0 -44px 0 0 #f6eee6`: a hard-edged fill that covers the band and moves nothing (layout-neutral, and identical to the dialog's own background, so it is invisible at rest).
+- **The fade crossed the wordmark.** `background: linear-gradient(#f6eee6 78%, transparent)` made the plate's bottom 22% (~35px) transparent, which overlapped the 115px wordmark and let the list read through the letterforms. Replaced with a fixed `calc(100% - 16px)` band, so the soft edge stays below the type.
+
+Measured ink (pixels differing from `#f6eee6` by more than 6) across x 40–1100, same viewport and scroll position (1440×900, `scrollTop` 400):
+
+| band | before | after | what it is |
+|---|---|---|---|
+| 158–166 | 3983 | **3415** | 568px of row content removed from the type band |
+| 166–174 | 3451 | 3451 | wordmark only, unchanged |
+| 176–192 | 2524 | 2464 | the intended soft edge |
+
+The wordmark's ink ends at y=174 (y=175 drops to 45px) and the header box ends at y=192, so the 16px tail is now the only place a row can appear — strictly below the letterforms. Per-row scans confirm the scrolled rows contribute exactly two full-width lines (y=434, y=498, 100px each) inside the panel and nothing else, so there is no stray bleed where the rows are empty.
+
+Evidence frames: `cases-library-header-bleed-before.png` and `cases-library-header-bleed-after.png` (1440×900, identical scroll position).
+
+Suites: the 16 Cases tests pass with a new assertion pinning `position: sticky`, `top: 0`, the `-44px` shadow and the `calc(100% - 16px)` band, and rejecting a percentage stop. Full suite 88/89 and `npx vite build` compiles; the one failure is the pre-existing Sites packaging test, which needs the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: reorder, add and delete journey cases (2026-09-15)
+
+Request: **"现在我希望我能够对这些案例进行排序增加删除"** — the Cases carousel had to become editable. Scoped by a clarifying question to the **featured journey (the 01/10 carousel)** rather than the 36-item library list, and adding draws from the **existing 40-case pool** rather than inventing anything.
+
+Model: the pool is fixed and the journey is an ordered subset of it, so reordering can never repaint a cover that is already on screen.
+
+- `src/case-library.js` (new) holds the whole model: `normalizeJourney` / `moveJourney` / `addJourneyKey` / `removeJourneyKey` / `isDefaultJourney`, plus `readJourney` / `writeJourney` for the `aiquos.case-journey.v1` key. Everything is pure except the two storage helpers, which swallow failures so private mode still works. The journey can never be emptied (`JOURNEY_MIN = 1`).
+- `CASE_POOL` is the 40 archive covers plus the live scenes, each carrying a stable `key` (`archive:N` / `live:<id>`), its own `world` and its `cover`. `DEFAULT_JOURNEY_KEYS` is the previous featured list expressed as keys — the six archive covers plus the four live scenes.
+- Every `POSTER_WORLDS[x % len]` lookup became `journey[wrapFeatured(x)].world`, so the poster follows the stored order instead of the pool's.
+- `JourneyEditor` renders the ordered rows and the addable remainder; the dialog header gained `EDIT`/`DONE` (an `aria-pressed` toggle) beside `CLOSE`, and leaving the dialog always drops edit mode.
+- Shrinking the journey reels the reader back in: `journeyCount` is in a dependency array that clamps the active index and cancels any page change in flight against the old list.
+
+Behaviour verified in the browser at both 1440×900 and 390×844:
+
+| step | result |
+|---|---|
+| open | 10 rows, 30 pool buttons, `RESET` disabled (already default) |
+| move 01 down | order → Spatial Learning Toolkit, Aiquos Identity Refresh, Studio Workflow Assistant; storage → `["archive:1","archive:0","archive:2", …]` length 10; first ▲ disabled, last ▼ disabled, `RESET` enabled |
+| remove 03 | 9 rows, pool 31, head `JOURNEY ORDER 09`, the removed title reappears in the pool |
+| add it back | 10 rows, pool 30, appended last, storage length 10 |
+| close | dialog gone, carousel reads `01/10` = Spatial Learning Toolkit with world `#557fa8` — the reorder reaches the poster |
+| reload | the stored order survives |
+| `RESET` | back to the default 10 starting at Aiquos Identity Refresh, `RESET` disabled again |
+
+Compact (390×844): the dialog goes full-bleed 390×844; rows are 335×107 on a `26px 40px 1fr` grid with a 40×40 cover and the three controls dropped to their own row at 40×34 (finger-sized, and the title keeps the full width); the pool collapses to one column; document `scrollWidth` never exceeds the viewport.
+
+Evidence frames: `cases-journey-editor-desktop.png` and `cases-journey-editor-desktop-pool.png` (1440×900, both showing the same reordered journey with `RESET` live), `cases-journey-editor-compact.png` and `cases-journey-editor-compact-pool.png` (390×844).
+
+Suites: the 16 Cases tests pass, including a new source assertion for the editor wiring and two behavioural tests for `moveJourney` / `addJourneyKey` / `removeJourneyKey` / `normalizeJourney`. Console after a full walkthrough shows only the React DevTools info line. Full suite 88/89 and `npx vite build` compiles; the one failure is the pre-existing Sites packaging test, which needs the Codex-only `.openai/hosting.json`. Two assertions here were stale after `CASE_POOL` and `DEFAULT_JOURNEY_KEYS` were un-exported for Fast Refresh; they now match the plain `const` declarations.
+
+final result: passed
+
+## Latest revision: wider clearance around the centered card (2026-09-15)
+
+Follow-up on the previous revision: the clearance should be **extended further**. The keep-out ratio went `0.14 → 0.24` of the card's short side and the clamps `30–56px → 46–92px`; nothing else changed.
+
+Measured minimum gap between any visible dash and the card's box (previous value in brackets):
+
+| viewport | card | visible dashes | min gap |
+|---|---|---|---|
+| 1280×800 | 294×363 | 58 (60) | **75px** (55) |
+| 1440×900 | 331×409 | 61 | 80px (46) |
+| 1024×700 | 236×291 | 44 (46) | 66px (40) |
+| 900×600 | 228×281 | 38 | 58px (58) |
+| 768×1024 | 290×358 | 38 (43) | 91px (50) |
+| 1600×560 | 236×291 | 62 | 73px (46) |
+| 390×760 | 199×246 | 28 (29) | 49px (45) |
+
+The nominal margin is `card短边 × 0.24`; the achieved gap runs 10–30px larger because the dashes are discrete and the dash that would sit on the margin is dropped with the ones behind it. The tightest result is the narrow phone layout (49px), where the card already spans most of the width — proportionally still a clear berth on a 390px screen.
+
+Visible dashes drop by only 1–5 at every size, so the line still reads as a full corner-to-corner route. The page-change replay is unchanged at 58 dashes: instant empty at 83ms, symmetric advance (`L=R` 2 → 5 → 8 → 11 → 15 → 19 → 23 → 28) while the covers swap, centre 0.43 → 0.98 → 1.00 as the move lands, holding at 1.00 with no second pass.
+
+Evidence frames: `cases-route-card-clearance.png` (1280×800), `cases-route-card-clearance-compact.png` (390×760), against the original 0px case in `cases-route-before-touching-card.png`.
+
+Suites: the 12 Cases tests pass (clearance assertions updated to `0.24` / `46` / `92`). Full suite 84/85 and `npx vite build` compiles. Unchanged pre-existing items: `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` need the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: clearance between the route and the centered card (2026-09-15)
+
+User feedback: the dashed line should **not hug the centered card**.
+
+Measured before the change: the closest dash to the card sat **0px** from the card's box — a dash ended at (500, 324) against a card spanning x 493–787, y 228–591. Because the stamp is slightly rotated with scalloped edges, those dashes were not hidden behind the artwork; they poked out right at its edge, so the line read as glued to the card.
+
+- `buildRouteDashes` now takes the card's box and **drops any dash whose sampled points fall inside it, expanded by a margin** of `14%` of the card's short side (clamped 30–56px). Nothing else about the geometry changes: same diagonal sine, same amplitude, same dash length.
+- The card is measured from **`.case-poster-scene.is-stable .case-poster-feature` only**. The travelling stamps are scaled and offset, so measuring them mid-flight would drag the keep-out around; the box is cached in a ref and re-read when a move lands (`syncRoute()` is also called from the move's completion effect, which covers a resize that happened during a move).
+- The build is keyed on the card box as well as the size, so a card that changes size (e.g. via a media query at the same viewport width) still rebuilds the route.
+
+Measured after, minimum axis-aligned gap between any visible dash and the card's box:
+
+| viewport | card | visible dashes | min gap |
+|---|---|---|---|
+| 1280×800 | 294×363 | 60 (was 79) | **55px** (was 0) |
+| 1440×900 | 331×409 | 64 | 46px |
+| 1024×700 | 236×291 | 46 | 40px |
+| 900×600 | 228×281 | 38 | 58px |
+| 768×1024 | 290×358 | 43 | 50px |
+| 1600×560 | 236×291 | 64 | 46px |
+| 390×760 | 199×246 | 29 (was 45) | 45px |
+
+The keep-out is larger than the nominal margin because the dashes are discrete — the dash that would have sat at the margin is itself dropped, so the visible air is 40–58px at every size tested.
+
+The replay of the page-change pass is unaffected by the smaller dash count: at 1280×800 the pens still advance symmetrically (`L=R` 2 → 5 → 8 → 11 → 15 → 19 → 23 → 28 → all) while the covers swap, and the centre reaches 0.32 → 0.85 → 1.00 as the move lands, holding at 1.00 with no second pass. The two pens now close at the card's edges, since the filtered array's middle is the gap itself.
+
+Evidence frames: `cases-route-before-touching-card.png` (the 0px case) against `cases-route-card-clearance.png` (1280×800) and `cases-route-card-clearance-compact.png` (390×760). Superseded frames were removed from `outputs/`.
+
+Suites: the 12 Cases tests pass with assertions added for the clearance constant, the keep-out build, the `if (grazes) continue;` drop and the stable-scene-only measurement. Full suite 84/85 and `npx vite build` compiles. Unchanged pre-existing items: `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` need the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: the redraw runs WITH the page change (2026-09-15)
+
+User feedback: the line currently **waits for the new case to take its place and only then draws**; the two should happen **synchronously**.
+
+The cause was structural: `PosterRoute` gated the whole draw on `moving` (`draw = moving ? 0 : drawn`), so a page change could only ever *empty* the line, and the redraw was a separate pass that began 80ms after the 920ms move had already finished — roughly 1.5s from the click before the line was whole.
+
+- **The page change's own clock now drives the pens.** The transition state carries a linear `time` (0 → 1) again and `PosterRoute` takes `move` instead of `progress`. `moveDraw = move^ROUTE_MOVE_CURVE` (exponent 1.5) turns that into the draw value, so the pens set off the instant the covers start swapping and close exactly as the new cover lands. Slightly front-loaded to pair with the cover's ease-out, but spread across the whole move so the two-sided drawing stays readable and the middle closes last.
+- **Reduced motion keeps the line still.** `move` is only passed when `!transition.reduced`, so a reduced-motion page change never animates the route; the line simply stays complete.
+- **Landing no longer replays the pass.** React batches the move's final `time: 1` frame together with `transition` clearing, so the settled value can never be read off the clock. A `moveWasActiveRef` records that a move was in flight, and the settled value is taken as complete (`drawn = 1`) once it ends; the intro effect's `drawnRef.current >= 1` guard then skips the intro pass. Verified: the line is whole at the moment of landing and stays whole (see the 933ms+ samples below).
+
+Measured on 79 dashes at 1280×800 (dev server, agent-browser), all sampling while `.is-moving` was true:
+
+| t after click | L | R | centre opacity |
+|---|---|---|---|
+| 0ms (before) | 79 | 79 | 1.00 |
+| 72ms | 0 | 0 | 0 — instant empty, `is-moving` |
+| 214ms | 5 | 5 | 0 |
+| 502ms | 19 | 19 | 0 |
+| 788ms | 38 | 38 | 0 |
+| 861ms | 79 | 79 | 0.46 — frontiers meet |
+| 933ms | 79 | 79 | 1.00 — move ends |
+| 1005ms → 1648ms | 79 | 79 | 1.00 — no replay |
+
+The whole pass now completes in ~900ms instead of ~1500ms, and every frame of it overlaps the cover swap. The intro pass on first arrival is unchanged (checked separately: 5 → 31 → 79, centre 0 → 0.62 → 1.00), and with `prefers-reduced-motion` the line stays at 79/79 with `is-moving` never true.
+
+Evidence frames (dilated x16.7 so the 920ms move could be sampled; `performance.now`, `requestAnimationFrame` and `setTimeout` all scaled): `cases-route-sync-01-move-start.png` → `-02-move-early.png` → `-03-move-mid.png` → `-04-move-late.png` → `-05-move-closing.png` → `-06-settled.png`. `-04-move-late.png` is the clearest: the pink poster is still wiping out and the outgoing stamp still travelling, while both pens are already drawing inward with their translucent leading edges. Superseded frames from the previous revision were removed from `outputs/`.
+
+Suites: the 12 Cases tests pass (assertions rewritten for the clock-driven draw: `const draw = moving ? moveDraw : drawn`, `move={transition && !transition.reduced ? transition.time : null}`, the `time` field on the transition, and the `moveWasActiveRef` hand-off). Full suite 84/85 and `npx vite build` compiles. Unchanged pre-existing items: `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` need the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: instant vanish and two-sided inward redraw (2026-09-15)
+
+User feedback: on a page change the line should **vanish instantly**, then **quickly redraw from both sides toward the middle**, and while it is being drawn its **opacity should be adjusted so it gradually becomes opaque**. This supersedes the retraction behaviour of the previous revision.
+
+- **No more retraction.** `moving` (i.e. `transition !== null`) forces `draw = 0`, and the effect clears both the ref and the `drawn` state, so the line empties on the same frame the page change starts. Clearing the *state* as well as the ref removes a one-frame flicker in which the previous page's 69 fully-opaque dashes painted at landing.
+- **One quick pass after the move.** The redraw is a single pass that starts 80ms after the 920ms scene transition ends: `ROUTE_REVEAL = 520`ms with ease `1 − (1−t)^2.2`.
+- **Symmetric, two-sided.** `edge = Math.min(index, count − 1 − index)` measures distance from the *nearer* end, so the pens travel from both corners toward the middle instead of from the middle outward. `ROUTE_FEATHER` was raised 5 → 9 and the feather is added to the travel distance, so the last dashes still reach full length *and* full opacity exactly when the pass completes (previously the centre dashes capped near 0.11 opacity).
+- **Opacity is adjusted while drawing.** `local` is how far past the dash the pen has travelled, in feather units; `length = local^0.72`, `opacity = ramp · local^1.35`, and `ramp = 0.3 + 0.7 · min(1, draw·1.9)` keeps the two freshly-drawn ends from snapping to full strength the instant the pens touch down.
+
+Measured on 69 dashes at 1280×633 (dev server, agent-browser): full opacity at t=0 → **`visible 0`, `is-moving` at t=104ms** → the line stays empty for the whole 920ms move → `L=R=8` @1076ms (end opacity 0.52) → `L=R=19` @1148 → `L=R=29`, ends at 1.00 @1220 → the frontiers meet at the centre @1291 → the centre then ramps 0.04 → 0.49 → 0.96 → **1.00 between 1291 and 1507ms**. Compact 390×760 on 45 dashes behaves identically (`L=R=6 → 21 → 45`, centre reaching 1.00). Evidence frames: `cases-route-01-scene-mid-route-empty.png` (line gone during the wipe), `-02-redraw-early.png`, `-03-redraw-mid.png`, `-05-meeting.png`, settled `cases-route-two-sided-settled.png`, compact `cases-route-compact.png`.
+
+Suites: the 12 Cases tests pass with assertions updated to the new semantics (the `moving` branch clears the ref *and* the state; the opacity now carries the global ramp). Full suite 84/85 and `npx vite build` compiles. Unchanged pre-existing items: `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` need the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: route timing on the linear clock (2026-09-15)
+
+User feedback: the diagonal line itself is right, but its appear/disappear timing is not — the disappearance reads as very fast. The measurement agreed: the retraction was driven by the eased `progress` curve (`1 - (1-t)³`), so `1 - progress·1.08` emptied the whole line by progress 0.926, i.e. **~534ms into a 920ms move**, and the reveal then started 140ms after landing and took only 720ms.
+
+- The transition state now carries its own linear clock (`time`), and the route retracts on `1 - t^1.25 · 1.01`: a short hold, then an even pull-in that finishes exactly as the incoming stamp lands.
+- The reveal starts 60ms after landing and runs 860ms, so retract and grow are near mirror durations (~920ms / ~800ms).
+- Measured on 79 dashes: 75 → 69 → 61 → 53 → 43 → 33 → 23 → 13 → 3 → 1 over 100–1000ms, then 3 → 11 → 23 → 37 → 51 → 63 → 73 → 79 over 1100–1800ms.
+
+**Related defect found while verifying.** The travelling stamps are disabled buttons, and the global `button:disabled { opacity: 0.55 }` out-specifies `.case-poster-feature { opacity: var(--stamp-opacity, 1) }`. Every in-flight stamp was therefore pinned at a flat 55%, which both suppressed the intended arrival/departure fade and let the shared route show through the stamp's face as if drawn on top. `.case-poster-feature:disabled` now honours `--stamp-opacity`, and the arriving stamp ramps 0.62 → 1 quickly so it is solid by the time it reaches the centre; the departing stamp fades 1 → 0.58 as designed.
+
+Verification evidence: dev server `http://localhost:5174/#cases` in agent-browser at 1280×800 — sampled dash counts and computed stamp opacities through a full move, plus captured mid-transition frames showing the line retracting to the stamp's edges rather than crossing the artwork. All suites pass (12 cases tests, new assertions for the linear clock and the disabled-stamp opacity rule) and `vite build` compiles. Unchanged pre-existing items: the Codex-only `.openai/hosting.json` step in `scripts/prepare-sites-build.mjs` / `tests/sites-worker.test.mjs`.
+
+final result: passed
+
+## Latest revision: diagonal trigonometric route with center-out drawing (2026-09-15)
+
+The yellow journey line was rebuilt as a real sine wave running along the screen diagonal — from the upper-left corner, behind the centered stamp, to the lower-right corner — mirroring the stamps' diagonal travel. User-reported defects this removes: the previous CSS `stroke-dasharray` line sat on a Bézier path stretched non-uniformly by `preserveAspectRatio="none"`, so dash lengths varied with the local slope, and its life cycle was a fade-out plus a hard mask cut that read as "disappears, then pops back complete".
+
+- **Geometry.** `buildRouteDashes(width, height)` now generates the wave in real screen pixels (a `ResizeObserver` rebuilds it when the scene resizes), so every dash measures the same regardless of viewport aspect. Each dash is its own SVG path with `pathLength="1"`.
+- **Appearance and disappearance are one function, reversed.** Each dash's visible length is `sin(clamp(draw·(center+1) − |i − center|, 0, 1)·π/2)` with a sine-eased driver: a settled scene grows the route OUT of the center (from beneath the stamp toward both corners); a moving scene pulls the same dashes back INTO the center. No fade, no mask cut, no pop-in.
+- **One shared layer.** The route is no longer a child of the moving scenes. It renders once between the poster background and the stage, so the color wipe cannot cover it and the outgoing scene cannot drag it off-screen; z-order keeps it above both poster backgrounds and below the stamp, words, and peeks.
+
+Verification evidence: `http://localhost:5174/#cases` exercised in agent-browser at 1280×800. Captured frames confirm the settled diagonal line passing behind the stamp, a mid-transition frame where only the center-most dashes remain as the line retracts under the incoming stamp, and a post-settle frame where the center is drawn while both corner ends are still growing outward. The 12-test Cases suite passes with assertions covering the shared-layer placement, the sine generator, and the center-out dash semantics; every other suite passes and `vite build` compiles. Still pre-existing and unrelated: `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` need the Codex-only `.openai/hosting.json`.
+
+final result: passed
+
+## Latest revision: reference-fidelity pass on the cases poster (2026-09-15)
+
+A second look at the Monti Lessini reference (`work/reference-2026-09-15/`) produced four targeted upgrades to the `#cases` poster journey:
+
+- **First-visit hero opening.** The reference video opens with the case artwork full-bleed before it shrinks into the centered stamp. `CaseArchive` now plays that sequence once per session (`caseIntroPlayed`): a `.case-poster-hero` overlay scales the active cover from full viewport to stamp size (scale 0.235 desktop / 0.52 compact, origin matched to the stamp center), crossfades into the real stamp at ~60–76%, while words, route, peeks, and chrome fade/slide in on staggered delays. Reduced-motion users skip the overlay entirely, and paging input is gated until the 1680ms intro finishes.
+- **Display words restored to reference scale.** In the `data-tab="cases"` context the words now render at `clamp(84px, 12.4vw, 186px)` weight 900 (was 8.9vw/800), with the top word at `clamp(24px, 5dvh, 38px)` and the bottom word `clamp(22px, 4.2dvh, 42px)` from the edge — the reference's near-edge monumental rhythm without reintroducing the earlier header/credit collisions.
+- **CASE LIBRARY becomes a postmark pill.** The centered library button now carries the poster background with an inset ring, so it stays legible where the enlarged top word passes beneath it — the same trick postal cancellations use on stamps.
+- **Route dashes match the reference.** The journey line is now 5.5px with rounded caps and a 1.05/1.15 dash-gap rhythm (was 4px butt-capped 0.48/1.55), and the corner peeks show slightly more of the neighboring stamps (previous translateX -50%, next 60%).
+
+Verification evidence: local dev server `http://localhost:5173/#cases` exercised in agent-browser at 1280×633 and 390×760. The intro plays fullscreen→stamp→settled; wheel paging moves 01→02 with the diagonal stamp journey, retracting route, and right-to-left color wipe intact; open/return preserves the carousel position; the compact layout keeps the monument words, stamp, and pill legible. The 12-test Cases suite passes (the route assertion now pins the intentional `stroke-linecap: round`), all other suites pass, and `vite build` compiles. Pre-existing, unrelated: `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` require the Codex-only `.openai/hosting.json`, which does not exist in this checkout.
+
+final result: passed
+
+## Latest revision: primary case preservation (2026-09-15)
+
+The featured `#cases` journey again begins with its original six editorial projects — Aiquos Identity Refresh through Modular Sound Archive — and appends Wing It, 超级马里奥, 日式便利店, and 暴风雨海盗船 as positions 07–10. This keeps the prior work visible in the main interactive route while retaining the complete 36-item CASE LIBRARY. All ten stamps stay media-light: the original projects use their existing local artwork and the four real projects use source-derived WebP stills; only opening a real project creates its playable media. Original featured cards still open the established editorial detail and return to the same carousel position.
+
+Verification evidence: a clean local preview opened at `01 / 10` with Aiquos Identity Refresh and `/assets/cases/1.webp`; its detail used the existing editorial view and returned correctly. Paging reached Wing It at `07 / 10` with its static `/assets/case-covers/wing-it.webp` stamp. The stable primary route reported zero poster videos, iframes, and nested case screens; opening Wing It created one detail video, and closing it removed that media while retaining `07 / 10`. The 12-test Cases suite, direct Vite production compilation, and `git diff --check` pass with no browser console errors.
+
+final result: passed
+
+## Latest revision: deferred case media with static postage covers (2026-09-15)
+
+The featured postage interface no longer mounts live project media. Each of the four real homepage projects now has a source-derived 640×480 WebP cover under `public/assets/case-covers/`: a Wing It character frame, a playable Mario level frame, the rainy conbini front view, and the ship inside the storm scene. The complete project video/iframe is instantiated only after the centered stamp is opened and is disposed when the user returns.
+
+Performance baseline before the change: the stable postage screen mounted three `CaseScreen` trees at once — two scene iframes, one video, and three media layers. Acceptance target after the change: zero `.case-poster iframe`, zero `.case-poster video`, and zero `.poster-stamp .case-screen` instances before opening a case; exactly one detail media surface after opening; all four still covers and the established zoom/route interaction remain visually intact.
+
+Verification evidence: the local in-app browser rendered the Wing It and conbini cover states at the 640×480 inspection viewport while reporting `posterIframes: 0`, `posterVideos: 0`, and `posterScreens: 0`. Opening Wing It created exactly one detail video; opening the conbini created exactly one ready detail iframe. Returning from each detail removed all detail media and restored the same carousel position. The four local covers total approximately 112 KB, compared with the previously mounted video plus two running scene documents. A clean reload, paging, video open/back, and scene open/back run produced zero new console warnings or errors. The 12-test Cases suite, direct Vite production compilation, and `git diff --check` pass.
+
+final result: passed
+
+## Latest revision: real homepage cases inside the Cases journey (2026-09-15)
+
+The featured `#cases` carousel now reads directly from the shared four-case manifest used by the homepage: Wing It, 超级马里奥, 日式便利店, and 暴风雨海盗船. The perforated stamp window renders each local video/scene live instead of showing an unrelated archive photograph, while the source-matched diagonal zoom, color wipe, and retracting dashed route remain intact. Opening a stamp now expands into the actual full-viewport case media and provides a clear return to the same featured position. The 36-item editorial collection remains available through CASE LIBRARY with its original library-return behavior.
+
+Verification evidence: `http://127.0.0.1:4286/?build=bb5bf4a-live-cases#cases` was exercised in the in-app browser. The complete 01–04 sequence rendered live frames for Wing It, 超级马里奥, 日式便利店, and 暴风雨海盗船; the latter two WebGL scenes did not fall back to black. Wing It and 超级马里奥 were each opened full-screen and returned to the same featured position; Wing It retained its detail-only sound control. CASE LIBRARY exposed exactly 36 rows. A compact-layout regression that allowed the hidden design canvas to scroll and reveal a pink strip below non-pink posters was corrected with a cases-only clipped canvas. A clean reload/open/back/page run produced zero new console warnings or errors. The 11-test Cases suite, direct Vite production compilation, and `git diff --check` pass.
+
+final result: passed
+
+## Latest revision: scroll-driven cases archive (2026-09-15)
+
+Source visual truth: the captured Xiaohongshu reference video at `https://xhslink.cn/o/53M3sViTXOx`, inspected as a 10.66-second sequence. Accepted local evidence is in `work/reference-2026-09-15/`: `hero-motion.jpg` documents the full-screen-to-stamp close motion, `list-motion.jpg` documents the diagonal carousel journey, and `frame-09-content.jpg` / `frame-10-content.jpg` are normalized motion/stable frames with the Safari chrome removed.
+
+Implementation evidence: local route `http://127.0.0.1:4286/?build=bb5bf4a-cases#cases`, captured in Codex's in-app Browser. The browser screenshot API rendered the implementation inline in the same comparison inputs as `frame-09-content.jpg` and `frame-10-content.jpg`; that API does not expose a filesystem persistence path, so the evidence is identified as in-app Browser tab 3, stable and 330ms transition captures. The comparison viewport was 720 × 484 CSS px at devicePixelRatio 1. Source frames were cropped from 720 × 540 to 720 × 484 at density 1, so no resampling or density normalization was required.
+
+**Comparison history**
+
+- P2 resolved — the first implementation placed the title/card too low beneath the product header and clipped the lower display word. The cases-only header was reduced to the reference's restrained scale, the display/card geometry moved upward, and the lower word/credit line were separated. The post-fix 720 × 484 stable comparison preserves the source hierarchy: corner peeks, centered stamp, large top/bottom words, left route, and bottom microcopy.
+- P2 resolved — the first motion pass used the overshoot value for travel, causing the outgoing stamp to leave too early and the incoming stamp to appear centered too soon. Travel now follows monotonic scroll progress, while scale alone keeps the elastic overshoot. Diagonal travel was recalibrated from 54vw/43vh to 42vw/35vh. The post-fix 330ms comparison shows the outgoing stamp enlarged at upper left, the incoming stamp arriving from lower right, and the background seam at roughly the same quarter-width position as the source.
+- P2 resolved — the first route model treated the line as either fully present or fully absent. Frame 09/12/14 inspection shows a third state: while the current stamp grows toward the upper-left, the existing route retracts from its featured-card end into a short tail. The moving outgoing scene now owns that progressively shortened path; the incoming scene owns none, and the settled scene restores the complete path.
+- P2 resolved — repeated keyboard events could queue several destinations while the 920ms scene was moving. Repeat keydown events are now ignored, while one intentional input received during movement is retained instead of being lost. A full reload plus one ArrowDown press finished at `02 / 36`, not a later case.
+- P2 resolved — the route previously revealed a raster with a horizontal `clip-path`, then briefly used round dots that did not match the source. It is now a native SVG Bézier path with small yellow rectangular dashes. A path-following mask controls how much of the old route remains during movement, so there is no vertical crop edge or half-dash drawing head.
+- P1 resolved — an embedded-browser rAF could deliver one timestamp slightly earlier than `performance.now()` and then throttle subsequent frames, leaving the page permanently in MOVING with negative progress. Progress is clamped to 0…1 and every transition has a duration-bound completion fallback; the final browser test moved 01→02 and returned from MOVING to the settled route.
+- P2 resolved — the featured stamp could shrink to roughly 83px wide in the short embedded-browser viewport because its width was capped at `40dvh × 0.81`. The revised responsive constraint allows 64dvh in compact layouts and a 23vw desktop target while keeping the stamp inside the viewport. Final measured results were 248 × 307 at 1080 × 720 and 193 × 239 at 379 × 631.
+
+**Required fidelity surfaces**
+
+- Fonts and typography: the existing DM Sans family is retained; oversized uppercase words use the source's heavy, tightly tracked display rhythm. Small index/navigation/meta copy uses 9–11px uppercase optical weights. Long project names truncate inside the stamp and remain fully readable in the immersive detail.
+- Spacing and layout rhythm: the stable composition matches the source's centered small stamp, cropped upper-left/lower-right neighbors, top/bottom word anchors, and sparse edge labels. The reference's diagonal scale path and right-to-left color reveal are preserved at desktop and compact sizes.
+- Colors and visual tokens: six muted poster palettes retain the blue/pink/green/red family from the source. The color wipe is a real moving layer rather than a direct token swap.
+- Image quality and asset fidelity: the perforated frame and grain are real local raster assets. The route is now a native SVG path because progressive curve tracing requires vector stroke semantics; project photographs remain local WebP files with cover crops.
+- Copy and content: the reference-style journey is intentionally curated to six projects. The separate CASE LIBRARY retains all 36 real titles, tags, years, descriptions, and local images without diluting the primary sequence.
+
+**Interaction and accessibility checks**
+
+- Real wheel scrolling, explicit previous/next buttons, Arrow/Page/Space keys, touch swipe, mouse/pen drag, tappable corner stamps, the six-item featured sequence, shared-element open, close/back, and scroll-position restoration were exercised. The separate library exposed 36 rows; opening item 07 produced FIELD RESEARCH ATLAS, and 返回 restored the CASE LIBRARY rather than dropping the user at the featured carousel.
+- The route is complete while settled, retracts continuously during MOVING, and returns complete for the next featured case. The wheel gesture latch prevents trackpad inertia from skipping multiple cases.
+- Buttons have labels and focus states; Escape closes the index or detail. Hover lift/tilt is gated to fine pointers. Reduced-motion users receive a 180ms non-spatial crossfade for case changes, a 1ms shared transition, and a non-animated visible route.
+- The final browser run added no console error. One earlier hot-module-reload frame logged the now-removed `ArrowRight` reference while JSX was mid-edit; subsequent full reloads and interaction runs completed without a new error.
+
+**Residual P3 differences**
+
+- The existing AIQUOS product navigation remains visible above the archive instead of reproducing the reference site's browser/header chrome. This is an intentional product-system adaptation.
+
+Automated verification: 83 non-hosting tests, direct Vite production compilation, `git diff --check`, and the 11-test Cases suite pass. The suite includes regression checks for route retraction, wheel-independent paging, curated/library separation, library return origin, and rAF-throttle completion. The repository's pre-existing Sites packaging test is not part of this cases change and currently lacks `dist/server/index.js` because `.openai/hosting.json` is absent in this checkout.
+
+final result: passed
+
+## Previous revision: readable streamed conversation feedback (2026-09-04)
 
 Source truth: the supplied post-reply conversation screenshot at `/var/folders/xd/w7bm0l8j6dlf_y7pgh5s1qsr0000gn/T/TemporaryItems/NSIRD_screencaptureui_k8ZFX0/截屏2026-09-04 01.57.44.png`. It establishes the violet category field, untouched white TEST!/guide art, large white conversation surface, dark high-contrast Chinese heading, conversational left/right rhythm, and a persistent lower composer after an AI reply arrives.
 

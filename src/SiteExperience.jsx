@@ -24,6 +24,8 @@ import {
   measureAssessmentBands,
 } from "./split-transition";
 import { animateScrollPage } from "./transitions";
+import { pushPages } from "./slide-transition";
+import { skipCaseIntro } from "./CaseArchive";
 
 const route = () => {
   const assessment = getAssessmentRoute();
@@ -75,6 +77,9 @@ const CARD_MOVES = new Set([
   "choose>profile",
   "profile>choose",
 ]);
+// Homepage and case library share one panel node, so they cannot be frozen and
+// cut like the moves above; they push instead, on the live layers themselves.
+const SLIDE_MOVES = new Set(["home>cases", "cases>home"]);
 
 function waitForCubeSettle() {
   return new Promise((resolve) => {
@@ -110,6 +115,14 @@ export function SiteExperience() {
   });
   const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
   const [moving, setMoving] = useState(false);
+  // Narrower than `moving`: true only while a page push is in flight. The two
+  // pages are siblings and only one of them is the current tab, so switching
+  // tabs unmounts the other one — fine when it is merely not shown, fatal on the
+  // way back, where the departing archive would be deleted on frame one instead
+  // of travelling out. See the `tab !== "home" || pushing` test in App.jsx.
+  // Deliberately not `moving`, which is also raised for the scroll and frozen
+  // moves: those would keep the archive mounted under an unrelated transition.
+  const [pushing, setPushing] = useState(false);
   const [cubeMounted, setCubeMounted] = useState(
     () => ["home", "login", "cases", "forum"].includes(route()),
   );
@@ -213,7 +226,8 @@ export function SiteExperience() {
     const nextProfileDetail = next === "profile-detail" ? getProfileDetailId(hash) : null;
     const shouldAnimate = SCROLL_MOVES.has(move)
       || STRIP_MOVES.has(move)
-      || CARD_MOVES.has(move);
+      || CARD_MOVES.has(move)
+      || SLIDE_MOVES.has(move);
     setCubeMounted(true);
     if (reduce || !stage.current || !shouldAnimate) {
       setProfileDetailRoute(nextProfileDetail);
@@ -257,6 +271,40 @@ export function SiteExperience() {
           await collectSceneFrames(toPanel),
         );
         await animateScrollPage(stage.current, outgoing, incoming, scrollY, move === "login>home");
+        return;
+      }
+
+      // Homepage and case library are two live layers inside one canvas, so
+      // there is nothing to freeze: each one travels as a whole. The swap has
+      // to commit synchronously so the arriving layer exists in the same task
+      // the push starts in.
+      if (SLIDE_MOVES.has(move)) {
+        // The arriving page is already travelling; the archive's cold-open
+        // would be a second entrance on top of it.
+        const forward = move === "home>cases";
+        if (forward) skipCaseIntro();
+        // The URL moves with the intent either way; only the view has to wait
+        // for the reverse, so the archive keeps its own `data-tab` while it
+        // travels (see pushPages).
+        const arrive = () => {
+          window.scrollTo(0, 0);
+          history.pushState(null, "", hash);
+        };
+        setPushing(true);
+        try {
+          await pushPages({
+            forward,
+            enter: forward
+              ? () => {
+                  flushSync(() => setView(next));
+                  arrive();
+                }
+              : arrive,
+            commit: forward ? undefined : () => flushSync(() => setView(next)),
+          });
+        } finally {
+          setPushing(false);
+        }
         return;
       }
 
@@ -373,6 +421,7 @@ export function SiteExperience() {
             active={view === "home"}
             flattened={homeShellFlat}
             transitionBusy={moving}
+            pushing={pushing}
             onCubeMotionChange={handleShellMotion}
           />
         )}

@@ -262,6 +262,13 @@ button:hover {
   background: #fff;
   color: #030303;
   font-size: calc(18px * var(--ui-scale, 1));
+  /* The account pill belongs to the homepage tab but stays mounted, so that
+   * leaving the tab fades it out rather than deleting it (the hide rules for
+   * the cases and forum tabs were written to hide it, not to remove it).
+   * `visibility` has to be in the list: without it the pill switches off on the
+   * first frame and the opacity fade is never seen. */
+  transition: background 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s,
+    visibility 0.2s;
 }
 .home-account:hover {
   background: #fff6f9;

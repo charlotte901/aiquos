@@ -13,6 +13,37 @@ body {
   width: 100%;
   min-height: 100dvh;
   overflow: clip;
+  /* One fixed header geometry for the whole site. These are reference-composition
+     pixels, deliberately not derived from `--ui-scale`: the wordmark, the nav and
+     the account pill must sit in the same place at the same size on Home and on
+     the archive, so the header reads as chrome the pages move underneath rather
+     than as a responsive element each page re-lays-out. */
+  --chrome-inset-x: 54px;
+  --chrome-inset-right: 41px;
+  --chrome-inset-y: 24px;
+  --chrome-height: 51px;
+  /* The nav row rides above the header's own top edge, so the three parts read as
+     one line lifted toward the top of the page rather than a bar with the links
+     hanging below the wordmark. It is a single token so Home and the archive can
+     never disagree about where that line sits — the nav used to be moved to
+     `top: 0` on the archive alone, which slid it up 34px the moment you left
+     Home. Same fixed scale on both tabs for the same reason. */
+  --chrome-nav-top: -6px;
+  --chrome-nav-scale: 0.92;
+  --chrome-nav-size: 12px;
+  --chrome-nav-gap: 34px;
+  /* One wordmark scale for every tab. The archive used to shrink it to 0.58 while
+     Home used `--ui-scale`, so the logo changed size on the way across. */
+  --chrome-brand-scale: 0.92;
+  /* Fixed breathing room between the header and whatever a tab puts under it. */
+  --chrome-gap: 34px;
+  --chrome-block: calc(var(--chrome-inset-y) + var(--chrome-height) + var(--chrome-gap));
+  /* The archive composition is intentionally smaller than the frame it sits in,
+     so it reads as one stamp on the page rather than filling it edge to edge.
+     `--poster-margin` sets the outer whitespace and `--poster-scale` shrinks the
+     whole scene (words, stamps and route together) around its centre. */
+  --poster-margin: 46px;
+  --poster-scale: 0.92;
 }
 .canvas-space {
   width: 100%;
@@ -30,20 +61,22 @@ body {
   height: calc(100% - 18px);
 }
 .site-header {
-  left: calc(54px * var(--ui-scale));
-  right: calc(41px * var(--ui-scale));
-  top: calc(24px * var(--ui-scale));
-  height: calc(51px * var(--ui-scale));
+  left: var(--chrome-inset-x);
+  right: var(--chrome-inset-right);
+  top: var(--chrome-inset-y);
+  height: var(--chrome-height);
 }
 .home-brand {
-  transform: scale(var(--ui-scale));
+  transform: scale(var(--chrome-brand-scale));
   transform-origin: left center;
 }
 .site-header nav {
   left: 50%;
-  top: 34px;
+  top: var(--chrome-nav-top);
   height: 51px;
-  transform: translateX(-50%) scale(var(--ui-scale));
+  gap: var(--chrome-nav-gap);
+  font-size: var(--chrome-nav-size);
+  transform: translateX(-50%) scale(var(--chrome-nav-scale));
   transform-origin: top center;
 }
 .get-started {
@@ -139,8 +172,17 @@ body {
 .app[data-tab="cases"] .home-tab-screen {
   background: var(--pink);
 }
+.app[data-tab="cases"] .design-canvas {
+  overflow: clip;
+}
+.app[data-tab="cases"],
+.app[data-tab="cases"] .canvas-space {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
 .app[data-tab="cases"] .home-tab-screen {
-  padding-top: 100px;
+  padding: 0;
   overflow: hidden;
   scrollbar-width: none;
 }
@@ -1121,175 +1163,404 @@ body {
   background: #f568a3;
   color: #fff;
 }
-.case-archive {
+.case-archive:not(.case-detail) {
   position: relative;
   width: 100vw;
-  height: calc(100dvh - 116px);
+  height: 100dvh;
   margin-left: calc(50% - 50vw);
   overflow: hidden;
-  border-radius: 36px;
-  background: #ffe3f4;
-  color: #17150f;
-}
-
-.case-archive-inner {
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  padding: 30px clamp(26px, 4.2vw, 64px) 20px;
-}
-
-.case-archive-title {
-  margin: 0 0 20px;
-  font-size: clamp(34px, 4vw, 54px);
-  line-height: 1;
-  font-weight: 600;
-  letter-spacing: -1.2px;
-}
-
-.case-archive-title sup {
-  margin-left: 4px;
-  font-size: 0.28em;
-  font-weight: 700;
-  vertical-align: 1.7em;
-}
-
-.case-archive-list {
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.case-archive-list::-webkit-scrollbar {
-  display: none;
-}
-
-.case-archive-row {
-  width: calc(100% + 28px);
-  min-height: 47px;
-  margin: 0 -14px;
-  padding: 0 14px;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 18px;
-  border: 0;
-  border-bottom: 1px solid #f3bcd8;
   border-radius: 0;
-  background: transparent;
-  color: #a49e94;
-  font: inherit;
-  font-size: 15px;
-  text-align: left;
-  transition: color 180ms ease, background-color 180ms ease;
+  outline: none;
+  background: var(--poster-background);
+  color: var(--poster-ink);
+  transition: background-color 520ms ease, color 520ms ease;
+  isolation: isolate;
+  touch-action: pan-y;
 }
 
-.case-archive-name {
+.case-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.085;
+  pointer-events: none;
+  background-image: url("/assets/case-poster-grain.png");
+  background-size: 620px 620px;
+  background-position: center;
+  mix-blend-mode: soft-light;
+}
+
+.case-poster-stage {
+  position: absolute;
+  inset: 0;
+  animation: poster-stage-in 720ms cubic-bezier(0.2, 0.72, 0.18, 1) both;
+}
+
+.case-poster-stage.is-prev {
+  animation-name: poster-stage-in-prev;
+}
+
+.case-poster-words {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  font-family: "DM Sans", "Noto Sans SC", sans-serif;
+  font-size: clamp(92px, 13.35vw, 204px);
+  font-weight: 800;
+  line-height: 0.78;
+  letter-spacing: -0.075em;
+  text-align: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.case-poster-words span {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: poster-word-in 780ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
+}
+
+.case-poster-words span:first-child {
+  top: clamp(62px, 7dvh, 86px);
+}
+
+.case-poster-words span:last-child {
+  bottom: 0;
+  animation-delay: 70ms;
+}
+
+.case-poster-route {
+  position: absolute;
+  z-index: 2;
+  left: -4%;
+  top: 31%;
+  width: 108%;
+  height: 39%;
+  object-fit: fill;
+  pointer-events: none;
+  filter: sepia(1) saturate(0.35) brightness(1.8);
+  opacity: 0.94;
+  animation: poster-route-in 900ms 80ms cubic-bezier(0.2, 0.72, 0.18, 1) both;
+}
+
+.case-poster-feature,
+.case-poster-peek {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.case-poster-feature {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 29%;
+  width: min(27.2vw, calc(46dvh * 0.81), 418px);
+  min-width: 248px;
+  aspect-ratio: 0.81;
+  --stamp-tilt-x: 0deg;
+  --stamp-tilt-y: 0deg;
+  --stamp-shift-x: 0px;
+  --stamp-shift-y: 0px;
+  transform: translateX(calc(-50% + var(--stamp-shift-x)))
+    translateY(var(--stamp-shift-y))
+    perspective(900px)
+    rotateX(var(--stamp-tilt-x))
+    rotateY(var(--stamp-tilt-y));
+  transform-style: preserve-3d;
+  transition: transform 300ms cubic-bezier(0.2, 0.72, 0.18, 1);
+  animation: poster-feature-fade 620ms 80ms ease both;
+}
+
+.case-poster-feature:hover {
+  --stamp-shift-y: -7px;
+}
+
+.case-poster-feature:focus-visible,
+.case-poster-arrow:focus-visible,
+.case-poster-rail button:focus-visible {
+  outline: 3px solid var(--poster-accent);
+  outline-offset: 5px;
+}
+
+.poster-stamp {
+  position: absolute;
+  inset: 0;
+  display: block;
+  filter: drop-shadow(0 10px 5px #4f153f26) drop-shadow(0 22px 20px #4f153f45);
+  transition: filter 260ms ease;
+  animation: poster-stamp-in 760ms 80ms cubic-bezier(0.16, 0.78, 0.18, 1) both;
+}
+
+/* The stamp's own entrance is for the cold open only.
+ *
+ * Everywhere else it is a second motion fighting one that is already running.
+ * Arriving on a push, the whole page is travelling in from the right — the
+ * stamp rising 34px and unrotating on top of that reads as a stutter, not an
+ * entrance. On a case change the flight animation is already carrying the stamp
+ * between poses, and re-playing this one would snap it back to the start of the
+ * entrance mid-flight. So the entrance is scoped to `.is-intro`, and the settled
+ * scene simply is where it should be. */
+.case-poster:not(.is-intro) .poster-stamp,
+.app[data-pushing] .poster-stamp {
+  animation: none;
+}
+
+.case-poster-feature:hover .poster-stamp,
+.case-poster-feature:focus-visible .poster-stamp {
+  filter: drop-shadow(0 12px 6px #4f153f24) drop-shadow(0 31px 24px #4f153f52);
+}
+
+.poster-stamp-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.poster-stamp-content {
+  position: absolute;
+  inset: 10.4% 10.8% 11.2%;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  color: #24201d;
+  text-align: left;
+}
+
+.poster-stamp-art {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  object-fit: cover;
+  border-radius: 1px;
+  filter: saturate(0.96) contrast(1.015);
+  transition: filter 280ms ease, transform 500ms cubic-bezier(0.2, 0.72, 0.18, 1);
+}
+
+.case-poster-feature:hover .poster-stamp-art,
+.case-poster-feature:focus-visible .poster-stamp-art {
+  filter: saturate(1.04) contrast(1.02);
+  transform: scale(1.012);
+}
+
+.poster-stamp-caption {
+  min-height: 72px;
+  padding: 12px 7px 3px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: 12px;
+}
+
+.poster-stamp-caption strong {
+  grid-column: 1 / -1;
   overflow: hidden;
+  color: #24201d;
+  font-size: clamp(14px, 1.25vw, 19px);
+  line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.case-archive-index {
-  color: #a49e94;
-  font-size: 12px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.poster-stamp-caption span,
+.poster-stamp-caption time {
+  margin-top: 6px;
+  color: #706862;
+  font-size: clamp(10px, 0.9vw, 13px);
 }
 
-.case-archive-meta {
+.case-poster-open {
+  position: absolute;
+  left: 50%;
+  bottom: -29px;
+  transform: translateX(-50%);
+  opacity: 0;
+  color: var(--poster-ink);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.case-poster-feature:hover .case-poster-open,
+.case-poster-feature:focus-visible .case-poster-open {
+  opacity: 1;
+  transform: translate(-50%, 5px);
+}
+
+.case-poster-peek {
+  position: absolute;
+  z-index: 3;
+  width: clamp(190px, 17vw, 270px);
+  aspect-ratio: 0.81;
+  opacity: 0.82;
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+
+.case-poster-peek.is-previous {
+  left: 0;
+  top: 5.5%;
+  transform: translateX(-50%) rotate(-1.2deg);
+}
+
+.case-poster-peek.is-next {
+  right: 0;
+  bottom: 5.5%;
+  transform: translateX(50%) rotate(1.2deg);
+}
+
+.case-poster-peek:hover {
+  opacity: 1;
+}
+
+.case-poster-peek.is-previous:hover {
+  transform: translateX(-50%) rotate(-1.2deg);
+}
+
+.case-poster-peek.is-next:hover {
+  transform: translateX(50%) rotate(1.2deg);
+}
+
+/* The compact body hangs off the content layer rather than the stamp root, so a
+   travelling stamp can carry both bodies and cross-fade them (see `is-morphing`
+   in responsive.css / `PosterStamp`): the compact one fills the frame with
+   artwork and the full one sits it above a caption. */
+.poster-stamp-content.is-compact {
+  grid-template-rows: 1fr;
+}
+
+.poster-stamp-content.is-compact .poster-stamp-year {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  color: #5c554f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.case-poster-arrow {
+  position: absolute;
+  z-index: 6;
+  top: 51%;
+  height: 48px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  font-size: 13px;
+  gap: 14px;
+  border: 0;
+  background: transparent;
+  color: var(--poster-ink);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
 }
 
-.case-archive-meta i {
-  font-style: normal;
-  opacity: 0.5;
+.case-poster-arrow svg {
+  width: 46px;
+  height: 46px;
+  padding: 12px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  transition: transform 180ms ease, background-color 180ms ease;
 }
 
-.case-archive-row:hover,
-.case-archive-row:focus-visible,
-.case-archive-row.is-active {
-  background: #fffafd;
-  color: #17150f;
-  outline: none;
+.case-poster-arrow:hover svg {
+  transform: scale(1.08);
+  background: #ffffff14;
 }
 
-.case-archive-row:hover .case-archive-index,
-.case-archive-row:focus-visible .case-archive-index,
-.case-archive-row.is-active .case-archive-index {
-  color: #94546c;
-}
+.case-poster-arrow.is-left { left: clamp(32px, 4.5vw, 70px); }
+/* The two arrows are a mirrored pair — same 109px box, same 46px circle, same 37px
+   label, only the outer edge differs — so they must share one inset formula. The
+   right arrow used to read clamp(54px, 7vw, 108px), which held it a consistent extra
+   2.5vw out at every width: 36px further from the edge than the left arrow at 1440,
+   32px at 1280, 27px at 1100, 22px at 900. The left arrow is the reference, the same
+   way it is for the corner stamps. */
+.case-poster-arrow.is-right { right: clamp(32px, 4.5vw, 70px); }
 
-.case-archive-preview {
+.case-poster-rail {
   position: absolute;
-  left: 50%;
-  top: calc(50% + 42px);
-  width: min(362px, 38vw);
-  height: min(456px, 55dvh);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
+  z-index: 6;
+  top: 98px;
+  right: 3.1%;
+  bottom: 34px;
+  width: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 0.45dvh, 6px);
 }
 
-.case-stack-media {
+.case-poster-rail::before {
+  content: "";
   position: absolute;
-  left: 50%;
   top: 0;
-  height: 100%;
-  width: 100%;
-  max-width: none;
-  object-fit: cover;
-  border-radius: 3px;
-  background: #fff;
-  box-shadow: 0 14px 44px #7d315e2e;
-  transform: translate(-50%, 0);
-  transform-origin: center top;
-  transition:
-    transform 420ms cubic-bezier(0.22, 0.68, 0.24, 1),
-    filter 260ms ease,
-    opacity 240ms ease;
-  will-change: transform, opacity;
+  bottom: 0;
+  width: 1px;
+  background: currentColor;
+  opacity: 0.28;
 }
 
-.case-stack-media.front {
-  z-index: 4;
-  opacity: 1;
-  filter: blur(0);
-}
-
-.case-stack-media.lower {
-  z-index: 3;
-  transform: translate(-50%, -7%);
-  opacity: 0.9;
-  filter: blur(0.4px);
-}
-
-.case-stack-media.upper {
-  z-index: 2;
-  transform: translate(-50%, -16%);
-  opacity: 0.78;
-  filter: blur(2px);
-}
-
-.case-stack-media.back {
+.case-poster-rail button {
+  position: relative;
   z-index: 1;
-  transform: translate(-50%, -25%);
-  opacity: 0.58;
-  filter: blur(4px);
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  padding: 0;
+  border: 1px solid var(--poster-background);
+  border-radius: 50%;
+  background: var(--poster-ink);
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 240ms ease, box-shadow 240ms ease;
 }
 
-.case-stack-media.hidden {
-  z-index: 0;
-  opacity: 0;
-  pointer-events: none;
-  filter: blur(8px);
+.case-poster-rail button.is-active {
+  transform: scale(2.2);
+  box-shadow: 0 0 0 1px var(--poster-ink), 0 0 0 4px color-mix(in srgb, var(--poster-accent) 22%, transparent);
+  background: var(--poster-accent);
+}
+
+@keyframes poster-stage-in {
+  from { opacity: 0.2; transform: translateX(4%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes poster-stage-in-prev {
+  from { opacity: 0.2; transform: translateX(-4%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes poster-feature-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes poster-stamp-in {
+  from {
+    transform: translateY(34px) rotate(1.5deg) scale(0.955);
+  }
+  to {
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+@keyframes poster-word-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(0.16em); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes poster-route-in {
+  from { opacity: 0; transform: translateX(-2.5%); }
+  to { opacity: 0.94; transform: translateX(0); }
 }
 
 .case-detail {
@@ -1382,22 +1653,86 @@ body {
   font-size: 17px;
   line-height: 1.72;
 }
-.app[data-layout="compact"] .case-archive {
-  height: calc(100dvh - 132px);
+.app[data-layout="compact"] .case-archive:not(.case-detail) {
+  height: 100dvh;
 }
-.app[data-layout="compact"] .case-archive-row {
-  gap: 10px;
-  font-size: 14px;
+.app[data-layout="compact"] .case-poster-words {
+  font-size: clamp(58px, 18vw, 118px);
+  line-height: 0.82;
 }
-.app[data-layout="compact"] .case-archive-meta {
-  font-size: 11px;
+.app[data-layout="compact"] .case-poster-words span:first-child {
+  top: 24%;
 }
-.app[data-layout="compact"] .case-archive-preview {
-  width: min(272px, 66vw);
-  height: min(326px, 40dvh);
+.app[data-layout="compact"] .case-poster-words span:last-child {
+  bottom: 12%;
 }
-.app[data-layout="compact"] .case-stack-media {
-  max-width: 74vw;
+.app[data-layout="compact"] .case-poster-feature {
+  top: 37%;
+  width: min(58vw, 310px);
+  min-width: 0;
+}
+.app[data-layout="compact"] .case-poster-peek {
+  width: 42vw;
+  opacity: 0.76;
+}
+.app[data-layout="compact"] .case-poster-peek.is-previous {
+  top: 19%;
+  transform: translateX(-76%) rotate(-1.2deg);
+}
+.app[data-layout="compact"] .case-poster-peek.is-next {
+  bottom: 19%;
+  transform: translateX(76%) rotate(1.2deg);
+}
+.app[data-layout="compact"] .case-poster-arrow {
+  top: 54%;
+  bottom: auto;
+  gap: 8px;
+}
+.app[data-layout="compact"] .case-poster-arrow.is-left {
+  left: 22px;
+}
+.app[data-layout="compact"] .case-poster-arrow.is-right {
+  right: 22px;
+}
+.app[data-layout="compact"] .case-poster-arrow span {
+  display: none;
+}
+.app[data-layout="compact"] .case-poster-arrow svg {
+  width: 42px;
+  height: 42px;
+  padding: 11px;
+}
+.app[data-layout="compact"] .case-poster-rail {
+  top: 154px;
+  left: auto;
+  right: 8px;
+  bottom: 54px;
+  width: 10px;
+  height: auto;
+  transform: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+}
+.app[data-layout="compact"] .case-poster-rail::before {
+  display: block;
+}
+.app[data-layout="compact"] .case-poster-rail button {
+  width: 4px;
+  height: 4px;
+  flex-basis: 4px;
+}
+.app[data-layout="compact"] .poster-stamp-caption {
+  min-height: 62px;
+  padding-top: 9px;
+}
+.app[data-layout="compact"] .poster-stamp-caption strong {
+  font-size: 13px;
+}
+.app[data-layout="compact"] .poster-stamp-caption span,
+.app[data-layout="compact"] .poster-stamp-caption time {
+  font-size: 9px;
 }
 .app[data-layout="compact"] .case-detail,
 .profile-favorite-detail[data-layout="compact"] .case-detail {
@@ -1429,13 +1764,18 @@ body {
 .app[data-tab="forum"] .library-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.app[data-tab="cases"] .site-header nav a {
+.app[data-tab="cases"]:not([data-pushing="back"]) .site-header nav a {
   color: #ffffff;
 }
-.app[data-tab="cases"] .site-header .brand-small canvas {
+/* The nav deliberately has no `top` override here any more. It used to be moved
+   to `top: 0` on the archive only, which lifted the whole Home / Cases / Forum row
+   34px the instant the push landed — the header appeared to jump as the page
+   changed under it. Position and scale now come from `--chrome-nav-top` and
+   `--chrome-nav-scale` for every tab, so only the colours differ. */
+.app[data-tab="cases"]:not([data-pushing="back"]) .site-header .brand-small canvas {
   filter: brightness(1);
 }
-.app[data-tab="cases"] .site-header nav a:after {
+.app[data-tab="cases"]:not([data-pushing="back"]) .site-header nav a:after {
   background: #ffffff;
 }
 .app[data-tab="forum"] .site-header nav a {
@@ -1625,7 +1965,7 @@ body {
   padding-top: 114px;
 }
 .app[data-layout="compact"][data-tab="cases"] .home-tab-screen {
-  padding-top: 114px;
+  padding: 0;
 }
 .app[data-layout="compact"] .intro-copy h2 {
   font-size: 30px;
@@ -1740,4 +2080,1407 @@ body {
 }
 .app[data-layout="compact"] .screen-hit-area span {
   display: none;
+}
+
+/* Cases — scroll-driven stamp journey, matched to the motion reference. */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.case-poster {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.case-poster:active {
+  cursor: grabbing;
+}
+
+.case-poster.is-index-open,
+.case-devpanel {
+  touch-action: pan-y;
+  user-select: auto;
+}
+
+.case-poster::after {
+  z-index: 8;
+}
+
+.case-poster-background,
+.case-poster-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.case-poster-background {
+  z-index: 0;
+  will-change: transform;
+}
+
+.case-poster-background.is-incoming {
+  z-index: 1;
+  box-shadow: -18px 0 42px #42182a14;
+}
+
+/* The poster's frame: inset from the page edges and pushed clear of the fixed
+   header. This is layout only — deliberately NO `transform` here.
+ *
+ * The flight animation measures its corner poses in screen pixels and hands them
+ * to the stylesheet as `vw`/`vh` (`--stamp-x`, see `measureCornerPoses`), which
+ * the feature rule turns back into a `translate`. A `scale()` on this wrapper
+ * would multiply that translate a second time — the stamp would stop short of
+ * the corner it just measured (at 0.84 it lands ~16% of the way out), and the
+ * route drawn from the same rects would drift out of register with it. So the
+ * shrink is applied to the composition's own size below, never to the ancestor
+ * that the flight coordinate space is expressed in. */
+.case-poster-frame {
+  position: absolute;
+  inset: var(--chrome-block) var(--poster-margin) var(--poster-margin);
+}
+
+.case-poster-stage {
+  z-index: 2;
+  animation: none;
+}
+
+.case-poster-scene {
+  color: var(--scene-ink);
+  pointer-events: none;
+}
+
+.case-poster-scene.is-outgoing {
+  z-index: 2;
+}
+
+.case-poster-scene.is-incoming {
+  z-index: 3;
+}
+
+.case-poster-words {
+  z-index: 1;
+  font-size: clamp(70px, 8.9vw, 142px);
+  line-height: 0.8;
+  letter-spacing: -0.068em;
+  color: var(--scene-ink);
+  opacity: var(--word-opacity, 1);
+  will-change: transform, opacity;
+}
+
+.case-poster-words span {
+  animation: none;
+  transform: translateX(calc(-50% + var(--word-x, 0vw)));
+}
+
+.case-poster-words span:first-child {
+  top: clamp(118px, 14dvh, 164px);
+}
+
+.case-poster-words span:last-child {
+  bottom: -0.04em;
+}
+
+.case-poster-route {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  color: #f2ce59;
+  filter: none;
+  opacity: 1;
+  pointer-events: none;
+  animation: none;
+}
+
+.case-poster-route-dash {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* First-visit opening: the reference's full-bleed image shrinks into the
+ * centered stamp while the poster world fades in around it. */
+.case-poster-hero {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.case-poster-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: 50% 46%;
+  animation: case-hero-shrink 1660ms cubic-bezier(0.58, 0.02, 0.16, 1) both;
+}
+
+.case-poster.is-intro .case-poster-feature,
+.case-poster.is-intro .case-poster-peek {
+  animation: case-intro-fade 620ms ease 1010ms both;
+}
+
+.case-poster.is-intro .case-poster-scene.is-stable .case-poster-words span {
+  animation: poster-word-in 780ms cubic-bezier(0.18, 0.72, 0.2, 1) 620ms both;
+}
+
+.case-poster.is-intro .case-poster-scene.is-stable .case-poster-words span:last-child {
+  animation-delay: 720ms;
+}
+
+.case-poster.is-intro .case-poster-mode,
+.case-poster.is-intro .case-poster-credit,
+.case-poster.is-intro .case-poster-all,
+.case-poster.is-intro .case-poster-arrow {
+  animation: case-intro-fade 560ms ease 1160ms both;
+}
+
+.app[data-tab="cases"] .case-poster-hero img {
+  transform-origin: 50% 55%;
+}
+
+.app[data-layout="compact"] .case-poster-hero img {
+  --hero-stamp-scale: 0.52;
+  transform-origin: 50% 60%;
+}
+
+@keyframes case-hero-shrink {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(var(--hero-stamp-scale, 0.235));
+  }
+  76% {
+    opacity: 0;
+    transform: scale(var(--hero-stamp-scale, 0.235));
+  }
+  100% {
+    opacity: 0;
+    transform: scale(var(--hero-stamp-scale, 0.235));
+  }
+}
+
+@keyframes case-intro-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.case-poster-feature {
+  top: 33.5%;
+  /* `--poster-scale` shrinks the composition by shrinking its parts, not by
+     scaling an ancestor. The flight measures every stamp's rect on each move and
+     re-derives its corner poses from it, so a smaller stamp is carried correctly
+     and the whole scene reads as one smaller composition. */
+  width: min(calc(23vw * var(--poster-scale)), calc(52dvh * 0.81 * var(--poster-scale)), calc(360px * var(--poster-scale)));
+  min-width: calc(228px * var(--poster-scale));
+  pointer-events: auto;
+  opacity: var(--stamp-opacity, 1);
+  transform: translateX(calc(-50% + var(--stamp-x, 0vw) + var(--stamp-shift-x, 0px)))
+    translateY(calc(var(--stamp-y, 0vh) + var(--stamp-shift-y, 0px)))
+    scale(var(--stamp-scale, 1))
+    perspective(900px)
+    rotateX(var(--stamp-tilt-x, 0deg))
+    rotateY(var(--stamp-tilt-y, 0deg))
+    rotateZ(var(--stamp-rotation, 0deg));
+  transition: filter 220ms ease, transform 300ms var(--ease-out);
+  animation: none;
+  will-change: transform, opacity;
+}
+
+.case-poster-scene:not(.is-stable) .case-poster-feature {
+  pointer-events: none;
+  transition: none;
+}
+
+/* The stamps inside a moving scene are disabled buttons; without this rule the
+ * global `button:disabled` opacity wins and the travelling stamps sit at a
+ * flat 55%, hiding both the intended arrival/departure fade and the route
+ * that passes behind them. */
+.case-poster-feature:disabled {
+  opacity: var(--stamp-opacity, 1);
+}
+
+.case-poster .poster-stamp {
+  animation: none;
+}
+
+.case-poster-feature:hover {
+  --stamp-shift-y: 0px;
+}
+
+.case-poster-feature:hover .poster-stamp {
+  filter: drop-shadow(0 10px 5px #4f153f26) drop-shadow(0 22px 20px #4f153f45);
+}
+
+.case-poster-feature:hover .poster-stamp-art {
+  filter: saturate(0.96) contrast(1.015);
+  transform: none;
+}
+
+.case-poster-feature:hover .case-poster-open {
+  opacity: 0;
+  transform: translateX(-50%);
+}
+
+.case-poster-feature:focus-visible,
+.case-poster-peek:focus-visible,
+.case-poster-arrow:focus-visible,
+.case-poster-all:focus-visible {
+  outline: 3px solid var(--scene-accent, var(--poster-accent));
+  outline-offset: 5px;
+}
+
+.case-poster-peek {
+  z-index: 3;
+  width: clamp(calc(132px * var(--poster-scale)), calc(12.6vw * var(--poster-scale)), calc(196px * var(--poster-scale)));
+  opacity: 0.92;
+  pointer-events: auto;
+}
+
+/* The two peek stamps are a point reflection of each other about the poster
+   centre: `bottom` mirrors `top`, the horizontal offset mirrors sign, and so
+   does the tilt. Keeping the next stamp on `bottom: -4.5%` / `translateX(60%)`
+   used to push it 10% further out and hang it 42px past the bottom edge, so the
+   two corners read as different sizes. The previous stamp is the reference. */
+.case-poster-peek.is-previous {
+  top: 5.5%;
+  transform: translateX(-50%) rotate(-1.2deg);
+}
+
+.case-poster-peek.is-next {
+  bottom: 5.5%;
+  transform: translateX(50%) rotate(1.2deg);
+}
+
+.case-poster-peek:hover {
+  opacity: 0.92;
+}
+
+.case-poster-peek.is-previous:hover {
+  transform: translateX(-50%) rotate(-1.2deg);
+}
+
+.case-poster-peek.is-next:hover {
+  transform: translateX(50%) rotate(1.2deg);
+}
+
+.case-poster .poster-stamp-art {
+  transition: filter 220ms ease, transform 300ms var(--ease-out);
+}
+
+.case-poster-arrow {
+  cursor: pointer;
+  transition: color 220ms ease;
+}
+
+.case-poster-arrow svg {
+  transition: transform 140ms var(--ease-out), background-color 140ms ease;
+}
+
+.case-poster-arrow:hover svg {
+  transform: none;
+  background: transparent;
+}
+
+.case-poster-arrow:active svg {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .case-poster-feature:hover {
+    --stamp-shift-y: -7px;
+  }
+
+  .case-poster-feature:hover .poster-stamp {
+    filter: drop-shadow(0 12px 6px #4f153f24) drop-shadow(0 31px 24px #4f153f52);
+  }
+
+  .case-poster-feature:hover .poster-stamp-art {
+    filter: saturate(1.04) contrast(1.02);
+    transform: scale(1.012);
+  }
+
+  .case-poster-feature:hover .case-poster-open {
+    opacity: 1;
+    transform: translate(-50%, 5px);
+  }
+
+  .case-poster-peek:hover {
+    opacity: 1;
+  }
+
+  /* Hover pulls each peek 6% back toward the centre and eases the tilt; the
+     values mirror, so the two corners react identically. */
+  .case-poster-peek.is-previous:hover {
+    transform: translateX(-44%) rotate(-0.5deg);
+  }
+
+  .case-poster-peek.is-next:hover {
+    transform: translateX(44%) rotate(0.5deg);
+  }
+
+  .case-poster-arrow:hover svg {
+    transform: scale(1.06);
+    background: #ffffff18;
+  }
+}
+
+.poster-stamp-caption {
+  min-height: 54px;
+  padding: 9px 5px 2px;
+}
+
+.poster-stamp-caption strong {
+  font-size: clamp(11px, 0.92vw, 14px);
+}
+
+.poster-stamp-caption span,
+.poster-stamp-caption time {
+  margin-top: 4px;
+  font-size: clamp(8px, 0.65vw, 10px);
+}
+
+.case-poster-open {
+  bottom: -25px;
+  color: var(--scene-ink);
+  font-size: 9px;
+}
+
+.case-poster-mode,
+.case-poster-credit,
+.case-poster-all {
+  position: absolute;
+  z-index: 10;
+  margin: 0;
+  color: var(--poster-ink);
+  font-family: "DM Sans", "Noto Sans SC", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 280ms ease;
+}
+
+.case-poster-mode {
+  left: clamp(24px, 3.2vw, 52px);
+  bottom: 27px;
+  opacity: 0.72;
+}
+
+.case-poster-all {
+  top: 98px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--poster-background);
+  box-shadow: 0 0 0 1px currentColor inset;
+  cursor: pointer;
+  transition: background-color 520ms ease, color 280ms ease;
+}
+
+.case-poster-credit {
+  left: 50%;
+  bottom: 22px;
+  width: min(520px, 48vw);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  opacity: 0.68;
+}
+
+.case-poster-credit span {
+  text-align: right;
+}
+
+.case-poster-credit strong {
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.case-poster-credit time {
+  text-align: left;
+}
+
+/* Developer panel for the case pool. Plain on purpose: a flat dark box, system
+   UI stack, no brand fonts, no poster colours, no entrance animation. It is a
+   tool for inspecting and reordering cases, so it should look like one. It sits
+   above everything and does not inherit the poster's ink/background variables,
+   which is why every colour here is written literally. */
+.case-devpanel {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: #1c1c1e;
+  color: #e8e8ea;
+  cursor: default;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* A single sticky bar, so the controls stay reachable while the list scrolls.
+   No oversized heading — the old panel's 122px title was the main reason it read
+   as a designed page, and its sticky box needed a shadow hack to stay opaque. */
+.case-devpanel-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #3a3a3e;
+  background: #232326;
+}
+
+.case-devpanel-bar strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.case-devpanel-meta {
+  color: #8e8e93;
+}
+
+.case-devpanel-spacer {
+  flex: 1 1 auto;
+}
+
+.case-devpanel-btn {
+  padding: 4px 10px;
+  border: 1px solid #4a4a4f;
+  border-radius: 4px;
+  background: #2c2c30;
+  color: #e8e8ea;
+  font: inherit;
+  cursor: pointer;
+}
+
+.case-devpanel-btn:hover,
+.case-devpanel-btn:focus-visible {
+  background: #3a3a40;
+  outline: none;
+}
+
+/* Pressed state is a colour change, not a filled pill: it has to be obvious at a
+   glance which mode the panel is in. */
+.case-devpanel-btn[aria-pressed="true"] {
+  background: #0a84ff;
+  border-color: #0a84ff;
+  color: #fff;
+}
+
+.case-devpanel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px 0 24px;
+}
+
+.case-devpanel-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* One pool row: index, identity, the two colour pickers, and delete. Laid out on
+   a fixed grid so the pickers line up in a column down the list and can be
+   compared at a glance while tuning a palette. */
+.case-devpanel-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 12px;
+  border-bottom: 1px solid #2a2a2e;
+}
+
+.case-devpanel-item:hover {
+  background: #242428;
+}
+
+.case-devpanel-n {
+  color: #8e8e93;
+  text-align: right;
+}
+
+.case-devpanel-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.case-devpanel-title {
+  overflow: hidden;
+  color: #fff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The title opens the case when there is something to open; live cases have no
+   static detail page, so it stays a plain label rather than a dead control. */
+.case-devpanel-open {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.case-devpanel-open:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.case-devpanel-open:not(:disabled):hover {
+  text-decoration: underline;
+}
+
+.case-devpanel-key {
+  overflow: hidden;
+  color: #8e8e93;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.case-devpanel-colors {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.case-devpanel-color {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #8e8e93;
+  cursor: pointer;
+}
+
+/* Strip the native swatch chrome so the two pickers read as a tidy pair of
+   colour chips rather than two browser-default widgets. */
+.case-devpanel-color input[type="color"] {
+  width: 26px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #4a4a4f;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.case-devpanel-color input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.case-devpanel-color input[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: 2px;
+}
+
+.case-devpanel-sm {
+  padding: 2px 7px;
+  font-size: 11px;
+}
+
+.case-devpanel-del:hover,
+.case-devpanel-del:focus-visible {
+  background: #ff453a;
+  border-color: #ff453a;
+  color: #fff;
+}
+
+.case-journey-editor {
+  padding-bottom: 12px;
+}
+
+.case-journey-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 2px;
+  border-top: 1px solid #17150f;
+  border-bottom: 1px solid #17150f;
+}
+
+.case-journey-head p,
+.case-journey-pool-head {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.case-journey-head p span,
+.case-journey-pool-head span {
+  font-weight: 800;
+}
+
+.case-journey-head p i,
+.case-journey-meta i,
+.case-journey-pool-list i {
+  font-style: normal;
+  opacity: 0.45;
+}
+
+.case-journey-head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.case-journey-head button:disabled {
+  opacity: 0.34;
+  border-bottom-color: transparent;
+}
+
+.case-journey-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid #17150f;
+}
+
+.case-journey-row {
+  display: grid;
+  grid-template-columns: 44px 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 2px;
+  border-bottom: 1px solid #17150f3d;
+}
+
+.case-journey-row:last-child {
+  border-bottom: 0;
+}
+
+.case-journey-order {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.case-journey-cover {
+  width: 54px;
+  height: 40px;
+  object-fit: cover;
+  border: 1px solid #17150f;
+  background: #e6dcd0;
+}
+
+.case-journey-meta {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.case-journey-meta strong {
+  font-size: clamp(15px, 1.5vw, 22px);
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.case-journey-meta small,
+.case-journey-pool-list small {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.case-journey-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.case-journey-controls button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #17150f;
+  background: transparent;
+  color: inherit;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.case-journey-controls button:hover:not(:disabled),
+.case-journey-controls button:focus-visible:not(:disabled) {
+  background: #17150f;
+  color: #f6eee6;
+  outline: none;
+}
+
+.case-journey-controls button.is-remove:hover:not(:disabled),
+.case-journey-controls button.is-remove:focus-visible:not(:disabled) {
+  background: #ef5c9b;
+  color: #17150f;
+}
+
+.case-journey-controls button:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.case-journey-pool {
+  margin-top: 26px;
+}
+
+.case-journey-pool-head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #17150f;
+}
+
+.case-journey-pool-empty {
+  margin: 16px 2px 0;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.case-journey-pool-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0;
+  border-bottom: 1px solid #17150f;
+}
+
+.case-journey-pool-list li {
+  border-bottom: 1px solid #17150f3d;
+}
+
+.case-journey-pool-list button {
+  width: 100%;
+  padding: 10px 2px;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition: background-color 160ms ease;
+}
+
+.case-journey-pool-list button:hover,
+.case-journey-pool-list button:focus-visible {
+  background: #ef5c9b;
+  outline: none;
+}
+
+.case-journey-pool-list img {
+  width: 46px;
+  height: 34px;
+  object-fit: cover;
+  border: 1px solid #17150f;
+  background: #e6dcd0;
+}
+
+.case-journey-pool-list button > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.case-journey-pool-list strong {
+  font-size: 15px;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.case-detail.is-immersive {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  margin-left: calc(50% - 50vw);
+  padding: 0;
+  overflow: hidden;
+  background: #171512;
+  color: #fff;
+}
+
+.case-detail.is-immersive .case-detail-body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.case-detail.is-immersive .case-detail-figure {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  margin: 0;
+  display: block;
+}
+
+.case-detail.is-immersive .case-detail-figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, #110f0dcc 0%, #110f0d4d 48%, transparent 76%),
+    linear-gradient(0deg, #110f0d99 0%, transparent 48%);
+  pointer-events: none;
+}
+
+.case-detail.is-immersive .case-detail-figure img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  border-radius: 0;
+  box-shadow: none;
+  filter: saturate(0.86) contrast(1.04) brightness(0.82);
+}
+
+.case-detail.is-immersive .case-detail-info {
+  position: absolute;
+  z-index: 2;
+  left: clamp(32px, 6vw, 96px);
+  bottom: clamp(44px, 8dvh, 92px);
+  width: min(620px, 46vw);
+  color: #fff;
+  animation: case-detail-content-in 620ms 380ms both;
+}
+
+.case-detail.is-immersive .case-detail-index,
+.case-detail.is-immersive .case-detail-meta,
+.case-detail.is-immersive .case-detail-copy,
+.case-detail.is-immersive .case-detail-info h1 {
+  color: #fff;
+  text-shadow: 0 2px 28px #0000004d;
+}
+
+.case-detail.is-immersive .case-detail-index {
+  margin-bottom: 18px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+}
+
+.case-detail.is-immersive .case-detail-info h1 {
+  max-width: 820px;
+  font-size: clamp(54px, 7vw, 112px);
+  line-height: 0.88;
+  letter-spacing: -0.065em;
+  text-transform: uppercase;
+}
+
+.case-detail.is-immersive .case-detail-meta {
+  margin: 24px 0 18px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case-detail.is-immersive .case-detail-copy {
+  max-width: 510px;
+  color: #ffffffd9;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.case-detail.is-immersive .case-detail-back {
+  z-index: 6;
+  top: 30px;
+  right: 34px;
+  min-width: 106px;
+  border: 1px solid #ffffff66;
+  background: #11100ebf;
+  backdrop-filter: blur(12px);
+  animation: case-detail-content-in 500ms 520ms both;
+}
+
+.case-detail.is-immersive .case-favorite-button {
+  margin-top: 24px;
+  border-color: #ffffffb8;
+  background: #ffffffeb;
+  color: #17150f;
+}
+
+.case-showcase-detail {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  background: #15120f;
+  color: #fff;
+}
+
+.case-showcase-detail-media,
+.case-showcase-detail-shade {
+  position: absolute;
+  inset: 0;
+}
+
+.case-showcase-detail-media .case-layer > iframe {
+  pointer-events: auto;
+}
+
+.case-showcase-detail-media .case-caption {
+  z-index: 7;
+  left: auto;
+  right: clamp(22px, 3vw, 42px);
+  bottom: clamp(26px, 4vw, 48px);
+}
+
+.case-showcase-detail-media .case-caption > span {
+  display: none;
+}
+
+.case-showcase-detail-media .case-caption:not(:has(.case-audio)) {
+  display: none;
+}
+
+.case-showcase-detail-shade {
+  z-index: 2;
+  background:
+    linear-gradient(90deg, #0c0a08c9 0%, #0c0a0873 30%, transparent 68%),
+    linear-gradient(0deg, #0c0a08a8 0%, transparent 46%);
+  pointer-events: none;
+}
+
+.case-showcase-detail .case-detail-back {
+  z-index: 8;
+  top: 30px;
+  right: 34px;
+  min-width: 120px;
+  border: 1px solid #ffffff66;
+  background: #11100ebf;
+  backdrop-filter: blur(12px);
+  animation: case-detail-content-in 500ms 520ms both;
+}
+
+.case-showcase-detail-info {
+  position: absolute;
+  z-index: 5;
+  left: clamp(32px, 6vw, 96px);
+  bottom: clamp(52px, 8dvh, 94px);
+  width: min(650px, 47vw);
+  animation: case-detail-content-in 620ms 380ms both;
+}
+
+.case-showcase-detail-index,
+.case-showcase-detail-meta,
+.case-showcase-detail-copy,
+.case-showcase-detail-info h1,
+.case-showcase-detail-hint {
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 28px #00000066;
+}
+
+.case-showcase-detail-index {
+  margin-bottom: 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+.case-showcase-detail-info h1 {
+  max-width: 850px;
+  font-size: clamp(54px, 7vw, 112px);
+  line-height: 0.88;
+  letter-spacing: -0.065em;
+  text-transform: uppercase;
+}
+
+.case-showcase-detail-meta {
+  margin: 24px 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case-showcase-detail-meta i {
+  margin: 0 9px;
+  font-style: normal;
+  opacity: 0.58;
+}
+
+.case-showcase-detail-copy {
+  max-width: 520px;
+  color: #ffffffdc;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.case-showcase-detail-hint {
+  position: absolute;
+  z-index: 5;
+  right: clamp(26px, 4vw, 58px);
+  bottom: clamp(26px, 4vw, 48px);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  opacity: 0.72;
+}
+
+@keyframes case-detail-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::view-transition-group(case-art) {
+  z-index: 100;
+  animation-duration: 920ms;
+  animation-timing-function: var(--ease-in-out);
+}
+
+::view-transition-old(case-art),
+::view-transition-new(case-art) {
+  animation-duration: 920ms;
+  object-fit: cover;
+}
+
+.app[data-layout="compact"] .case-poster-words {
+  font-size: clamp(50px, 15.5vw, 86px);
+}
+
+.app[data-layout="compact"] .case-poster-words span:first-child {
+  top: 30.5%;
+}
+
+.app[data-layout="compact"] .case-poster-words span:last-child {
+  bottom: 13.5%;
+}
+
+.app[data-layout="compact"] .case-poster-feature {
+  top: 40%;
+  width: min(51vw, calc(64dvh * 0.81), 290px);
+  min-width: 0;
+}
+
+.app[data-layout="compact"] .case-poster-peek {
+  width: 35vw;
+}
+
+.app[data-layout="compact"] .case-poster-peek.is-previous {
+  top: 19%;
+  transform: translateX(-76%) rotate(-1.2deg);
+}
+
+.app[data-layout="compact"] .case-poster-peek.is-next {
+  bottom: 19%;
+  transform: translateX(76%) rotate(1.2deg);
+}
+
+.app[data-layout="compact"] .case-poster-all {
+  top: 108px;
+  font-size: 9px;
+}
+
+.app[data-layout="compact"] .case-poster-mode {
+  left: 18px;
+  bottom: 28px;
+  font-size: 8px;
+}
+
+.app[data-layout="compact"] .case-poster-credit {
+  bottom: 56px;
+  width: 82vw;
+  grid-template-columns: 1fr auto;
+  font-size: 8px;
+}
+
+.app[data-layout="compact"] .case-poster-credit span {
+  display: none;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive {
+  padding: 0;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-figure {
+  height: 100%;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-info {
+  left: 25px;
+  right: 25px;
+  bottom: max(36px, env(safe-area-inset-bottom));
+  width: auto;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-info h1 {
+  font-size: clamp(42px, 13vw, 68px);
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-copy {
+  font-size: 14px;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-back {
+  top: max(22px, env(safe-area-inset-top));
+  right: 20px;
+}
+
+.app[data-layout="compact"] .case-showcase-detail-info {
+  left: 24px;
+  right: 24px;
+  bottom: max(54px, calc(env(safe-area-inset-bottom) + 30px));
+  width: auto;
+}
+
+.app[data-layout="compact"] .case-showcase-detail-info h1 {
+  font-size: clamp(40px, 13vw, 68px);
+}
+
+.app[data-layout="compact"] .case-showcase-detail-copy {
+  max-width: 92%;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.app[data-layout="compact"] .case-showcase-detail .case-detail-back {
+  top: max(22px, env(safe-area-inset-top));
+  right: 20px;
+}
+
+.app[data-layout="compact"] .case-showcase-detail-hint {
+  display: none;
+}
+
+.app[data-layout="compact"] .case-showcase-detail-media .case-caption {
+  right: 20px;
+  bottom: max(18px, env(safe-area-inset-bottom));
+}
+
+/* On a narrow screen the pool row keeps both pickers but drops the key line, so
+   the case title and the colour chips stay reachable without horizontal scroll. */
+.app[data-layout="compact"] .case-devpanel-item {
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.app[data-layout="compact"] .case-devpanel-key {
+  display: none;
+}
+
+.app[data-layout="compact"] .case-devpanel-del {
+  grid-column: 3;
+}
+
+.app[data-layout="compact"] .case-journey-head {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.app[data-layout="compact"] .case-journey-row {
+  grid-template-columns: 26px 40px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.app[data-layout="compact"] .case-journey-cover {
+  width: 40px;
+  height: 40px;
+}
+
+.app[data-layout="compact"] .case-journey-meta strong {
+  font-size: 15px;
+}
+
+.app[data-layout="compact"] .case-journey-meta small {
+  display: none;
+}
+
+/* The three controls would squeeze the title off a phone, so they drop to their
+   own row under it. */
+.app[data-layout="compact"] .case-journey-controls {
+  grid-column: 2 / -1;
+  justify-content: flex-end;
+}
+
+.app[data-layout="compact"] .case-journey-controls button {
+  width: 40px;
+  height: 34px;
+}
+
+.app[data-layout="compact"] .case-journey-pool-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app[data-layout="compact"] .case-journey-pool-list small {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-detail.is-immersive .case-detail-info,
+  .case-detail.is-immersive .case-detail-back {
+    animation: none;
+  }
+
+  ::view-transition-group(case-art),
+  ::view-transition-old(case-art),
+  ::view-transition-new(case-art) {
+    animation-duration: 1ms;
+  }
+}
+
+/* The header is one fixed piece of chrome, not a per-tab responsive element.
+   Home and the archive show the wordmark, the nav and the account pill at
+   exactly the same size and in exactly the same place, so a push moves the ink
+   between two pages under a header that visibly does not move. Everything here
+   is a plain pixel value taken from the reference composition — no `--ui-scale`
+   and no clamp — so the bar no longer grows or shrinks with the viewport.
+   The `:not([data-pushing="back"])` guard is retained for the reverse push,
+   where the tab is still `cases` while the archive travels home. */
+.app[data-tab="cases"]:not([data-pushing="back"]) .site-header,
+.app:not([data-tab="cases"]) .site-header {
+  left: var(--chrome-inset-x);
+  right: var(--chrome-inset-right);
+  top: var(--chrome-inset-y);
+  height: var(--chrome-height);
+}
+
+/* The wordmark keeps Home's size on the archive too — see `--chrome-brand-scale`.
+   Only its fixed box is declared here; the scale comes from the shared token so
+   the logo cannot change size as the tab changes. */
+.app[data-tab="cases"]:not([data-pushing="back"]) .home-brand {
+  width: 78px;
+  height: 26px;
+}
+
+/* The nav on the archive is positionally identical to Home's: `top`, scale, gap
+   and font size all come from the shared `--chrome-*` tokens in the base rule, so
+   the row cannot move as the tab changes. Only `letter-spacing` and the link
+   padding are tuned here, and neither shifts the row's own geometry. */
+.app[data-tab="cases"]:not([data-pushing="back"]) .site-header nav,
+.app[data-layout="compact"][data-tab="cases"]:not([data-pushing="back"]) .site-header nav {
+  height: 28px;
+  letter-spacing: 0.05em;
+}
+
+.app[data-tab="cases"]:not([data-pushing="back"]) .site-header nav a {
+  padding: 3px 0;
+}
+
+.app[data-tab="cases"] .case-poster-words {
+  font-size: clamp(calc(84px * var(--poster-scale)), calc(12.4vw * var(--poster-scale)), calc(184px * var(--poster-scale)));
+  font-weight: 900;
+}
+
+.app[data-tab="cases"] .case-poster-words span:first-child {
+  top: clamp(24px, 5dvh, 38px);
+}
+
+.app[data-tab="cases"] .case-poster-words span:last-child {
+  bottom: clamp(22px, 4.2dvh, 42px);
+}
+
+.app[data-tab="cases"] .case-poster-feature {
+  top: 28.5%;
+}
+
+/* Clear of the fixed header, and pinned to the left edge instead of the centre.
+   It used to be centred at `top: 40px`, which was fine while the nav sat at 34px
+   inside the header — but once the nav row moved up to the header's own top edge
+   the two centred elements landed on top of each other and the button read as
+   part of the navigation. Sitting under the chrome and off to one side keeps them
+   independent at every viewport. */
+.app[data-tab="cases"] .case-poster-all {
+  top: var(--chrome-block);
+  left: var(--chrome-inset-x);
+  right: auto;
+  transform: none;
+}
+
+.app[data-layout="compact"][data-tab="cases"] .case-poster-words {
+  font-size: clamp(calc(54px * var(--poster-scale)), calc(17vw * var(--poster-scale)), calc(96px * var(--poster-scale)));
+}
+
+.app[data-layout="compact"][data-tab="cases"] .case-poster-words span:first-child {
+  top: 62px;
+}
+
+.app[data-layout="compact"][data-tab="cases"] .case-poster-words span:last-child {
+  bottom: 13.5%;
+}
+
+.app[data-layout="compact"][data-tab="cases"] .case-poster-feature {
+  top: 31%;
+  width: min(51vw, calc(64dvh * 0.81), 290px);
+}
+
+.app[data-layout="compact"][data-tab="cases"] .case-poster-all {
+  left: 18px;
+}
+
+.app[data-tab="cases"] .case-poster-mode {
+  bottom: 9px;
+}
+
+.app[data-tab="cases"] .case-poster-credit {
+  bottom: 7px;
+}
+
+/* Both the credit bar and the interaction hint sit on the compact poster's bottom
+   edge, and the credit is centred at 50% with an 82vw width — so its left end at
+   x=35 lands inside the hint, which starts at x=18 and runs to x=128. The two lines
+   printed over each other ("DRAG" on top of "SPATIAL"). Lifting the credit above the
+   hint keeps both readable without moving the hint off the bottom edge. */
+.app[data-layout="compact"][data-tab="cases"] .case-poster-credit {
+  bottom: 26px;
 }
