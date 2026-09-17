@@ -428,6 +428,9 @@ test("print releases current-report and selected-modal ancestors for multi-page 
     '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal-overlay',
     '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal',
     '.profile-detail-screen[data-screen="records"]:has(.report-modal-overlay) .report-modal-body',
+    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-overlay',
+    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal',
+    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-body',
   ]) expectRelease(selector);
 
   for (const selector of [".awakening-report-card", ".report-guidance", ".advice-list", ".resource-list"]) {
@@ -471,12 +474,4 @@ test("printing a selected history modal hides a different current report and rel
     printCss,
     /\.site-experience\[data-view="reports"\] \.awakening-screen:has\(\.report-modal-overlay\) > :not\(\.report-modal-overlay\)\s*\{\s*display:\s*none\s*!important\s*;/,
   );
-  for (const selector of [
-    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-overlay',
-    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal',
-    '.site-experience[data-view="reports"] .awakening-screen:has(.report-modal-overlay) .report-modal-body',
-  ]) {
-    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    assert.match(printCss, new RegExp(`${escaped}[\\s\\S]*?height:\\s*auto\\s*!important;[\\s\\S]*?max-height:\\s*none\\s*!important;[\\s\\S]*?overflow:\\s*visible\\s*!important;`));
-  }
 });
