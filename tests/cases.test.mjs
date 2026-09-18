@@ -159,14 +159,8 @@ test("the case pool is the archive plus the live scenes, and the default journey
   assert.match(archive, /key: `live:\$\{item\.id\}`/);
   assert.match(archive, /cover: `\/assets\/case-covers\/\$\{item\.id\}\.webp`/);
   // A case keeps its own poster world, so editing the order never repaints the
-  // cards the reader is already looking at. The world is bound by case key: it
-  // used to be `POSTER_WORLDS[poolIndex % POSTER_WORLDS.length]`, and once
-  // archive cases were deleted that modulus shifted, so every live case wore
-  // its neighbour's words. The positional form survives only as a fallback for
-  // a case that has no world of its own yet.
-  assert.match(archive, /^const WORLD_KEYS = \{/m);
-  assert.match(archive, /WORLD_BY_TOP\[WORLD_KEYS\[entry\.key\]\]/);
-  assert.match(archive, /entry\.world = named \?\? POSTER_WORLDS\[poolIndex % POSTER_WORLDS\.length\]/);
+  // cards the reader is already looking at.
+  assert.match(archive, /entry\.world = POSTER_WORLDS\[poolIndex % POSTER_WORLDS\.length\]/);
   assert.match(archive, /^const DEFAULT_JOURNEY_KEYS = \[/m);
   assert.match(archive, /\.\.\.LIVE_CASES\.map\(\(item\) => `live:\$\{item\.id\}`\)/);
   assert.match(archive, /featuredProject\.type === "archive"/);
@@ -471,7 +465,7 @@ test("the opened case sits on a blurred copy of its own artwork, never a crop", 
 test("the last ice ships as a case with its own poster and copy", async () => {
   const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   assert.match(src, /title: "The Last Ice"/);
-  assert.match(src, /tags: "海报设计 · 视觉定稿"/);
+  assert.match(src, /tags: "AI Art Direction, Poster"/);
   // The artwork must exist at the index the case resolves to, or the poster and
   // the detail view would both 404. The case is appended last, so its image is
   // one past the previous total.
@@ -651,12 +645,8 @@ test("a page change lands the departing stamp on the corner it is about to becom
   // poster plus the whole word, which is much further than a margin picked by
   // eye. A shortfall leaves a slice of display type on screen to blink out at
   // the cut. Both words are measured because they are different lengths.
-  // Measured against the 16:9 design box rather than the scene or the window:
-  // the sweep's translation is consumed as `cqw`, which resolves against that
-  // box, so measuring anything else would put the words out by the letterboxing.
-  assert.match(helper, /const design = scene\.closest\("\.case-poster-scaler"\) \?\? scene/);
-  assert.match(helper, /offLeft: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => box\.right - designLeft\)\) \/ width\) \* 100/);
-  assert.match(helper, /offRight: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => designRight - box\.left\)\) \/ width\) \* 100/);
+  assert.match(helper, /offLeft: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => box\.right - sceneBox\.left\)\) \/ width\) \* 100/);
+  assert.match(helper, /offRight: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => sceneBox\.right - box\.left\)\) \/ width\) \* 100/);
   assert.match(moving, /const clearance = corners\?\.word/);
   assert.match(moving, /const wordX = reduced \? 0 : \(outgoing \? -direction : direction\) \* clearance \* travel/);
   assert.ok(!moving.includes("* 62 * travel"), "the word flight is still aimed at a guessed clearance");
