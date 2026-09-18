@@ -170,10 +170,17 @@ test("the case pool is the archive plus the live scenes, and the default journey
   assert.match(archive, /key: `live:\$\{item\.id\}`/);
   assert.match(archive, /cover: `\/assets\/case-covers\/\$\{item\.id\}\.webp`/);
   // A case keeps its own poster world, so editing the order never repaints the
-  // cards the reader is already looking at.
-  assert.match(archive, /entry\.world = POSTER_WORLDS\[poolIndex % POSTER_WORLDS\.length\]/);
+  // cards the reader is already looking at. Resolution runs own world -> keyed
+  // world -> positional fallback, and the positional step is last on purpose: a
+  // case that names its colours must win even if another case once occupied its
+  // slot.
+  assert.match(archive, /const own = entry\.world \? WORLD_BY_TOP\[entry\.world\.top\] \?\? entry\.world : null/);
+  assert.match(archive, /entry\.world = named \?\? POSTER_WORLDS\[poolIndex % POSTER_WORLDS\.length\]/);
+  // No positional world map may come back: it silently repaints whichever case
+  // lands in an index after a reorder.
+  assert.match(archive, /const ARCHIVE_WORLD_KEYS = \{\}/);
   assert.match(archive, /^const DEFAULT_JOURNEY_KEYS = \[/m);
-  assert.match(archive, /\.\.\.LIVE_CASES\.map\(\(item\) => `live:\$\{item\.id\}`\)/);
+  assert.match(archive, /const LIVE_JOURNEY_KEYS = LIVE_CASES\.map\(\(item\) => `live:\$\{item\.id\}`\)/);
   assert.match(archive, /featuredProject\.type === "archive"/);
   assert.match(archive, /total=\{journeyCount\}/);
   assert.match(archive, /<CaseScreen config=\{project\} active preload=\{false\} \/>/);
@@ -563,13 +570,18 @@ test("the opened case sits on a blurred copy of its own artwork, never a crop", 
 test("the last ice ships as a case with its own poster and copy", async () => {
   const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   assert.match(src, /title: "The Last Ice"/);
-  assert.match(src, /tags: "AI Art Direction, Poster"/);
-  // The artwork must exist at the index the case resolves to, or the poster and
-  // the detail view would both 404. The case is appended last, so its image is
-  // one past the previous total.
-  const titles = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0].match(/title: "/g) ?? [];
-  const image = new URL(`../public/assets/cases/${titles.length}.webp`, import.meta.url);
-  const bytes = await readFile(image);
+  assert.match(src, /tags: "AI 生成海报 · 视觉定稿"/);
+  // The artwork is the one the case declares, not the one its position would
+  // imply. Deriving it from the case count was correct only while the case was
+  // appended last with no `image` of its own; the moment the archive was
+  // reordered or the case named its artwork, this checked an unrelated file.
+  const block = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
+  const entry = block.slice(block.indexOf('title: "The Last Ice"'));
+  const declared = entry.match(/\n    image: (\d+),/);
+  assert.ok(declared, "The Last Ice must declare its artwork");
+  const bytes = await readFile(
+    new URL(`../public/assets/cases/${declared[1]}.webp`, import.meta.url),
+  );
   assert.ok(bytes.length > 1000, "the case artwork should be a real image");
   // WebP magic: RIFF....WEBP.
   assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF");
