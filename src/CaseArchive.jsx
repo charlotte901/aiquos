@@ -895,8 +895,14 @@ function measureCornerPoses(feature) {
   const origin = feature.getBoundingClientRect();
   const originX = origin.left + origin.width / 2;
   const originY = origin.top + origin.height / 2;
-  const width = window.innerWidth || 1;
-  const height = window.innerHeight || 1;
+  // The transforms below consume `cqw` / `cqh`, which resolve against the 16:9
+  // design box (`.case-poster-scaler`), not the window. Measuring against
+  // `innerWidth`/`innerHeight` would put the corner poses out by however much
+  // the box is letterboxed — a growing error as the window leaves 16:9.
+  const design = scene.closest(".case-poster-scaler") ?? scene;
+  const designBox = design.getBoundingClientRect();
+  const width = designBox.width || 1;
+  const height = designBox.height || 1;
   const poses = {};
 
   for (const side of PEEK_SIDES) {
@@ -927,9 +933,11 @@ function measureCornerPoses(feature) {
   const words = [...scene.querySelectorAll(".case-poster-words span")];
   if (!words.length) return null;
   const boxes = words.map((word) => word.getBoundingClientRect());
+  const designLeft = designBox.left;
+  const designRight = designBox.right;
   poses.word = {
-    offLeft: (Math.max(...boxes.map((box) => box.right - sceneBox.left)) / width) * 100,
-    offRight: (Math.max(...boxes.map((box) => sceneBox.right - box.left)) / width) * 100,
+    offLeft: (Math.max(...boxes.map((box) => box.right - designLeft)) / width) * 100,
+    offRight: (Math.max(...boxes.map((box) => designRight - box.left)) / width) * 100,
   };
   return poses;
 }
@@ -1530,6 +1538,11 @@ export function CaseArchive({ onDetailChange }) {
           header lives here too, which is why the stage below never has to know
           about the chrome. */}
       <div className="case-poster-frame">
+        {/* The 16:9 design box. `PosterRoute` and the stage both live inside it
+           so the dashed route's coordinate space and the stamps it points at
+           stay in register, and so every child can be sized as a percentage of
+           this box instead of the viewport. */}
+        <div className="case-poster-scaler">
         <PosterRoute
           move={transition && !transition.reduced ? transition.time : null}
           delay={intro ? 1050 : 80}
@@ -1544,6 +1557,7 @@ export function CaseArchive({ onDetailChange }) {
               </>
             )
             : renderStableScene()}
+        </div>
         </div>
       </div>
 

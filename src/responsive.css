@@ -20,8 +20,12 @@ body {
      than as a responsive element each page re-lays-out. */
   --chrome-inset-x: 54px;
   --chrome-inset-right: 41px;
-  --chrome-inset-y: 24px;
-  --chrome-height: 51px;
+  /* The header sits above the poster and eats into its vertical budget, so it
+     scales with the window too — a fixed 51px header is a far bigger share of a
+     720p window than of a 1440p one, which pushed the poster down as the
+     monitor grew. */
+  --chrome-inset-y: 2.4vh;
+  --chrome-height: 5.1vh;
   /* The nav row rides above the header's own top edge, so the three parts read as
      one line lifted toward the top of the page rather than a bar with the links
      hanging below the wordmark. It is a single token so Home and the archive can
@@ -36,13 +40,13 @@ body {
      Home used `--ui-scale`, so the logo changed size on the way across. */
   --chrome-brand-scale: 0.92;
   /* Fixed breathing room between the header and whatever a tab puts under it. */
-  --chrome-gap: 34px;
+  --chrome-gap: 3.4vh;
   --chrome-block: calc(var(--chrome-inset-y) + var(--chrome-height) + var(--chrome-gap));
   /* The archive composition is intentionally smaller than the frame it sits in,
      so it reads as one stamp on the page rather than filling it edge to edge.
      `--poster-margin` sets the outer whitespace and `--poster-scale` shrinks the
      whole scene (words, stamps and route together) around its centre. */
-  --poster-margin: 46px;
+  --poster-margin: min(4.6vh, 3.6vw);
   --poster-scale: 0.92;
 }
 .canvas-space {
@@ -1207,7 +1211,7 @@ body {
   z-index: 1;
   pointer-events: none;
   font-family: "DM Sans", "Noto Sans SC", sans-serif;
-  font-size: clamp(92px, 13.35vw, 204px);
+  font-size: 23.73cqh;
   font-weight: 800;
   line-height: 0.78;
   letter-spacing: -0.075em;
@@ -1224,7 +1228,7 @@ body {
 }
 
 .case-poster-words span:first-child {
-  top: clamp(62px, 7dvh, 86px);
+  top: 7cqh;
 }
 
 .case-poster-words span:last-child {
@@ -1259,7 +1263,7 @@ body {
   z-index: 4;
   left: 50%;
   top: 29%;
-  height: min(26.5vw, calc(59dvh * 0.81), 415px);
+  height: min(calc(59cqh * 0.81), calc(47.11cqh * 0.81));
   min-width: 262px;
   aspect-ratio: 0.81;
   --stamp-tilt-x: 0deg;
@@ -1399,7 +1403,9 @@ body {
 .case-poster-peek {
   position: absolute;
   z-index: 3;
-  height: clamp(calc(152px * var(--poster-scale)), calc(14.5vw * var(--poster-scale)), calc(225px * var(--poster-scale)));
+  /* 14.5vw of a 16:9 box is 25.78cqh. The peeks hold 0.56x the feature height,
+     so they scale with it instead of hitting a px cap of their own. */
+  height: calc(25.78cqh * var(--poster-scale));
   width: auto;
   aspect-ratio: 0.81;
   opacity: 0.82;
@@ -1453,14 +1459,14 @@ body {
   position: absolute;
   z-index: 6;
   top: 51%;
-  height: 48px;
+  height: 4.8vh;
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 1.4vh;
   border: 0;
   background: transparent;
   color: var(--poster-ink);
-  font-size: 11px;
+  font-size: 1.1vh;
   font-weight: 800;
   letter-spacing: 0.2em;
 }
@@ -1479,7 +1485,7 @@ body {
   background: #ffffff14;
 }
 
-.case-poster-arrow.is-left { left: clamp(32px, 15vw, 150px); }
+.case-poster-arrow.is-left { left: 12vh; }
 /* The two arrows are a mirrored pair — same 109px box, same 46px circle, same 37px
    label, only the outer edge differs — so they must share one inset formula. The
    right arrow used to read clamp(54px, 7vw, 108px), which held it a consistent extra
@@ -1490,7 +1496,7 @@ body {
    inset from the page edge — at 1000px wide the previous peek spans x=-12..104
    while the left arrow starts at x=45, so the two drew straight through each
    other. Tracking the stamp scale moves them clear of the peek band. */
-.case-poster-arrow.is-right { right: clamp(32px, 15vw, 150px); }
+.case-poster-arrow.is-right { right: 12vh; }
 
 .case-poster-rail {
   position: absolute;
@@ -1664,7 +1670,7 @@ body {
   height: 100dvh;
 }
 .app[data-layout="compact"] .case-poster-words {
-  font-size: clamp(58px, 18vw, 118px);
+  font-size: 18cqw;
   line-height: 0.82;
 }
 .app[data-layout="compact"] .case-poster-words span:first-child {
@@ -2154,6 +2160,25 @@ body {
   inset: var(--chrome-block) var(--poster-margin) var(--poster-margin);
 }
 
+/* The composition is laid out on a fixed 16:9 design box, and every child is
+   positioned and sized as a percentage of *that box*. Sizing parts from the
+   viewport instead is what made the poster monitor-dependent: the feature stamp
+   read 47% of the window height at 1280x720 but only 29% at 2560x1440, because
+   each `clamp()` hit its px cap at a different width. The box takes the largest
+   16:9 rectangle that fits the frame, so the composition keeps its proportions
+   on any window and simply gains margin on very wide or very tall ones.
+   `container-type: size` is what makes `cqw`/`cqh` resolve against this box
+   rather than the viewport. */
+.case-poster-scaler {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100%, calc(100cqh * 16 / 9));
+  height: min(100%, calc(100cqw * 9 / 16));
+  container-type: size;
+  transform: translate(-50%, -50%);
+}
+
 .case-poster-stage {
   z-index: 2;
   animation: none;
@@ -2174,7 +2199,7 @@ body {
 
 .case-poster-words {
   z-index: 1;
-  font-size: clamp(70px, 8.9vw, 142px);
+  font-size: 15.82cqh;
   line-height: 0.8;
   letter-spacing: -0.068em;
   color: var(--scene-ink);
@@ -2188,7 +2213,7 @@ body {
 }
 
 .case-poster-words span:first-child {
-  top: clamp(62px, 7dvh, 86px);
+  top: 7cqh;
 }
 
 .case-poster-words span:last-child {
@@ -2301,7 +2326,10 @@ body {
      scaling an ancestor. The flight measures every stamp's rect on each move and
      re-derives its corner poses from it, so a smaller stamp is carried correctly
      and the whole scene reads as one smaller composition. */
-  width: min(calc(26.5vw * var(--poster-scale)), calc(59dvh * 0.81 * var(--poster-scale)), calc(415px * var(--poster-scale)));
+  /* 26.5vw of a 16:9 box is 47.11cqh, and 59dvh of the window is 59cqh of the
+     box. The stamp art is drawn at 0.81, so one expression sets both axes and
+     the stamp keeps its shape at every size. */
+  width: min(calc(47.11cqh * 0.81 * var(--poster-scale)), calc(59cqh * 0.81 * var(--poster-scale)));
   min-width: calc(262px * var(--poster-scale));
   aspect-ratio: 0.81;
   pointer-events: auto;
@@ -2363,7 +2391,9 @@ body {
 
 .case-poster-peek {
   z-index: 3;
-  height: clamp(calc(152px * var(--poster-scale)), calc(14.5vw * var(--poster-scale)), calc(225px * var(--poster-scale)));
+  /* 14.5vw of a 16:9 box is 25.78cqh. The peeks hold 0.56x the feature height,
+     so they scale with it instead of hitting a px cap of their own. */
+  height: calc(25.78cqh * var(--poster-scale));
   width: auto;
   aspect-ratio: 0.81;
   opacity: 0.92;
@@ -3371,7 +3401,7 @@ body {
 }
 
 .app[data-layout="compact"] .case-poster-words {
-  font-size: clamp(50px, 15.5vw, 86px);
+  font-size: 15.5cqw;
 }
 
 .app[data-layout="compact"] .case-poster-words span:first-child {
@@ -3667,7 +3697,7 @@ body {
 }
 
 .app[data-tab="cases"] .case-poster-words {
-  font-size: clamp(calc(84px * var(--poster-scale)), calc(12.4vw * var(--poster-scale)), calc(184px * var(--poster-scale)));
+  font-size: calc(22.04cqh * var(--poster-scale));
   font-weight: 900;
 }
 
@@ -3697,7 +3727,7 @@ body {
 }
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-words {
-  font-size: clamp(calc(54px * var(--poster-scale)), calc(17vw * var(--poster-scale)), calc(96px * var(--poster-scale)));
+  font-size: calc(17cqw * var(--poster-scale));
 }
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-words span:first-child {
