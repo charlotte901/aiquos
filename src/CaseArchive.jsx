@@ -123,7 +123,7 @@ const LIVE_CASE_DETAILS = {
   // layout, so it has to stand alone as the capability statement.
   "wing-it": {
     title: "Wing It",
-    tags: "AI 视频",
+    tags: "AI 剪辑",
     year: 2026,
     description:
       "AI 把一段故事剪成了成片。分镜、节奏、转场与中文解说词由模型给出，配音也由模型合成，人只负责提出想要的方向。音轨可以单独开关，方便对照画面与解说。",
@@ -137,14 +137,14 @@ const LIVE_CASE_DETAILS = {
   },
   conbini: {
     title: "日式便利店",
-    tags: "AI 建模",
+    tags: "WebGL",
     year: 2026,
     description:
       "AI 搭出了一个可以走进去的雨夜街角。霓虹招牌、积水反光与店内灯光不是渲染好的影片，而是实时计算的光照——角度一直在变，画面一直在动。",
   },
   pirate: {
     title: "暴风雨海盗船",
-    tags: "AI 建模",
+    tags: "WebGL",
     year: 2026,
     description:
       "AI 让一艘船在风暴里真实地摇晃。浪涌高度、船体姿态与天色变化互相关联，不是循环播放的动画，而是持续演算的动态过程。",
@@ -165,7 +165,7 @@ const LIVE_CASE_DETAILS = {
   },
   "onboarding-schedule": {
     title: "迎新志愿服务排班表",
-    tags: "AI 表格",
+    tags: "AI 办公",
     year: 2026,
     description:
       "AI 把零散的迎新需求排成了一张能直接执行的表。服务点位、时段、人数与负责人之间的约束由模型自己权衡，65 名志愿者被分配到 17 个点位上，谁值全天、谁只来上午，都在表里对齐。表头、合并单元格与分页沿用了 Excel 的版式，输出即可交付。",
@@ -186,7 +186,7 @@ const LIVE_CASE_DETAILS = {
   },
   "browser-ops": {
     title: "电脑控制",
-    tags: "AI 电脑操作",
+    tags: "AI 自动化",
     year: 2026,
     description:
       "AI 直接接管了一台电脑的浏览器，而不是调用某个站点的接口。它在地图上拖动平移、按缩放按钮逐级放大；在 Wikipedia 的表单里输入关键词、检索并跳到指定章节；在 Excalidraw 的画布上用鼠标拖出矩形、椭圆与一条自由曲线。整段过程没有写死的坐标脚本，页面布局变了它就重新找目标，全部动作实时完成，全程无人值守。",
@@ -517,8 +517,13 @@ function PosterStamp({ project, compact = false, morph = null, transitionName })
         <time className="poster-stamp-year">{project.year}</time>
       ) : (
         <span className="poster-stamp-caption">
-          <strong>{project.title}</strong>
-          <span>{project.tags}</span>
+          {/* The capability leads, the work's name follows. The big line is what
+              the case demonstrates about AI ("AI 网络审计"); the title underneath
+              is which piece it is. It was the other way round, which made the
+              stamp read as a portfolio caption rather than as evidence of a
+              capability. */}
+          <strong>{project.tags}</strong>
+          <span>{project.title}</span>
           <time>{project.year}</time>
         </span>
       )}
@@ -1689,6 +1694,10 @@ export function CaseArchive({ onDetailChange }) {
         CASE LIBRARY
       </button>
       <p className="case-poster-credit">
+        {/* Capability first, as on the stamp; the emphasised middle slot names
+            the piece, which is the masthead convention this strip follows. Only
+            the stamp's own line order was asked to change, so this keeps the
+            order it shipped with — the two agree on what leads. */}
         <span>{shownProject.tags}</span>
         <strong>{shownProject.title}</strong>
         <time>{shownProject.year}</time>
