@@ -11,6 +11,7 @@ import {
 import { useRef, useState } from "react";
 import { setAccount, useAccount } from "./account-store";
 import { useFavorites } from "./favorites-store";
+import { clearAllAssessmentData } from "./assessment-attempt";
 
 export function AccountSettings({ onBack, onLogout, busy, source = "home", variant = "screen" }) {
   const { nickname, accountId } = useAccount();
@@ -20,8 +21,15 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
   const [showPassword, setShowPassword] = useState(false);
   const [saved, setSaved] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [dataCleared, setDataCleared] = useState(false);
   const avatarInputRef = useRef(null);
   const favorites = useFavorites();
+
+  const clearLocalData = () => {
+    clearAllAssessmentData();
+    setDataCleared(true);
+    window.setTimeout(() => setDataCleared(false), 2600);
+  };
 
   const updateAvatar = (event) => {
     const file = event.target.files?.[0];
@@ -129,6 +137,24 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             </div>
           </div>
         </form>
+        <section className="account-privacy" aria-label="数据与隐私">
+          <h3>数据与隐私</h3>
+          <p>
+            综合测评的答题草稿、历史报告（最多 12 份）与自适应出题的选题记录全部保存在本机浏览器
+            （localStorage），不上传任何服务器。可随时一键清除：
+          </p>
+          <ul>
+            <li><code>aiquos.comprehensive-attempt.v1</code> 未完成测评的续答草稿</li>
+            <li><code>aiquos.comprehensive-history.v1</code> 已完成的觉醒报告快照</li>
+            <li><code>aiquos.adaptive-exposure.v1</code> 题目曝光均衡计数</li>
+          </ul>
+          <div className="account-privacy-actions">
+            <span>{dataCleared ? "已清除本机测评数据。" : "清除后无法恢复，报告与草稿将被删除。"}</span>
+            <button type="button" className="logout-button" onClick={clearLocalData}>
+              清除本机测评数据
+            </button>
+          </div>
+        </section>
       </div>
     </section>
   );

@@ -208,3 +208,24 @@ test("history snapshots are immutable copies of the attempt", () => {
   assert.ok(!snapshot.evidence.some((item) => item.questionId === "tampered"));
   assert.ok(!snapshot.questionIds.includes("tampered"));
 });
+
+test("a resumed run that over-answers stays within the scoring budget", () => {
+  let attempt = createAttempt({ questions, totalQuestions: TOTAL });
+  // Answer 25 unique questions, then re-enter earlier stages and answer 5 more.
+  for (const question of questions.slice(0, TOTAL)) {
+    attempt = recordAnswer(attempt, question, question.answer).attempt;
+  }
+  assert.equal(attempt.evidence.length, TOTAL);
+  for (const question of questions.slice(TOTAL, TOTAL + 5)) {
+    const next = recordAnswer(attempt, question, question.answer);
+    // FIFO keeps the most recent 25; scoring never sees an over-count.
+    assert.equal(next.attempt.evidence.length, TOTAL);
+    assert.equal(next.result.answeredCount, TOTAL);
+    assert.equal(next.result.status, "completed");
+    attempt = next.attempt;
+  }
+  // The earliest five answers were evicted; the newest five are present.
+  assert.ok(!attempt.evidence.some((item) => item.questionId === questions[0].id));
+  assert.ok(attempt.evidence.some((item) => item.questionId === questions[TOTAL + 4].id));
+  assert.equal(new Set(attempt.questionIds).size, TOTAL);
+});

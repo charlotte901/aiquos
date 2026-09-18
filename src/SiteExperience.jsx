@@ -4,6 +4,7 @@ import { ArrowLeft } from "@phosphor-icons/react";
 import { App } from "./App";
 import { AssessmentHub } from "./AssessmentHub";
 import { AssessmentMap, AssessmentTask } from "./AssessmentFlow";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { AccountSettings } from "./AccountSettings";
 import { ChooseHub } from "./ChooseHub";
 import { AwakeningReport } from "./AwakeningReport";
@@ -11,6 +12,7 @@ import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
+import { siteViewForHash } from "./routes";
 import { createAdaptiveController } from "./comprehensive-adaptive";
 import {
   COMPREHENSIVE_LEVELS,
@@ -18,6 +20,7 @@ import {
   COMPREHENSIVE_QUESTIONS,
 } from "./comprehensive-quiz";
 import {
+  answerCredit,
   appendHistorySnapshot,
   clearAttemptDraft,
   createAttempt,
@@ -49,21 +52,15 @@ const defaultBands = () => {
   return [0, 0, height, height];
 };
 
-const route = () => {
-  const assessment = getAssessmentRoute();
-  if (assessment) return assessment.mode === "task" ? "assessment-task" : "assessment-map";
-  if (getProfileDetailRoute()) return "profile-detail";
-  if (location.hash === "#assessments") return "assessments";
-  if (location.hash === "#cases") return "cases";
-  /* The community view rides in the hash as `#forum/<view>`, so a chosen reading
-     is shareable and visible in the URL bar. The prefix match is what keeps
-     those URLs on the forum instead of falling through to home. */
-  if (/^#forum(\/|$)/.test(location.hash)) return "forum";
-  if (location.hash === "#account-settings") return "account-settings";
-  if (location.hash === "#reports") return "reports";
-  if (location.hash === "#choose") return "choose";
-  if (location.hash === "#profile") return "profile";
-  return location.hash === "#login" ? "login" : "home";
+// Single source of truth for hash → view; see src/routes.js.
+const route = () => siteViewForHash();
+
+const isAdaptiveDebugOn = () => {
+  try {
+    return localStorage.getItem("aiquos.debug") === "1";
+  } catch {
+    return false;
+  }
 };
 
 const PANEL = {
@@ -132,11 +129,20 @@ export function SiteExperience() {
     () => getAssessmentRoute() ?? { id: "comprehensive", stage: 1, mode: "map" },
   );
   const [profileDetailRoute, setProfileDetailRoute] = useState(() => getProfileDetailRoute());
-  const [progress, setProgress] = useState({
-    comprehensive: 1,
-    objective: 1,
-    conversation: 1,
-    practical: 1,
+  const [progress, setProgress] = useState(() => {
+    const base = {
+      comprehensive: 1,
+      objective: 1,
+      conversation: 1,
+      practical: 1,
+    };
+    // A reloaded draft also restores how far the map was unlocked, so 继续测评
+    // lands on the right stage instead of redoing answered ones.
+    const draft = loadAttemptDraft();
+    if (draft && draft.assessmentId === "comprehensive" && draft.evidence.length > 0) {
+      base.comprehensive = Math.min(5, Math.floor(draft.evidence.length / 5) + 1);
+    }
+    return base;
   });
   const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
   // One comprehensive Attempt at a time: evidence from every submitted answer
@@ -147,6 +153,8 @@ export function SiteExperience() {
     const draft = loadAttemptDraft();
     return draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null };
   });
+  // Routing telemetry for the optional aiquos.debug overlay; off by default.
+  const [adaptiveTelemetry, setAdaptiveTelemetry] = useState(null);
   const [moving, setMoving] = useState(false);
   // Narrower than `moving`: true only while a page push is in flight. The two
   // pages are siblings and only one of them is the current tab, so switching
@@ -426,7 +434,10 @@ export function SiteExperience() {
   }
 
   function submitComprehensiveAnswer(question, selectedKeys, outcome) {
-    adaptiveController.current.record(outcome);
+    // Credit feeds the adaptive router's ability estimate; computed outside
+    // the state updater so StrictMode double-invocation cannot double-record.
+    adaptiveController.current.record(outcome, answerCredit(question, selectedKeys));
+    if (isAdaptiveDebugOn()) setAdaptiveTelemetry(adaptiveController.current.debugInfo());
     setAttemptState((current) => {
       if (!current.attempt) return current;
       const next = recordAnswer(current.attempt, question, selectedKeys);
@@ -440,6 +451,17 @@ export function SiteExperience() {
     if (stage > complete) return;
     setAssessmentRoute((current) => ({ ...current, stage, mode: "task" }));
     go("assessment-task", assessmentHash(assessmentRoute.id, stage));
+  }
+
+  function restartComprehensiveAttempt() {
+    const attempt = createAttempt({
+      questions: COMPREHENSIVE_QUESTIONS,
+      totalQuestions: COMPREHENSIVE_LEVELS.length * COMPREHENSIVE_QUESTION_COUNT,
+    });
+    clearAttemptDraft();
+    adaptiveController.current.reset();
+    setAdaptiveTelemetry(null);
+    setAttemptState({ attempt, result: null });
   }
 
   function completeAssessmentStage(stage) {
@@ -470,22 +492,24 @@ export function SiteExperience() {
         }}
         hidden={!["home", "cases", "forum"].includes(view)}
       >
-        {cubeMounted && (
-          <App
-            tab={["cases", "forum"].includes(view) ? view : "home"}
-            onHome={() => go("home")}
-            onAssessment={() => go("login")}
-            onAccountSettings={() => go("account-settings")}
-            onCases={() => go("cases")}
-            onForum={() => go("forum")}
-            active={view === "home"}
-            flattened={homeShellFlat}
-            transitionBusy={moving}
-            pushing={pushing}
-            onCubeMotionChange={handleShellMotion}
-          />
-        )}
-      </div>
+        <ErrorBoundary>
+          {cubeMounted && (
+            <App
+              tab={["cases", "forum"].includes(view) ? view : "home"}
+              onHome={() => go("home")}
+              onAssessment={() => go("login")}
+              onAccountSettings={() => go("account-settings")}
+              onCases={() => go("cases")}
+              onForum={() => go("forum")}
+              active={view === "home"}
+              flattened={homeShellFlat}
+              transitionBusy={moving}
+              pushing={pushing}
+              onCubeMotionChange={handleShellMotion}
+            />
+          )}
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -493,8 +517,10 @@ export function SiteExperience() {
         }}
         hidden={view !== "account-settings"}
       >
-        <AccountSettings onBack={() => go("home")} onLogout={() => go("home")} busy={moving} />
-      </div>
+        <ErrorBoundary>
+          <AccountSettings onBack={() => go("home")} onLogout={() => go("home")} busy={moving} />
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -502,18 +528,20 @@ export function SiteExperience() {
         }}
         hidden={view !== "login"}
       >
-        <section className="login-screen" aria-label="登录">
-          <button className="pill-button login-back" onClick={() => go("home")} disabled={moving}>
-            <ArrowLeft size={18} /> 返回首页
-          </button>
-          <div className="login-stage">
-            <div className="login-surface">
-              <LoginForm onLogin={() => {
-                go("choose");
-              }} />
+        <ErrorBoundary>
+          <section className="login-screen" aria-label="登录">
+            <button className="pill-button login-back" onClick={() => go("home")} disabled={moving}>
+              <ArrowLeft size={18} /> 返回首页
+            </button>
+            <div className="login-stage">
+              <div className="login-surface">
+                <LoginForm onLogin={() => {
+                  go("choose");
+                }} />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </ErrorBoundary>
       </div>
       <div
         className="experience-panel"
@@ -522,14 +550,16 @@ export function SiteExperience() {
         }}
         hidden={view !== "choose"}
       >
-        <ChooseHub
-          onBack={() => go("home")}
-          onTest={() => go("assessments")}
-          onReports={() => go("reports")}
-          onProfile={() => go("profile")}
-          busy={moving}
-        />
-      </div>
+        <ErrorBoundary>
+          <ChooseHub
+            onBack={() => go("home")}
+            onTest={() => go("assessments")}
+            onReports={() => go("reports")}
+            onProfile={() => go("profile")}
+            busy={moving}
+          />
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -537,8 +567,10 @@ export function SiteExperience() {
         }}
         hidden={view !== "assessments"}
       >
-        <AssessmentHub onBack={() => go("choose")} onStart={startAssessment} busy={moving} />
-      </div>
+        <ErrorBoundary>
+          <AssessmentHub onBack={() => go("choose")} onStart={startAssessment} busy={moving} />
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -546,8 +578,10 @@ export function SiteExperience() {
         }}
         hidden={view !== "profile"}
       >
-        <ProfileHub onBack={() => go("choose")} onOpen={(id) => go("profile-detail", `#center/${id}`)} busy={moving} />
-      </div>
+        <ErrorBoundary>
+          <ProfileHub onBack={() => go("choose")} onOpen={(id) => go("profile-detail", `#center/${id}`)} busy={moving} />
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -555,8 +589,15 @@ export function SiteExperience() {
         }}
         hidden={view !== "reports"}
       >
-        <AwakeningReport active={view === "reports"} onBack={() => go("choose")} busy={moving} />
-      </div>
+        <ErrorBoundary>
+          <AwakeningReport
+          active={view === "reports"}
+          onBack={() => go("choose")}
+          onStartAssessment={() => go("assessments")}
+          busy={moving}
+        />
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -564,14 +605,16 @@ export function SiteExperience() {
         }}
         hidden={view !== "profile-detail"}
       >
-        <ProfileDetail
-          id={profileDetailRoute ?? "organizations"}
-          onBack={() => go("profile")}
-          onHome={() => go("home")}
-          busy={moving}
-          active={view === "profile-detail"}
-        />
-      </div>
+        <ErrorBoundary>
+          <ProfileDetail
+            id={profileDetailRoute ?? "organizations"}
+            onBack={() => go("profile")}
+            onHome={() => go("home")}
+            busy={moving}
+            active={view === "profile-detail"}
+          />
+        </ErrorBoundary>
+            </div>
       <div
         className="experience-panel"
         ref={(node) => {
@@ -579,30 +622,41 @@ export function SiteExperience() {
         }}
         hidden={view !== "assessment-map" && view !== "assessment-task"}
       >
-        {view === "assessment-map" ? (
-          <AssessmentMap
-            id={assessmentRoute.id}
-            current={progress[assessmentRoute.id] ?? 1}
-            complete={progress[assessmentRoute.id] ?? 1}
-            onBack={leaveAssessmentMap}
-            onOpenStage={openAssessmentStage}
-            busy={moving}
-          />
-        ) : (
-          <AssessmentTask
-            id={assessmentRoute.id}
-            stage={assessmentRoute.stage}
-            complete={progress[assessmentRoute.id] ?? 1}
-            onBack={() => openAssessmentMap(assessmentRoute.id)}
-            onPick={openAssessmentStage}
-            onComplete={completeAssessmentStage}
-            onSelectComprehensiveQuestion={selectComprehensiveQuestion}
-            onAnswerComprehensive={submitComprehensiveAnswer}
-            comprehensiveResult={attemptState.result}
-            busy={moving}
-          />
-        )}
-      </div>
+        <ErrorBoundary>
+          {view === "assessment-map" ? (
+            <AssessmentMap
+              id={assessmentRoute.id}
+              current={progress[assessmentRoute.id] ?? 1}
+              complete={progress[assessmentRoute.id] ?? 1}
+              onBack={leaveAssessmentMap}
+              onOpenStage={openAssessmentStage}
+              busy={moving}
+              resume={assessmentRoute.id === "comprehensive" && attemptState.result?.status === "in_progress"
+                ? {
+                  answered: attemptState.result.answeredCount,
+                  total: attemptState.result.totalQuestions,
+                  startedAt: attemptState.attempt?.startedAt ?? null,
+                  onRestart: restartComprehensiveAttempt,
+                }
+                : null}
+            />
+          ) : (
+            <AssessmentTask
+              id={assessmentRoute.id}
+              stage={assessmentRoute.stage}
+              complete={progress[assessmentRoute.id] ?? 1}
+              onBack={() => openAssessmentMap(assessmentRoute.id)}
+              onPick={openAssessmentStage}
+              onComplete={completeAssessmentStage}
+              onSelectComprehensiveQuestion={selectComprehensiveQuestion}
+              onAnswerComprehensive={submitComprehensiveAnswer}
+              comprehensiveResult={attemptState.result}
+              adaptiveTelemetry={adaptiveTelemetry}
+              busy={moving}
+            />
+          )}
+        </ErrorBoundary>
+            </div>
       <div className="split-transition" ref={stage} aria-hidden="true" />
     </div>
   );

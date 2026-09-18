@@ -10,6 +10,45 @@ import {
   scoreAssessment,
   validateQuestionBank,
 } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
+import { clearExposureStore } from "./comprehensive-adaptive.js";
+
+/**
+ * @typedef {Object} ResponseEvidence
+ * @property {string} questionId
+ * @property {"single"|"multi"|"judge"} type
+ * @property {"low"|"medium"|"high"} difficulty
+ * @property {string[]} dimKeys
+ * @property {string[]} selectedKeys
+ * @property {number} credit
+ * @property {string} [answeredAt]
+ */
+
+/**
+ * @typedef {Object} Attempt
+ * @property {string} assessmentId
+ * @property {string} startedAt
+ * @property {null|string} completedAt
+ * @property {number} totalQuestions
+ * @property {string[]} questionIds
+ * @property {ResponseEvidence[]} evidence
+ * @property {string} scoringVersion
+ * @property {string} questionBankVersion
+ */
+
+/**
+ * @typedef {Object} ScoreResult
+ * @property {string} scoringVersion
+ * @property {"not_started"|"in_progress"|"completed"} status
+ * @property {number} answeredCount
+ * @property {number} totalQuestions
+ * @property {Array<{key: string, name: string, short: string, score: number|null, evidenceCount: number}>} dimensions
+ * @property {number|null} overallScore
+ * @property {string|null} grade
+ */
+
+/**
+ * @typedef {Attempt & {result: ScoreResult}} HistorySnapshot
+ */
 
 export const QUESTION_BANK_VERSION = "objective-bank-v6-120";
 const DRAFT_KEY = "aiquos.comprehensive-attempt.v1";
@@ -33,19 +72,22 @@ export function createAttempt({ questions, totalQuestions, assessmentId = "compr
 
 export function recordAnswer(attempt, question, selectedKeys, answeredAt = new Date().toISOString()) {
   // A re-served question (possible after a mid-run reload resets the in-memory
-  // adaptive state) replaces its earlier evidence so the set handed to
-  // scoreAssessment keeps unique question IDs; the latest answer wins.
+  // adaptive state) replaces its earlier evidence in place, so the set handed
+  // to scoreAssessment keeps unique question IDs; the latest answer wins.
   const evidence = createResponseEvidence(question, selectedKeys, answeredAt);
-  const previous = attempt.evidence.filter((item) => item.questionId !== evidence.questionId);
-  const nextEvidence = [...previous, evidence].sort(
-    (left, right) => attempt.questionIds.indexOf(left.questionId) - attempt.questionIds.indexOf(right.questionId),
-  );
-  const questionIds = attempt.questionIds.includes(question.id)
-    ? attempt.questionIds
-    : [...attempt.questionIds, question.id];
+  let nextEvidence = attempt.evidence.some((item) => item.questionId === evidence.questionId)
+    ? attempt.evidence.map((item) => (item.questionId === evidence.questionId ? evidence : item))
+    : [...attempt.evidence, evidence];
+  // A resumed run that re-enters finished stages can collect more unique
+  // questions than the budget; keep the most recent `totalQuestions` answers
+  // (FIFO) so the scoring contract — count never exceeds totalQuestions —
+  // holds and the most recent work is what gets scored.
+  if (nextEvidence.length > attempt.totalQuestions) {
+    nextEvidence = nextEvidence.slice(nextEvidence.length - attempt.totalQuestions);
+  }
   const next = {
     ...attempt,
-    questionIds,
+    questionIds: nextEvidence.map((item) => item.questionId),
     evidence: nextEvidence,
   };
   return { attempt: next, result: scoreAssessment(next.evidence, { totalQuestions: next.totalQuestions }) };
@@ -54,6 +96,12 @@ export function recordAnswer(attempt, question, selectedKeys, answeredAt = new D
 export function currentResult(attempt) {
   if (!attempt || attempt.evidence.length === 0) return null;
   return scoreAssessment(attempt.evidence, { totalQuestions: attempt.totalQuestions });
+}
+
+// Pure per-answer credit for callers (e.g. adaptive routing) that need the
+// number before the attempt state update commits.
+export function answerCredit(question, selectedKeys) {
+  return createResponseEvidence(question, selectedKeys).credit;
 }
 
 export function isAttemptComplete(result) {
@@ -84,62 +132,110 @@ function safeParse(raw) {
   }
 }
 
-export function saveAttemptDraft(attempt) {
+// In-memory fallbacks keep the run alive when setItem throws (Safari private
+// mode, full quota): the current session reads its own writes, and a reload
+// degrades to a fresh run instead of crashing mid-assessment.
+const memoryStore = new Map();
+
+function storageGet(key) {
   try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(attempt));
+    const raw = localStorage.getItem(key);
+    if (raw !== null) return raw;
   } catch {
-    // Best-effort persistence, tolerant of private mode (see forum-view note).
+    // Reading threw: fall through to the memory copy.
+  }
+  return memoryStore.has(key) ? memoryStore.get(key) : null;
+}
+
+function storageSet(key, value) {
+  memoryStore.set(key, value);
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Persistence failed; the memory copy above is authoritative for now.
   }
 }
 
-export function loadAttemptDraft() {
+function storageRemove(key) {
+  memoryStore.delete(key);
   try {
-    const attempt = safeParse(localStorage.getItem(DRAFT_KEY));
-    if (!attempt || !Array.isArray(attempt.evidence)) return null;
-    if (attempt.scoringVersion !== SCORING_VERSION) return null;
-    if (attempt.questionBankVersion !== QUESTION_BANK_VERSION) return null;
-    if (!Number.isInteger(attempt.totalQuestions)) return null;
-    return attempt;
-  } catch {
-    return null;
-  }
-}
-
-export function clearAttemptDraft() {
-  try {
-    localStorage.removeItem(DRAFT_KEY);
+    localStorage.removeItem(key);
   } catch {
     // Ignore storage failures; the in-memory attempt stays authoritative.
   }
 }
 
+// Draft/history migrators run in order on read. v1 is the current shape; future
+// breaking changes append a step here (v1→v2→…) so stored snapshots upgrade in
+// place instead of being silently dropped.
+const DRAFT_MIGRATORS = [];
+const HISTORY_MIGRATORS = [];
+
+function migrate(value, steps) {
+  return steps.reduce((current, step) => current ?? null, value ?? null);
+}
+
+export function saveAttemptDraft(attempt) {
+  storageSet(DRAFT_KEY, JSON.stringify(attempt));
+}
+
+export function loadAttemptDraft() {
+  const attempt = migrate(safeParse(storageGet(DRAFT_KEY)), DRAFT_MIGRATORS);
+  if (!attempt || !Array.isArray(attempt.evidence)) return null;
+  if (attempt.scoringVersion !== SCORING_VERSION) return null;
+  if (attempt.questionBankVersion !== QUESTION_BANK_VERSION) return null;
+  if (!Number.isInteger(attempt.totalQuestions)) return null;
+  return attempt;
+}
+
+export function clearAttemptDraft() {
+  storageRemove(DRAFT_KEY);
+}
+
 export function appendHistorySnapshot(snapshot) {
   if (!snapshot) return loadAttemptHistory();
-  try {
-    const history = loadAttemptHistory();
-    if (history.some((item) => item.completedAt === snapshot.completedAt)) return history;
-    const next = [...history, snapshot].slice(-HISTORY_LIMIT);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-    return next;
-  } catch {
-    return loadAttemptHistory();
-  }
+  const history = loadAttemptHistory();
+  if (history.some((item) => item.completedAt === snapshot.completedAt)) return history;
+  const next = [...history, snapshot].slice(-HISTORY_LIMIT);
+  storageSet(HISTORY_KEY, JSON.stringify(next));
+  return next;
 }
 
 export function loadAttemptHistory() {
-  try {
-    const history = safeParse(localStorage.getItem(HISTORY_KEY));
-    if (!Array.isArray(history)) return [];
-    return history.filter(
-      (item) => item && item.scoringVersion === SCORING_VERSION
-        && item.questionBankVersion === QUESTION_BANK_VERSION,
-    );
-  } catch {
-    return [];
-  }
+  const history = migrate(safeParse(storageGet(HISTORY_KEY)), HISTORY_MIGRATORS);
+  if (!Array.isArray(history)) return [];
+  return history.filter(
+    (item) => item && item.scoringVersion === SCORING_VERSION
+      && item.questionBankVersion === QUESTION_BANK_VERSION,
+  );
 }
 
 export function latestCompletedSnapshot() {
   const history = loadAttemptHistory();
   return history.length ? history[history.length - 1] : null;
+}
+
+// True when the next completed run would evict the oldest snapshot — the UI
+// surfaces this so records never disappear silently.
+export function historyAtCapacity() {
+  return loadAttemptHistory().length >= HISTORY_LIMIT;
+}
+
+// Wipes every locally stored assessment artifact (privacy panel in settings).
+export function clearAllAssessmentData() {
+  storageRemove(DRAFT_KEY);
+  storageRemove(HISTORY_KEY);
+  clearExposureStore();
+}
+
+// Download the full stored history as a JSON file (used by the cap notice).
+export function exportAttemptHistory() {
+  const history = loadAttemptHistory();
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), scoringVersion: SCORING_VERSION, questionBankVersion: QUESTION_BANK_VERSION, history }, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.download = "aiquos-assessment-history.json";
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  return history.length;
 }

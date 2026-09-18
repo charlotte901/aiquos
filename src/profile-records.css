@@ -397,3 +397,32 @@
     font-size: 12px;
   }
 }
+.records-compare {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1.5px solid #e3e9f4;
+  border-radius: var(--radius-m, 16px);
+  background: #fbfcff;
+}
+.records-compare h2 { margin: 0 0 10px; font-size: 14.5px; color: #1d2740; }
+.records-compare table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.records-compare th, .records-compare td { padding: 6px 8px; font-size: 12.5px; text-align: right; }
+.records-compare thead th { color: #6a7588; font-weight: 800; }
+.records-compare thead th:first-child { text-align: left; color: #6a7588; }
+.records-compare tbody th { text-align: left; color: #3c465c; font-weight: 700; }
+.records-compare thead em {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: #eceff8;
+  color: #4a5566;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+.records-compare thead em { background: #e6ebf7; }
+.records-compare td.is-strong { font-weight: 900; color: #1d2740; }
+.records-compare .is-up { color: #14875f; font-weight: 800; }
+.records-compare .is-down { color: #d05050; font-weight: 800; }
+.records-compare-note { margin: 8px 0 0; color: #97a0b0; font-size: 11.5px; }

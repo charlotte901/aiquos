@@ -48,14 +48,17 @@ test("profile shares the TEST design system and two-columns on phones", () => {
 });
 
 test("the choose screen routes the personal-center card into the profile view", async () => {
-  const [choose, experience, hub] = await Promise.all([
+  const [choose, experience, hub, routes] = await Promise.all([
     readFile(new URL("../src/ChooseHub.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
     readFile(new URL("../src/ProfileHub.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/routes.js", import.meta.url), "utf8"),
   ]);
   assert.match(choose, /onProfile\?\.?\(\)/);
   assert.match(experience, /onProfile=\{\(\) => go\("profile"\)\}/);
-  assert.match(experience, /location\.hash === "#profile"/);
+  // Hash → view resolution now lives in the single routes module.
+  assert.match(experience, /siteViewForHash/);
+  assert.match(routes, /hash === "#profile"\) return "profile"/);
   assert.match(hub, /profile-wordmark/);
   assert.match(hub, /返回选择/);
 });

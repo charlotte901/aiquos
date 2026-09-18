@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Download, Printer, X } from "@phosphor-icons/react";
-import { latestCompletedSnapshot } from "./assessment-attempt";
+import {
+  exportAttemptHistory,
+  historyAtCapacity,
+  latestCompletedSnapshot,
+} from "./assessment-attempt";
 
 // Demo scores shown when no completed comprehensive attempt exists yet. Real
 // reports always come from a stored history snapshot produced by the vendored
@@ -59,6 +63,8 @@ function bandOf(score) {
   return score >= 80 ? "strong" : score >= 60 ? "developing" : "focus";
 }
 
+const gradeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
+
 function grade(score) {
   if (score >= 90) return "S";
   if (score >= 80) return "A";
@@ -96,6 +102,10 @@ function reportModel(snapshot) {
     overallScore: snapshot.result.overallScore,
     grade: snapshot.result.grade ?? grade(snapshot.result.overallScore ?? 0),
     meta: `综合测评 · 完成于 ${formatCompletedAt(snapshot.completedAt)} · ${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题`,
+    versions: {
+      scoring: snapshot.scoringVersion,
+      bank: snapshot.questionBankVersion,
+    },
     isDemo: false,
   };
 }
@@ -147,13 +157,15 @@ const DIALOGUE_LINES = [
 
 export function AwakeningReportContent({ snapshot = null }) {
   const model = reportModel(snapshot);
+  const [methodOpen, setMethodOpen] = useState(false);
+  const capNotice = !model.isDemo && historyAtCapacity();
 
   return (
     <section className="awakening-report-card" aria-label="智核觉醒报告结果">
       <div className="report-radar">
         <header className="radar-head">
           <h2>六维能力雷达</h2>
-          <div className="awakening-rating" aria-label={`综合评级 ${model.grade}`}>
+          <div className={`awakening-rating ${gradeClass(model.grade)}`} aria-label={`综合评级 ${model.grade}`}>
             <strong>{model.grade}</strong>
             <span>综合评级</span>
           </div>
@@ -200,13 +212,37 @@ export function AwakeningReportContent({ snapshot = null }) {
                 <div className="score-track" role="img" aria-label={`${item.name} ${item.score}分`}>
                   <i style={{ width: `${item.score}%` }} />
                 </div>
-                <b>{grade(item.score)}</b>
+                <b className={gradeClass(grade(item.score))}>{grade(item.score)}</b>
               </li>
             ))}
           </ul>
         </section>
 
         <section className="report-guidance">
+          <div className="report-method">
+            <button
+              type="button"
+              className="report-method-toggle"
+              aria-expanded={methodOpen}
+              onClick={() => setMethodOpen((current) => !current)}
+            >
+              分数如何得出？{methodOpen ? "收起" : "展开"}
+            </button>
+            {methodOpen && (
+              <ul className="report-method-list">
+                <li>题目难度锚点：低 = −1、中 = 0、高 = +1；维度估计采用 N(0,1) 先验的能力估计（与官方评分核心一致）。</li>
+                <li>多选题部分得分：命中率 − 0.6 × 误选率，限制在 0 到 1；单选与判断题须完全正确。</li>
+                <li>总分 = 六维得分的平均值四舍五入；等级 S ≥ 90、A ≥ 80、B ≥ 70、C ≥ 60、D &lt; 60。</li>
+                <li>进行中只显示已有作答维度的估计，不产生总分与等级。</li>
+              </ul>
+            )}
+          </div>
+          {capNotice && (
+            <p className="report-cap-note" role="status">
+              本机最多保留最近 12 份报告，新的完成会替换最旧的一份。
+              <button type="button" onClick={() => exportAttemptHistory()}>导出全部记录</button>
+            </p>
+          )}
           <div>
             <h2>个性化学习建议</h2>
             <ul className="advice-list">
@@ -226,19 +262,34 @@ export function AwakeningReportContent({ snapshot = null }) {
             </ul>
           </div>
         </section>
+        <footer className="report-footnote">
+          {model.versions
+            ? `基于 ${model.versions.bank} 题库 · 评分模型 v${model.versions.scoring} · 结果保存在本机`
+            : "演示数据 · 完成一次综合测评后展示真实画像"}
+        </footer>
       </div>
     </section>
   );
 }
 
 export function AwakeningReportModal({ open, onClose, snapshot = null }) {
+  const dialogRef = useRef(null);
   useEffect(() => {
     if (!open) return undefined;
     const handleKey = (event) => {
       if (event.key === "Escape") onClose();
     };
+    // Dialog hygiene: move focus in, lock background scroll, restore both.
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialogRef.current?.focus();
     window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = previousOverflow;
+      previousFocus instanceof HTMLElement && previousFocus.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -250,7 +301,14 @@ export function AwakeningReportModal({ open, onClose, snapshot = null }) {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="report-modal" role="dialog" aria-modal="true" aria-labelledby="awakening-report-modal-title">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="report-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="awakening-report-modal-title"
+      >
         <header className="report-modal-head">
           <div>
             <em>综合测评</em>
@@ -268,7 +326,7 @@ export function AwakeningReportModal({ open, onClose, snapshot = null }) {
   );
 }
 
-export function AwakeningReport({ onBack, busy, active = false }) {
+export function AwakeningReport({ onBack, onStartAssessment, busy, active = false }) {
   const [lineIndex, setLineIndex] = useState(0);
   const [dialogueVisible, setDialogueVisible] = useState(true);
   const [snapshot, setSnapshot] = useState(() => latestCompletedSnapshot());
@@ -323,11 +381,33 @@ export function AwakeningReport({ onBack, busy, active = false }) {
             <small>
               {lineIndex === DIALOGUE_LINES.length - 1 ? "对话完成" : "点击继续 ▾"}
             </small>
+            {lineIndex < DIALOGUE_LINES.length - 1 && (
+              <button
+                type="button"
+                className="story-skip"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setLineIndex(DIALOGUE_LINES.length - 1);
+                }}
+              >
+                跳过对话
+              </button>
+            )}
           </article>
         </div>
       )}
 
-      <AwakeningReportContent snapshot={snapshot} />
+      {snapshot
+        ? <AwakeningReportContent snapshot={snapshot} />
+        : (
+          <div className="report-empty">
+            <AwakeningReportContent snapshot={null} />
+            <div className="report-empty-cta">
+              <p>还没有真实报告——完成一次 25 题的综合测评，这里会展示你的六维能力画像。</p>
+              <button type="button" onClick={onStartAssessment}>去完成综合测评</button>
+            </div>
+          </div>
+        )}
     </main>
   );
 }

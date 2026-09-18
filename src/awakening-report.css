@@ -534,3 +534,93 @@ body:has(.site-experience[data-view="reports"])::-webkit-scrollbar {
     border: 1px solid #ccc;
   }
 }
+/* Grade colour semantics from tokens.css — one glance reads the letter. */
+.grade-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  margin-left: 8px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+.grade-badge.is-s { background: var(--grade-s, #c99700); }
+.grade-badge.is-a { background: var(--grade-a, #635bff); }
+.grade-badge.is-b { background: var(--grade-b, #2f7cf6); }
+.grade-badge.is-c { background: var(--grade-c, #159f8c); }
+.grade-badge.is-d { background: var(--grade-d, #8a94a6); }
+.awakening-rating.grade-badge strong { color: #fff; }
+.awakening-rating:not(.grade-badge) { background: #f2f6ff; }
+.awakening-rating:not(.grade-badge) strong { color: var(--report-blue-deep, #2f5cff); }
+.report-method { margin-bottom: 16px; }
+.report-method-toggle {
+  padding: 8px 14px;
+  border: 1.5px solid #d9dfec;
+  border-radius: 999px;
+  background: #fff;
+  color: #4a5566;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.report-method-toggle[aria-expanded="true"] { border-color: var(--report-blue-deep, #2f5cff); color: var(--report-blue-deep, #2f5cff); }
+.report-method-list {
+  margin: 10px 0 0;
+  padding: 14px 16px 14px 30px;
+  border-radius: 12px;
+  background: #f4f7ff;
+  color: #46516a;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.report-cap-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  color: #7a6432;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.report-cap-note button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #f4e8cd;
+  color: #7a6432;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.report-footnote {
+  margin: 18px 0 0;
+  color: #97a0b0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.report-empty-cta {
+  margin: 18px 0 0;
+  padding: 16px 20px;
+  border: 1.5px dashed #c8d2e6;
+  border-radius: var(--radius-m, 16px);
+  background: #f9fbff;
+  text-align: center;
+}
+.report-empty-cta p { margin: 0 0 10px; color: #5a6579; font-size: 13.5px; font-weight: 600; }
+.report-empty-cta button {
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--report-blue-deep, #2f5cff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.report-modal { box-shadow: var(--shadow-3, 0 12px 34px rgb(18 24 38 / .16)); }
+.awakening-report-card { box-shadow: var(--shadow-1, 0 1px 2px rgb(18 24 38 / .06)); }
+.awakening-story { position: relative; }

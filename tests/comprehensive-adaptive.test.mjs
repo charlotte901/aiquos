@@ -5,6 +5,8 @@ import {
   applyAdaptiveOutcome,
   createAdaptiveController,
   createAdaptiveSession,
+  estimateRunAbility,
+  nextTargetDifficulty,
   selectAdaptiveQuestion,
   startAdaptiveStage,
 } from "../src/comprehensive-adaptive.js";
@@ -161,4 +163,114 @@ test("the controller carries routing across stages and reset starts a new medium
 
   controller.reset();
   assert.equal(controller.select("labyrinth", 2).difficulty, "medium");
+});
+
+test("v2 ability estimation reads credited evidence and stays null without it", () => {
+  const session = createAdaptiveSession();
+  assert.equal(estimateRunAbility(session), null);
+  assert.equal(nextTargetDifficulty(session), 0);
+
+  const strong = {
+    ...session,
+    evidence: [
+      { credit: 1, difficulty: "medium", dimKeys: ["D1", "D2"] },
+      { credit: 1, difficulty: "medium", dimKeys: ["D3", "D4"] },
+    ],
+  };
+  assert.ok(estimateRunAbility(strong) > 0.5, "all-correct medium evidence pulls ability up");
+  assert.ok(nextTargetDifficulty(strong) > 0.3);
+
+  const weak = {
+    ...session,
+    evidence: [
+      { credit: 0, difficulty: "low", dimKeys: ["D1", "D2"] },
+      { credit: 0, difficulty: "low", dimKeys: ["D3", "D4"] },
+    ],
+  };
+  assert.ok(estimateRunAbility(weak) < -0.5, "all-wrong low evidence pulls ability down");
+  assert.ok(nextTargetDifficulty(weak) < -0.3);
+});
+
+test("credited evidence steers difficulty beyond the bare position walk", () => {
+  // Partial-only outcomes leave the walk centred; heavy low credits aim low.
+  const partials = {
+    ...createAdaptiveSession(),
+    evidence: Array.from({ length: 6 }, () => ({ credit: 0.15, difficulty: "medium", dimKeys: ["D1", "D2"] })),
+    lastType: "single",
+    typeStreak: 1,
+  };
+  assert.equal(partials.position, 1);
+  assert.ok(nextTargetDifficulty(partials) < -0.5, "heavy low credit aims below medium");
+
+  const questions = [
+    candidate("low-q", "low", ["D1", "D2"]),
+    candidate("medium-q", "medium", ["D1", "D2"]),
+    candidate("high-q", "high", ["D1", "D2"]),
+  ];
+  const picked = selectAdaptiveQuestion({ questions, levelId: "academy", session: partials, rng: () => 0 });
+  assert.equal(picked.question.difficulty, "low");
+});
+
+test("exposure counts demote over-served questions for fresh equals", () => {
+  const session = createAdaptiveSession();
+  const questions = [
+    candidate("seen-5x", "medium", ["D1", "D2"]),
+    candidate("fresh-q", "medium", ["D1", "D2"]),
+  ];
+  const exposure = { "seen-5x": 5 };
+  const picked = selectAdaptiveQuestion({ questions, levelId: "academy", session, rng: () => 0, exposure });
+  assert.equal(picked.question.id, "fresh-q");
+  assert.equal(picked.exposure["fresh-q"], 1);
+  assert.equal(picked.exposure["seen-5x"], 5);
+});
+
+test("no question type repeats three times in a credited full run", () => {
+  const savedStorage = globalThis.localStorage;
+  const backing = new Map();
+  globalThis.localStorage = {
+    getItem: (key) => (backing.has(key) ? backing.get(key) : null),
+    setItem: (key, value) => backing.set(key, String(value)),
+    removeItem: (key) => backing.delete(key),
+  };
+  try {
+    for (const start of [0.05, 0.45, 0.85]) {
+      let rngValue = start;
+      const controller = createAdaptiveController(questionBank.questions, {
+        rng: () => {
+          rngValue = (rngValue * 9301 + 49297) % 233280;
+          return rngValue / 233280;
+        },
+      });
+      controller.clearExposure();
+      let streak = { type: null, count: 0 };
+      let lastDimCounts = null;
+      for (let stage = 1; stage <= 5; stage += 1) {
+        for (let index = 0; index < 5; index += 1) {
+          const question = controller.select(LEVELS[stage - 1], stage);
+          assert.ok(question);
+          if (question.type === streak.type) {
+            streak.count += 1;
+            assert.ok(streak.count < 3, `three in a row of ${question.type}`);
+          } else {
+            streak = { type: question.type, count: 1 };
+          }
+          // Alternating credit keeps the router hunting across difficulties.
+          controller.record(index % 2 === 0 ? "correct" : "wrong", index % 2 === 0 ? 1 : 0);
+        }
+        lastDimCounts = controller.getSession().dimensionCounts;
+      }
+      assert.equal(controller.getSession().usedQuestionIds.length, 25);
+      assert.equal(new Set(controller.getSession().usedQuestionIds).size, 25);
+      // Coverage stays balanced: no dimension starved to zero during the run.
+      for (const [key, count] of Object.entries(lastDimCounts)) {
+        assert.ok(count >= 2, `dimension ${key} covered (${count})`);
+      }
+    }
+    // Exposure counters persisted across the last run (cleared per seed).
+    const saved = JSON.parse(backing.get("aiquos.adaptive-exposure.v1"));
+    assert.equal(Object.values(saved).reduce((total, value) => total + value, 0), 25);
+  } finally {
+    if (savedStorage === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = savedStorage;
+  }
 });

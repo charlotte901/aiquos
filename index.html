@@ -20,7 +20,38 @@
     <title>AIQUOS — Learn. Create. Achieve.</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- First-paint splash: replaced the moment React mounts. Pure CSS so it
+           costs nothing and never flashes after the app is live. -->
+      <style>
+        #root:empty::after {
+          content: "";
+          position: fixed;
+          inset: 0;
+          display: block;
+          background: #f568a3;
+        }
+        #root:empty::before {
+          content: "";
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          width: 46px;
+          height: 46px;
+          margin: -23px 0 0 -23px;
+          border: 3px solid rgb(255 255 255 / 0.35);
+          border-top-color: #fff;
+          border-radius: 25%;
+          animation: aiquos-boot 900ms linear infinite;
+        }
+        @keyframes aiquos-boot {
+          to { transform: rotate(360deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          #root:empty::before { animation: none; }
+        }
+      </style>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

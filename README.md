@@ -60,7 +60,7 @@
 
 手机与竖屏平板使用紧凑排列。常见手机高度可一屏展示；小于 760 px 的紧凑窗口及小于 680 px 的横向窗口允许纵向滚动，以保留文字与控件可读性。
 
-`src/layout.js` 负责布局参数，`src/responsive.css` 负责自适应定位。运行 `node --test tests/layout.test.mjs` 可验证 14 种窗口尺寸及参考图坐标不变性。评分相关测试：`node --test tests/scoring-integration.test.mjs vendor/aiquos-six-dimension-scoring/tests/scoring-core.test.mjs`（题库校验、Attempt 生命周期、自适应全流程可完成性、存储回环与官方核心金样一致性）。
+`src/layout.js` 负责布局参数，`src/responsive.css` 负责自适应定位。运行 `node --test tests/layout.test.mjs` 可验证 14 种窗口尺寸及参考图坐标不变性。评分相关测试：`node --test tests/scoring-integration.test.mjs vendor/aiquos-six-dimension-scoring/tests/scoring-core.test.mjs`（题库校验、Attempt 生命周期、自适应全流程可完成性、存储回环与官方核心金样一致性）。自适应引擎 v2、键盘作答、续答横幅、报告透明度与企业级优化见 `docs/optimization-roadmap-100.md`（100 条建议、30 条已落地）；维护流程见 `.agents/skills/aiquos-assessment-steward/SKILL.md`。
 
 ```sh
 npm install

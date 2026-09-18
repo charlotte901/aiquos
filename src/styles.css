@@ -1424,3 +1424,46 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+.account-privacy {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1.5px solid #e4e8f2;
+  border-radius: var(--radius-m, 16px);
+  background: #fafbfe;
+}
+.account-privacy h3 { margin: 0 0 8px; color: #1d2740; font-size: 15px; }
+.account-privacy p { margin: 0 0 8px; color: #5a6579; font-size: 13px; line-height: 1.7; }
+.account-privacy ul { margin: 0 0 10px; padding-left: 18px; color: #6a7588; font-size: 12.5px; line-height: 1.8; }
+.account-privacy code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #eef1f8;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+}
+.account-privacy-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.account-privacy-actions span { color: #8b95a6; font-size: 12px; font-weight: 600; }
+.panel-error {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 320px;
+  padding: 40px 24px;
+  border-radius: var(--radius-l, 24px);
+  background: #fff;
+  text-align: center;
+}
+.panel-error strong { color: #1d2740; font-size: 18px; }
+.panel-error p { margin: 0; color: #6a7588; font-size: 13.5px; }
+.panel-error-actions { display: flex; gap: 12px; margin-top: 8px; }
+.panel-error-actions button {
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #2f5cff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.panel-error-actions button:last-child { background: #eef1f8; color: #33405a; }

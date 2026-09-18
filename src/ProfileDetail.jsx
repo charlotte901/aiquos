@@ -28,6 +28,70 @@ import { CaseDetail } from "./CaseArchive";
 import { ForumDetail } from "./ForumBoard";
 import { AwakeningReportModal } from "./AwakeningReport";
 import { loadAttemptHistory } from "./assessment-attempt";
+
+const gradeBadgeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
+
+function CompareTable({ history }) {
+  // Last four completed runs; delta compares the newest against the previous.
+  const runs = history.slice(-4);
+  if (runs.length < 2) return null;
+  const latest = runs[runs.length - 1].result;
+  const previous = runs[runs.length - 2].result;
+  const runLabel = (snapshot) => {
+    const date = new Date(snapshot.completedAt);
+    return Number.isNaN(date.getTime())
+      ? "—"
+      : `${date.getMonth() + 1}/${date.getDate()}`;
+  };
+  return (
+    <div className="records-compare" aria-label="多次测评对比">
+      <h2>多次测评对比</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>维度</th>
+            {runs.map((snapshot) => (
+              <th key={snapshot.completedAt}>
+                {runLabel(snapshot)}
+                <em>{snapshot.result.grade}</em>
+              </th>
+            ))}
+            <th>变化</th>
+          </tr>
+        </thead>
+        <tbody>
+          {latest.dimensions.map((dimension, index) => {
+            const before = previous.dimensions[index]?.score;
+            const delta = before === null || before === undefined || dimension.score === null
+              ? null
+              : dimension.score - before;
+            return (
+              <tr key={dimension.key}>
+                <th scope="row">{dimension.short}</th>
+                {runs.map((snapshot) => (
+                  <td key={snapshot.completedAt}>{snapshot.result.dimensions[index]?.score ?? "—"}</td>
+                ))}
+                <td className={delta === null ? "" : delta >= 0 ? "is-up" : "is-down"}>
+                  {delta === null ? "—" : `${delta >= 0 ? "+" : ""}${delta}`}
+                </td>
+              </tr>
+            );
+          })}
+          <tr>
+            <th scope="row">总分</th>
+            {runs.map((snapshot) => (
+              <td key={snapshot.completedAt} className="is-strong">{snapshot.result.overallScore}</td>
+            ))}
+            <td className={latest.overallScore - previous.overallScore >= 0 ? "is-up" : "is-down"}>
+              {latest.overallScore - previous.overallScore >= 0 ? "+" : ""}{latest.overallScore - previous.overallScore}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p className="records-compare-note">最后一列为最近两次的变化；最多对比最近 4 次。</p>
+    </div>
+  );
+}
 import { useAccount } from "./account-store";
 import { PROFILE_DETAILS } from "./profile-layout";
 import { getViewportLayout } from "./layout";
@@ -486,11 +550,15 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   const [recordDrafts, setRecordDrafts] = useState({});
   const [recordEntries, setRecordEntries] = useState({});
   const [realRecordsByDay, setRealRecordsByDay] = useState(getRealRecordsByDay);
+  const [attemptHistory, setAttemptHistory] = useState(() => loadAttemptHistory());
   const [reportSnapshot, setReportSnapshot] = useState(null);
   useEffect(() => {
     // The detail panel stays mounted while hidden; re-read completed attempts
     // each time the page becomes visible so fresh history shows up.
-    if (active) setRealRecordsByDay(getRealRecordsByDay());
+    if (active) {
+      setRealRecordsByDay(getRealRecordsByDay());
+      setAttemptHistory(loadAttemptHistory());
+    }
   }, [active]);
   const worksBoardRef = useRef(null);
   const favoriteBoardRef = useRef(null);
@@ -1162,6 +1230,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
               <p>测评记录 · {selected.getMonth() + 1}月{selected.getDate()}日</p>
               <strong>{records.length} 条记录</strong>
             </header>
+            {id === "records" && <CompareTable history={attemptHistory} />}
             {records.length ? (
               <ul>
                 {records.map((record) => (
@@ -1169,7 +1238,13 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
                     <span>{record.type}</span>
                     <div>
                       <h2>{record.title}</h2>
-                      <p>{record.time} · {record.score} · {record.status}</p>
+                      <p>
+                        {record.time} · {record.score}
+                        {record.snapshot?.result?.grade && (
+                          <b className={gradeBadgeClass(record.snapshot.result.grade)}>{record.snapshot.result.grade}</b>
+                        )}
+                        {" · "}{record.status}
+                      </p>
                       {record.type === "综合题" && record.status === "已完成" && (
                         <button
                           type="button"

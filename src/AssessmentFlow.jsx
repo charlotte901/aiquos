@@ -86,11 +86,17 @@ function Guides() {
   return <canvas ref={canvas} className="assessment-guides" width="900" height="620" role="img" aria-label="两位测评向导" />;
 }
 
-export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy }) {
+export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy, resume = null }) {
   const theme = ASSESSMENT_THEMES[id];
   const stageLabels = id === "comprehensive"
     ? COMPREHENSIVE_LEVELS.map((level) => level.short)
     : STAGE_LABELS;
+  const resumeStarted = resume?.startedAt
+    ? new Date(resume.startedAt)
+    : null;
+  const resumeLabel = resumeStarted && !Number.isNaN(resumeStarted.getTime())
+    ? `${resumeStarted.getMonth() + 1}月${resumeStarted.getDate()}日 ${String(resumeStarted.getHours()).padStart(2, "0")}:${String(resumeStarted.getMinutes()).padStart(2, "0")}`
+    : "";
   return (
     <main className="assessment-flow map-flow" style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
       <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
@@ -102,6 +108,18 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
         <p className="map-kicker">{theme.title}</p>
         <h2>从这一关开始</h2>
         <p>{theme.description}</p>
+        {resume && (
+          <div className="map-resume" role="status">
+            <div>
+              <strong>检测到未完成的综合测评</strong>
+              <p>已答 {resume.answered} / {resume.total} 题{resumeLabel ? ` · 开始于 ${resumeLabel}` : ""}，答题记录保存在本机，可随时继续。</p>
+            </div>
+            <div className="map-resume-actions">
+              <button type="button" onClick={() => onOpenStage?.(current)}>继续测评</button>
+              <button type="button" className="is-ghost" onClick={resume.onRestart}>重新开始</button>
+            </div>
+          </div>
+        )}
         <div className="map-path" role="list" aria-label="五个闯关节点">
           {[1, 2, 3, 4, 5].map((number) => {
             const state = number < current ? "complete" : number === current ? "active" : "locked";
@@ -139,7 +157,7 @@ function getStorySpeaker(level, who) {
   return who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你";
 }
 
-function TaskStoryDialogue({ level, phase, lines, lineIndex, onAdvance }) {
+function TaskStoryDialogue({ level, phase, lines, lineIndex, onAdvance, onSkip }) {
   const line = lines[lineIndex];
   return (
     <div
@@ -164,6 +182,18 @@ function TaskStoryDialogue({ level, phase, lines, lineIndex, onAdvance }) {
         <span className="story-hint">
           {phase === "ending" && lineIndex === lines.length - 1 ? "点击完成本关 ▾" : "点击继续 ▾"}
         </span>
+        {onSkip && lineIndex < lines.length - 1 && (
+          <button
+            type="button"
+            className="story-skip"
+            onClick={(event) => {
+              event.stopPropagation();
+              onSkip();
+            }}
+          >
+            跳过对话
+          </button>
+        )}
       </div>
     </div>
   );
@@ -290,6 +320,7 @@ function ObjectiveTask({ stage, onComplete }) {
           lines={storyLines}
           lineIndex={lineIndex}
           onAdvance={advanceStory}
+          onSkip={() => setLineIndex(storyLines.length - 1)}
         />
       )}
 
@@ -531,6 +562,7 @@ function PracticalTask({ stage, onComplete }) {
         lines={storyLines}
         lineIndex={lineIndex}
         onAdvance={advanceStory}
+        onSkip={() => setLineIndex(storyLines.length - 1)}
       />
     )}
     <h2>{task.title}</h2>
@@ -562,6 +594,10 @@ function LiveDimensionStrip({ result }) {
   const dimensions = result?.dimensions ?? SCORING_DIMENSIONS;
   const answered = result?.answeredCount ?? 0;
   const total = result?.totalQuestions ?? COMPREHENSIVE_QUESTION_COUNT;
+  const complete = result?.status === "completed";
+  const missingDims = complete || !result
+    ? []
+    : dimensions.filter((dimension) => (dimension.evidenceCount ?? 0) === 0);
   return (
     <aside className="live-dimension-strip" aria-label="六维实时画像">
       <div className="live-dimension-head">
@@ -586,6 +622,13 @@ function LiveDimensionStrip({ result }) {
           </li>
         ))}
       </ul>
+      {!complete && (
+        <p className="live-dimension-note">
+          {missingDims.length > 0 && total - answered <= missingDims.length
+            ? `注意：剩余 ${total - answered} 题需覆盖 ${missingDims.map((dimension) => dimension.short).join("、")}，否则无法生成总分`
+            : "已完成题目的维度实时估计；完成全部题目后生成总分与等级"}
+        </p>
+      )}
     </aside>
   );
 }
@@ -596,6 +639,7 @@ function ComprehensiveTask({
   onSelectComprehensiveQuestion,
   onAnswerComprehensive,
   comprehensiveResult,
+  adaptiveTelemetry = null,
 }) {
   const level = getComprehensiveLevel(stage);
   const [question, setQuestion] = useState(null);
@@ -688,6 +732,40 @@ function ComprehensiveTask({
     setSelected((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]);
   };
 
+  // Keyboard answering: 1-4 / A-D pick an option, Enter submits or continues.
+  // Single/judge commit immediately on pick (pinned flow); multi just selects.
+  useEffect(() => {
+    if (phase !== "quiz" || !question) return undefined;
+    const keyIndex = (key) => {
+      const digits = { 1: 0, 2: 1, 3: 2, 4: 3 };
+      const letters = { a: 0, b: 1, c: 2, d: 3 };
+      return digits[key] ?? letters[key] ?? null;
+    };
+    const handleKey = (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const optionCount = question.options.length;
+      if (event.key === "Enter") {
+        if (result) {
+          event.preventDefault();
+          nextQuestion();
+        } else if (isMulti && canSubmit) {
+          event.preventDefault();
+          answer(selected);
+        }
+        return;
+      }
+      const index = keyIndex(event.key.toLowerCase());
+      if (index === null || index >= optionCount) return;
+      const option = question.options[index];
+      if (!option || result) return;
+      event.preventDefault();
+      if (isMulti) toggleMulti(option.key);
+      else answer([option.key]);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  });
+
   return (
     <div ref={taskRef} className="task-body comprehensive-task" data-phase={phase}>
       {(phase === "opening" || phase === "ending") && (
@@ -713,6 +791,18 @@ function ComprehensiveTask({
             <span className="story-hint">
               {phase === "ending" && lineIndex === storyLines.length - 1 ? "点击完成本关 ▾" : "点击继续 ▾"}
             </span>
+            {lineIndex < storyLines.length - 1 && (
+              <button
+                type="button"
+                className="story-skip"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setLineIndex(storyLines.length - 1);
+                }}
+              >
+                跳过对话
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -724,11 +814,19 @@ function ComprehensiveTask({
       {phase === "quiz" && question && (
         <>
           <LiveDimensionStrip result={comprehensiveResult} />
+          {adaptiveTelemetry && (
+            <p className="adaptive-telemetry" aria-hidden="true">
+              {`自适应路由 · 目标难度 ${adaptiveTelemetry.target >= 0 ? "+" : ""}${adaptiveTelemetry.target.toFixed(2)} · 题型连击 ${adaptiveTelemetry.typeStreak} · 证据 ${adaptiveTelemetry.evidenceCount}`}
+            </p>
+          )}
           <h2>{question.q}</h2>
           <p className="quiz-brief">
             第 {questionIndex + 1} / {COMPREHENSIVE_QUESTION_COUNT} 题
             <i aria-hidden="true">•</i>
             {level.dims}
+            <i aria-hidden="true">•</i>
+            {COMPREHENSIVE_TYPE_LABELS[question.type]}
+            {isMulti ? "，选完点击提交，漏选可得部分分" : "，点击选项即提交"}
           </p>
           <div className="answer-options" role={isMulti ? "group" : "radiogroup"} aria-label={COMPREHENSIVE_TYPE_LABELS[question.type]}>
             {question.options.map((option) => {
@@ -772,7 +870,7 @@ function ComprehensiveTask({
 
           <div className="comprehensive-actions">
             {isMulti && !result
-              ? <TaskAction disabled={!canSubmit} onClick={() => answer(selected)} label="提交答案" variant="comprehensive" />
+              ? <TaskAction disabled={!canSubmit} onClick={() => answer(selected)} label={selected.length ? `提交答案（已选 ${selected.length} 项）` : "提交答案"} variant="comprehensive" />
               : result ? <TaskAction disabled={false} onClick={nextQuestion} label={isLastQuestion ? "完成本关" : "继续"} variant="comprehensive" /> : null}
           </div>
         </>
@@ -791,6 +889,7 @@ export function AssessmentTask({
   onSelectComprehensiveQuestion,
   onAnswerComprehensive,
   comprehensiveResult,
+  adaptiveTelemetry = null,
   busy,
 }) {
   const theme = ASSESSMENT_THEMES[id];
@@ -813,6 +912,7 @@ export function AssessmentTask({
           onSelectComprehensiveQuestion={onSelectComprehensiveQuestion}
           onAnswerComprehensive={onAnswerComprehensive}
           comprehensiveResult={comprehensiveResult}
+          adaptiveTelemetry={adaptiveTelemetry}
         />
         : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>

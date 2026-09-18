@@ -1,0 +1,21 @@
+/* Design tokens: the single source for grade colours, elevation and radii.
+   Panels may keep their local values, but NEW surfaces and anything showing a
+   grade letter must read from here so S/A/B/C/D read identically everywhere. */
+:root {
+  /* Grade semantics: S gold, A violet, B blue, C teal, D rose-grey. */
+  --grade-s: #c99700;
+  --grade-a: #635bff;
+  --grade-b: #2f7cf6;
+  --grade-c: #159f8c;
+  --grade-d: #8a94a6;
+
+  /* Elevation ladder: cards, floating panels, modals. */
+  --shadow-1: 0 1px 2px rgb(18 24 38 / 0.06), 0 2px 8px rgb(18 24 38 / 0.05);
+  --shadow-2: 0 4px 14px rgb(18 24 38 / 0.09), 0 12px 34px rgb(18 24 38 / 0.07);
+  --shadow-3: 0 12px 34px rgb(18 24 38 / 0.16), 0 30px 70px rgb(18 24 38 / 0.14);
+
+  /* Radius scale. */
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+}
