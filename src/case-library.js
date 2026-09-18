@@ -107,12 +107,51 @@ export function isDefaultJourney(list, fallback) {
   return list.length === fallback.length && list.every((key, i) => key === fallback[i]);
 }
 
+/** Is this saved list just the grouped default a previous build shipped?
+ *
+ * The default journey used to be `[...archive covers, newest, ...live scenes]` —
+ * every cover contiguous and in ascending index order, then every scene in
+ * `CASES` order. That shape is not a preference, it is the arrangement of the
+ * build that wrote it, so honouring it pins the very grouping the interleaved
+ * default exists to replace: every reader who ever opened the poster would keep
+ * seeing all the covers first, whatever the new default said.
+ *
+ * The test is deliberately strict. Only a list that is *exactly* covers-then-
+ * scenes (after dropping keys this build no longer has) is treated as stale; one
+ * the reader reordered by hand — even by moving a single case — fails the
+ * comparison and is kept as their preference, which is the whole reason a saved
+ * list wins at all. */
+export function isStaleGroupedJourney(value, validKeys, fallback) {
+  if (!Array.isArray(value) || !value.length) return false;
+  const valid = new Set(validKeys);
+  const seen = new Set();
+  const saved = [];
+  for (const key of value) {
+    if (typeof key !== "string" || !valid.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    saved.push(key);
+  }
+  const index = (key) => Number(key.split(":")[1]);
+  const grouped = [
+    ...fallback.filter((key) => key.startsWith("archive:")).sort((a, b) => index(a) - index(b)),
+    ...fallback.filter((key) => key.startsWith("live:")),
+  ];
+  // A subset is still the grouped arrangement — an older build may not have had
+  // every case that exists now, and `normalizeJourney` would append the rest.
+  if (saved.length > grouped.length) return false;
+  return saved.every((key, i) => key === grouped[i]);
+}
+
 export function readJourney(validKeys, fallback, max = JOURNEY_MAX) {
   if (typeof window === "undefined") return fallback.slice(0, max);
   try {
     const stored = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
     if (!stored) return fallback.slice(0, max);
-    return normalizeJourney(JSON.parse(stored), validKeys, fallback, max);
+    const parsed = JSON.parse(stored);
+    // A stale shipped default is not a preference — fall through to the current
+    // one. The caller persists the result, so the old list is replaced on mount.
+    if (isStaleGroupedJourney(parsed, validKeys, fallback)) return fallback.slice(0, max);
+    return normalizeJourney(parsed, validKeys, fallback, max);
   } catch {
     return fallback.slice(0, max);
   }

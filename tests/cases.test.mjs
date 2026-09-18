@@ -5,7 +5,9 @@ import { getCaseLayers } from "../src/case-buffer.js";
 import {
   addJourneyKey,
   isDefaultJourney,
+  isStaleGroupedJourney,
   JOURNEY_MIN,
+  readJourney,
   moveJourney,
   normalizeJourney,
   removeJourneyKey,
@@ -408,6 +410,87 @@ test("a stored journey is filtered against the pool and falls back when unusable
   assert.deepEqual(normalizeJourney(null, pool, ["a"]), ["a"]);
   assert.deepEqual(normalizeJourney(["gone"], pool, ["a"]), ["a"]);
   assert.ok(isDefaultJourney(["a", "b"], ["a", "b"]));
+  assert.ok(!isDefaultJourney(["b", "a"], ["a", "b"]));
+  assert.ok(!isDefaultJourney(["a"], ["a", "b"]));
+});
+
+test("a saved journey that is only the old grouped default is replaced", async () => {
+  // The default journey used to be `[...archive covers, ...live scenes]` — every
+  // cover contiguous, then every scene. A reader who loaded that build has that
+  // arrangement saved, and the saved list wins over the default, so without this
+  // check the interleaved default never reaches them: the poster keeps showing
+  // all the covers first no matter what the code now says. Verified in a browser
+  // against a seeded old list: it rendered AAAAAAALLLLL before, ALALLALALALA
+  // after.
+  const fallback = [
+    "archive:0", "archive:2", "live:a", "archive:1", "live:b", "live:c",
+  ];
+  const validKeys = fallback.slice();
+
+  // Exactly the grouped shape (covers ascending, then scenes) is stale.
+  assert.ok(isStaleGroupedJourney(
+    ["archive:0", "archive:1", "archive:2", "live:a", "live:b", "live:c"],
+    validKeys, fallback,
+  ));
+  // A prefix of it is stale too: an older build simply had fewer cases.
+  assert.ok(isStaleGroupedJourney(
+    ["archive:0", "archive:1", "archive:2"], validKeys, fallback,
+  ));
+
+  // Anything a reader actually moved is their preference and must survive.
+  assert.ok(!isStaleGroupedJourney(
+    ["archive:0", "archive:2", "archive:1", "live:a", "live:b", "live:c"],
+    validKeys, fallback,
+  ), "two covers swapped is a reorder, not the shipped default");
+  assert.ok(!isStaleGroupedJourney(
+    ["live:a", "archive:0", "archive:1", "archive:2", "live:b", "live:c"],
+    validKeys, fallback,
+  ), "a scene moved to the front is a reorder");
+  assert.ok(!isStaleGroupedJourney(
+    ["archive:0", "archive:1", "live:a", "archive:2", "live:b", "live:c"],
+    validKeys, fallback,
+  ), "an interleaved list is a reorder");
+  // Degenerate inputs are not the old default either.
+  assert.ok(!isStaleGroupedJourney([], validKeys, fallback));
+  assert.ok(!isStaleGroupedJourney(null, validKeys, fallback));
+  assert.ok(!isStaleGroupedJourney("nope", validKeys, fallback));
+
+  // The helper being right is not the point — `readJourney` has to consult it,
+  // or a reader who loaded the old build still gets the grouped order. Drive the
+  // real function against a stubbed storage: this is what a missing guard fails,
+  // and `isStaleGroupedJourney` alone passing proves nothing.
+  const grouped = ["archive:0", "archive:1", "archive:2", "live:a", "live:b", "live:c"];
+  const saved = {
+    window: globalThis.window,
+    localStorage: globalThis.localStorage,
+  };
+  const store = (value) => {
+    globalThis.window = {
+      localStorage: {
+        getItem: () => (value === null ? null : JSON.stringify(value)),
+        setItem: () => {},
+      },
+    };
+  };
+  try {
+    store(grouped);
+    assert.deepEqual(
+      readJourney(validKeys, fallback),
+      fallback,
+      "the old grouped default must be replaced by the current journey",
+    );
+    // A reordered list still wins.
+    const manual = ["live:a", "archive:1", "archive:0", "archive:2", "live:b", "live:c"];
+    store(manual);
+    assert.deepEqual(readJourney(validKeys, fallback), manual);
+    // And nothing saved at all falls back.
+    store(null);
+    assert.deepEqual(readJourney(validKeys, fallback), fallback);
+  } finally {
+    globalThis.window = saved.window;
+    if (saved.localStorage === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = saved.localStorage;
+  }
   assert.ok(!isDefaultJourney(["b", "a"], ["a", "b"]));
   assert.ok(!isDefaultJourney(["a"], ["a", "b"]));
 });
