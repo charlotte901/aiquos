@@ -17,8 +17,12 @@ import {
   normalizeCaseIndex,
 } from "../src/cases.js";
 
-test("the four selected cases have real local entry points; pixel pirate is excluded", async () => {
-  assert.equal(CASES.length, 4);
+test("the selected cases have real local entry points; pixel pirate is excluded", async () => {
+  // The count is not asserted: this is a list of content, and pinning its size
+  // made the test fail whenever a case was added or removed even though every
+  // entry it listed was still valid. What matters is that ids are unique and
+  // each one points at a file that actually exists.
+  assert.ok(CASES.length > 0, "there should be at least one case");
   assert.ok(!CASES.some((item) => item.id === "pirate-pixel"));
   assert.equal(new Set(CASES.map((item) => item.id)).size, CASES.length);
   for (const item of CASES)
@@ -145,7 +149,7 @@ test("the archive exposes wheel-independent paging controls", async () => {
   assert.match(archive, /SCROLL · SWIPE · DRAG/);
 });
 
-test("the case pool is the archive plus the live scenes, and the default journey is the six archive covers plus four live", async () => {
+test("the case pool is the archive plus the live scenes, and the default journey fills the cap", async () => {
   const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   // No exports beyond the two components: non-component exports from a JSX
   // module invalidate React Fast Refresh.
@@ -158,11 +162,26 @@ test("the case pool is the archive plus the live scenes, and the default journey
   // cards the reader is already looking at.
   assert.match(archive, /entry\.world = POSTER_WORLDS\[poolIndex % POSTER_WORLDS\.length\]/);
   assert.match(archive, /^const DEFAULT_JOURNEY_KEYS = \[/m);
-  assert.match(archive, /\.\.\.CASE_PROJECTS\.slice\(0, 6\)\.map\(\(_, index\) => `archive:\$\{index\}`\)/);
   assert.match(archive, /\.\.\.LIVE_CASES\.map\(\(item\) => `live:\$\{item\.id\}`\)/);
   assert.match(archive, /featuredProject\.type === "archive"/);
   assert.match(archive, /total=\{journeyCount\}/);
   assert.match(archive, /<CaseScreen config=\{project\} active preload=\{false\} \/>/);
+
+  // The default journey must fill the cap rather than hard-coding a count. A
+  // literal six here is exactly what drifted out of step when the cap became
+  // twenty, so the size is asserted through JOURNEY_MAX instead.
+  const { JOURNEY_MAX } = await import("../src/case-library.js");
+  assert.match(archive, /\.slice\(0, JOURNEY_MAX\)/);
+  assert.match(
+    archive,
+    /JOURNEY_MAX - LIVE_CASES\.length - 1/,
+    "the archive share must be derived from the cap",
+  );
+  // The newest cover has its own slot: appended cases are never reached by a
+  // front-fill slice, which is why the freshly added case was invisible.
+  assert.match(archive, /const NEWEST_ARCHIVE_KEY = `archive:\$\{CASE_PROJECTS\.length - 1\}`/);
+  assert.ok(JOURNEY_MAX === 20, "the poster should open with twenty cases");
+
   const stamp = archive.slice(
     archive.indexOf("function PosterStamp"),
     archive.indexOf("function JourneyEditor"),
@@ -194,7 +213,9 @@ test("the case library can reorder, add to and remove from the journey", async (
   assert.match(archive, /disabled=\{index === lastIndex\}/);
   // The journey can never be emptied, and edits are kept in this browser.
   assert.match(archive, /disabled=\{journey\.length <= JOURNEY_MIN\}/);
-  assert.match(archive, /readJourney\(CASE_POOL_KEYS, DEFAULT_JOURNEY_KEYS\)/);
+  // The cap travels with the read, so a saved journey that predates newly added
+  // cases can adopt them without growing past what the editor allows.
+  assert.match(archive, /readJourney\(CASE_POOL_KEYS, DEFAULT_JOURNEY_KEYS, JOURNEY_MAX\)/);
   assert.match(archive, /writeJourney\(journeyKeys\)/);
   assert.match(archive, /isDefault=\{isDefaultJourney\(journeyKeys, DEFAULT_JOURNEY_KEYS\)\}/);
   // Shrinking the journey reels the reader back in and cancels a page change in
@@ -273,7 +294,10 @@ test("the journey editor reorders, adds and removes without damaging the list", 
 test("a stored journey is filtered against the pool and falls back when unusable", () => {
   const pool = ["a", "b", "c"];
   assert.deepEqual(normalizeJourney(["c", "a"], pool, ["a"]), ["c", "a"]);
-  assert.deepEqual(normalizeJourney(["c", "gone", "c", 7], pool, ["b"]), ["c"]);
+  // Invalid entries are dropped, and the saved order is kept. The default's `b`
+  // is adopted on the end, because the saved list predates it — see the test
+  // below for why that matters.
+  assert.deepEqual(normalizeJourney(["c", "gone", "c", 7], pool, ["b"]), ["c", "b"]);
   assert.deepEqual(normalizeJourney([], pool, ["a", "b"]), ["a", "b"]);
   assert.deepEqual(normalizeJourney("nope", pool, ["a"]), ["a"]);
   assert.deepEqual(normalizeJourney(null, pool, ["a"]), ["a"]);
@@ -281,6 +305,33 @@ test("a stored journey is filtered against the pool and falls back when unusable
   assert.ok(isDefaultJourney(["a", "b"], ["a", "b"]));
   assert.ok(!isDefaultJourney(["b", "a"], ["a", "b"]));
   assert.ok(!isDefaultJourney(["a"], ["a", "b"]));
+});
+
+test("a case added after the journey was saved still reaches the poster", () => {
+  // The regression this covers: a reader who had visited before held a saved
+  // journey in localStorage. Any saved list with at least JOURNEY_MIN entries won
+  // outright, so a case added to the pool afterwards was never shown on the
+  // poster — it was in the library and on the wheel, but not where the reader
+  // lands. Treating the saved list as an order preference rather than a fixed
+  // membership is what fixes it.
+  const pool = ["archive:0", "archive:1", "live:old", "live:new"];
+  const saved = ["archive:0", "archive:1", "live:old"];
+  const fallback = ["archive:0", "archive:1", "live:old", "live:new"];
+
+  const result = normalizeJourney(saved, pool, fallback);
+  assert.ok(result.includes("live:new"), "the new case must be reachable");
+  // The saved order still leads, so a deliberate reorder is not undone.
+  assert.deepEqual(result.slice(0, saved.length), saved, "saved order is kept at the front");
+
+  // It must not grow past the cap the editor enforces.
+  const many = Array.from({ length: 30 }, (_, i) => `k${i}`);
+  const capped = normalizeJourney([], many, many, 20);
+  assert.equal(capped.length, 20, "the adopted list respects the cap");
+
+  // A case the reader deleted is filtered out of the pool upstream, so it can
+  // never be reintroduced by the adoption step.
+  const pruned = normalizeJourney(["archive:0"], ["archive:0"], fallback);
+  assert.deepEqual(pruned, ["archive:0"], "a deleted case stays deleted");
 });
 
 test("the developer panel is a flat tool surface, not a second poster page", async () => {
@@ -363,6 +414,150 @@ test("poster colours are validated before they reach the stylesheet", async () =
     { a: { background: "#111111", ink: "#eeeeee" } },
   );
   assert.deepEqual(normalizeColors(null, ["a"], defaults), {});
+});
+
+test("the opened case sits on a blurred copy of its own artwork, never a crop", async () => {
+  const css = await readFile(new URL("../src/responsive.css", import.meta.url), "utf8");
+  const rule = (sel) => {
+    const m = css.match(new RegExp(`${sel.replace(/[.*+?^$()|[\]\\]/g, "\\$&")} \\{[\\s\\S]*?\\n\\}`));
+    assert.ok(m, `${sel} should exist`);
+    return m[0];
+  };
+
+  // The backdrop is the same file, blurred, and tinted with the case's own
+  // ground: the detail view must not invent a colour the piece never had.
+  const blur = rule(".case-detail.is-immersive .case-detail-blur");
+  assert.match(blur, /background-image: var\(--detail-art\)/);
+  assert.match(blur, /filter: blur\(/);
+  // Oversized so the blur's soft edge cannot expose a bare rim at the borders.
+  assert.match(blur, /inset: calc\(-1 \*/);
+  assert.match(blur, /pointer-events: none/);
+
+  // The veil darkens but must not tint: tinting with the poster's decorative
+  // `--detail-ground` turned a coral poster muddy lavender under the site pink.
+  const veil = rule(".case-detail.is-immersive .case-detail-veil");
+  assert.match(veil, /radial-gradient/);
+  assert.ok(
+    !/var\(--detail-ground/.test(veil),
+    "the veil must darken, not tint with the site palette",
+  );
+
+  // The artwork itself is shown whole. `cover` was what cropped it before.
+  const img = rule(".case-detail.is-immersive .case-detail-figure img");
+  assert.match(img, /object-fit: contain/);
+  assert.ok(!/object-fit: cover/.test(img), "the artwork must not be cropped");
+  assert.match(img, /max-height: 100%/);
+  assert.ok(!/filter:/.test(img), "the artwork itself must stay unblurred");
+
+  // A blurred backdrop over a real image is exactly the case where a text scrim
+  // is no longer needed, so the old double-gradient overlay must be gone.
+  assert.match(css, /\.case-detail\.is-immersive \.case-detail-figure::after \{\s*content: none;/);
+
+  const jsx = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  // Both custom properties are fed from the case itself, and the decorative
+  // layers are hidden from assistive tech.
+  assert.match(jsx, /"--detail-art": `url\("\$\{artwork\}"\)`/);
+  assert.match(jsx, /"--detail-ground": project\.world\?\.background/);
+  assert.match(jsx, /className="case-detail-blur" aria-hidden="true"/);
+  assert.match(jsx, /className="case-detail-veil" aria-hidden="true"/);
+});
+
+test("the last ice ships as a case with its own poster and copy", async () => {
+  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  assert.match(src, /title: "The Last Ice"/);
+  assert.match(src, /tags: "AI Art Direction, Poster"/);
+  // The artwork must exist at the index the case resolves to, or the poster and
+  // the detail view would both 404. The case is appended last, so its image is
+  // one past the previous total.
+  const titles = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0].match(/title: "/g) ?? [];
+  const image = new URL(`../public/assets/cases/${titles.length}.webp`, import.meta.url);
+  const bytes = await readFile(image);
+  assert.ok(bytes.length > 1000, "the case artwork should be a real image");
+  // WebP magic: RIFF....WEBP.
+  assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF");
+  assert.equal(bytes.subarray(8, 12).toString("ascii"), "WEBP");
+});
+
+test("an opened case is centred, with the copy split either side of it", async () => {
+  const css = await readFile(new URL("../src/responsive.css", import.meta.url), "utf8");
+  const body = css.match(/\.case-detail\.is-immersive \.case-detail-body \{[\s\S]*?\n\}/)[0];
+
+  // The artwork has to land in the middle: the stamp the reader clicks is
+  // centred on the poster, so anything else makes the transition jump sideways.
+  const cols = body.match(/grid-template-columns:\s*([^;]+);/)[1];
+  // Split on `minmax(...)` groups rather than whitespace: each track contains a
+  // space of its own ("minmax(0, 1.3fr)"), so a naive split tears them in half.
+  const parts = cols.match(/minmax\([^)]*\)/g) ?? [];
+  assert.equal(parts.length, 3, `expected three columns, got: ${cols}`);
+  // The two sides must be equal, or the middle column is only between them
+  // rather than genuinely centred.
+  assert.equal(parts[2], parts[0], "the two side columns must match so the piece is centred");
+  const width = (track) => Number(track.match(/([\d.]+)fr/)[1]);
+  assert.ok(
+    width(parts[1]) > width(parts[0]),
+    `the artwork column must be the widest so the piece stays large: ${cols}`,
+  );
+
+  const jsx = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  // The metadata lives in its own left column and is immersive-only, so the
+  // plain detail layout keeps its single stacked panel.
+  assert.match(jsx, /className="case-detail-aside is-meta"/);
+  assert.match(jsx, /case-detail-aside is-meta[\s\S]{0,400}?case-detail-index/);
+  assert.match(jsx, /\{immersive && \(\s*<div className="case-detail-aside is-meta">/);
+
+  // The description is split across the two side columns, and the split must be
+  // lossless: it is the same copy divided, not a summary plus a body.
+  const split = jsx.match(/function splitDescription\(text\) \{[\s\S]*?\n\}/);
+  assert.ok(split, "splitDescription should exist");
+  const splitDescription = (text) => {
+    const value = typeof text === "string" ? text.trim() : "";
+    const m = value.match(/^([\s\S]*?[。！？])\s*([\s\S]*)$/);
+    if (!m || !m[2].trim()) return { lead: "", body: value };
+    return { lead: m[1], body: m[2].trim() };
+  };
+  const full = "第一句说明。第二句补充细节。";
+  const { lead, body: rest } = splitDescription(full);
+  assert.equal(lead, "第一句说明。");
+  assert.equal(rest, "第二句补充细节。");
+  assert.equal(lead + rest, full, "lead + body must reproduce the original exactly");
+  // A description with no sentence break must not lose its text to the lead.
+  assert.deepEqual(splitDescription("没有句号的短句"), { lead: "", body: "没有句号的短句" });
+  assert.deepEqual(splitDescription(""), { lead: "", body: "" });
+
+  // Every shipped description really does split, so no case silently puts its
+  // whole text on one side.
+  const block = jsx.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
+  const descriptions = [...block.matchAll(/description:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g)]
+    .map((m) => JSON.parse(`"${m[1]}"`));
+  for (const [i, text] of descriptions.entries()) {
+    const parts = splitDescription(text);
+    assert.ok(parts.lead, `case ${i + 1} has no standfirst to show on the left`);
+    assert.equal(parts.lead + parts.body, text, `case ${i + 1} loses copy in the split`);
+  }
+});
+
+test("every case has Chinese copy that is actually distinct", async () => {
+  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  const block = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
+  const descriptions = [...block.matchAll(/description:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g)]
+    .map((m) => JSON.parse(`"${m[1]}"`));
+
+  // Count the entries rather than pinning a literal total: the pool is content,
+  // and a hard-coded number is what made this test fail when cases were removed
+  // even though every remaining case was still correct.
+  const caseCount = [...block.matchAll(/title: "/g)].length;
+  assert.equal(descriptions.length, caseCount, "every case needs a description");
+  assert.ok(caseCount > 0, "the pool should not be empty");
+  for (const [i, text] of descriptions.entries()) {
+    assert.ok(text.length >= 40, `case ${i + 1} has stub copy: ${text}`);
+    assert.match(text, /[\u4e00-\u9fa5]/, `case ${i + 1} is not in Chinese: ${text}`);
+  }
+  // Duplicated blurbs would mean a copy/paste slip while rewriting them.
+  assert.equal(
+    new Set(descriptions).size,
+    descriptions.length,
+    "every case needs its own copy, not a repeated one",
+  );
 });
 
 test("scene children are individually keyed so a page change cannot recycle a slot", async () => {
@@ -533,7 +728,14 @@ test("the two carousel arrows share one inset formula in every layout", async ()
 });
 
 test("every featured stamp cover is a local lightweight image", async () => {
-  for (let index = 1; index <= 6; index++) {
+  // Derived from the pool rather than a hard-coded range: the archive count is
+  // content, and a literal bound here silently stopped covering the last case
+  // each time one was added.
+  const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  const block = archive.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
+  const posters = [...block.matchAll(/title: "/g)].length;
+  assert.ok(posters > 0, "the archive should not be empty");
+  for (let index = 1; index <= posters; index++) {
     await access(new URL(`../public/assets/cases/${index}.webp`, import.meta.url));
   }
   for (const item of CASES) {
@@ -541,9 +743,177 @@ test("every featured stamp cover is a local lightweight image", async () => {
   }
 });
 
+test("a bundled scene carries its assets inline instead of fetching them", async () => {
+  // Showcase scenes run inside `<iframe sandbox="allow-scripts">`, which gives
+  // them an opaque origin. In that origin every network request fails — even a
+  // same-origin fetch of a sibling file — so a scene that loads an external model
+  // or texture can never start, and shows its loading state forever.
+  //
+  // The bundled `scene.js` is therefore the contract: if a scene needs an asset,
+  // the bytes have to be inside the bundle. This checks that the penguin scene,
+  // which is built from a .glb, has its model inlined rather than referenced.
+  const scene = await readFile(
+    new URL("../public/cases/penguin/scene.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(scene, /data:application\/octet-stream;base64,/, "the model must be inlined");
+  // A leftover URL reference would mean the scene still tries to fetch it.
+  assert.doesNotMatch(
+    scene,
+    /["'`](?:\.\/)?model\.glb["'`]/,
+    "the bundle must not reference model.glb by URL",
+  );
+
+  // The build has to know how to inline it, or the next rebuild silently
+  // regresses to a fetching bundle.
+  const build = await readFile(new URL("../scripts/build-cases.mjs", import.meta.url), "utf8");
+  assert.match(build, /loader:\s*\{\s*"\.glb":\s*"dataurl"\s*\}/);
+});
+
 test("the archive transition clamps early frames and always settles when rAF is throttled", async () => {
   const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   assert.match(archive, /Math\.min\(1, Math\.max\(0, \(now - startedAt\) \/ duration\)\)/);
   assert.match(archive, /window\.setTimeout\(finish, duration \+ 140\)/);
   assert.match(archive, /window\.clearTimeout\(animationFallback\.current\)/);
+});
+
+test("every live case has its own detail copy and artwork", async () => {
+  // Two silent failures this covers, both of which shipped once already.
+  //
+  // 1. `LIVE_CASE_DETAILS` is spread by id (`...LIVE_CASE_DETAILS[item.id]`).
+  //    A missing key spreads `undefined` without throwing, so the case appears
+  //    everywhere except with a title, tags or description — a blank detail view
+  //    that looks like a layout bug rather than a missing entry.
+  // 2. The detail artwork used to be addressed positionally, which for a live
+  //    case resolved to an unrelated archive poster and then blurred that poster
+  //    behind the piece. It has to come from the case's own cover.
+  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  const block = src.match(/const LIVE_CASE_DETAILS = \{[\s\S]*?\n\};/)[0];
+
+  for (const item of CASES) {
+    // Keys appear bare or quoted depending on the id, so accept either form.
+    const entry =
+      block.match(new RegExp(`\\n  ${item.id}: \\{[\\s\\S]*?\\n  \\},`)) ??
+      block.match(new RegExp(`\\n  "${item.id}": \\{[\\s\\S]*?\\n  \\},`));
+    assert.ok(entry, `${item.id} is missing from LIVE_CASE_DETAILS`);
+
+    // Every field the detail view renders has to be present and non-empty.
+    for (const field of ["title", "tags", "year", "description"]) {
+      const value = entry[0].match(new RegExp(`\\b${field}:\\s*("[^"]*"|\\d+)`));
+      assert.ok(value, `${item.id}.${field} is missing`);
+      assert.ok(
+        value[1] !== '""',
+        `${item.id}.${field} must not be empty`,
+      );
+    }
+
+    // A single-sentence description leaves the immersive split with an empty
+    // left column, which is the imbalance the standfirst exists to prevent.
+    const description = entry[0].match(/description:\s*\n?\s*"([^"]*)"/)[1];
+    assert.ok(
+      /[。！？]/.test(description.replace(/^[^。！？]*[。！？]/, "")),
+      `${item.id} needs a second sentence to fill the standfirst`,
+    );
+
+    // And the cover it will be shown and blurred from must exist.
+    await access(new URL(`../public/assets/case-covers/${item.id}.webp`, import.meta.url));
+  }
+
+  // The artwork must resolve from the case, not from its position in the pool.
+  assert.match(src, /const artwork = project\.cover \?\? projectImage\(index\);/);
+});
+
+test("every case kind has a renderer, and a still is never loaded as a scene", async () => {
+  // `kind` used to be a binary: "video" rendered a <video>, and everything else
+  // was handed to a sandboxed iframe that appends `&preload=1` and waits for an
+  // `aiquos:ready` message. A still satisfies neither contract — it is not a film
+  // and it has no scene to hand a visibility message to — so adding one without a
+  // matching branch would load the image URL as a document and show the loading
+  // state forever.
+  const screen = await readFile(new URL("../src/CaseScreen.jsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/cases.css", import.meta.url), "utf8");
+
+  const kinds = new Set(CASES.map((item) => item.kind));
+  assert.ok(kinds.has("still"), "the moon-route case should exercise the still kind");
+
+  // `scene` is the fallback branch rather than a named test, so only the kinds
+  // that need their own branch are required to name themselves.
+  for (const kind of kinds) {
+    if (kind === "scene") continue;
+    assert.match(
+      screen,
+      new RegExp(`config\\.kind === "${kind}"`),
+      `CaseScreen has no branch for kind="${kind}"`,
+    );
+  }
+  // Anything not named falls through to the iframe, which is the scene contract.
+  assert.match(screen, /config\.kind === "still" \? \([\s\S]*?\) : \(\s*<iframe/);
+
+  // The still branch has to be an <img>: only an image fires `load`, which is the
+  // signal this branch uses to mark the case ready.
+  assert.match(screen, /config\.kind === "still" \? \([\s\S]*?<img[\s\S]*?onLoad=\{markReady\}/);
+  assert.match(css, /\.case-layer > \.case-still \{[\s\S]*?object-fit: cover/);
+
+  // The repaint nudge is for live scenes only; it would spin for nothing on a
+  // film and on a still, neither of which has a frame to re-assert.
+  assert.match(screen, /if \(!visible \|\| config\.kind !== "scene"\) return;/);
+
+  // A still has no interaction, so it must not advertise one.
+  const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  assert.match(archive, /project\.kind === "still"[\s\S]*?AI 生成 · 整版呈现/);
+
+  // And its asset has to exist at the path the manifest points at.
+  for (const item of CASES.filter((entry) => entry.kind === "still")) {
+    await access(new URL(`../public${item.src}`, import.meta.url));
+  }
+});
+
+test("case copy states the AI capability, not just the medium", async () => {
+  // These cases exist to answer one question for a visitor about to take the
+  // assessment: what can AI actually make right now? Copy that only names the
+  // medium ("实时 3D", "像素游戏") describes a file format and answers nothing.
+  //
+  // This is not a style preference to be re-litigated per case — it is the reason
+  // the section is on the page — so it is enforced here.
+  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  const block = src.match(/const LIVE_CASE_DETAILS = \{[\s\S]*?\n\};/)[0];
+
+  for (const item of CASES) {
+    const entry =
+      block.match(new RegExp(`\\n  ${item.id}: \\{[\\s\\S]*?\\n  \\},`)) ??
+      block.match(new RegExp(`\\n  "${item.id}": \\{[\\s\\S]*?\\n  \\},`));
+    assert.ok(entry, `${item.id} is missing from LIVE_CASE_DETAILS`);
+
+    // The opening sentence becomes the standfirst, so it has to carry the claim.
+    const description = entry[0].match(/description:\s*\n?\s*"([^"]*)"/)[1];
+    const standfirst = description.match(/^([\s\S]*?[。！？])/)[1];
+    assert.match(
+      standfirst,
+      /AI|模型|一句话|生成/,
+      `${item.id}'s standfirst must name what the AI did: "${standfirst}"`,
+    );
+
+    // And the short line shown under the piece on every screen must too.
+    const item_ = CASES.find((entry) => entry.id === item.id);
+    assert.match(
+      item_.detail,
+      /AI|一句话/,
+      `${item.id}'s tagline must name the capability: "${item_.detail}"`,
+    );
+  }
+
+  // The archive entries share the same wheel, so they carry the same obligation.
+  // They are concept pieces, so they state the AI role rather than claiming the
+  // whole artefact was generated.
+  const archive = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
+  const archiveDescriptions = [...archive.matchAll(/description:\s*\n?\s*"([^"]*)"/g)];
+  assert.ok(archiveDescriptions.length > 0, "the archive should not be empty");
+  for (const [, text] of archiveDescriptions) {
+    const standfirst = text.match(/^([\s\S]*?[。！？])/)[1];
+    assert.match(
+      standfirst,
+      /AI/,
+      `every archive standfirst must name the AI role: "${standfirst}"`,
+    );
+  }
 });

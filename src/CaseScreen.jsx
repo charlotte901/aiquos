@@ -93,7 +93,9 @@ function CaseLayer({ config, visible, outgoing, active, onReady, onDispose }) {
   // activation state on a slow beat while this layer is the visible one —
   // paused stays paused (login turn), active always repaints.
   useEffect(() => {
-    if (!visible || config.kind === "video") return;
+    // Only a live scene has a frame to re-assert; a film handles its own
+    // playback and a still has nothing to repaint.
+    if (!visible || config.kind !== "scene") return;
     const nudge = () =>
       media.current?.contentWindow?.postMessage(
         { type: "aiquos:visibility", active: activeRef.current === true },
@@ -114,6 +116,21 @@ function CaseLayer({ config, visible, outgoing, active, onReady, onDispose }) {
           aria-label={`${config.name} · ${config.detail}`}
           onLoadedData={markReady} onCanPlay={syncPlayback}
           onError={() => { setFailed(true); onReady(config.id); }} />
+      ) : config.kind === "still" ? (
+        // A still is neither a film nor a live scene: there is nothing to play
+        // and no scene to hand a visibility message to. It marks itself ready on
+        // load, which is the whole handshake.
+        //
+        // `focus` is the one per-case say over the crop. The sheet in the
+        // stylesheet is tuned for a newspaper page; a document with a different
+        // aspect has its own idea of what the top of the page is, so the case
+        // carries a position and the default stands when it does not.
+        <img key={attempt} ref={media} src={config.src}
+          className="case-still" alt={`${config.name} · ${config.detail}`}
+          style={config.focus ? { objectPosition: config.focus } : undefined}
+          draggable="false" decoding="async"
+          onLoad={markReady}
+          onError={() => { setFailed(true); onReady(config.id); }} />
       ) : (
         <iframe key={attempt} ref={media}
           src={`${config.src}&preload=1`}
@@ -133,7 +150,7 @@ function CaseLayer({ config, visible, outgoing, active, onReady, onDispose }) {
         <span><strong>{config.name}</strong><small>{config.detail}</small></span>
         {config.kind === "video" && (
           <button className="case-audio" onClick={() => setMuted(!muted)}
-            aria-label={muted ? "开启 Wing It 解说声音" : "关闭 Wing It 解说声音"}>
+            aria-label={`${muted ? "开启" : "关闭"}${config.name}解说声音`}>
             {muted ? <SpeakerSlash weight="bold" /> : <SpeakerHigh weight="bold" />}
           </button>
         )}

@@ -45,8 +45,20 @@ export function normalizeColors(value, validKeys, defaults) {
 }
 
 /** Keep only keys the pool actually has, drop duplicates, and fall back to the
- * default journey when nothing usable survives. */
-export function normalizeJourney(value, validKeys, fallback) {
+ * default journey when nothing usable survives.
+ *
+ * A saved journey is preferred over the default, because the reader may have
+ * reordered it by hand. That preference used to hide newly added cases forever:
+ * any saved list with at least one entry won outright, so a case added after the
+ * list was written never became reachable — it existed in the pool and on the
+ * library wheel, but not on the poster the reader actually lands on.
+ *
+ * The fix is to treat the saved list as a *preference about order*, not as a
+ * fixed membership: anything in the current default that the saved list omits is
+ * added on the end, up to the cap. A case the reader deliberately removed is
+ * unaffected — that lives in the separate removed-keys set and is filtered out of
+ * `validKeys` before this runs, so it can never be reintroduced here. */
+export function normalizeJourney(value, validKeys, fallback, max = JOURNEY_MAX) {
   const valid = new Set(validKeys);
   const seen = new Set();
   const out = [];
@@ -57,7 +69,16 @@ export function normalizeJourney(value, validKeys, fallback) {
       out.push(key);
     }
   }
-  return out.length >= JOURNEY_MIN ? out : fallback.slice();
+  if (out.length < JOURNEY_MIN) return fallback.slice(0, max);
+  // Adopt cases that the current default includes but this saved list predates,
+  // without letting the list grow past the cap the editor enforces.
+  for (const key of fallback) {
+    if (out.length >= max) break;
+    if (seen.has(key) || !valid.has(key)) continue;
+    seen.add(key);
+    out.push(key);
+  }
+  return out;
 }
 
 /** Lift one entry out and drop it back in at `to`, clamping the target so a
@@ -86,14 +107,14 @@ export function isDefaultJourney(list, fallback) {
   return list.length === fallback.length && list.every((key, i) => key === fallback[i]);
 }
 
-export function readJourney(validKeys, fallback) {
-  if (typeof window === "undefined") return fallback.slice();
+export function readJourney(validKeys, fallback, max = JOURNEY_MAX) {
+  if (typeof window === "undefined") return fallback.slice(0, max);
   try {
     const stored = window.localStorage.getItem(JOURNEY_STORAGE_KEY);
-    if (!stored) return fallback.slice();
-    return normalizeJourney(JSON.parse(stored), validKeys, fallback);
+    if (!stored) return fallback.slice(0, max);
+    return normalizeJourney(JSON.parse(stored), validKeys, fallback, max);
   } catch {
-    return fallback.slice();
+    return fallback.slice(0, max);
   }
 }
 

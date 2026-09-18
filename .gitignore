@@ -7,3 +7,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Editor autosave leftovers (copies of CaseArchive.jsx) — not source.
+src/XX*

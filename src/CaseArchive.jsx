@@ -28,289 +28,126 @@ import {
   writeRemovedKeys,
 } from "./case-library";
 
-const CASE_PROJECTS = [
-  {
+const CASE_PROJECTS = [  {
     title: "Aiquos Identity Refresh",
-    tags: "Branding, Website",
+    tags: "品牌重塑 · 视觉系统",
     year: 2025,
     description:
-      "以 AIQUOS 的粉色视觉为基底，重新整理标志、字体和页面节奏，让品牌在网站与展示物料之间保持同一种语气。",
-  },
-  {
+      "一次由 AI 参与收敛的品牌重塑。以原有的粉色为起点，标志的多个方向、字体配对与页面节奏都由模型先铺开，再由人挑出最安静的那一版——目标是让网站、印刷物和展陈物料说出同一种语气。",
+  },  {
     title: "Spatial Learning Toolkit",
-    tags: "Education, Product",
+    tags: "学习路径 · 空间模块",
     year: 2025,
     description:
-      "把学习路径转成可拖拽的空间模块，帮助学习者先看见任务结构，再进入具体练习和成果整理。",
-  },
-  {
+      "AI 把抽象的学习路径摊开成可以拖动的空间模块。信息架构与交互原型由模型快速铺出多套方案，人负责判断哪一种真的让人看得清任务的全貌和彼此的依赖关系。",
+  },  {
     title: "Studio Workflow Assistant",
-    tags: "Productivity, AI",
+    tags: "协作面板 · 流程梳理",
     year: 2025,
     description:
-      "为小型工作室设计的 AI 协作面板，将简报、素材、修改记录和交付检查放进同一条工作流。",
-  },
-  {
+      "AI 为小型工作室起草的协作面板。流程梳理、字段设计与说明文案都由模型先给出，把简报、素材、修改记录和交付检查收进同一条流程，减少在多个工具之间搬运信息的次数。",
+  },  {
     title: "Retail Navigation Concept",
-    tags: "Retail, Interactive",
+    tags: "门店导览 · 实时路线",
     year: 2024,
     description:
-      "通过实时导览和分层信息，减少实体零售空间中的寻找成本，让促销与路线信息保持安静而清晰。",
-  },
-  {
+      "AI 参与设计的门店导览概念。实时路线与分层信息如何降噪、促销信息该压到多低，都由模型先给出可比较的版本，再用真实动线验证——让指引只在需要的时候出现。",
+  },  {
     title: "Quiet City Guide",
-    tags: "Editorial, Mobile",
+    tags: "城市漫游 · 编辑体例",
     year: 2024,
     description:
-      "一组低干扰的城市漫游内容，用编辑式图片、短文和步行路线替代密集的评分列表。",
-  },
-  {
+      "AI 按编辑体例产出的低干扰城市漫游内容。图片筛选、短段落撰写与步行路线编排批量生成，人再删掉多余的部分，让散步重新变成一件可以自己发现事情的过程。",
+  },  {
     title: "Modular Sound Archive",
-    tags: "Culture, Web",
+    tags: "声音档案 · 片段重组",
     year: 2024,
     description:
-      "把声音档案拆成可组合的片段，访问者能够按地点、时间和材质重新编排自己的听觉路径。",
-  },
-  {
-    title: "Field Research Atlas",
-    tags: "Research, Data",
-    year: 2024,
+      "AI 把声音档案拆成了可组合的片段。素材的标签体系与检索维度由模型从原始录音中提取，访问者能按地点、时间和材质重新编排自己的听觉路径，同一批素材可以拼出完全不同的叙事。",
+  },  {
+    title: "The Last Ice",
+    tags: "海报设计 · 视觉定稿",
+    year: 2026,
     description:
-      "将田野记录、照片和统计数据叠放在同一张地图中，方便团队比较不同区域的变化过程。",
+      "为一部虚构的气候短片设计的海报，视觉方向由 AI 生成、人来定稿。一块巨大的冰被当作棚拍产品来打光，冰里封着一把鲜红的塑料椅，荒谬却拍得像真的。珊瑚橘的纸面上只留大片空白，所有信息都用贴纸完成——深蓝的片名、写着 42°C 的圆标、银灰的 KEEP UNTIL SUNSET、红底编号 03，全部歪斜、卷边、裁切不齐。手写的一句 “it was still cold when we left.” 让整张海报停在一种安静的荒谬上。",
   },
-  {
-    title: "Soft Interface Study",
-    tags: "Interaction, Prototype",
-    year: 2024,
-    description:
-      "研究轻触、缓冲与渐进入场的界面语言，探索数字工具如何减少操作时的紧张感。",
-  },
-  {
-    title: "Collaboration Service Design",
-    tags: "Service, Branding",
-    year: 2024,
-    description:
-      "从接待、沟通到交付重新梳理协作服务，让品牌承诺落实到每个可见的接触点。",
-  },
-  {
-    title: "Neighborhood Commerce",
-    tags: "Commerce, Web",
-    year: 2024,
-    description:
-      "为街区小店构建轻量线上橱窗，保留店主叙事，同时让库存、预约和取货流程更直接。",
-  },
-  {
-    title: "Motion Identity Draft",
-    tags: "Motion, Branding",
-    year: 2023,
-    description:
-      "以重复、停顿和轻微偏移组织品牌动效，使动态识别不会压过正文与图片内容。",
-  },
-  {
-    title: "Archive Access System",
-    tags: "Culture, Product",
-    year: 2023,
-    description:
-      "为文化机构整理一套可检索的档案入口，让模糊的历史材料也能通过主题和时间被重新发现。",
-  },
-  {
-    title: "Playful Data Reader",
-    tags: "Data, Education",
-    year: 2023,
-    description:
-      "把抽象数据转换成可触摸的图形任务，学习者在比较和排序中自然理解统计关系。",
-  },
-  {
-    title: "Studio Collaboration Kit",
-    tags: "Productivity, Web",
-    year: 2023,
-    description:
-      "提供评审、标注和版本说明的共享模板，帮助远程团队减少反复同步造成的损耗。",
-  },
-  {
-    title: "Museum Wayfinding",
-    tags: "Culture, Interactive",
-    year: 2023,
-    description:
-      "用安静的路线提示替代复杂指引，观众可以按停留时长和兴趣选择自己的展厅顺序。",
-  },
-  {
-    title: "Health Companion Concept",
-    tags: "Health, Mobile",
-    year: 2023,
-    description:
-      "以温和的提醒和记录流为核心，让健康数据成为日常照顾的一部分，而不是冷冰的指标面板。",
-  },
-  {
-    title: "Generative Type Workshop",
-    tags: "Education, Type",
-    year: 2023,
-    description:
-      "通过参数化字形实验讲解字体结构，参与者可以即时看到规则变化对识别度的影响。",
-  },
-  {
-    title: "Low-energy Web Pilot",
-    tags: "Sustainability, Web",
-    year: 2023,
-    description:
-      "压缩媒体、限制动态层并重排加载顺序，在保留品牌氛围的前提下降低页面的能源消耗。",
-  },
-  {
-    title: "Personal Knowledge Map",
-    tags: "Tool, Product",
-    year: 2022,
-    description:
-      "把笔记连接成不断生长的关系图，帮助个人在长期项目中保持上下文和灵感的可见性。",
-  },
-  {
-    title: "Small Press Reader",
-    tags: "Editorial, Mobile",
-    year: 2022,
-    description:
-      "为独立出版社设计连续阅读体验，让标题、正文和图片在小屏幕上保留纸本的呼吸感。",
-  },
-  {
-    title: "Maker Marketplace",
-    tags: "Commerce, Web",
-    year: 2022,
-    description:
-      "突出制作过程与材料来源，让买家在了解手作物件背景之后再进入购买流程。",
-  },
-  {
-    title: "Remote Residency Platform",
-    tags: "Culture, Web",
-    year: 2022,
-    description:
-      "把驻留项目的展示、讨论和阶段记录集中在一个线上空间，支持分散地点的共同创作。",
-  },
-  {
-    title: "Adaptive Learning Space",
-    tags: "Education, AI",
-    year: 2022,
-    description:
-      "根据练习结果调整任务难度和示例，AI 在这里承担反馈助手，而不是替代学习者的判断。",
-  },
-  {
-    title: "Transport Signage Study",
-    tags: "Wayfinding, Public",
-    year: 2022,
-    description:
-      "比较不同换乘场景中的信息层级，用更大的距离对比和更少的颜色强化关键指示。",
-  },
-  {
-    title: "Tactile Dashboard",
-    tags: "Data, Prototype",
-    year: 2022,
-    description:
-      "以厚实边缘、可按压区域和缓慢反馈组织数据界面，让复杂状态更容易被感知。",
-  },
-  {
-    title: "Independent Film Hub",
-    tags: "Entertainment, Web",
-    year: 2022,
-    description:
-      "围绕导演、场景和主题组织独立影像，提供连续观看路径而不是单纯的片名列表。",
-  },
-  {
-    title: "Garden Planning Tool",
-    tags: "Sustainability, Mobile",
-    year: 2022,
-    description:
-      "结合季节、光照和空间尺寸安排种植计划，帮助小型花园维持长期可维护的生态。",
-  },
-  {
-    title: "Architecture Archive",
-    tags: "Architecture, Culture",
-    year: 2022,
-    description:
-      "将图纸、模型照片和现场记录按项目阶段排列，呈现建筑从概念到使用的完整过程。",
-  },
-  {
-    title: "Open Studio Index",
-    tags: "Community, Web",
-    year: 2022,
-    description:
-      "为开放工作室活动建立共享索引，访客可以按区域规划路线，创作者也能更新当日状态。",
-  },
-  {
-    title: "Quiet Product Studio",
-    tags: "Product, Editorial",
-    year: 2022,
-    description:
-      "以留白、克制色彩和长段落说明展示产品，强调材料、使用方式与长期维护。",
-  },
-  {
-    title: "Light Archive Editorial",
-    tags: "Editorial, Culture",
-    year: 2022,
-    description:
-      "以自然光为主题整理摄影专题，文字与图片交替出现，形成缓慢推进的阅读节奏。",
-  },
-  {
-    title: "Sequential Memory",
-    tags: "Archive, Interactive",
-    year: 2022,
-    description:
-      "让访问者按时间顺序揭开记忆片段，影像之间的间隙成为回忆与补充说明的位置。",
-  },
-  {
-    title: "Soft Machine Study",
-    tags: "Prototype, Technology",
-    year: 2022,
-    description:
-      "探索柔软材质与机械结构结合的原型，记录它们在压力、温度和触碰下的反应。",
-  },
-  {
-    title: "Everyday Interface Atlas",
-    tags: "Interface, Research",
-    year: 2022,
-    description:
-      "收集日常环境中的界面样本，比较它们如何通过形状、文字和位置引导行为。",
-  },
-  {
-    title: "Studio Season Review",
-    tags: "Editorial, Web",
-    year: 2022,
-    description:
-      "以季度为单位回顾工作室项目，保留失败草图和过程笔记，呈现完整决策路径。",
-  },
-  {
-    title: "Process Library",
-    tags: "Community, Archive",
-    year: 2022,
-    description:
-      "把可复用的制作方法整理成公共资料库，鼓励创作者贡献自己的修改与验证结果。",
-  },
+
 ];
 
 const LIVE_CASE_DETAILS = {
+  // These descriptions are the argument the assessment page makes, made concrete:
+  // each one leads with what the AI did, then gives the detail that makes the
+  // claim checkable. The opening sentence becomes the standfirst in the immersive
+  // layout, so it has to stand alone as the capability statement.
   "wing-it": {
     title: "Wing It",
-    tags: "Animation, Editing",
+    tags: "分镜剪辑 · 中文配音",
     year: 2026,
     description:
-      "一支以中文解说串起节奏、镜头与角色表演的动画剪辑。案例会在页面内循环播放，并保留独立的声音开关。",
+      "AI 把一段故事剪成了成片。分镜、节奏、转场与中文解说词由模型给出，配音也由模型合成，人只负责提出想要的方向。音轨可以单独开关，方便对照画面与解说。",
   },
   mario: {
     title: "超级马里奥",
-    tags: "Pixel Game, Interactive",
+    tags: "游戏代码 · 可试玩",
     year: 2026,
     description:
-      "把经典横版像素游戏装进浏览器场景，角色、关卡与镜头按实时逻辑运行，在案例页内即可观看和尝试。",
+      "AI 写出了一款能玩的游戏，而不是画了一张游戏截图。横版关卡、碰撞判定与镜头跟随都由模型产出的代码驱动，在这个页面里实时运行——你可以直接上手操作。",
   },
   conbini: {
     title: "日式便利店",
-    tags: "Realtime 3D, Atmosphere",
+    tags: "场景生成 · 实时渲染",
     year: 2026,
     description:
-      "以雨夜街角为舞台的实时 3D 氛围实验。霓虹、湿润地面与便利店灯光共同构成一段持续流动的夜间场景。",
+      "AI 搭出了一个可以走进去的雨夜街角。霓虹招牌、积水反光与店内灯光不是渲染好的影片，而是实时计算的光照——角度一直在变，画面一直在动。",
   },
   pirate: {
     title: "暴风雨海盗船",
-    tags: "Realtime 3D, Adventure",
+    tags: "海浪模拟 · 实时演算",
     year: 2026,
     description:
-      "一艘海盗船穿过风暴海面的实时 3D 演示，以不断变化的浪涌、天空与航行姿态呈现完整冒险场景。",
+      "AI 让一艘船在风暴里真实地摇晃。浪涌高度、船体姿态与天色变化互相关联，不是循环播放的动画，而是持续演算的动态过程。",
+  },
+  penguin: {
+    title: "企鹅叠叠乐",
+    tags: "文生模型 · 一键生成",
+    year: 2026,
+    description:
+      "一句话就生成了一个可用的 3D 模型。输入只有一句描述——一只顶着红茶、奶盅与橡皮鸭的企鹅——模型直接给出完整的网格、贴图与法线，没有手工建模，也没有中途修形。",
+  },
+  "moon-route": {
+    title: "人类登上月球",
+    tags: "史料整理 · 信息图",
+    year: 1969,
+    description:
+      "AI 把一堆史料整理成了一张看得懂的图。阿波罗十一号的六个节点——升空、地月转移、环月轨道、鹰号落月、月面停留、溅落太平洋——各自带着日期落在手绘航线上。米黄新闻纸与朱红套印是模型按当年报纸制图语言还原的版式。",
+  },
+  "onboarding-schedule": {
+    title: "迎新志愿服务排班表",
+    tags: "需求排班 · 表格生成",
+    year: 2026,
+    description:
+      "AI 把零散的迎新需求排成了一张能直接执行的表。服务点位、时段、人数与负责人之间的约束由模型自己权衡，65 名志愿者被分配到 17 个点位上，谁值全天、谁只来上午，都在表里对齐。表头、合并单元格与分页沿用了 Excel 的版式，输出即可交付。",
+  },
+  "stop-motion": {
+    title: "纸箱宇航员",
+    tags: "定格动画 · 逐帧拍摄",
+    year: 2026,
+    description:
+      "AI 拍出了一部定格动画，而不是一段流畅的 CG。飞船内壁的划痕、毛毡宇航服的绒毛与角色的每一次顿挫都带着逐帧拍摄的手感，灯光在金属面板上留下真实的色偏。角色动作逐帧推进，飞船起降、舱门开合与角色行走都按定格节奏一格格拍出来。",
+  },
+  "security-audit": {
+    title: "红客挑战赛",
+    tags: "安全审计 · 双漏洞",
+    year: 2026,
+    description:
+      "在官方授权的竞赛环境中，模型对字节跳动某平台的 AI 视频生成服务发起测试。它没有依赖任何人工提示或既有 POC，自己从全量网络流量中定位关键接口，推断出只在前端生效的产品约束，构造请求验证服务端校验缺位；随后又通过差分请求推断出敏感能力的门控只依赖客户端可写配置。两处缺陷相互独立，模型都完成了请求重放、成品留存与客观指标实测，并输出 P0–P2 纵深防御方案。全程无人工介入。",
+  },
+  "browser-ops": {
+    title: "电脑控制",
+    tags: "浏览器操作 · 无人值守",
+    year: 2026,
+    description:
+      "AI 直接接管了一台电脑的浏览器，而不是调用某个站点的接口。它在地图上拖动平移、按缩放按钮逐级放大；在 Wikipedia 的表单里输入关键词、检索并跳到指定章节；在 Excalidraw 的画布上用鼠标拖出矩形、椭圆与一条自由曲线。整段过程没有写死的坐标脚本，页面布局变了它就重新找目标，全部动作实时完成，全程无人值守。",
   },
 };
 
@@ -440,7 +277,42 @@ const POSTER_WORLDS = [
   { top: "SUPER", bottom: "MARIO", background: "#557fa8", ink: "#ffc4dc", accent: "#ffe6b5" },
   { top: "NIGHT", bottom: "STORE", background: "#386b58", ink: "#ffd5e4", accent: "#ffd56a" },
   { top: "BRAVE", bottom: "STORM", background: "#934d4d", ink: "#173f34", accent: "#e4b44c" },
+  { top: "ROSTER", bottom: "READY", background: "#2f6f8f", ink: "#eaf6ff", accent: "#ffd98a" },
+  { top: "FRAME", bottom: "BYFRAME", background: "#8a5a3c", ink: "#ffe8cf", accent: "#bfe3a0" },
+  { top: "TRACE", bottom: "PROOF", background: "#3a4a5c", ink: "#e8edf3", accent: "#ffd98a" },
+  { top: "STACK", bottom: "BALANCE", background: "#6d5a8f", ink: "#fff0e2", accent: "#a8e0c0" },
+  { top: "ORBIT", bottom: "RETURN", background: "#2b3a52", ink: "#f2e6cf", accent: "#e8b96a" },
+  { top: "AUTOMATE", bottom: "UNATTENDED", background: "#37503f", ink: "#e6f2e8", accent: "#ffd98a" },
+  { top: "KEEP", bottom: "UNTIL SUNSET", background: "#e8623c", ink: "#2b1a12", accent: "#ffd98a" },
 ];
+
+/** Which world each case wears, keyed by case rather than by position.
+ *
+ * This used to be `POSTER_WORLDS[poolIndex % POSTER_WORLDS.length]`. That only
+ * held while the pool stayed the length the list was written for: the moment
+ * archive cases were deleted the modulus shifted and every case from the first
+ * live one onwards wore its neighbour's words — Wing It came up under
+ * SUPER/MARIO, 纸箱宇航员 under EXPLORE/CONNECT. Binding by key means deleting,
+ * reordering or inserting cases can never move the words again. Cases with no
+ * entry fall back positionally, so a newly added case still gets a world. */
+const WORLD_KEYS = {
+  "live:wing-it": "WING",
+  "live:mario": "SUPER",
+  "live:conbini": "NIGHT",
+  "live:pirate": "BRAVE",
+  "live:penguin": "STACK",
+  "live:moon-route": "ORBIT",
+  "live:onboarding-schedule": "ROSTER",
+  "live:stop-motion": "FRAME",
+  "live:security-audit": "TRACE",
+  "live:browser-ops": "AUTOMATE",
+};
+
+// Retail Navigation Concept is the archive case that positionally owned
+// NOTICE/WONDER, so it keeps them; 电脑控制 gets words of its own.
+const ARCHIVE_WORLD_KEYS = { 3: "NOTICE", 6: "KEEP" };
+
+const WORLD_BY_TOP = Object.fromEntries(POSTER_WORLDS.map((world) => [world.top, world]));
 
 /** Every case the poster is able to walk through, in a fixed canonical order:
  * the archive projects, then the live scenes. Each entry carries a stable `key`
@@ -464,7 +336,9 @@ const CASE_POOL = [
 ];
 
 CASE_POOL.forEach((entry, poolIndex) => {
-  entry.world = POSTER_WORLDS[poolIndex % POSTER_WORLDS.length];
+  const named =
+    WORLD_BY_TOP[WORLD_KEYS[entry.key]] ?? WORLD_BY_TOP[ARCHIVE_WORLD_KEYS[entry.archiveIndex]];
+  entry.world = named ?? POSTER_WORLDS[poolIndex % POSTER_WORLDS.length];
 });
 
 const CASE_POOL_KEYS = CASE_POOL.map((entry) => entry.key);
@@ -492,12 +366,27 @@ function pruneJourneyToPool(journeyKeys, poolKeys) {
   return out;
 }
 
-/** The journey the poster opens with: the six archive covers that ship with the
- * poster plus the four live scenes. */
+/** The journey the poster opens with: every live scene, plus as many archive
+ * covers as the cap allows.
+ *
+ * The archive share is derived rather than written down. It used to be a literal
+ * six, which silently stopped matching once the cap was raised to twenty.
+ *
+ * The newest cover gets an explicit slot because newly added cases are appended
+ * to `CASE_PROJECTS`, so a front-fill slice can miss them. The dedupe is what
+ * keeps that slot safe now the archive list can be shorter than the front-fill:
+ * in that case the newest case is already in the slice, and adding it again would
+ * put the same poster on the wheel twice. */
+const NEWEST_ARCHIVE_KEY = `archive:${CASE_PROJECTS.length - 1}`;
 const DEFAULT_JOURNEY_KEYS = [
-  ...CASE_PROJECTS.slice(0, 6).map((_, index) => `archive:${index}`),
-  ...LIVE_CASES.map((item) => `live:${item.id}`),
-];
+  ...new Set([
+    ...CASE_PROJECTS
+      .slice(0, Math.max(0, JOURNEY_MAX - LIVE_CASES.length - 1))
+      .map((_, index) => `archive:${index}`),
+    NEWEST_ARCHIVE_KEY,
+    ...LIVE_CASES.map((item) => `live:${item.id}`),
+  ]),
+].slice(0, JOURNEY_MAX);
 
 /** The fullscreen-to-stamp opening from the motion reference plays once per
  * session; later visits land directly on the settled poster composition. */
@@ -680,7 +569,15 @@ function ShowcaseCaseDetail({ project, index, total, onBack, transitionName }) {
         <p className="case-showcase-detail-copy">{project.description}</p>
       </div>
       <p className="case-showcase-detail-hint">
-        {project.kind === "video" ? "LOOPING FILM · SOUND AVAILABLE" : "LIVE SCENE · MOVE · CLICK · PLAY"}
+        {/* Each kind tells the reader what is actually on screen — a still has no
+            interaction to offer, so the live-scene hint would be a false promise.
+            The scene line names what is being generated before it lists the
+            controls, because the point of the case is the generation, not the UI. */}
+        {project.kind === "video"
+          ? "AI 生成 · 循环播放 · 可开声音"
+          : project.kind === "still"
+            ? "AI 生成 · 整版呈现"
+            : "AI 实时生成 · 可拖动 · 可交互"}
       </p>
     </section>
   );
@@ -844,6 +741,24 @@ function PosterRoute({ move = null, delay = 80 }) {
   );
 }
 
+/** Split a case description into its two halves at the first sentence break.
+ *
+ * The detail view sets the copy across both side columns — the opening sentence
+ * as a standfirst on the left, the rest as the body on the right — because a left
+ * column holding only the work number and a tag line left the composition visibly
+ * lopsided against a title and a full paragraph on the right.
+ *
+ * Splitting on punctuation rather than storing two fields keeps every existing
+ * description valid: there is no second string to author or to fall out of sync.
+ * A single-sentence description has no break to make, so the whole thing goes
+ * right rather than leaving the left column holding a half-phrase. */
+function splitDescription(text) {
+  const value = typeof text === "string" ? text.trim() : "";
+  const match = value.match(/^([\s\S]*?[。！？])\s*([\s\S]*)$/);
+  if (!match || !match[2].trim()) return { lead: "", body: value };
+  return { lead: match[1], body: match[2].trim() };
+}
+
 export function CaseDetail({
   project,
   index,
@@ -854,38 +769,91 @@ export function CaseDetail({
   transitionName,
 }) {
   const saved = useFavoriteSaved(`case-${index}`);
+  // Live cases carry their own cover; archive entries are addressed by position.
+  // Using the positional image for a live case showed an unrelated archive poster
+  // as the detail artwork and, worse, blurred that poster behind the piece.
+  const artwork = project.cover ?? projectImage(index);
+  // The standfirst only exists in the immersive split layout; the stacked panel
+  // keeps the description in one piece.
+  const { lead, body } = splitDescription(project.description);
+  // The blurred backdrop is derived from the case's own artwork and ground
+  // colour, so it can never introduce a hue the piece did not have. Both travel
+  // as custom properties rather than inline background styles, which keeps the
+  // blur radius and veil opacity tunable in CSS.
+  const backdropStyle = immersive
+    ? {
+      "--detail-art": `url("${artwork}")`,
+      "--detail-ground": project.world?.background ?? "#171512",
+    }
+    : undefined;
 
   return (
     <section
       className={`case-archive case-detail${immersive ? " is-immersive" : ""}`}
       aria-label="Case detail"
+      style={backdropStyle}
     >
       <button className="case-detail-back" type="button" onClick={onBack}>
         <ArrowLeft size={18} />
         {returnLabel}
       </button>
+      {/* Two decorative layers behind the content: the blurred artwork, and a
+          veil tinted with the poster's ground. Both are inert — they exist only
+          to give the artwork somewhere to sit. */}
+      {immersive && (
+        <>
+          <div className="case-detail-blur" aria-hidden="true" />
+          <div className="case-detail-veil" aria-hidden="true" />
+        </>
+      )}
       <div className="case-detail-body">
+        {/* Immersive only: the archival facts become their own column on the
+            left, so the artwork can sit dead centre between two balanced
+            annotations. The plain (non-immersive) layout keeps its single
+            stacked info panel, which is why this is conditional rather than a
+            permanent split. */}
+        {immersive && (
+          <div className="case-detail-aside is-meta">
+            <p className="case-detail-index">
+              Work {String(index + 1).padStart(2, "0")} / {total}
+            </p>
+            <p className="case-detail-meta">
+              {project.tags}
+              <i aria-hidden="true">•</i>
+              {project.year}
+            </p>
+            {/* The description's opening sentence continues on the right, so the
+                two halves read in order across the artwork. Wide layout only —
+                with one column there is no left side to balance, and the body in
+                the right column carries the whole description instead. */}
+            {lead ? <p className="case-detail-lead">{lead}</p> : null}
+          </div>
+        )}
         <figure
           className="case-detail-figure"
           style={transitionName ? { viewTransitionName: transitionName } : undefined}
         >
           <img
-            src={projectImage(index)}
+            src={artwork}
             alt={project.title}
             draggable="false"
           />
         </figure>
         <div className="case-detail-info">
-          <p className="case-detail-index">
-            Work {String(index + 1).padStart(2, "0")} / {total}
-          </p>
+          {!immersive && (
+            <p className="case-detail-index">
+              Work {String(index + 1).padStart(2, "0")} / {total}
+            </p>
+          )}
           <h1>{project.title}</h1>
-          <p className="case-detail-meta">
-            {project.tags}
-            <i aria-hidden="true">•</i>
-            {project.year}
-          </p>
-          <p className="case-detail-copy">{project.description}</p>
+          {!immersive && (
+            <p className="case-detail-meta">
+              {project.tags}
+              <i aria-hidden="true">•</i>
+              {project.year}
+            </p>
+          )}
+          <p className="case-detail-copy">{immersive && lead ? body : project.description}</p>
           <button
             type="button"
             className={`favorite-button case-favorite-button${saved ? " is-saved" : ""}`}
@@ -1009,7 +977,9 @@ export function CaseArchive({ onDetailChange }) {
     });
   }, [removedKeys, colorOverrides]);
   const livePoolByKey = useMemo(() => new Map(livePool.map((entry) => [entry.key, entry])), [livePool]);
-  const [journeyKeys, setJourneyKeys] = useState(() => readJourney(CASE_POOL_KEYS, DEFAULT_JOURNEY_KEYS));
+  const [journeyKeys, setJourneyKeys] = useState(() =>
+    readJourney(CASE_POOL_KEYS, DEFAULT_JOURNEY_KEYS, JOURNEY_MAX),
+  );
   const journey = useMemo(
     () => journeyKeys.map((key) => livePoolByKey.get(key)).filter(Boolean),
     [journeyKeys, livePoolByKey],
@@ -1291,7 +1261,12 @@ export function CaseArchive({ onDetailChange }) {
       );
     }
 
-    const project = CASE_PROJECTS[openProject];
+    // Opened from the developer panel. Read through the pool rather than from
+    // `CASE_PROJECTS` directly: the pool is what carries each case's `world`, so
+    // going straight to the source list would drop the poster's colours and any
+    // recolour applied in the panel, leaving the blurred backdrop on its
+    // fallback ground.
+    const project = livePoolByKey.get(`archive:${openProject}`) ?? CASE_PROJECTS[openProject];
     return (
       <CaseDetail
         project={project}

@@ -1259,8 +1259,8 @@ body {
   z-index: 4;
   left: 50%;
   top: 29%;
-  width: min(27.2vw, calc(46dvh * 0.81), 418px);
-  min-width: 248px;
+  height: min(26.5vw, calc(59dvh * 0.81), 415px);
+  min-width: 262px;
   aspect-ratio: 0.81;
   --stamp-tilt-x: 0deg;
   --stamp-tilt-y: 0deg;
@@ -1373,7 +1373,7 @@ body {
 .poster-stamp-caption time {
   margin-top: 6px;
   color: #706862;
-  font-size: clamp(10px, 0.9vw, 13px);
+  font-size: clamp(10px, 0.85vw, 13px);
 }
 
 .case-poster-open {
@@ -1399,7 +1399,8 @@ body {
 .case-poster-peek {
   position: absolute;
   z-index: 3;
-  width: clamp(190px, 17vw, 270px);
+  height: clamp(calc(152px * var(--poster-scale)), calc(14.5vw * var(--poster-scale)), calc(225px * var(--poster-scale)));
+  width: auto;
   aspect-ratio: 0.81;
   opacity: 0.82;
   transition: transform 300ms ease, opacity 300ms ease;
@@ -1408,12 +1409,14 @@ body {
 .case-poster-peek.is-previous {
   left: 0;
   top: 5.5%;
+  margin-left: 13%;
   transform: translateX(-50%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next {
   right: 0;
   bottom: 5.5%;
+  margin-right: 13%;
   transform: translateX(50%) rotate(1.2deg);
 }
 
@@ -1476,14 +1479,18 @@ body {
   background: #ffffff14;
 }
 
-.case-poster-arrow.is-left { left: clamp(32px, 4.5vw, 70px); }
+.case-poster-arrow.is-left { left: clamp(32px, 15vw, 150px); }
 /* The two arrows are a mirrored pair — same 109px box, same 46px circle, same 37px
    label, only the outer edge differs — so they must share one inset formula. The
    right arrow used to read clamp(54px, 7vw, 108px), which held it a consistent extra
    2.5vw out at every width: 36px further from the edge than the left arrow at 1440,
    32px at 1280, 27px at 1100, 22px at 900. The left arrow is the reference, the same
    way it is for the corner stamps. */
-.case-poster-arrow.is-right { right: clamp(32px, 4.5vw, 70px); }
+/* The corner peeks grew with the feature stamp, and both arrows sat on a fixed
+   inset from the page edge — at 1000px wide the previous peek spans x=-12..104
+   while the left arrow starts at x=45, so the two drew straight through each
+   other. Tracking the stamp scale moves them clear of the peek band. */
+.case-poster-arrow.is-right { right: clamp(32px, 15vw, 150px); }
 
 .case-poster-rail {
   position: absolute;
@@ -1668,11 +1675,18 @@ body {
 }
 .app[data-layout="compact"] .case-poster-feature {
   top: 37%;
-  width: min(58vw, 310px);
+  /* A portrait screen is wider than the space the stamps get in the landscape
+     design, so a height-driven size would overflow horizontally. Compact
+     therefore sizes from the WIDTH instead, which is the scarce axis here. */
+  height: auto;
+  width: min(64vw, 356px);
   min-width: 0;
+  aspect-ratio: 0.81;
 }
 .app[data-layout="compact"] .case-poster-peek {
-  width: 42vw;
+  height: auto;
+  width: 47%;
+  aspect-ratio: 0.81;
   opacity: 0.76;
 }
 .app[data-layout="compact"] .case-poster-peek.is-previous {
@@ -2174,7 +2188,7 @@ body {
 }
 
 .case-poster-words span:first-child {
-  top: clamp(118px, 14dvh, 164px);
+  top: clamp(62px, 7dvh, 86px);
 }
 
 .case-poster-words span:last-child {
@@ -2287,8 +2301,9 @@ body {
      scaling an ancestor. The flight measures every stamp's rect on each move and
      re-derives its corner poses from it, so a smaller stamp is carried correctly
      and the whole scene reads as one smaller composition. */
-  width: min(calc(23vw * var(--poster-scale)), calc(52dvh * 0.81 * var(--poster-scale)), calc(360px * var(--poster-scale)));
-  min-width: calc(228px * var(--poster-scale));
+  width: min(calc(26.5vw * var(--poster-scale)), calc(59dvh * 0.81 * var(--poster-scale)), calc(415px * var(--poster-scale)));
+  min-width: calc(262px * var(--poster-scale));
+  aspect-ratio: 0.81;
   pointer-events: auto;
   opacity: var(--stamp-opacity, 1);
   transform: translateX(calc(-50% + var(--stamp-x, 0vw) + var(--stamp-shift-x, 0px)))
@@ -2348,7 +2363,9 @@ body {
 
 .case-poster-peek {
   z-index: 3;
-  width: clamp(calc(132px * var(--poster-scale)), calc(12.6vw * var(--poster-scale)), calc(196px * var(--poster-scale)));
+  height: clamp(calc(152px * var(--poster-scale)), calc(14.5vw * var(--poster-scale)), calc(225px * var(--poster-scale)));
+  width: auto;
+  aspect-ratio: 0.81;
   opacity: 0.92;
   pointer-events: auto;
 }
@@ -2360,11 +2377,13 @@ body {
    two corners read as different sizes. The previous stamp is the reference. */
 .case-poster-peek.is-previous {
   top: 5.5%;
+  margin-left: 13%;
   transform: translateX(-50%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next {
   bottom: 5.5%;
+  margin-right: 13%;
   transform: translateX(50%) rotate(1.2deg);
 }
 
@@ -2941,6 +2960,14 @@ body {
   white-space: nowrap;
 }
 
+/* The detail view borrows the camera-app treatment: the case's own artwork,
+ * pushed back behind a heavy blur, becomes the room the case sits in.
+ *
+ * The old version instead cropped the artwork with `object-fit: cover` and laid
+ * gradients over it, so opening a case replaced the piece with a full-bleed
+ * excerpt of itself. Here the real artwork is shown whole and the blur is a
+ * separate layer derived from the same file, which is what gives the composition
+ * its breathing room without introducing a colour the case never had. */
 .case-detail.is-immersive {
   position: relative;
   width: 100vw;
@@ -2948,56 +2975,155 @@ body {
   margin-left: calc(50% - 50vw);
   padding: 0;
   overflow: hidden;
-  background: #171512;
+  /* The tint behind the blur, taken from the poster's own ground and set on the
+     element so the backdrop sits on the case's colour rather than on black. The
+     fallback only applies if a case ships without a world. */
+  background: var(--detail-ground, #171512);
   color: #fff;
+}
+
+/* The blurred copy of the artwork. It is the same image at `cover`, scaled past
+   the viewport so the blur's soft edge can never reveal a bare rim, and it is
+   inset negatively by that same overhang.
+ *
+ * The blur is deliberately heavy and the saturation pushed up: a large-radius
+ * blur averages neighbouring pixels toward grey, so the colour has to be handed
+ * back on the other side or the whole room goes flat. */
+.case-detail.is-immersive .case-detail-blur {
+  position: absolute;
+  inset: calc(-1 * clamp(40px, 8vw, 120px));
+  z-index: 0;
+  background-image: var(--detail-art);
+  /* `cover` cropped hard here. The backdrop is wider than it is tall, so a
+     portrait artwork was zoomed until only a slice of it survived, and a
+     landscape one had its edges cut off — either way the blur read as an
+     arbitrary smear rather than the piece's own colour and light.
+     `contain` keeps the whole artwork in frame; the gaps it leaves are covered by
+     the oversized `inset`, the `scale` below, and the veil, and are invisible
+     under a blur radius this large anyway. */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* Blur is sized from the smaller viewport axis rather than the width, so the
+     smear stays proportional on a tall window where `vw` alone under-blurs. The
+     floor keeps it soft on small screens instead of resolving into shapes.
+     Kept on one line so the guard test that pins this rule can match it. */
+  filter: blur(max(48px, clamp(34px, 6vmin, 96px))) saturate(1.85) brightness(0.78) contrast(1.06);
+  transform: scale(1.18);
+  pointer-events: none;
+}
+
+/* A neutral darkening pass rather than a tinted one.
+ *
+ * Tinting with the poster's `--detail-ground` looked wrong: that colour is the
+ * site's decorative palette, not the artwork's, so veiling a coral poster with
+ * the site's pink produced a muddy lavender neither colour wanted. Going dark
+ * instead keeps whatever hue the artwork actually has and only buys back the
+ * contrast the type needs.
+ *
+ * The vignette is centred off to the left, under the artwork, so the brightest
+ * part of the backdrop sits behind the piece and the corners holding the copy
+ * fall away — the reverse of a centred vignette, which would darken the artwork
+ * and leave the text sitting on the loudest area. */
+.case-detail.is-immersive .case-detail-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(130% 130% at 26% 46%, #00000000 0%, #00000014 58%, #0000005c 100%),
+    linear-gradient(180deg, #00000030 0%, #00000012 40%, #00000042 100%);
+  pointer-events: none;
 }
 
 .case-detail.is-immersive .case-detail-body {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.case-detail.is-immersive .case-detail-figure {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  margin: 0;
-  display: block;
-}
-
-.case-detail.is-immersive .case-detail-figure::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, #110f0dcc 0%, #110f0d4d 48%, transparent 76%),
-    linear-gradient(0deg, #110f0d99 0%, transparent 48%);
-  pointer-events: none;
-}
-
-.case-detail.is-immersive .case-detail-figure img {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  border-radius: 0;
-  box-shadow: none;
-  filter: saturate(0.86) contrast(1.04) brightness(0.82);
-}
-
-.case-detail.is-immersive .case-detail-info {
-  position: absolute;
   z-index: 2;
-  left: clamp(32px, 6vw, 96px);
-  bottom: clamp(44px, 8dvh, 92px);
-  width: min(620px, 46vw);
-  color: #fff;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  /* Three columns with the artwork in the middle, matching the poster's own
+     composition: the stamp the reader just clicked is centred, so the opened
+     piece has to land centred too or the transition appears to jump sideways.
+     The side columns are equal so the artwork is genuinely centred rather than
+     merely between two unequal blocks, and they are narrower than it because a
+     portrait piece in a landscape window is limited by height first — the sides
+     only need room for a short column of type. */
+  grid-template-columns: minmax(0, 0.5fr) minmax(0, 1.3fr) minmax(0, 0.5fr);
+  align-items: center;
+  gap: clamp(20px, 2.6vw, 54px);
+  padding: clamp(56px, 8dvh, 96px) clamp(24px, 3.4vw, 64px) clamp(36px, 6dvh, 76px);
+}
+
+/* The left column holds two stacked blocks: the archival facts, then the
+   standfirst. Making it a flex column is what keeps them from overlapping now
+   that the lead is also placed into column 1. */
+.case-detail.is-immersive .case-detail-aside {
+  position: relative;
+  z-index: 2;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   animation: case-detail-content-in 620ms 380ms both;
 }
 
+.case-detail.is-immersive .case-detail-aside.is-meta {
+  text-align: right;
+}
+
+/* The artwork keeps its own proportions at every viewport — `contain`, never
+   `cover` — and is capped on both axes so it stays whole on a short window. */
+.case-detail.is-immersive .case-detail-figure {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.case-detail.is-immersive .case-detail-figure img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 3px;
+  /* A soft, wide, low-opacity shadow: the artwork should read as resting on the
+     blurred ground rather than pasted onto it. */
+  box-shadow: 0 40px 90px #00000059, 0 8px 26px #0000003d;
+}
+
+/* The old scrim existed to make type readable over a cropped photo. The type no
+   longer sits on the artwork, so it is gone; a faint vignette remains to keep
+   the corners from glowing on pale artwork. */
+.case-detail.is-immersive .case-detail-figure::after {
+  content: none;
+}
+
+.case-detail.is-immersive .case-detail-info {
+  position: relative;
+  z-index: 2;
+  left: auto;
+  bottom: auto;
+  width: auto;
+  max-width: 560px;
+  min-height: 0;
+  max-height: 100%;
+  /* Not `overflow: auto`: the standfirst is positioned outside this column, so a
+     scroll container here would clip it and raise a stray scrollbar for content
+     that is not actually overflowing. */
+  overflow: visible;
+  animation: case-detail-content-in 620ms 380ms both;
+}
+
+.case-detail.is-immersive .case-detail-aside,
 .case-detail.is-immersive .case-detail-index,
 .case-detail.is-immersive .case-detail-meta,
 .case-detail.is-immersive .case-detail-copy,
@@ -3006,32 +3132,81 @@ body {
   text-shadow: 0 2px 28px #0000004d;
 }
 
+/* Left column: the archival facts, set small and pushed to the right edge so
+   they sit against the artwork like a caption rather than floating. */
 .case-detail.is-immersive .case-detail-index {
-  margin-bottom: 18px;
-  font-size: 12px;
+  margin: 0 0 14px;
+  font-size: 11px;
   letter-spacing: 0.16em;
-}
-
-.case-detail.is-immersive .case-detail-info h1 {
-  max-width: 820px;
-  font-size: clamp(54px, 7vw, 112px);
-  line-height: 0.88;
-  letter-spacing: -0.065em;
   text-transform: uppercase;
 }
 
 .case-detail.is-immersive .case-detail-meta {
-  margin: 24px 0 18px;
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* The bullet is kept but spaced on both sides. Hiding it outright ran the tags
+   into the year ("ART DIRECTION2026"), because the element carrying the gap was
+   the one being removed. */
+.case-detail.is-immersive .case-detail-meta i {
+  margin: 0 0.5em;
+  font-style: normal;
+  opacity: 0.55;
+}
+
+/* A short rule separating the archival facts from the standfirst below them,
+   right-aligned to sit against the artwork. */
+.case-detail.is-immersive .case-detail-aside.is-meta::after {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 1px;
+  margin: 20px 0 0 auto;
+  background: #ffffff59;
+}
+
+/* The opening sentence of the description, set as a standfirst in the left
+   column. It is the same copy the right column continues, not new information —
+   it is there to give the left side weight against a title and a paragraph on
+   the right, and it stays dimmer than the body so the right column keeps the
+   emphasis.
+ *
+ * It lives in the left column as ordinary flow content. An earlier attempt pinned
+ * it with an offset from the right column instead, which put it underneath the
+ * artwork as soon as the sentence was longer than the offset allowed; as a block
+ * in the column it simply wraps. */
+.case-detail.is-immersive .case-detail-lead {
+  margin: 20px 0 0;
+  color: #ffffffc4;
+  font-size: 14px;
+  line-height: 1.72;
+  text-shadow: 0 2px 28px #0000004d;
+}
+
+/* Right column. The title is sized against the column, not `vw`: this column is
+   roughly a third of the window, so a viewport-relative size would overrun it as
+   soon as the window got wide. */
+.case-detail.is-immersive .case-detail-info h1 {
+  max-width: 820px;
+  font-size: clamp(30px, 2.6vw, 50px);
+  line-height: 1;
+  letter-spacing: -0.045em;
   text-transform: uppercase;
 }
 
 .case-detail.is-immersive .case-detail-copy {
   max-width: 510px;
+  /* Breathing room under the title, and a slightly looser leading than the old
+     full-width layout: in a narrow column, tight lines read as a wall. */
+  margin-top: 20px;
   color: #ffffffd9;
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.78;
 }
 
 .case-detail.is-immersive .case-detail-back {
@@ -3209,12 +3384,20 @@ body {
 
 .app[data-layout="compact"] .case-poster-feature {
   top: 40%;
-  width: min(51vw, calc(64dvh * 0.81), 290px);
+  /* On a portrait screen there is more width than the stamps get in the landscape
+     design, so a height-driven size would overflow. Compact sizes from the WIDTH
+     instead — the scarce axis here — and clears the inherited height rule so
+     `aspect-ratio` resolves against width. */
+  height: auto;
+  width: min(64vw, 356px);
   min-width: 0;
+  aspect-ratio: 0.81;
 }
 
 .app[data-layout="compact"] .case-poster-peek {
-  width: 35vw;
+  height: auto;
+  width: 47%;
+  aspect-ratio: 0.81;
 }
 
 .app[data-layout="compact"] .case-poster-peek.is-previous {
@@ -3253,23 +3436,89 @@ body {
   padding: 0;
 }
 
+/* A phone cannot hold three columns. The artwork takes the top of the screen
+   with the metadata row directly under it, and the title and note take the rest.
+   `minmax(0, …)` on every row is what stops the artwork from claiming its
+   natural height and squeezing the copy out of the frame.
+ *
+ * The top padding clears both the back button and the header: the metadata row
+ * used to be the first thing under the chrome and ran straight into the button
+ * in the corner, so the reserved band has to cover the button's own height. */
+/* Every child is placed explicitly by name. Relying on source order put the
+   metadata block into the row sized for the artwork and pushed the artwork into
+   an `auto` row, so a taller-than-expected metadata block overlapped the piece. */
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-body {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: clamp(12px, 2dvh, 20px);
+  padding: calc(96px + env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-aside {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-figure {
+  grid-column: 1;
+  grid-row: 2;
   height: 100%;
 }
 
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-info {
-  left: 25px;
-  right: 25px;
-  bottom: max(36px, env(safe-area-inset-bottom));
+  grid-column: 1;
+  grid-row: 3;
+}
+
+/* The metadata column stops being a column and becomes a single left-aligned
+   row under the artwork, where there is no longer a side to sit against. */
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-aside.is-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-aside.is-meta .case-detail-index {
+  margin: 0;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-aside.is-meta::after {
+  content: none;
+}
+
+/* On a phone the standfirst stays in the metadata row it already sits in — it
+   is the description's opening sentence, and hiding it would silently drop the
+   first line of every case. It only needs its size brought down and its
+   right-alignment released, because there is no longer a column edge to sit
+   against. The remainder continues in the body below the artwork. */
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-lead {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: left;
+  opacity: 0.9;
+}
+
+.app[data-layout="compact"] .case-detail.is-immersive .case-detail-info {
+  left: auto;
+  right: auto;
+  bottom: auto;
   width: auto;
+  max-width: none;
+  overflow: visible;
 }
 
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-info h1 {
-  font-size: clamp(42px, 13vw, 68px);
+  font-size: clamp(26px, 8vw, 38px);
 }
 
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-copy {
-  font-size: 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-back {
@@ -3461,7 +3710,7 @@ body {
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-feature {
   top: 31%;
-  width: min(51vw, calc(64dvh * 0.81), 290px);
+  width: min(58vw, calc(72dvh * 0.81), 333px);
 }
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-all {

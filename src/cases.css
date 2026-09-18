@@ -14,7 +14,8 @@
 .case-layer.is-outgoing { opacity: 1; z-index: 0; }
 .case-layer.is-visible { opacity: 1; z-index: 1; pointer-events: auto; }
 .case-layer > iframe,
-.case-layer > video {
+.case-layer > video,
+.case-layer > .case-still {
   width: 100%;
   height: 100%;
   border: 0;
@@ -26,6 +27,14 @@
 .case-layer > video {
   /* The display itself is the crop: branded screens must never letterbox. */
   object-fit: cover;
+}
+.case-layer > .case-still {
+  /* Same rule as the film, for the same reason — but anchored a little higher.
+     A newspaper page carries its masthead and headline across the top, and a
+     centre crop of the wide sheet trims those first; biasing the crop upward
+     keeps the title and the diagram's own frame in view. */
+  object-fit: cover;
+  object-position: 50% 38%;
 }
 .case-caption {
   position: absolute;
