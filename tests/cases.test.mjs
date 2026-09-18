@@ -208,6 +208,78 @@ test("the case pool is the archive plus the live scenes, and the default journey
   assert.match(archive, /detailOrigin === "library"/);
 });
 
+test("the default journey weaves the archive covers through the live scenes", async () => {
+  // The covers and the scenes must be woven together. Grouping them —
+  // `[...archive, ...live]`, which is what this was — put every illustration
+  // ahead of every real project, so paging the poster showed seven drawings in a
+  // row before a single scene came up and the wheel read as two collections.
+  //
+  // Strict alternation is not the goal and is not always possible: with seven
+  // covers against ten scenes, taking turns still ends with three scenes in a
+  // row. What is asserted is the property the weave actually guarantees — the
+  // shorter list's items are spread as evenly as whole slots allow, so no run of
+  // one kind is longer than the longer list's natural spacing.
+  const { JOURNEY_MAX } = await import("../src/case-library.js");
+  const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
+  const liveIds = CASES.map((item) => item.id);
+  const coverCount = (archive.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0]
+    .match(/\n    title: "/g) ?? []).length;
+
+  assert.match(archive, /const ARCHIVE_JOURNEY_KEYS = \[/);
+  assert.match(archive, /const LIVE_JOURNEY_KEYS = LIVE_CASES\.map\(\(item\) => `live:\$\{item\.id\}`\)/);
+  assert.match(archive, /function weave\(shorter, longer\)/);
+  assert.match(archive, /weave\(ARCHIVE_JOURNEY_KEYS, LIVE_JOURNEY_KEYS\)/);
+  assert.match(archive, /weave\(LIVE_JOURNEY_KEYS, ARCHIVE_JOURNEY_KEYS\)/);
+  assert.ok(
+    !/function interleave\(/.test(archive),
+    "plain alternation cannot spread 7 covers through 10 scenes — it ends 3 in a row",
+  );
+
+  // Rebuild both sides the way the module does, then weave them the same way.
+  const archiveKeys = [...new Set([
+    ...Array.from(
+      { length: Math.min(coverCount, Math.max(0, JOURNEY_MAX - liveIds.length - 1)) },
+      (_, i) => `archive:${i}`,
+    ),
+    `archive:${coverCount - 1}`,
+  ])];
+  const liveKeys = liveIds.map((id) => `live:${id}`);
+  const weave = (shorter, longer) => {
+    const total = shorter.length + longer.length;
+    const slots = new Set(
+      shorter.map((_, i) => Math.min(total - 1, Math.round((i * total) / shorter.length))),
+    );
+    const out = [];
+    let a = 0;
+    let b = 0;
+    for (let i = 0; i < total; i += 1) {
+      out.push(slots.has(i) && a < shorter.length ? shorter[a++] : longer[b++]);
+    }
+    return out;
+  };
+  const journey = [...new Set(
+    archiveKeys.length <= liveKeys.length
+      ? weave(archiveKeys, liveKeys)
+      : weave(liveKeys, archiveKeys),
+  )].slice(0, JOURNEY_MAX);
+
+  const kinds = journey.map((key) => (key.startsWith("archive:") ? "A" : "L"));
+  assert.ok(kinds.includes("A") && kinds.includes("L"), "both sources must appear");
+  // No kind may run longer than the spacing the longer list forces. With an
+  // even spread the worst case is ceil(longer / shorter) rounded up — for 7
+  // through 10 that is 2, and the old grouped form scored 7.
+  const longestRun = Math.max(
+    ...kinds.join("").match(/(.)\1*/g).map((run) => run.length),
+  );
+  const allowed = Math.ceil(Math.max(archiveKeys.length, liveKeys.length)
+    / Math.min(archiveKeys.length, liveKeys.length)) + 1;
+  assert.ok(
+    longestRun <= allowed,
+    `a kind repeats ${longestRun} times in a row (limit ${allowed}): ${kinds.join("")}`,
+  );
+  assert.equal(kinds[0], "A", "the poster still opens on the archive cover carrying HOME_GROUND");
+});
+
 test("the case library can reorder, add to and remove from the journey", async () => {
   const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   const css = await readFile(new URL("../src/responsive.css", import.meta.url), "utf8");
@@ -779,15 +851,27 @@ test("the two carousel arrows share one inset formula in every layout", async ()
 });
 
 test("every featured stamp cover is a local lightweight image", async () => {
-  // Derived from the pool rather than a hard-coded range: the archive count is
-  // content, and a literal bound here silently stopped covering the last case
-  // each time one was added.
+  // Read from each case's own declared `image`, not from its position. Deriving
+  // the file from the loop index assumed the archive was a contiguous run of
+  // 1..N in list order; the moment entries were reordered or held their `image`
+  // out of sequence, this checked files no case points at and missed the ones
+  // that are. `image` is the contract the runtime uses too (see `projectImage`).
   const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   const block = archive.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
-  const posters = [...block.matchAll(/title: "/g)].length;
-  assert.ok(posters > 0, "the archive should not be empty");
-  for (let index = 1; index <= posters; index++) {
-    await access(new URL(`../public/assets/cases/${index}.webp`, import.meta.url));
+  const numbers = [...block.matchAll(/\n    image: (\d+),/g)].map(([, n]) => Number(n));
+  assert.ok(numbers.length > 0, "the archive should not be empty");
+  assert.equal(
+    numbers.length,
+    (block.match(/\n    title: "/g) ?? []).length,
+    "every archive case must declare the artwork it is",
+  );
+  assert.equal(
+    new Set(numbers).size,
+    numbers.length,
+    "two cases must not share one artwork file",
+  );
+  for (const number of numbers) {
+    await access(new URL(`../public/assets/cases/${number}.webp`, import.meta.url));
   }
   for (const item of CASES) {
     await access(new URL(`../public/assets/case-covers/${item.id}.webp`, import.meta.url));

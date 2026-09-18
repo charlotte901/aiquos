@@ -32,15 +32,26 @@ import {
 const CASE_PROJECTS = [
   {
     // 1.webp — a black cat in heavy black-framed glasses, drawn in a loose
-    // brush-and-ink style. Kept first because the poster opens on this case and
-    // its world carries `HOME_GROUND` (see below), so the archive inherits the
-    // home page's pink instead of cutting to a different colour on the way in.
+    // brush-and-ink style. It opens the archive because the poster's first case
+    // carries `HOME_GROUND` (see below), so entering the tab moves the ink
+    // rather than cutting to a different colour.
     image: 1,
     title: "戴眼镜的黑猫",
     tags: "AI 生成插画 · 角色设定",
     year: 2026,
     description:
       "对 AI 说一句想要的角色，得到一张有脾气的猫。蓬乱的毛、镜片的反光和那副不太高兴的表情都由模型一次画完，人只从几版里挑出最像自己那只的——不需要会画画，也能把宠物变成可以挂起来的角色插画。",
+  },
+  {
+    // 6.webp — a watercolour parrot on a branch, green wash and ink linework.
+    image: 6,
+    title: "笼外的鹦鹉",
+    tags: "AI 生成插画 · 水彩笔触",
+    year: 2025,
+    // Sampled from the leaf-green wash behind the bird.
+    world: { top: "PERCH", bottom: "OUTSIDE", background: "#5f8f52", ink: "#f4ffe8", accent: "#ffd98a" },
+    description:
+      "让 AI 画一只正在看你的鸟。羽毛的黄绿过渡、爪子和树枝的笔触、眼睛那圈亮环都是一次成型的，水彩的留白也没有补过——同一句话可以再生成一只完全不同的，挑到喜欢的那张为止。",
   },
   {
     // 3.webp — a torn-paper collage poster: snow mountains, a yurt and yaks over
@@ -54,6 +65,18 @@ const CASE_PROJECTS = [
     world: { top: "CUT", bottom: "PASTE", background: "#07599b", ink: "#ffeccc", accent: "#ffd166" },
     description:
       "让 AI 按一句话生成一张海报。雪山、毡房与牦牛的插画，撕纸便签的排布，连同手写标注和印章的位置，都由模型一次铺好，人只决定留下哪些——得到的成品像手工拼贴了一下午，实际只是把想要的感觉说清楚了。",
+  },
+  {
+    // 7.webp — the poster for a fictional climate short: a chair frozen inside a
+    // block of ice, on coral-orange paper.
+    image: 7,
+    title: "The Last Ice",
+    tags: "AI 生成海报 · 视觉定稿",
+    year: 2026,
+    // The poster's own coral orange, which is what the case is.
+    world: { top: "KEEP", bottom: "UNTIL SUNSET", background: "#e8623c", ink: "#2b1a12", accent: "#ffd98a" },
+    description:
+      "让 AI 生成一部虚构短片的视觉方向，再由人定稿。一块巨大的冰被当作棚拍产品来打光，冰里封着一把鲜红的塑料椅，荒谬却拍得像真的。珊瑚橘的纸面上只留大片空白，所有信息都用贴纸完成——深蓝的片名、写着 42°C 的圆标、银灰的 KEEP UNTIL SUNSET、红底编号 03，全部歪斜、卷边、裁切不齐。手写的一句 “it was still cold when we left.” 让整张海报停在一种安静的荒谬上。",
   },
   {
     // 5.webp — a flat storybook illustration of a girl and a white cat side by
@@ -90,22 +113,6 @@ const CASE_PROJECTS = [
     world: { top: "SUMMER", bottom: "RIDE", background: "#37845c", ink: "#eaffef", accent: "#ffe98a" },
     description:
       "想要的只是一个夏天，AI 给了一整张画面。树叶的透光、车窗上的反光和站牌上的小字都由一句话铺开，接着改的全是光的温度而不是像素——用文字反复调一张图的空气感，直到它像记忆里的那个下午。",
-  },
-  {
-    image: 6,
-    title: "Modular Sound Archive",
-    tags: "声音档案 · 片段重组",
-    year: 2024,
-    description:
-      "AI 把声音档案拆成了可组合的片段。素材的标签体系与检索维度由模型从原始录音中提取，访问者能按地点、时间和材质重新编排自己的听觉路径，同一批素材可以拼出完全不同的叙事。",
-  },
-  {
-    image: 7,
-    title: "The Last Ice",
-    tags: "海报设计 · 视觉定稿",
-    year: 2026,
-    description:
-      "为一部虚构的气候短片设计的海报，视觉方向由 AI 生成、人来定稿。一块巨大的冰被当作棚拍产品来打光，冰里封着一把鲜红的塑料椅，荒谬却拍得像真的。珊瑚橘的纸面上只留大片空白，所有信息都用贴纸完成——深蓝的片名、写着 42°C 的圆标、银灰的 KEEP UNTIL SUNSET、红底编号 03，全部歪斜、卷边、裁切不齐。手写的一句 “it was still cold when we left.” 让整张海报停在一种安静的荒谬上。",
   },
 ];
 
@@ -349,12 +356,11 @@ const WORLD_KEYS = {
   "live:browser-ops": "AUTOMATE",
 };
 
-// The Last Ice is the archive case that owns KEEP/UNTIL SUNSET, which is the
-// poster it actually is. Index 3 used to map to NOTICE/WONDER for Retail
-// Navigation Concept; that case is no longer in the archive, and its slot now
-// carries its own world, so the stale entry is gone rather than left pointing at
-// whichever case happens to land there next.
-const ARCHIVE_WORLD_KEYS = { 6: "KEEP" };
+/* Every case that wants specific words now names them in its own entry, so there
+ * is no positional map left to rot. The old `ARCHIVE_WORLD_KEYS = { index: top }`
+ * table was exactly that kind of landmine: reordering the archive silently
+ * repainted whichever case happened to land in the slot. */
+const ARCHIVE_WORLD_KEYS = {};
 
 const WORLD_BY_TOP = Object.fromEntries(POSTER_WORLDS.map((world) => [world.top, world]));
 
@@ -416,26 +422,58 @@ function pruneJourneyToPool(journeyKeys, poolKeys) {
   return out;
 }
 
-/** The journey the poster opens with: every live scene, plus as many archive
- * covers as the cap allows.
+/** The journey the poster opens with, interleaving the archive covers with the
+ * live scenes.
  *
- * The archive share is derived rather than written down. It used to be a literal
- * six, which silently stopped matching once the cap was raised to twenty.
+ * It used to be `[...archive.slice(0, n), newest, ...live]`, which grouped every
+ * archive cover ahead of every live scene — so paging through the poster showed
+ * seven illustrations in a row before a single real project came up, and the
+ * wheel read as two separate collections rather than one body of work. Weaving
+ * the two sources means consecutive cases always differ in kind.
  *
- * The newest cover gets an explicit slot because newly added cases are appended
- * to `CASE_PROJECTS`, so a front-fill slice can miss them. The dedupe is what
- * keeps that slot safe now the archive list can be shorter than the front-fill:
- * in that case the newest case is already in the slice, and adding it again would
- * put the same poster on the wheel twice. */
+ * The share each side contributes is still derived rather than written down
+ * (it was a literal six once, and silently stopped matching when the cap rose),
+ * and the newest cover keeps an explicit slot because appended cases are never
+ * reached by a front-fill slice. */
 const NEWEST_ARCHIVE_KEY = `archive:${CASE_PROJECTS.length - 1}`;
+const ARCHIVE_JOURNEY_KEYS = [
+  ...CASE_PROJECTS
+    .slice(0, Math.max(0, JOURNEY_MAX - LIVE_CASES.length - 1))
+    .map((_, index) => `archive:${index}`),
+  NEWEST_ARCHIVE_KEY,
+];
+const LIVE_JOURNEY_KEYS = LIVE_CASES.map((item) => `live:${item.id}`);
+/** Weave `shorter` through `longer` at even intervals.
+ *
+ * Plain alternation is not enough: there are seven covers against ten scenes, so
+ * taking strict turns still leaves the last three scenes in a row. Placing the
+ * shorter list at `round(i * total / shorter)` puts each of its items as far from
+ * the others as the counts allow, which for 7-against-10 spreads them every two
+ * or three — the closest to even that whole numbers allow. The cap is applied by
+ * the caller, so a long archive list cannot push the live scenes off the end. */
+function weave(shorter, longer) {
+  const total = shorter.length + longer.length;
+  if (!shorter.length) return longer.slice();
+  if (!longer.length) return shorter.slice();
+  // The first slot is always the shorter list's, which also keeps the poster's
+  // opening case stable (it is the one carrying `HOME_GROUND`).
+  const slots = new Set(
+    shorter.map((_, i) => Math.min(total - 1, Math.round((i * total) / shorter.length))),
+  );
+  const out = [];
+  let a = 0;
+  let b = 0;
+  for (let i = 0; i < total; i += 1) {
+    out.push(slots.has(i) && a < shorter.length ? shorter[a++] : longer[b++]);
+  }
+  return out;
+}
 const DEFAULT_JOURNEY_KEYS = [
-  ...new Set([
-    ...CASE_PROJECTS
-      .slice(0, Math.max(0, JOURNEY_MAX - LIVE_CASES.length - 1))
-      .map((_, index) => `archive:${index}`),
-    NEWEST_ARCHIVE_KEY,
-    ...LIVE_CASES.map((item) => `live:${item.id}`),
-  ]),
+  ...new Set(
+    ARCHIVE_JOURNEY_KEYS.length <= LIVE_JOURNEY_KEYS.length
+      ? weave(ARCHIVE_JOURNEY_KEYS, LIVE_JOURNEY_KEYS)
+      : weave(LIVE_JOURNEY_KEYS, ARCHIVE_JOURNEY_KEYS),
+  ),
 ].slice(0, JOURNEY_MAX);
 
 /** The fullscreen-to-stamp opening from the motion reference plays once per
