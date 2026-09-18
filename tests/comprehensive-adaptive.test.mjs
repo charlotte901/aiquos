@@ -72,6 +72,68 @@ function candidate(id, difficulty, dimKeys, type = "single", levelId = "academy"
   return { id, difficulty, dimKeys, type, levelId };
 }
 
+test("an adaptive controller resumes from a serializable snapshot", () => {
+  const questions = [
+    candidate("academy-medium-1", "medium", ["D1", "D2"]),
+    candidate("academy-medium-2", "medium", ["D3", "D4"], "judge"),
+  ];
+  const first = createAdaptiveController(questions, { rng: () => 0 });
+  const selected = first.select("academy", 1);
+  first.record("correct");
+  const snapshot = JSON.parse(JSON.stringify(first.snapshot()));
+  const resumed = createAdaptiveController(questions, { rng: () => 0, initialSession: snapshot });
+
+  assert.deepEqual(resumed.snapshot(), snapshot);
+  assert.notEqual(resumed.select("academy", 1).id, selected.id);
+});
+
+test("adaptive snapshots validate every persisted field and isolate mutable state", () => {
+  const questions = [candidate("known", "medium", ["D1", "D2"])];
+  const source = createAdaptiveSession();
+  const controller = createAdaptiveController(questions, { initialSession: source });
+  source.usedQuestionIds.push("known");
+  source.dimensionCounts.D1 = 9;
+  source.typeCounts.single = 9;
+  assert.deepEqual(controller.snapshot(), createAdaptiveSession());
+
+  const output = controller.snapshot();
+  output.usedQuestionIds.push("known");
+  output.dimensionCounts.D1 = 9;
+  output.typeCounts.single = 9;
+  assert.deepEqual(controller.snapshot(), createAdaptiveSession());
+
+  const restored = {
+    ...createAdaptiveSession(),
+    position: 1.4,
+    usedQuestionIds: ["known"],
+    dimensionCounts: { D1: 1, D2: 1, D3: 0, D4: 0, D5: 0, D6: 0 },
+    typeCounts: { single: 1, judge: 0, multi: 0 },
+    lastType: "single",
+    activeStage: 1,
+  };
+  controller.restore(restored);
+  restored.usedQuestionIds.length = 0;
+  restored.dimensionCounts.D1 = 0;
+  assert.equal(controller.snapshot().usedQuestionIds[0], "known");
+  assert.equal(controller.snapshot().dimensionCounts.D1, 1);
+
+  const invalidSessions = [
+    { ...createAdaptiveSession(), position: Number.NaN },
+    { ...createAdaptiveSession(), position: 3 },
+    { ...createAdaptiveSession(), usedQuestionIds: ["known", "known"] },
+    { ...createAdaptiveSession(), usedQuestionIds: ["missing"] },
+    { ...createAdaptiveSession(), dimensionCounts: { D1: 0 } },
+    { ...createAdaptiveSession(), dimensionCounts: { ...createAdaptiveSession().dimensionCounts, D6: -1 } },
+    { ...createAdaptiveSession(), typeCounts: { single: 0, judge: 0 } },
+    { ...createAdaptiveSession(), typeCounts: { ...createAdaptiveSession().typeCounts, multi: 0.5 } },
+    { ...createAdaptiveSession(), lastType: "essay" },
+    { ...createAdaptiveSession(), activeStage: 0 },
+  ];
+  for (const invalid of invalidSessions) {
+    assert.throws(() => controller.restore(invalid), /adaptive session/i);
+  }
+});
+
 test("selection favors difficulty before under-covered dimensions and type variety", () => {
   const session = {
     ...createAdaptiveSession(),

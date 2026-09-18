@@ -12,9 +12,11 @@ import {
   Target,
 } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
+import { ObjectiveQuizTask } from "./ObjectiveQuizTask";
 import {
   COMPREHENSIVE_LEVELS,
   COMPREHENSIVE_QUESTION_COUNT,
+  COMPREHENSIVE_QUESTIONS,
   COMPREHENSIVE_TYPE_LABELS,
   getComprehensiveLevel,
   getReaction,
@@ -85,22 +87,47 @@ function Guides() {
   return <canvas ref={canvas} className="assessment-guides" width="900" height="620" role="img" aria-label="两位测评向导" />;
 }
 
-export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy }) {
+export function AssessmentMap({ id, current, complete, canRestart = false, onBack, onOpenStage, onRestart, busy }) {
   const theme = ASSESSMENT_THEMES[id];
+  const [confirmingRestart, setConfirmingRestart] = useState(false);
   const stageLabels = id === "comprehensive"
     ? COMPREHENSIVE_LEVELS.map((level) => level.short)
     : STAGE_LABELS;
+  const onConfirmRestart = () => {
+    setConfirmingRestart(false);
+    onRestart?.(id);
+  };
   return (
     <main className="assessment-flow map-flow" style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
-      <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
+      <button className="flow-back" type="button" onClick={onBack} disabled={busy || confirmingRestart}>
         <ArrowLeft weight="bold" /> 返回测评选择
       </button>
       <h1 className="flow-wordmark" aria-label="TEST! 闯关地图"><TestWordmark /></h1>
-      <Progress current={current} complete={complete} onPick={onOpenStage} disabled={busy} />
+      <Progress current={current} complete={complete} onPick={onOpenStage} disabled={busy || confirmingRestart} />
       <section className="level-map" aria-label={`${theme.title}关卡地图`}>
         <p className="map-kicker">{theme.title}</p>
         <h2>从这一关开始</h2>
         <p>{theme.description}</p>
+        {canRestart && !confirmingRestart && (
+          <button
+            className="assessment-restart-trigger"
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmingRestart(true)}
+          >
+            重新开始本次测评
+          </button>
+        )}
+        {canRestart && confirmingRestart && (
+          <section className="assessment-restart-panel" role="dialog" aria-modal="true" aria-labelledby="restart-title">
+            <h3 id="restart-title">重新开始{theme.title}？</h3>
+            <p>未完成的回答将被移除，已完成的历史记录不会受到影响。</p>
+            <div>
+              <button type="button" disabled={busy} onClick={() => setConfirmingRestart(false)}>取消</button>
+              <button type="button" disabled={busy} onClick={onConfirmRestart}>确认重新开始</button>
+            </div>
+          </section>
+        )}
         <div className="map-path" role="list" aria-label="五个闯关节点">
           {[1, 2, 3, 4, 5].map((number) => {
             const state = number < current ? "complete" : number === current ? "active" : "locked";
@@ -109,7 +136,7 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
                 key={number}
                 type="button"
                 className={`map-stage is-${state}`}
-                disabled={busy || number > complete}
+                disabled={busy || confirmingRestart || number > complete}
                 onClick={() => onOpenStage(number)}
                 aria-label={`第 ${number} 关：${stageLabels[number - 1]}`}
               >
@@ -555,23 +582,53 @@ function TaskAction({ disabled, onClick, label, variant = "" }) {
   return <button type="button" className={`task-action ${variant}`.trim()} disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
 }
 
+function comprehensiveResume(attempt, stage) {
+  const matchesDraft = attempt?.assessmentType === "comprehensive" && attempt.currentStage === stage;
+  const location = matchesDraft ? attempt.location ?? {} : {};
+  const feedback = location.feedback && typeof location.feedback === "object"
+    ? location.feedback
+    : null;
+  return {
+    question: COMPREHENSIVE_QUESTIONS.find((item) => item.id === location.currentQuestionId) ?? null,
+    questionIndex: matchesDraft && Number.isInteger(attempt.currentQuestionIndex)
+      ? attempt.currentQuestionIndex
+      : 0,
+    selectedKeys: Array.isArray(location.selectedKeys) ? [...location.selectedKeys] : [],
+    result: feedback?.result ?? null,
+    reaction: typeof feedback?.reaction === "string" ? feedback.reaction : "",
+    correctCount: Number.isInteger(feedback?.correctCount) ? feedback.correctCount : 0,
+    phase: ["opening", "quiz", "feedback", "ending"].includes(location.phase)
+      ? location.phase
+      : "opening",
+    lineIndex: Number.isInteger(location.lineIndex) && location.lineIndex >= 0
+      ? location.lineIndex
+      : 0,
+  };
+}
+
 function ComprehensiveTask({
   stage,
+  attempt,
   onComplete,
   onSelectComprehensiveQuestion,
+  onComprehensiveAnswer,
+  onComprehensiveProgress,
   onRecordComprehensiveOutcome,
 }) {
   const level = getComprehensiveLevel(stage);
-  const [question, setQuestion] = useState(null);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [selected, setSelected] = useState([]);
-  const [result, setResult] = useState(null);
-  const [reaction, setReaction] = useState("");
-  const [correctCount, setCorrectCount] = useState(0);
-  const [phase, setPhase] = useState("opening");
-  const [lineIndex, setLineIndex] = useState(0);
+  const initialState = useRef(null);
+  if (initialState.current === null) initialState.current = comprehensiveResume(attempt, stage);
+  const initial = initialState.current;
+  const [question, setQuestion] = useState(initial.question);
+  const [questionIndex, setQuestionIndex] = useState(initial.questionIndex);
+  const [selected, setSelected] = useState(initial.selectedKeys);
+  const [result, setResult] = useState(initial.result);
+  const [reaction, setReaction] = useState(initial.reaction);
+  const [correctCount, setCorrectCount] = useState(initial.correctCount);
+  const [phase, setPhase] = useState(initial.phase);
+  const [lineIndex, setLineIndex] = useState(initial.lineIndex);
   const taskRef = useRef(null);
-  const questionRequested = useRef(false);
+  const questionRequested = useRef(Boolean(initial.question));
 
   const isLastQuestion = questionIndex === COMPREHENSIVE_QUESTION_COUNT - 1;
   const storyLines = phase === "ending"
@@ -582,13 +639,33 @@ function ComprehensiveTask({
     : level.opening;
   const storyLine = storyLines[lineIndex];
 
+  const storedFeedback = (nextResult = result, nextReaction = reaction, nextCorrectCount = correctCount) => (
+    nextResult || nextReaction || nextCorrectCount > 0
+      ? { result: nextResult, reaction: nextReaction, correctCount: nextCorrectCount }
+      : null
+  );
+
+  const persistProgress = (next = {}) => {
+    onComprehensiveProgress?.({
+      phase: next.phase ?? phase,
+      lineIndex: next.lineIndex ?? lineIndex,
+      selectedKeys: next.selectedKeys ?? selected,
+      feedback: next.feedback === undefined ? storedFeedback() : next.feedback,
+      stage,
+      questionIndex: next.questionIndex ?? questionIndex,
+    });
+  };
+
   const advanceStory = () => {
     if (lineIndex < storyLines.length - 1) {
-      setLineIndex((current) => current + 1);
+      const nextLineIndex = lineIndex + 1;
+      setLineIndex(nextLineIndex);
+      persistProgress({ lineIndex: nextLineIndex });
       return;
     }
     if (phase === "opening") {
       setPhase("quiz");
+      persistProgress({ phase: "quiz" });
     } else {
       onComplete();
     }
@@ -598,28 +675,58 @@ function ComprehensiveTask({
     if (result) return;
     const selectedKeys = [...new Set(keys)];
     const answerResult = judgeComprehensiveAnswer(question, selectedKeys);
-    setResult(answerResult);
-    setReaction(getReaction(level, answerResult.correct));
-    if (answerResult.correct) setCorrectCount((current) => current + 1);
+    const nextReaction = getReaction(level, answerResult.correct);
+    const nextCorrectCount = correctCount + (answerResult.correct ? 1 : 0);
     const outcome = answerResult.correct
       ? "correct"
       : answerResult.partialCorrect
         ? "partial"
         : "wrong";
-    onRecordComprehensiveOutcome(outcome);
+    if (onComprehensiveAnswer) {
+      onComprehensiveAnswer({
+        question,
+        selectedKeys,
+        adaptiveOutcome: outcome,
+        stage,
+        questionIndex,
+        feedback: storedFeedback(answerResult, nextReaction, nextCorrectCount),
+      });
+    } else {
+      onRecordComprehensiveOutcome?.(outcome);
+      persistProgress({
+        phase: "feedback",
+        selectedKeys,
+        feedback: storedFeedback(answerResult, nextReaction, nextCorrectCount),
+      });
+    }
+    setPhase("feedback");
+    setSelected(selectedKeys);
+    setResult(answerResult);
+    setReaction(nextReaction);
+    setCorrectCount(nextCorrectCount);
   };
 
   const nextQuestion = () => {
     if (isLastQuestion) {
       setPhase("ending");
       setLineIndex(0);
+      persistProgress({ phase: "ending", lineIndex: 0 });
       return;
     }
-    setQuestion(onSelectComprehensiveQuestion(level.id, stage));
-    setQuestionIndex((current) => current + 1);
+    const nextQuestionIndex = questionIndex + 1;
+    const nextQuestion = onSelectComprehensiveQuestion(level.id, stage, nextQuestionIndex);
+    setQuestion(nextQuestion);
+    setQuestionIndex(nextQuestionIndex);
+    setPhase("quiz");
     setSelected([]);
     setResult(null);
     setReaction("");
+    persistProgress({
+      phase: "quiz",
+      selectedKeys: [],
+      feedback: storedFeedback(null, "", correctCount),
+      questionIndex: nextQuestionIndex,
+    });
   };
 
   const speakerName = (who) => (who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你");
@@ -629,7 +736,8 @@ function ComprehensiveTask({
   useEffect(() => {
     if (questionRequested.current) return;
     questionRequested.current = true;
-    setQuestion(onSelectComprehensiveQuestion(level.id, stage));
+    setQuestion(onSelectComprehensiveQuestion(level.id, stage, questionIndex));
+    persistProgress();
   }, [level.id, onSelectComprehensiveQuestion, stage]);
 
   useEffect(() => {
@@ -649,8 +757,14 @@ function ComprehensiveTask({
 
   const toggleMulti = (key) => {
     if (result) return;
-    setSelected((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]);
+    const nextSelected = selected.includes(key)
+      ? selected.filter((item) => item !== key)
+      : [...selected, key];
+    setSelected(nextSelected);
+    persistProgress({ selectedKeys: nextSelected });
   };
+
+  const isQuestionPhase = phase === "quiz" || phase === "feedback";
 
   return (
     <div ref={taskRef} className="task-body comprehensive-task" data-phase={phase}>
@@ -681,11 +795,11 @@ function ComprehensiveTask({
         </div>
       )}
 
-      {phase === "quiz" && !question && (
+      {isQuestionPhase && !question && (
         <p className="agent-error" role="alert">当前关卡暂无可用题目，请返回关卡地图后重试。</p>
       )}
 
-      {phase === "quiz" && question && (
+      {isQuestionPhase && question && (
         <>
           <h2>{question.q}</h2>
           <p className="quiz-brief">
@@ -747,11 +861,17 @@ function ComprehensiveTask({
 export function AssessmentTask({
   id,
   stage,
+  attempt,
+  questions,
   complete,
   onBack,
   onPick,
   onComplete,
+  onAnswer,
+  onProgress,
   onSelectComprehensiveQuestion,
+  onComprehensiveAnswer,
+  onComprehensiveProgress,
   onRecordComprehensiveOutcome,
   busy,
 }) {
@@ -772,10 +892,23 @@ export function AssessmentTask({
         ? <ComprehensiveTask
           key={`${taskKey}-comprehensive`}
           {...props}
+          attempt={attempt}
           onSelectComprehensiveQuestion={onSelectComprehensiveQuestion}
+          onComprehensiveAnswer={onComprehensiveAnswer}
+          onComprehensiveProgress={onComprehensiveProgress}
           onRecordComprehensiveOutcome={onRecordComprehensiveOutcome}
         />
-        : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
+        : mode === "objective"
+          ? <ObjectiveQuizTask
+            key={taskKey}
+            stage={stage}
+            questions={questions}
+            attempt={attempt}
+            onAnswer={onAnswer}
+            onProgress={onProgress}
+            onComplete={() => onComplete(stage)}
+          />
+          : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>
   </main>;
 }

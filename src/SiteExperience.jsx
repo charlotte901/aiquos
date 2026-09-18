@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { App } from "./App";
-import { AssessmentHub } from "./AssessmentHub";
+import { AssessmentHub, BlockedDraftPanel } from "./AssessmentHub";
 import { AssessmentMap, AssessmentTask } from "./AssessmentFlow";
 import { AccountSettings } from "./AccountSettings";
 import { ChooseHub } from "./ChooseHub";
@@ -11,8 +11,20 @@ import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
-import { createAdaptiveController } from "./comprehensive-adaptive";
-import { COMPREHENSIVE_QUESTIONS } from "./comprehensive-quiz";
+import { resolveLatestReport, restartDraft } from "./assessment-attempt";
+import {
+  completeScoredStage,
+  isScoredAssessment,
+  loadBrowserScoredAssessments,
+  persistScoredState,
+  resolveAssessmentTaskEntry,
+  scoredAssessmentProgress,
+  selectComprehensiveQuestion as selectPersistedComprehensiveQuestion,
+  startScoredAssessment,
+  submitScoredAnswer,
+  updateScoredProgress,
+} from "./assessment-orchestration";
+import { QUESTION_BANK } from "./question-bank";
 import { getProfileDetailId, getProfileDetailRoute } from "./profile-layout";
 import { animateCards } from "./card-transition";
 import { CUBE_TURN_DURATION } from "./cube-geometry";
@@ -107,13 +119,23 @@ export function SiteExperience() {
     () => getAssessmentRoute() ?? { id: "comprehensive", stage: 1, mode: "map" },
   );
   const [profileDetailRoute, setProfileDetailRoute] = useState(() => getProfileDetailRoute());
+  const [initialAssessments] = useState(() => loadBrowserScoredAssessments(globalThis));
+  const [assessmentState, setAssessmentState] = useState(initialAssessments.state);
+  const assessmentStateRef = useRef(initialAssessments.state);
+  const scoredSessions = useRef(initialAssessments.sessions);
+  const [storageWarning, setStorageWarning] = useState(initialAssessments.warning);
+  const [blockedDraft, setBlockedDraft] = useState(() => {
+    const initialSession = initialAssessments.sessions[assessmentRoute.id];
+    return isScoredAssessment(assessmentRoute.id)
+      && initialAssessments.state.drafts[assessmentRoute.id]
+      && initialSession?.compatible === false
+      ? { type: assessmentRoute.id, reason: initialSession.reason }
+      : null;
+  });
   const [progress, setProgress] = useState({
-    comprehensive: 1,
-    objective: 1,
     conversation: 1,
     practical: 1,
   });
-  const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
   const [moving, setMoving] = useState(false);
   // Narrower than `moving`: true only while a page push is in flight. The two
   // pages are siblings and only one of them is the current tab, so switching
@@ -130,10 +152,31 @@ export function SiteExperience() {
   const panels = useRef({});
   const stage = useRef(null);
   const busy = useRef(false);
+  const taskEntry = resolveAssessmentTaskEntry(
+    view,
+    assessmentRoute.id,
+    assessmentState,
+    scoredSessions.current[assessmentRoute.id],
+  );
+  useEffect(() => {
+    if (taskEntry.redirect === "assessments") {
+      history.replaceState(null, "", "#assessments");
+      window.scrollTo(0, 0);
+      setBlockedDraft(null);
+      setView("assessments");
+    }
+  }, [taskEntry.redirect]);
   useEffect(() => {
     const pop = () => {
       const nextAssessment = getAssessmentRoute();
-      if (nextAssessment) setAssessmentRoute(nextAssessment);
+      if (nextAssessment) {
+        setAssessmentRoute(nextAssessment);
+        const nextSession = scoredSessions.current[nextAssessment.id];
+        const nextDraft = assessmentStateRef.current.drafts[nextAssessment.id];
+        setBlockedDraft(isScoredAssessment(nextAssessment.id) && nextDraft && nextSession?.compatible === false
+          ? { type: nextAssessment.id, reason: nextSession.reason }
+          : null);
+      }
       setProfileDetailRoute(getProfileDetailRoute());
       const nextView = route();
       if (nextView === "login" && location.hash === "#choose") {
@@ -361,33 +404,93 @@ export function SiteExperience() {
     }
   }
 
+  function persistAssessmentState(nextState) {
+    const saved = persistScoredState(
+      initialAssessments.storage,
+      nextState,
+      (publishedState) => {
+        assessmentStateRef.current = publishedState;
+        setAssessmentState(publishedState);
+      },
+      initialAssessments.storageWarning,
+    );
+    setStorageWarning(saved.warning);
+  }
+
+  function assessmentProgress(id) {
+    if (id === "conversation" || id === "practical") return progress[id] ?? 1;
+    return scoredAssessmentProgress(assessmentStateRef.current, id);
+  }
+
   function openAssessmentMap(id) {
-    const previousProgress = progress[id] ?? 1;
+    const previousProgress = assessmentProgress(id);
     const stage = Math.min(5, previousProgress);
     setAssessmentRoute({ id, stage, mode: "map" });
     go("assessment-map", assessmentHash(id));
   }
 
   function startAssessment(id) {
-    if (id === "comprehensive") adaptiveController.current.reset();
+    if (id === "conversation" || id === "practical") {
+      setBlockedDraft(null);
+      openAssessmentMap(id);
+      return;
+    }
+    const currentState = assessmentStateRef.current;
+    const started = startScoredAssessment(currentState, id);
+    scoredSessions.current[id] = started.session;
+    if (started.blocked) {
+      setBlockedDraft({ type: id, reason: started.blocked });
+      return;
+    }
+    setBlockedDraft(null);
+    if (started.state !== currentState) persistAssessmentState(started.state);
     openAssessmentMap(id);
   }
 
   function leaveAssessmentMap() {
-    if (assessmentRoute.id === "comprehensive") adaptiveController.current.reset();
     go("assessments");
   }
 
-  function selectComprehensiveQuestion(levelId, stage) {
-    return adaptiveController.current.select(levelId, stage);
+  function cancelBlockedDraft() {
+    setBlockedDraft(null);
+    if (view === "assessment-map" || view === "assessment-task") go("assessments");
   }
 
-  function recordComprehensiveOutcome(outcome) {
-    adaptiveController.current.record(outcome);
+  function selectComprehensiveQuestion(_levelId, stage, questionIndex = 0) {
+    const session = scoredSessions.current.comprehensive;
+    if (!session?.controller) throw new Error("综合测评进度无法恢复，请重新开始本次测评。");
+    const currentState = assessmentStateRef.current;
+    const selected = selectPersistedComprehensiveQuestion(
+      currentState,
+      session.controller,
+      { stage, questionIndex },
+    );
+    if (selected.state !== currentState) persistAssessmentState(selected.state);
+    return selected.question;
+  }
+
+  function submitAssessmentAnswer(payload) {
+    const id = assessmentRoute.id;
+    if (!isScoredAssessment(id)) return;
+    const currentState = assessmentStateRef.current;
+    const nextState = submitScoredAnswer(currentState, id, payload, {
+      controller: scoredSessions.current[id]?.controller,
+    });
+    if (nextState !== currentState) persistAssessmentState(nextState);
+  }
+
+  function updateAssessmentProgress(payload) {
+    const id = assessmentRoute.id;
+    if (!isScoredAssessment(id)) return;
+    const currentState = assessmentStateRef.current;
+    const nextState = updateScoredProgress(currentState, id, payload);
+    if (nextState !== currentState) persistAssessmentState(nextState);
   }
 
   function openAssessmentStage(stage) {
-    const complete = progress[assessmentRoute.id] ?? 1;
+    if (isScoredAssessment(assessmentRoute.id)
+      && !assessmentStateRef.current.drafts[assessmentRoute.id]) return;
+    const complete = assessmentProgress(assessmentRoute.id);
     if (stage > complete) return;
     setAssessmentRoute((current) => ({ ...current, stage, mode: "task" }));
     go("assessment-task", assessmentHash(assessmentRoute.id, stage));
@@ -395,10 +498,28 @@ export function SiteExperience() {
 
   function completeAssessmentStage(stage) {
     const id = assessmentRoute.id;
+    if (isScoredAssessment(id)) {
+      const currentState = assessmentStateRef.current;
+      const completed = completeScoredStage(currentState, id, stage);
+      if (completed.state !== currentState) persistAssessmentState(completed.state);
+      setAssessmentRoute({ id, stage: completed.stage, mode: "map" });
+      if (completed.completed) go("assessments");
+      else go("assessment-map", assessmentHash(id));
+      return;
+    }
     const nextStage = Math.min(5, stage + 1);
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] ?? 1, nextStage) }));
     setAssessmentRoute({ id, stage: nextStage, mode: "map" });
     go("assessment-map", assessmentHash(id));
+  }
+
+  function restartAssessment(id) {
+    const clearedState = restartDraft(assessmentStateRef.current, id);
+    const restarted = startScoredAssessment(clearedState, id);
+    scoredSessions.current[id] = restarted.session;
+    persistAssessmentState(restarted.state);
+    setBlockedDraft(null);
+    openAssessmentMap(id);
   }
 
   return (
@@ -477,7 +598,14 @@ export function SiteExperience() {
         }}
         hidden={view !== "assessments"}
       >
-        <AssessmentHub onBack={() => go("choose")} onStart={startAssessment} busy={moving} />
+        <AssessmentHub
+          blockedDraft={blockedDraft}
+          onBack={() => go("choose")}
+          onStart={startAssessment}
+          onCancelRestart={cancelBlockedDraft}
+          onConfirmRestart={restartAssessment}
+          busy={moving}
+        />
       </div>
       <div
         className="experience-panel"
@@ -495,7 +623,15 @@ export function SiteExperience() {
         }}
         hidden={view !== "reports"}
       >
-        <AwakeningReport active={view === "reports"} onBack={() => go("choose")} busy={moving} />
+        <AwakeningReport
+          report={resolveLatestReport(assessmentState)}
+          history={assessmentState.history}
+          storageWarning={storageWarning}
+          active={view === "reports"}
+          onBack={() => go("choose")}
+          onStartAssessment={() => go("assessments")}
+          busy={moving}
+        />
       </div>
       <div
         className="experience-panel"
@@ -506,6 +642,7 @@ export function SiteExperience() {
       >
         <ProfileDetail
           id={profileDetailRoute ?? "organizations"}
+          assessmentHistory={assessmentState.history}
           onBack={() => go("profile")}
           onHome={() => go("home")}
           busy={moving}
@@ -518,29 +655,45 @@ export function SiteExperience() {
         }}
         hidden={view !== "assessment-map" && view !== "assessment-task"}
       >
-        {view === "assessment-map" ? (
+        {blockedDraft?.type === assessmentRoute.id ? (
+          <BlockedDraftPanel
+            blockedDraft={blockedDraft}
+            onCancelRestart={cancelBlockedDraft}
+            onConfirmRestart={restartAssessment}
+          />
+        ) : view === "assessment-map" ? (
           <AssessmentMap
             id={assessmentRoute.id}
-            current={progress[assessmentRoute.id] ?? 1}
-            complete={progress[assessmentRoute.id] ?? 1}
+            current={assessmentProgress(assessmentRoute.id)}
+            complete={assessmentProgress(assessmentRoute.id)}
+            canRestart={isScoredAssessment(assessmentRoute.id)
+              && Boolean(assessmentState.drafts[assessmentRoute.id])
+              && scoredSessions.current[assessmentRoute.id]?.compatible === true}
             onBack={leaveAssessmentMap}
             onOpenStage={openAssessmentStage}
+            onRestart={restartAssessment}
             busy={moving}
           />
-        ) : (
+        ) : taskEntry.renderTask ? (
           <AssessmentTask
             id={assessmentRoute.id}
             stage={assessmentRoute.stage}
-            complete={progress[assessmentRoute.id] ?? 1}
+            attempt={assessmentState.drafts[assessmentRoute.id]}
+            questions={QUESTION_BANK}
+            complete={assessmentProgress(assessmentRoute.id)}
             onBack={() => openAssessmentMap(assessmentRoute.id)}
             onPick={openAssessmentStage}
             onComplete={completeAssessmentStage}
             onSelectComprehensiveQuestion={selectComprehensiveQuestion}
-            onRecordComprehensiveOutcome={recordComprehensiveOutcome}
+            onComprehensiveAnswer={submitAssessmentAnswer}
+            onComprehensiveProgress={updateAssessmentProgress}
+            onAnswer={submitAssessmentAnswer}
+            onProgress={updateAssessmentProgress}
             busy={moving}
           />
-        )}
+        ) : null}
       </div>
+      {storageWarning && view !== "reports" && <p className="assessment-storage-warning" role="alert">{storageWarning}</p>}
       <div className="split-transition" ref={stage} aria-hidden="true" />
     </div>
   );

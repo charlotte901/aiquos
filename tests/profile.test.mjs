@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { transform } from "esbuild";
+import * as reportModel from "../src/report-model.js";
 import {
   getProfileDetailId,
   PROFILE_CARDS,
@@ -91,4 +94,99 @@ test("profile detail navigation keeps the selected card id in step", async () =>
     await readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
     /setProfileDetailRoute\(nextProfileDetail\)/,
   );
+});
+
+const profileResponses = () => Array.from(
+  { length: 25 },
+  (_, index) => ({ questionId: `profile-question-${index + 1}` }),
+);
+const PROFILE_HISTORY = [
+  {
+    id: "profile-comprehensive", assessmentType: "comprehensive", status: "completed",
+    startedAt: "2026-09-14T08:00:00.000Z", completedAt: "2026-09-14T10:03:00.000Z",
+    answeredCount: 25, totalQuestions: 25,
+    responses: profileResponses(),
+    result: {
+      dimensions: [72, 68, 75, 70, 66, 74].map((score, index) => ({ key: `D${index + 1}`, score, evidenceCount: 6 })),
+      overallScore: 83, grade: "A",
+    },
+  },
+  {
+    id: "profile-objective", assessmentType: "objective", status: "completed",
+    startedAt: "2026-08-20T08:00:00.000Z", completedAt: "2026-08-20T09:12:00.000Z",
+    answeredCount: 25, totalQuestions: 25,
+    responses: profileResponses(),
+    result: {
+      dimensions: [62, 64, 67, 69, 71, 73].map((score, index) => ({ key: `D${index + 1}`, score, evidenceCount: 5 })),
+      overallScore: 68, grade: "C",
+    },
+  },
+];
+
+async function compileProfileDetail() {
+  const profileSource = await readFile(new URL("../src/ProfileDetail.jsx", import.meta.url), "utf8");
+  const transformed = await transform(profileSource, { loader: "jsx", jsx: "automatic", format: "cjs" });
+  const compiled = { exports: {} };
+  const require = createRequire(import.meta.url);
+  const components = new Set(["./AccountSettings", "./CaseArchive", "./ForumBoard", "./AwakeningReport"]);
+  new Function("require", "module", "exports", transformed.code)(
+    (name) => {
+      if (components.has(name)) return new Proxy({}, { get: () => () => null });
+      if (name === "@phosphor-icons/react") return new Proxy({}, { get: () => () => null });
+      if (name === "./report-model.js") return reportModel;
+      if (name === "./account-store") return { useAccount: () => ({ accountId: null }) };
+      if (name === "./profile-layout") return { PROFILE_DETAILS: {} };
+      if (name === "./layout") return { getViewportLayout: () => ({ compact: false, unit: 1 }) };
+      if (name === "./favorites-store") return { removeFavorite() {}, useFavorites: () => [] };
+      return require(name);
+    },
+    compiled,
+    compiled.exports,
+  );
+  return compiled.exports;
+}
+
+test("profile record mapping uses real completed dates, types, scores and report snapshots", async () => {
+  const { buildProfileAssessmentRecords } = await compileProfileDetail();
+  assert.equal(typeof buildProfileAssessmentRecords, "function");
+  const records = buildProfileAssessmentRecords([
+    ...PROFILE_HISTORY,
+    { ...PROFILE_HISTORY[0], id: "draft", status: "in_progress", completedAt: null },
+    { id: "broken", status: "completed", completedAt: null },
+  ]);
+  assert.deepEqual(Object.keys(records), ["2026-09-14", "2026-08-20"]);
+  assert.equal(records["2026-09-14"][0].type, "综合测评");
+  assert.equal(records["2026-09-14"][0].score, "83%");
+  assert.equal(records["2026-08-20"][0].type, "客观题测评");
+  assert.equal(records["2026-08-20"][0].report, PROFILE_HISTORY[1]);
+});
+
+test("profile keeps the future comprehensive demonstration schedule without restoring the fixed completed 92-point record", async () => {
+  const { buildDemonstrationRecords } = await compileProfileDetail();
+  assert.equal(typeof buildDemonstrationRecords, "function");
+  const records = buildDemonstrationRecords(new Date(2026, 8, 6));
+  const futureComprehensive = records["2026-09-19"].find((record) => record.title === "综合测评");
+  assert.deepEqual(
+    futureComprehensive,
+    { type: "综合测评", title: "综合测评", score: "待完成", time: "08:30 · 34 分钟", status: "已安排" },
+  );
+  assert.equal(records["2026-09-06"].some((record) => record.title === "综合测评" && record.score === "92 分"), false);
+});
+
+test("profile receives persisted assessment history and opens the selected real snapshot", async () => {
+  const [experience, profile] = await Promise.all([
+    readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/ProfileDetail.jsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(experience, /assessmentHistory=\{assessmentState\.history\}/);
+  assert.match(profile, /export function ProfileDetail\(\{ id, assessmentHistory = \[\], onBack, onHome, busy \}\)/);
+  assert.match(profile, /setSelectedReport\(record\.report\)/);
+  assert.match(profile, /AwakeningReportModal[\s\S]*?report=\{selectedReport\}/);
+});
+
+test("real profile assessment types are visually distinct and their report controls stay keyboard-visible", async () => {
+  const css = await readFile(new URL("../src/profile-records.css", import.meta.url), "utf8");
+  assert.match(css, /\.records-panel li\[data-type="comprehensive"\][\s\S]*?#247cf1/i);
+  assert.match(css, /\.records-panel li\[data-type="objective"\][\s\S]*?#18a66a/i);
+  assert.match(css, /\.record-report-button:focus-visible\s*\{[\s\S]*?outline:/);
 });

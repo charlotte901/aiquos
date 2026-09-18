@@ -1,37 +1,20 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Download, Printer, X } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, Download, Printer, X } from "@phosphor-icons/react";
+import {
+  REPORT_RESOURCES,
+  adviceForDimensions,
+  buildReportSvg,
+  buildReportView,
+  radarGeometry,
+  resolveReportHistorySelection,
+} from "./report-model.js";
+import { ReportHistory } from "./ReportHistory";
 
-const DIMENSIONS = [
-  { name: "AI基础认知", short: "认知", score: 84, advice: "补齐模型类型与能力边界，用一句话说清每个工具适合什么任务。" },
-  { name: "提示词工程", short: "提示", score: 91, advice: "继续训练结构化提示：目标、背景、约束、示例和验收标准分开写。" },
-  { name: "AI工具使用", short: "工具", score: 78, advice: "围绕真实工作流练习联网检索、文件分析、图像生成与结果交叉验证。" },
-  { name: "结果评估优化", short: "评估", score: 86, advice: "为关键输出建立核查清单，主动追问依据、风险和反例。" },
-  { name: "人机协同解决", short: "协同", score: 80, advice: "把复杂任务拆成AI可执行步骤，并在关键节点保留人工判断。" },
-  { name: "伦理与合规", short: "伦理", score: 75, advice: "重点练习隐私脱敏、版权检查、偏见识别和高风险决策复核。" },
+const DIALOGUE_LINES = [
+  "这是你的最新测评：智核觉醒报告。",
+  "这里呈现的是你当前在 AI 六大维度上的能力画像。每一道已经完成的题目，都会成为对应维度的真实证据；尚未覆盖的维度会保留为待测。",
+  "我也为你准备了针对当前结果的学习建议和资源。完成全部测评后，你会得到正式总分与综合评级，也可以随时回来查看自己的变化。",
 ];
-
-const RESOURCES = [
-  { tag: "模型通识", title: "AI能力边界速览工作坊", result: "补强基础认知 · 预计 25 分钟" },
-  { tag: "工具实战", title: "联网检索与文件分析挑战", result: "提升工具使用 · 预计 35 分钟" },
-  { tag: "伦理案例", title: "偏见、隐私与版权审查实验室", result: "强化伦理合规 · 预计 30 分钟" },
-];
-
-function grade(score) {
-  if (score >= 90) return "S";
-  if (score >= 80) return "A";
-  if (score >= 70) return "B";
-  if (score >= 60) return "C";
-  return "D";
-}
-
-function radarPoints(radius) {
-  return DIMENSIONS.map((item, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    const x = 220 + radius * (item.score / 100) * Math.cos(angle);
-    const y = 220 + radius * (item.score / 100) * Math.sin(angle);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
-}
 
 function ringPoints(radius) {
   return Array.from({ length: 6 }, (_, index) => {
@@ -40,121 +23,243 @@ function ringPoints(radius) {
   }).join(" ");
 }
 
-function saveReportImage() {
-  const labels = DIMENSIONS.map((item, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    return `<text x="${300 + 180 * Math.cos(angle)}" y="${300 + 180 * Math.sin(angle)}" fill="#5b6473" font-size="24" font-weight="700" text-anchor="middle">${item.short} ${item.score}</text>`;
-  }).join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680"><rect width="1200" height="680" fill="#f7f8ff"/><circle cx="940" cy="120" r="230" fill="#4ff0d822"/><circle cx="180" cy="620" r="180" fill="#ff5d8f22"/><text x="72" y="102" fill="#121826" font-size="52" font-weight="900">智核觉醒报告</text><text x="72" y="152" fill="#667085" font-size="28">综合评级 A · 六维能力画像 · 本地演示数据</text><g transform="translate(0 40)"><polygon points="${ringPoints(175)}" fill="#635bff11" stroke="#aab0c0" stroke-width="2"/><polygon points="${ringPoints(132)}" fill="none" stroke="#cfd4de" stroke-width="2"/><polygon points="${ringPoints(88)}" fill="none" stroke="#cfd4de" stroke-width="2"/><polygon points="${radarPoints(175)}" fill="#4f7cff33" stroke="#2f5cff" stroke-width="5" stroke-linejoin="round"/>${labels}</g><text x="72" y="628" fill="#3d4657" font-size="26">AIQUOS · 智核域</text></svg>`;
+function toChartPoint(point) {
+  return `${(220 + point.x).toFixed(1)},${(220 + point.y).toFixed(1)}`;
+}
+
+function toChartPath(points) {
+  return points.map((point, index) => `${index === 0 ? "M" : "L"} ${toChartPoint(point)}`).join(" ");
+}
+
+export function saveReportImage(reportView) {
+  const svg = buildReportSvg(reportView);
+  if (!svg) return;
+  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
   const image = new Image();
   image.onload = () => {
     const canvas = document.createElement("canvas");
     canvas.width = 1200;
-    canvas.height = 680;
+    canvas.height = 900;
     const context = canvas.getContext("2d");
-    context.fillStyle = "#f7f8ff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
     const link = document.createElement("a");
-    link.download = "aiquos-awakening-report.png";
+    link.download = reportView.exportFilename;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
-  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  image.onerror = () => URL.revokeObjectURL(url);
+  image.src = url;
 }
 
-const DIALOGUE_LINES = [
-  { who: "xiao", text: "觉醒完成！这是你的智核觉醒报告。" },
-  { who: "xiao", text: "看，这就是你在AI六大维度上的真实能力画像。每一道你做过的题目，都同时影响了多个维度的得分——这正是智核域综合测评的意义。你的强项和待提升的方面都清晰可见。" },
-  { who: "xiao", text: "根据你的测评结果，我为你推荐了这些学习资源，帮助你在薄弱维度上提升。记住，AI能力不是一成不变的——你可以随时回来重新测评，看看自己是否有所进步。智核域的大门永远为你敞开！" },
-];
-
-export function AwakeningReportContent() {
-  const average = Math.round(DIMENSIONS.reduce((sum, item) => sum + item.score, 0) / DIMENSIONS.length);
-
+function ReportActions({ view }) {
+  const disabled = !view.hasReport;
   return (
-    <section className="awakening-report-card" aria-label="智核觉醒报告结果">
-      <div className="report-radar">
-        <header className="radar-head">
-          <h2>六维能力雷达</h2>
-          <div className="awakening-rating" aria-label={`综合评级 ${grade(average)}`}>
-            <strong>{grade(average)}</strong>
-            <span>综合评级</span>
-          </div>
-        </header>
-        <svg viewBox="0 0 440 440" role="img" aria-label="六维能力雷达图">
-          {[44, 88, 132, 176].map((radius) => (
-            <polygon key={radius} points={ringPoints(radius)} className="radar-ring" />
-          ))}
-          <polygon points={ringPoints(176)} className="radar-ring radar-edge" />
-          <polygon points={radarPoints(176)} className="radar-value" />
-          {DIMENSIONS.map((item, index) => {
-            const angle = (-90 + index * 60) * Math.PI / 180;
-            const x = 220 + 206 * Math.cos(angle);
-            const y = 220 + 206 * Math.sin(angle);
-            return (
-              <text key={item.name} x={x} y={y} className="radar-label" textAnchor="middle">
-                <tspan x={x} y={y}>{item.short}</tspan>
-                <tspan x={x} y={y + 22}>{item.score}</tspan>
-              </text>
-            );
-          })}
-        </svg>
-        <div className="report-actions">
-          <button type="button" onClick={saveReportImage}>
-            <Download size={17} weight="bold" /> 保存截图
-          </button>
-          <button type="button" onClick={() => window.print()}>
-            <Printer size={17} weight="bold" /> 保存 PDF
-          </button>
+    <div className="report-actions" aria-label="报告导出">
+      <button type="button" onClick={() => saveReportImage(view)} disabled={disabled}>
+        <Download size={17} weight="bold" /> 保存截图
+      </button>
+      <button type="button" onClick={() => window.print()} disabled={disabled}>
+        <Printer size={17} weight="bold" /> 保存 PDF
+      </button>
+    </div>
+  );
+}
+
+function ReportRadar({ view }) {
+  const geometry = radarGeometry(view.dimensions, 176);
+  return (
+    <section className="report-radar" aria-labelledby={`report-radar-${view.id}`}>
+      <header className="radar-head">
+        <div>
+          <span>能力画像</span>
+          <h2 id={`report-radar-${view.id}`}>六维能力雷达</h2>
         </div>
-      </div>
+        <span className="radar-legend"><i /> 已获得证据</span>
+      </header>
+      <svg viewBox="0 0 440 440" role="img" aria-label={`${view.typeLabel}六维能力雷达图，待测维度不参与连线`}>
+        {[44, 88, 132, 176].map((radius) => (
+          <polygon key={radius} points={ringPoints(radius)} className="radar-ring" />
+        ))}
+        <polygon points={ringPoints(176)} className="radar-ring radar-edge" />
+        {geometry.polygon && (
+          <polygon
+            points={geometry.points.map(toChartPoint).join(" ")}
+            className="radar-value"
+          />
+        )}
+        {geometry.segments.map((segment) => (
+          <path
+            key={segment.points.map((point) => point.key).join("-")}
+            d={toChartPath(segment.points)}
+            className="radar-segment"
+          />
+        ))}
+        {geometry.points.map((point) => (
+          <circle
+            key={point.key}
+            cx={220 + point.x}
+            cy={220 + point.y}
+            r="5"
+            className="radar-point"
+          />
+        ))}
+        {view.dimensions.map((item, index) => {
+          const angle = (-90 + index * 60) * Math.PI / 180;
+          const x = 220 + 206 * Math.cos(angle);
+          const y = 220 + 206 * Math.sin(angle);
+          return (
+            <text key={item.key} x={x} y={y} className={item.score === null ? "radar-label is-pending" : "radar-label"} textAnchor="middle">
+              <tspan x={x} y={y}>{item.short}</tspan>
+              <tspan x={x} y={y + 22}>{item.displayScore}</tspan>
+            </text>
+          );
+        })}
+      </svg>
+    </section>
+  );
+}
 
-      <div className="report-details">
-        <section className="report-scores">
-          <h2>各维度得分</h2>
-          <ul>
-            {DIMENSIONS.map((item) => (
-              <li key={item.name}>
-                <div>
-                  <strong>{item.name}</strong>
-                  <span>{item.score} 分</span>
-                </div>
-                <div className="score-track" role="img" aria-label={`${item.name} ${item.score}分`}>
-                  <i style={{ width: `${item.score}%` }} />
-                </div>
-                <b>{grade(item.score)}</b>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="report-guidance">
-          <div>
-            <h2>个性化学习建议</h2>
-            <ul className="advice-list">
-              {DIMENSIONS.map((item) => <li key={item.name}>{item.advice}</li>)}
-            </ul>
-          </div>
-          <div>
-            <h2>推荐学习资源</h2>
-            <ul className="resource-list">
-              {RESOURCES.map((item) => (
-                <li key={item.title}>
-                  <em>{item.tag}</em>
-                  <strong>{item.title}</strong>
-                  <span>{item.result}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+function ReportScores({ view }) {
+  return (
+    <section className="report-scores" aria-labelledby={`report-scores-${view.id}`}>
+      <header>
+        <div>
+          <span>直接得分</span>
+          <h2 id={`report-scores-${view.id}`}>六项能力明细</h2>
+        </div>
+        <small>百分制</small>
+      </header>
+      <ul>
+        {view.dimensions.map((item) => (
+          <li key={item.key} className={item.score === null ? "is-pending" : undefined}>
+            <div>
+              <strong>{item.name}</strong>
+              <span>{item.displayScore}</span>
+            </div>
+            <div className="score-track" role="img" aria-label={`${item.name} ${item.displayScore}`}>
+              {item.score !== null && <i style={{ width: `${item.score}%` }} />}
+            </div>
+            <small>{item.score === null ? "等待作答" : `${item.evidenceCount} 项证据`}</small>
+          </li>
+        ))}
+      </ul>
+      <div
+        className={view.complete ? "report-summary is-complete" : "report-summary is-live"}
+        aria-label={view.complete ? `总百分比 ${view.overallScore}%，综合评级 ${view.grade}` : `初步结果，已完成 ${view.answeredCount} / ${view.totalQuestions} 题`}
+      >
+        {view.complete ? (
+          <>
+            <div><span>总百分比</span><strong>{view.overallScore}%</strong></div>
+            <div><span>综合评级</span><strong>{view.grade}</strong></div>
+          </>
+        ) : (
+          <>
+            <div><span>初步结果</span><strong>{view.answeredCount} / {view.totalQuestions}</strong></div>
+            <p>已完成题目；正式总分与评级将在测评完成后生成。</p>
+          </>
+        )}
       </div>
     </section>
   );
 }
 
-export function AwakeningReportModal({ open, onClose }) {
+function ReportHistoryEntry({ count = 0 }) {
+  return (
+    <a className="report-history-entry" href="#center/records">
+      <span>
+        <small>过往记录</small>
+        <strong>查看历史记录</strong>
+        <em>{count > 0 ? `已保存 ${count} 份完成报告` : "完成测评后将在这里持续积累"}</em>
+      </span>
+      <ArrowRight size={20} weight="bold" aria-hidden="true" />
+    </a>
+  );
+}
+
+function ReportGuidance({ view }) {
+  const advice = adviceForDimensions(view.dimensions);
+  return (
+    <section className="report-guidance" aria-label="报告建议与资源">
+      <div>
+        <header>
+          <span>下一步</span>
+          <h2>个性化学习建议</h2>
+        </header>
+        <ul className="advice-list">
+          {advice.map((item) => (
+            <li key={item.key}>
+              <div><em>{item.priority}</em><strong>{item.name}</strong></div>
+              <p>{item.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <header>
+          <span>精选内容</span>
+          <h2>推荐学习资源</h2>
+        </header>
+        <ul className="resource-list">
+          {REPORT_RESOURCES.map((item) => (
+            <li key={item.key}>
+              <em>{item.tag}</em>
+              <strong>{item.title}</strong>
+              <span>{item.result}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+export function AwakeningReportContent({ report, compact = false, history = [], onStartAssessment }) {
+  const view = buildReportView(report);
+  const selectedContext = compact;
+  return (
+    <section className="awakening-report-card" data-compact={compact} aria-label="智核觉醒报告结果">
+      <header className="report-overview-head">
+        <div>
+          <span>{view.hasReport ? (selectedContext ? "所选报告" : "最新测评") : "能力报告"}</span>
+          <h1>{view.title}</h1>
+        </div>
+        <dl>
+          <div><dt>测评来源</dt><dd>{view.typeLabel ?? "尚未选择"}</dd></div>
+          <div><dt>{view.timestampLabel}</dt><dd>{view.dateLabel}</dd></div>
+          <div><dt>当前状态</dt><dd>{view.statusLabel}</dd></div>
+        </dl>
+      </header>
+
+      {view.hasReport ? (
+        <>
+          <div className="report-hero">
+            <ReportRadar view={view} />
+            <ReportScores view={view} />
+          </div>
+          {!selectedContext && <ReportHistoryEntry count={history.length} />}
+          <ReportGuidance view={view} />
+        </>
+      ) : (
+        <div className="report-empty">
+          <span aria-hidden="true">六维</span>
+          <div>
+            <strong>从一次真实测评开始</strong>
+            <p>完成第一道题后，这里会显示有证据支持的维度；未覆盖的能力不会被伪装成零分。</p>
+            {onStartAssessment && (
+              <button type="button" onClick={onStartAssessment}>开始测评 <ArrowRight size={18} weight="bold" /></button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <ReportActions view={view} />
+    </section>
+  );
+}
+
+export function AwakeningReportModal({ report, open, onClose }) {
+  const view = buildReportView(report);
   useEffect(() => {
     if (!open) return undefined;
     const handleKey = (event) => {
@@ -165,7 +270,6 @@ export function AwakeningReportModal({ open, onClose }) {
   }, [open, onClose]);
 
   if (!open) return null;
-
   return (
     <div
       className="report-modal-overlay"
@@ -176,39 +280,49 @@ export function AwakeningReportModal({ open, onClose }) {
       <div className="report-modal" role="dialog" aria-modal="true" aria-labelledby="awakening-report-modal-title">
         <header className="report-modal-head">
           <div>
-            <em>综合测评</em>
-            <h2 id="awakening-report-modal-title">智核觉醒报告</h2>
+            <em>{view.typeLabel ?? "测评报告"}</em>
+            <h2 id="awakening-report-modal-title">{view.hasReport ? "智核觉醒报告" : "暂无可查看的报告"}</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="关闭觉醒报告">
             <X size={20} weight="bold" />
           </button>
         </header>
         <div className="report-modal-body">
-          <AwakeningReportContent />
+          <AwakeningReportContent report={report} compact />
         </div>
       </div>
     </div>
   );
 }
 
-export function AwakeningReport({ onBack, busy, active = false }) {
+export function AwakeningReport({
+  report,
+  history = [],
+  storageWarning,
+  onBack,
+  onStartAssessment,
+  busy,
+  active = false,
+}) {
   const [lineIndex, setLineIndex] = useState(0);
-  const [dialogueVisible, setDialogueVisible] = useState(true);
+  const [historyFilter, setHistoryFilter] = useState("all");
+  const [selectedHistoryId, setSelectedHistoryId] = useState(
+    () => resolveReportHistorySelection(history, "all", null)?.id ?? null,
+  );
+  const [historicalReport, setHistoricalReport] = useState(null);
 
   useEffect(() => {
-    if (!active) {
-      setLineIndex(0);
-      setDialogueVisible(true);
-    }
-  }, [active]);
+    if (!active) setLineIndex(0);
+  }, [active, report?.id]);
+
+  useEffect(() => {
+    const selected = resolveReportHistorySelection(history, historyFilter, selectedHistoryId);
+    if ((selected?.id ?? null) !== selectedHistoryId) setSelectedHistoryId(selected?.id ?? null);
+  }, [history, historyFilter, selectedHistoryId]);
 
   const advanceDialogue = () => {
-    if (lineIndex < DIALOGUE_LINES.length - 1) {
-      setLineIndex((current) => current + 1);
-    }
+    if (lineIndex < DIALOGUE_LINES.length - 1) setLineIndex((current) => current + 1);
   };
-
-  const dialogueLine = DIALOGUE_LINES[lineIndex];
 
   return (
     <main className="awakening-screen" aria-label="智核觉醒报告">
@@ -216,7 +330,9 @@ export function AwakeningReport({ onBack, busy, active = false }) {
         <ArrowLeft size={18} /> 返回选择
       </button>
 
-      {dialogueVisible && dialogueLine && (
+      {storageWarning && <p className="report-storage-warning" role="alert">{storageWarning}</p>}
+
+      {report && (
         <div
           className="awakening-dialogue"
           role="button"
@@ -235,15 +351,33 @@ export function AwakeningReport({ onBack, busy, active = false }) {
               <span>小源</span>
               <strong>{lineIndex + 1} / {DIALOGUE_LINES.length}</strong>
             </div>
-            <p>{dialogueLine.text}</p>
-            <small>
-              {lineIndex === DIALOGUE_LINES.length - 1 ? "对话完成" : "点击继续 ▾"}
-            </small>
+            <p>{DIALOGUE_LINES[lineIndex]}</p>
+            <small>{lineIndex === DIALOGUE_LINES.length - 1 ? "对话完成" : "点击继续 ▾"}</small>
           </article>
         </div>
       )}
 
-      <AwakeningReportContent />
+      <AwakeningReportContent
+        report={report}
+        history={history}
+        onStartAssessment={onStartAssessment}
+      />
+      <ReportHistory
+        history={history}
+        selectedId={selectedHistoryId}
+        filter={historyFilter}
+        onFilter={(nextFilter) => {
+          setHistoryFilter(nextFilter);
+          setSelectedHistoryId(resolveReportHistorySelection(history, nextFilter, selectedHistoryId)?.id ?? null);
+        }}
+        onSelect={setSelectedHistoryId}
+        onOpen={setHistoricalReport}
+      />
+      <AwakeningReportModal
+        report={historicalReport}
+        open={Boolean(historicalReport)}
+        onClose={() => setHistoricalReport(null)}
+      />
     </main>
   );
 }

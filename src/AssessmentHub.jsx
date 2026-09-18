@@ -29,7 +29,22 @@ export function SourceCrop({ crop, className = "", source = ASSESSMENT_ART, widt
   );
 }
 
-export function AssessmentHub({ onBack, onStart, busy }) {
+export function BlockedDraftPanel({ blockedDraft, onCancelRestart, onConfirmRestart }) {
+  if (!blockedDraft) return null;
+  return (
+    <section className="assessment-blocked-draft" role="dialog" aria-modal="true" aria-labelledby="blocked-draft-title">
+      <h2 id="blocked-draft-title">无法继续已保存的测评</h2>
+      <p role="alert">{blockedDraft.reason}</p>
+      <p>如需继续，请确认重新开始；未完成的回答将被移除，历史记录会保留。</p>
+      <div>
+        <button type="button" onClick={onCancelRestart}>取消</button>
+        <button type="button" onClick={() => onConfirmRestart?.(blockedDraft.type)}>确认重新开始</button>
+      </div>
+    </section>
+  );
+}
+
+export function AssessmentHub({ blockedDraft, onBack, onStart, onCancelRestart, onConfirmRestart, busy }) {
   const [size, setSize] = useState(() => ({
     width: innerWidth,
     height: innerHeight,
@@ -97,6 +112,11 @@ export function AssessmentHub({ onBack, onStart, busy }) {
             ? `已选择 · ${ASSESSMENTS.find((item) => item.id === selected).title}`
             : ""}
         </p>
+        <BlockedDraftPanel
+          blockedDraft={blockedDraft}
+          onCancelRestart={onCancelRestart}
+          onConfirmRestart={onConfirmRestart}
+        />
       </div>
     </main>
   );

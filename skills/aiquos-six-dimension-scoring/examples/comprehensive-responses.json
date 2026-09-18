@@ -1,0 +1,1060 @@
+{
+  "totalQuestions": 25,
+  "responses": [
+    {
+      "question": {
+        "id": "q001",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "以下哪项最能准确描述AI与传统软件的本质区别？",
+        "options": [
+          {
+            "key": "A",
+            "text": "AI通过学习数据中的模式来生成预测"
+          },
+          {
+            "key": "B",
+            "text": "AI完全替代人类所有决策和判断"
+          },
+          {
+            "key": "C",
+            "text": "AI本质上是运行速度更快的软件"
+          },
+          {
+            "key": "D",
+            "text": "AI只能执行预先编写的固定规则"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "AI从数据中学习模式并据此生成预测，而非依赖人工编写的固定规则。传统软件需要明确规则编码，AI能从训练数据中自主发现规律。",
+        "dims": [
+          "AI基础认知",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D1",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q002",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "大型语言模型（LLM）生成文本的核心机制是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "基于学习到的模式预测下一个token"
+          },
+          {
+            "key": "B",
+            "text": "从训练数据库中直接复制粘贴文本"
+          },
+          {
+            "key": "C",
+            "text": "使用决策树算法选择预设回复"
+          },
+          {
+            "key": "D",
+            "text": "实时搜索互联网获取答案后返回"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "LLM学习海量文本中的语言模式，生成时逐个预测最可能的下一个token，从而生成连贯文本。",
+        "dims": [
+          "AI基础认知",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D1",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:01:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q003",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "judge",
+        "q": "AI语境下的\"幻觉\"（hallucination）是指AI用户长时间使用后产生的视觉错觉。",
+        "options": [
+          {
+            "key": "A",
+            "text": "正确"
+          },
+          {
+            "key": "B",
+            "text": "错误"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "AI幻觉是指模型生成看似合理但实际不正确或完全虚构的信息，如编造不存在的论文引用。这是生成式AI的已知局限。",
+        "dims": [
+          "AI基础认知",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D1",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:02:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q004",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "single",
+        "q": "从AI助手获得高质量回答的最有效策略是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "保持提示尽量简短以避免混淆AI"
+          },
+          {
+            "key": "B",
+            "text": "重复发送相同提示直到AI理解"
+          },
+          {
+            "key": "C",
+            "text": "提供清晰背景指令和期望输出格式"
+          },
+          {
+            "key": "D",
+            "text": "总是使用正式学术语言来提问"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "有效的提示词应包含明确的背景信息、具体的指令要求和期望的输出格式，能显著提升AI输出质量。",
+        "dims": [
+          "提示词工程",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D2",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:03:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q005",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "\"少样本提示\"（few-shot prompting）的含义是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "在提示中提供几个输入输出对示例"
+          },
+          {
+            "key": "B",
+            "text": "限制AI的回复只使用很少的词语"
+          },
+          {
+            "key": "C",
+            "text": "只使用AI处理少量任务后即切换"
+          },
+          {
+            "key": "D",
+            "text": "给AI发送很少的消息就期望回复"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "少样本提示通过在提示词中提供几个期望的输入-输出示例，引导AI理解期望的回答格式和模式。",
+        "dims": [
+          "提示词工程",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D2",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:04:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q006",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "以下哪类工作最适合在人与AI协作时交给AI处理？",
+        "options": [
+          {
+            "key": "A",
+            "text": "需要情感共鸣和深度沟通的任务"
+          },
+          {
+            "key": "B",
+            "text": "需要原创性突破和艺术创造任务"
+          },
+          {
+            "key": "C",
+            "text": "模式识别数据分析和文本生成"
+          },
+          {
+            "key": "D",
+            "text": "需要承担法律责任和道德判断"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "AI擅长处理模式识别、数据分析和文本生成等规则化任务，而情感沟通、原创突破和道德判断需要人类主导。",
+        "dims": [
+          "人机协同解决问题",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D5",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:05:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q007",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "在人机协作完成任务时，人类应承担的核心角色是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "完全放手让AI自主决策和执行"
+          },
+          {
+            "key": "B",
+            "text": "仅在AI出现错误时才介入修正"
+          },
+          {
+            "key": "C",
+            "text": "在关键决策点审查验证AI的输出"
+          },
+          {
+            "key": "D",
+            "text": "负责输入数据AI负责其余所有"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "负责任的人机协作要求人类在关键决策点对AI输出进行审查和验证，\"human-in-the-loop\"机制是核心。",
+        "dims": [
+          "人机协同解决问题",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D5",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:06:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q008",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "使用AI协作时，设定\"系统提示\"（system prompt）的主要目的是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "用户发送的第一条开始聊天的消息"
+          },
+          {
+            "key": "B",
+            "text": "重启AI服务器的技术操作命令"
+          },
+          {
+            "key": "C",
+            "text": "设定AI角色和行为框架以引导协作"
+          },
+          {
+            "key": "D",
+            "text": "AI系统崩溃时显示的错误提示信息"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "系统提示在对话开始前设定，用于定义AI的角色定位、行为准则和对话约束，决定AI的基本行为模式。",
+        "dims": [
+          "提示词工程",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D2",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:07:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q009",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "single",
+        "q": "AI招聘工具持续将某些邮编区候选人排低，这属于什么问题？",
+        "options": [
+          {
+            "key": "A",
+            "text": "反映历史数据中偏见的算法歧视"
+          },
+          {
+            "key": "B",
+            "text": "随时间推移会自动修正的随机错误"
+          },
+          {
+            "key": "C",
+            "text": "证明AI技术根本不能用于招聘领域"
+          },
+          {
+            "key": "D",
+            "text": "预期行为因为地点对所有工作重要"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "这是算法偏见的典型表现。AI从历史数据中学到了隐含的偏见模式并在输出中放大。",
+        "dims": [
+          "AI结果评估与优化",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D4",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:08:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q010",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "使用AI起草客户沟通内容时，专业人员的正确做法是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "直接发送AI生成的内容不需审查"
+          },
+          {
+            "key": "B",
+            "text": "发送前披露用于生成消息的提示"
+          },
+          {
+            "key": "C",
+            "text": "永远不要用AI进行任何外部沟通"
+          },
+          {
+            "key": "D",
+            "text": "发送前审查验证并编辑AI生成内容"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "负责任地使用AI要求对生成内容进行人工审查、验证和编辑。AI生成内容可能包含错误或不当语气。",
+        "dims": [
+          "AI伦理与合规",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D6",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:09:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q011",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "AI\"代理\"（agent）与普通聊天机器人的关键区别是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "两者之间没有任何实质性的区别"
+          },
+          {
+            "key": "B",
+            "text": "代理只能响应语音命令不能打字"
+          },
+          {
+            "key": "C",
+            "text": "代理能自主行动并完成多步任务"
+          },
+          {
+            "key": "D",
+            "text": "代理总是拥有物理机器人的身体"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "AI代理能自主规划行动、调用外部工具、完成多步骤复杂任务，而普通聊天机器人仅能进行简单对话。",
+        "dims": [
+          "AI基础认知",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D1",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:10:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q012",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "与AI协作时AI的回答不够理想，最佳应对方式是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "接受结果因为AI回复生成就固定"
+          },
+          {
+            "key": "B",
+            "text": "向AI投诉并要求给出更好回答"
+          },
+          {
+            "key": "C",
+            "text": "分析不足后调整背景约束重新提问"
+          },
+          {
+            "key": "D",
+            "text": "立即放弃并切换到不同AI工具"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "提示词迭代优化是人机协作的核心技能。当回答不理想时，应增加背景信息或调整约束条件重新提问。",
+        "dims": [
+          "人机协同解决问题",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D5",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:11:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q013",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "哪种技术手段有助于减少AI输出中的幻觉现象？",
+        "options": [
+          {
+            "key": "A",
+            "text": "要求AI标注推理步骤并标记不确定性"
+          },
+          {
+            "key": "B",
+            "text": "在提示中使用全大写字母强调重要性"
+          },
+          {
+            "key": "C",
+            "text": "移除所有指令让AI自由思考不受限"
+          },
+          {
+            "key": "D",
+            "text": "要求AI在回复中保持自信和果断"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "要求AI展示推理步骤并标记不确定性，能让思考过程更加透明，便于人工发现和纠正错误。",
+        "dims": [
+          "提示词工程",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D2",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:12:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q014",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "judge",
+        "q": "AI生成的代码运行报错时，最佳做法是直接放弃使用AI。",
+        "options": [
+          {
+            "key": "A",
+            "text": "正确"
+          },
+          {
+            "key": "B",
+            "text": "错误"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "正确做法是将报错信息反馈给AI进行迭代修复，同时自己检查代码逻辑。直接放弃不是最佳实践。",
+        "dims": [
+          "人机协同解决问题",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D5",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:13:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q015",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "\"人为循环\"（human-in-the-loop）对AI系统意味着什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "人与AI硬件通过物理方式直接连接"
+          },
+          {
+            "key": "B",
+            "text": "AI在对话中循环模拟人类的情感"
+          },
+          {
+            "key": "C",
+            "text": "AI系统需要人类持续操作才能运行"
+          },
+          {
+            "key": "D",
+            "text": "人类在关键点审查验证AI的决策"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "人为循环是指在AI系统关键决策点设置人工审查、验证和覆盖的机制，确保AI决策的可控性。",
+        "dims": [
+          "AI基础认知",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D1",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:14:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q016",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "\"迁移学习\"在人机协作中的价值主要体现在？",
+        "options": [
+          {
+            "key": "A",
+            "text": "使用预训练模型作为起点适配新任务"
+          },
+          {
+            "key": "B",
+            "text": "在不同数据库之间进行数据传输"
+          },
+          {
+            "key": "C",
+            "text": "只教AI从人类反馈中学习改进"
+          },
+          {
+            "key": "D",
+            "text": "将AI模型从一台设备移到另一台"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "迁移学习利用已有预训练模型作为起点，在新任务的较小数据集上进一步训练来适配特定领域。",
+        "dims": [
+          "AI工具使用",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D3",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:15:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q017",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "AI API（应用程序编程接口）的主要用途是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "保护AI系统免受黑客网络攻击"
+          },
+          {
+            "key": "B",
+            "text": "将AI的输出翻译成不同语言"
+          },
+          {
+            "key": "C",
+            "text": "为非技术用户提供图形界面"
+          },
+          {
+            "key": "D",
+            "text": "让开发者将AI功能集成到应用"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "AI API允许开发者以编程方式调用AI模型能力，将其集成到自定义应用中。使用时需注意数据安全。",
+        "dims": [
+          "AI工具使用",
+          "AI伦理与合规"
+        ],
+        "dimKeys": [
+          "D3",
+          "D6"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:16:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q018",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "哪种方式最能描述\"AI透明度\"（transparency）的概念？",
+        "options": [
+          {
+            "key": "A",
+            "text": "公开发布AI模型的所有源代码"
+          },
+          {
+            "key": "B",
+            "text": "使AI系统对最终用户完全不可见"
+          },
+          {
+            "key": "C",
+            "text": "为AI服务器使用透明玻璃外壳"
+          },
+          {
+            "key": "D",
+            "text": "确保利益相关者理解AI如何决策"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "AI透明度是指确保利益相关者能理解AI系统如何做决策、使用了哪些数据和算法逻辑。",
+        "dims": [
+          "AI伦理与合规",
+          "AI基础认知"
+        ],
+        "dimKeys": [
+          "D6",
+          "D1"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:17:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q019",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "multi",
+        "q": "评估团队AI工具时，以下哪些是重要的评估标准？（多选）",
+        "options": [
+          {
+            "key": "A",
+            "text": "安全隐私政策和数据保护能力"
+          },
+          {
+            "key": "B",
+            "text": "在特定用例上的准确性表现"
+          },
+          {
+            "key": "C",
+            "text": "与现有系统的集成兼容能力"
+          },
+          {
+            "key": "D",
+            "text": "AI公司的社交媒体粉丝数量"
+          }
+        ],
+        "answer": [
+          "A",
+          "B",
+          "C"
+        ],
+        "analysis": "评估AI工具应优先考虑数据安全（A）、用例准确性（B）、集成兼容性（C），而非社交媒体热度。",
+        "dims": [
+          "AI结果评估与优化",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D4",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "A",
+        "B",
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:18:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q020",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "single",
+        "q": "在与AI多轮协作时，\"上下文窗口\"（context window）对AI协作的影响是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "控制AI界面显示对话内容的窗口大小"
+          },
+          {
+            "key": "B",
+            "text": "设定AI模型训练时使用的数据窗口"
+          },
+          {
+            "key": "C",
+            "text": "限制用户等待AI回复的最长允许时间"
+          },
+          {
+            "key": "D",
+            "text": "决定模型单次对话能记住的信息量上限"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "上下文窗口是模型单次对话中能记住和处理的最大文本量（以token计）。超出窗口的早期内容会被遗忘。",
+        "dims": [
+          "提示词工程",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D2",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:19:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q021",
+        "difficulty": "low",
+        "levelId": "academy",
+        "type": "single",
+        "q": "\"零样本提示\"与\"少样本提示\"的关键区别是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "零样本不提供示例仅靠指令描述任务"
+          },
+          {
+            "key": "B",
+            "text": "零样本完全不使用任何指令"
+          },
+          {
+            "key": "C",
+            "text": "零样本只适用于图像生成任务"
+          },
+          {
+            "key": "D",
+            "text": "零样本是指模型未经训练直接使用"
+          }
+        ],
+        "answer": [
+          "A"
+        ],
+        "analysis": "零样本提示不提供任何输入输出示例，仅通过指令描述任务。少样本则提供几个示例引导格式和模式。",
+        "dims": [
+          "AI基础认知",
+          "提示词工程"
+        ],
+        "dimKeys": [
+          "D1",
+          "D2"
+        ]
+      },
+      "selectedKeys": [
+        "A"
+      ],
+      "answeredAt": "2026-09-14T00:20:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q022",
+        "difficulty": "low",
+        "levelId": "labyrinth",
+        "type": "single",
+        "q": "在AI图像生成中，\"负向提示\"的主要作用是什么？",
+        "options": [
+          {
+            "key": "A",
+            "text": "批评AI输出质量以激励改进"
+          },
+          {
+            "key": "B",
+            "text": "阻止AI生成任何内容的安全机制"
+          },
+          {
+            "key": "C",
+            "text": "在提示中使用否定句式来提问"
+          },
+          {
+            "key": "D",
+            "text": "指定不希望出现在生成结果中的元素"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "负向提示指定不希望出现在结果中的元素（如\"模糊\"\"低分辨率\"），引导AI避开不需要的内容。",
+        "dims": [
+          "提示词工程",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D2",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:21:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q023",
+        "difficulty": "low",
+        "levelId": "workshop",
+        "type": "single",
+        "q": "AI模型\"训练阶段\"与\"推理阶段\"的核心区别是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "训练使用GPU推理只使用CPU"
+          },
+          {
+            "key": "B",
+            "text": "训练需要数据推理不需要任何数据"
+          },
+          {
+            "key": "C",
+            "text": "训练比推理耗时更长因此更重要"
+          },
+          {
+            "key": "D",
+            "text": "训练是学习参数推理是应用已学参数"
+          }
+        ],
+        "answer": [
+          "D"
+        ],
+        "analysis": "训练阶段是模型从数据中学习参数的过程，推理阶段是使用已学到的参数对新输入进行预测和生成。",
+        "dims": [
+          "AI基础认知",
+          "AI工具使用"
+        ],
+        "dimKeys": [
+          "D1",
+          "D3"
+        ]
+      },
+      "selectedKeys": [
+        "D"
+      ],
+      "answeredAt": "2026-09-14T00:22:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q024",
+        "difficulty": "low",
+        "levelId": "station",
+        "type": "single",
+        "q": "提示词中设定\"约束条件\"（如\"不超过200字\"）的主要目的是？",
+        "options": [
+          {
+            "key": "A",
+            "text": "限制AI的计算资源消耗降低成本"
+          },
+          {
+            "key": "B",
+            "text": "测试AI是否能遵守复杂的多重指令"
+          },
+          {
+            "key": "C",
+            "text": "引导AI输出符合特定格式和规范"
+          },
+          {
+            "key": "D",
+            "text": "防止AI生成任何敏感或有害的内容"
+          }
+        ],
+        "answer": [
+          "C"
+        ],
+        "analysis": "约束条件通过明确格式、长度、语体等限制，引导AI输出符合特定规范的内容。",
+        "dims": [
+          "提示词工程",
+          "AI结果评估与优化"
+        ],
+        "dimKeys": [
+          "D2",
+          "D4"
+        ]
+      },
+      "selectedKeys": [
+        "C"
+      ],
+      "answeredAt": "2026-09-14T00:23:00.000Z"
+    },
+    {
+      "question": {
+        "id": "q025",
+        "difficulty": "low",
+        "levelId": "court",
+        "type": "judge",
+        "q": "在AI辅助决策中，\"人在环中\"机制虽然提升安全性，但会显著降低效率，应尽量减少人工干预。",
+        "options": [
+          {
+            "key": "A",
+            "text": "正确"
+          },
+          {
+            "key": "B",
+            "text": "错误"
+          }
+        ],
+        "answer": [
+          "B"
+        ],
+        "analysis": "在关键决策点设置人工审核能有效避免AI错误导致的严重后果。防止错误决策带来的返工反而可能提升整体效率。",
+        "dims": [
+          "AI基础认知",
+          "人机协同解决问题"
+        ],
+        "dimKeys": [
+          "D1",
+          "D5"
+        ]
+      },
+      "selectedKeys": [
+        "B"
+      ],
+      "answeredAt": "2026-09-14T00:24:00.000Z"
+    }
+  ]
+}
