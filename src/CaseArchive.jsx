@@ -1162,6 +1162,20 @@ export function CaseArchive({ onDetailChange }) {
   const project = journey[wrapFeatured(active)];
   const visual = project.world;
 
+  // The colour field is the picture's ground, and the picture is now a frame
+  // that letterboxes inside a window whose aspect is not 16:9 — so the field has
+  // to reach past the frame or the letterbox shows as pink bands around a
+  // coloured poster. Hoisted onto the stage host, which owns the letterbox
+  // background; cleared on the way out so the next view's own backdrop applies.
+  useEffect(() => {
+    const host = document.querySelector(".design-stage-host");
+    if (!host) return;
+    host.style.setProperty("--stage-backdrop", visual.background);
+    return () => {
+      host.style.removeProperty("--stage-backdrop");
+    };
+  }, [visual.background]);
+
   const tiltFeature = (event) => {
     const element = featureRef.current;
     const finePointer = window.matchMedia?.("(hover: hover) and (pointer: fine)").matches;

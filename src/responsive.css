@@ -25,11 +25,32 @@
   height: 100dvh;
   overflow: clip;
   /* Letterbox. A window that is not 16:9 gains margin on its generous axis; the
-     composition is never stretched to fill it. Tracks whatever the current view
-     puts behind it (the archive sets its own colour field here), so the margin
-     reads as part of the page instead of as a bar. */
+     composition is never stretched to fill it. The margin has to read as part of
+     the page rather than as a bar around a coloured field, so it takes whatever
+     the current view puts behind it: the rules below follow the view, and the
+     archive hoists its own (per-case) colour with `--stage-backdrop`. */
   background: var(--stage-backdrop, var(--pink));
   transition: background-color 520ms ease;
+}
+
+/* The views whose own ground is not the brand pink. `.case-poster` is absent on
+   purpose — the archive hoists its per-case colour from the script side, because
+   that one changes with the case and during the wipe. */
+.design-stage-host:has(.site-experience[data-view="forum"]) {
+  background: #fff4fa;
+}
+
+.design-stage-host:has(
+    .site-experience[data-view="choose"],
+    .site-experience[data-view="assessments"],
+    .site-experience[data-view="assessment-map"],
+    .site-experience[data-view="assessment-task"],
+    .site-experience[data-view="profile"],
+    .site-experience[data-view="profile-detail"],
+    .site-experience[data-view="reports"],
+    .site-experience[data-view="login"]
+  ) {
+  background: #08080a;
 }
 
 .design-stage {
