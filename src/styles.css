@@ -74,7 +74,7 @@ button:hover {
 }
 .app {
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -569,8 +569,19 @@ button:hover {
   padding: 0;
   border: 0;
   border-radius: 24px;
-  width: min(680px, calc(100vw - 32px));
-  max-height: calc(100dvh - 48px);
+  /* A modal dialog is promoted to the browser's top layer, which escapes the
+     stage's transform, so `inset` and viewport units mean the window again
+     rather than the composition. It still inherits the frame's unit variables
+     through the DOM (custom properties cross the top layer), so they are reset
+     here — otherwise the dialog would be capped to the frame's 1080px on a
+     shorter window and could not shrink to fit. */
+  --vw: 1vw;
+  --vh: 1vh;
+  --dvh: 1dvh;
+  --vmin: 1vmin;
+  --vmax: 1vmax;
+  width: min(680px, calc(calc(100 * var(--vw, 1vw)) - 32px));
+  max-height: calc(calc(100 * var(--dvh, 1dvh)) - 48px);
   color: var(--ink);
   background: #fffafa;
   box-shadow: 0 30px 120px #39112870;
@@ -1362,8 +1373,8 @@ textarea {
 @media (max-width: 540px) {
   .dialog {
     border-radius: 19px;
-    max-height: calc(100dvh - 22px);
-    width: calc(100vw - 20px);
+    max-height: calc(calc(100 * var(--dvh, 1dvh)) - 22px);
+    width: calc(calc(100 * var(--vw, 1vw)) - 20px);
   }
   .dialog-content {
     padding: 23px 18px;

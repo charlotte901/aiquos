@@ -127,7 +127,18 @@ test("the archive route redraws alongside the page change and empties on command
   // Only the settled card is measured — a travelling stamp is scaled and offset,
   // so its box would drag the keep-out around mid-flight.
   assert.match(archive, /document\.querySelector\("\.case-poster-scene\.is-stable \.case-poster-feature"\)/);
-  assert.match(archive, /buildRouteDashes\(rect\.width, rect\.height, nextCard\)/);
+  // The wave is rebuilt on the svg's own layout box, not on its screen rect: the
+  // viewBox is a design-pixel space while `getBoundingClientRect` reports screen
+  // pixels, so on any window that is not the design size the route would be drawn
+  // at `1 / frame-scale` of its true size and the dashes would leave the curve
+  // they were measured from.
+  assert.match(archive, /buildRouteDashes\(width, height, nextCard\)/);
+  assert.match(archive, /const width = node\.clientWidth/);
+  assert.match(archive, /const scale = rect\.width > 0 \? rect\.width \/ width : 1/);
+  assert.ok(
+    !archive.includes("buildRouteDashes(rect.width, rect.height, nextCard)"),
+    "the route must not be built from screen-pixel rects inside the scaled stage",
+  );
   assert.match(archive, /<PosterRoute[\s\S]*move=\{transition && !transition\.reduced \? transition\.time : null\}/);
   assert.match(archive, /const next = \{ from, to, direction, progress, time, spring, reduced, corners \}/);
   assert.match(css, /\.case-poster-route-dash[\s\S]*stroke-linecap: round/);
@@ -641,15 +652,40 @@ test("a page change lands the departing stamp on the corner it is about to becom
   }
 
   // The display words leave on the same sweep, and they sit at the centre of the
-  // poster rather than at its edge — so clearing the viewport costs half the
-  // poster plus the whole word, which is much further than a margin picked by
-  // eye. A shortfall leaves a slice of display type on screen to blink out at
-  // the cut. Both words are measured because they are different lengths.
-  assert.match(helper, /offLeft: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => box\.right - sceneBox\.left\)\) \/ width\) \* 100/);
-  assert.match(helper, /offRight: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => sceneBox\.right - box\.left\)\) \/ width\) \* 100/);
+  // poster rather than at its edge — so clearing the frame costs half the poster
+  // plus the whole word, which is much further than a margin picked by eye. A
+  // shortfall leaves a slice of display type on screen to blink out at the cut.
+  // Both words are measured because they are different lengths.
+  assert.match(helper, /offLeft: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => box\.right - sceneBox\.left\)\) \/ scale\)/);
+  assert.match(helper, /offRight: \(Math\.max\(\.\.\.boxes\.map\(\(box\) => sceneBox\.right - box\.left\)\) \/ scale\)/);
   assert.match(moving, /const clearance = corners\?\.word/);
   assert.match(moving, /const wordX = reduced \? 0 : \(outgoing \? -direction : direction\) \* clearance \* travel/);
   assert.ok(!moving.includes("* 62 * travel"), "the word flight is still aimed at a guessed clearance");
+
+  // Measured rects are screen pixels, and both the poses and the transforms that
+  // consume them live in the scaled design stage — so the measurement has to be
+  // converted to design pixels first. Skipping that division is not a subtle
+  // error: at 1280x720 the departing stamp finished its flight a third of the
+  // way short of the corner, and the settled peek then appeared beyond it.
+  assert.match(helper, /const scale = getFrameScaleFromDom\(\) \|\| 1/);
+  assert.match(helper, /x: \(box\.left \+ box\.width \/ 2 - originX\) \/ scale/);
+  assert.match(helper, /y: \(box\.top \+ box\.height \/ 2 - originY\) \/ scale/);
+  assert.ok(
+    !helper.includes("/ width) * 100"),
+    "the corner poses must be design pixels, not percentages of the window",
+  );
+
+  // ...and the sweep hands those design-pixel offsets to the stylesheet as `px`.
+  // Writing them back as `vw` would reintroduce the window as a unit inside a
+  // composition deliberately no longer measured against it — the same class of
+  // bug the design stage exists to remove.
+  assert.match(moving, /"--stamp-x": `\$\{x\}px`/);
+  assert.match(moving, /"--stamp-y": `\$\{y\}px`/);
+  assert.match(moving, /"--word-x": `\$\{wordX\}px`/);
+  assert.ok(
+    !/"--stamp-x": `\$\{x\}vw`/.test(moving),
+    "corner offsets must not be written back in viewport units",
+  );
 
   // The body changes between the centre and the corner: full artwork over a
   // caption at the centre, artwork filling the frame and just the year at the

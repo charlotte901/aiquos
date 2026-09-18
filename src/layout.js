@@ -7,6 +7,14 @@ const BRAND_SHIFT_X = 48;
 /** Layout the individual elements in the viewport, never scale the whole page.
  * Artwork uses uniform scales so the wordmark and screen homographies stay true.
  * Very short viewports scroll instead of hiding controls or shrinking all text.
+ *
+ * In wide mode the `width`/`viewportHeight` a caller passes are the DESIGN FRAME
+ * (see stage.js), not the window, so every expression below evaluates to one
+ * fixed set of numbers and the composition is identical at every window size.
+ * That is why the `clamp`s here are harmless now: they exist to protect the
+ * compact path, which is still handed the real window. They used to cap the wide
+ * path too, at different widths per expression, which is what made the parts
+ * drift apart relative to one another as the monitor grew.
  */
 export function getViewportLayout(width, viewportHeight) {
   const compact =

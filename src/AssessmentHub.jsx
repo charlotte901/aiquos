@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Check } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
+import { useStageSize } from "./DesignStage";
 import {
   ASSESSMENTS,
   ASSESSMENT_ART,
@@ -30,20 +31,8 @@ export function SourceCrop({ crop, className = "", source = ASSESSMENT_ART, widt
 }
 
 export function AssessmentHub({ onBack, onStart, busy }) {
-  const [size, setSize] = useState(() => ({
-    width: innerWidth,
-    height: innerHeight,
-  }));
+  const size = useStageSize();
   const [selected, setSelected] = useState(null);
-  useEffect(() => {
-    const resize = () =>
-      setSize({
-        width: document.documentElement.clientWidth,
-        height: innerHeight,
-      });
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
   const layout = getAssessmentLayout(size.width, size.height);
   return (
     <main

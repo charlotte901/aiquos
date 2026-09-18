@@ -20,6 +20,7 @@
 // for modules that a test imports, and Node's ESM resolver needs it (this file is
 // covered by tests/slide-transition.test.mjs).
 import { STRIP_EASING } from "./split-transition.js";
+import { getStageSize } from "./stage.js";
 
 export const SLIDE_DURATION = 760;
 
@@ -63,7 +64,10 @@ function layers(forward) {
  * the new page already in place.
  */
 export async function pushPages({ forward, enter, commit }) {
-  const width = innerWidth;
+  // The travelling layers are inside the stage, so the distance a page moves to
+  // clear the frame is the frame's width — not the window's, which is wider and
+  // would leave the page still partly on screen at the end of the push.
+  const width = getStageSize()[0];
   const options = {
     duration: SLIDE_DURATION,
     easing: SLIDE_EASING,

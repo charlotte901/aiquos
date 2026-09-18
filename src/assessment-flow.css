@@ -2,15 +2,15 @@
   --assessment-color: #2677ee;
   --assessment-soft: #e9f2ff;
   position: relative;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: hidden;
-  padding: clamp(38px, 5.3vh, 50px) clamp(28px, 3.5vw, 60px) 42px;
+  padding: clamp(38px, calc(5.3 * var(--vh, 1vh)), 50px) clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px) 42px;
   color: #fff;
   background: radial-gradient(ellipse at 51% 49%, var(--assessment-glow, var(--assessment-color)) 0%, var(--assessment-color) 51%, var(--assessment-deep, var(--assessment-color)) 100%);
   isolation: isolate;
 }
 .flow-wordmark {
-  width: clamp(172px, 13.2vw, 226px);
+  width: clamp(172px, calc(13.2 * var(--vw, 1vw)), 226px);
   height: auto;
   aspect-ratio: 822 / 244;
   margin: 0;
@@ -18,8 +18,8 @@
 .flow-wordmark canvas { display: block; width: 100%; height: 100%; }
 .flow-back {
   position: absolute;
-  left: clamp(28px, 3.5vw, 60px);
-  bottom: clamp(24px, 3.3vh, 38px);
+  left: clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px);
+  bottom: clamp(24px, calc(3.3 * var(--vh, 1vh)), 38px);
   z-index: 4;
   display: inline-flex;
   align-items: center;
@@ -35,8 +35,8 @@
 .flow-back:hover { opacity: 1; transform: translateX(-3px); }
 .level-progress {
   position: absolute;
-  top: clamp(38px, 5.2vh, 50px);
-  right: clamp(28px, 2.75vw, 46px);
+  top: clamp(38px, calc(5.2 * var(--vh, 1vh)), 50px);
+  right: clamp(28px, calc(2.75 * var(--vw, 1vw)), 46px);
   z-index: 5;
   display: grid;
   justify-items: center;
@@ -77,10 +77,10 @@
 .level-node:not(:disabled):hover { transform: translateY(-2px); }
 .level-map {
   position: relative;
-  width: min(66.8vw, 1120px);
-  min-height: min(61dvh, 650px);
-  margin: clamp(104px, 13vh, 154px) auto 0;
-  padding: clamp(44px, 5.2vw, 84px);
+  width: min(calc(66.8 * var(--vw, 1vw)), 1120px);
+  min-height: min(calc(61 * var(--dvh, 1dvh)), 650px);
+  margin: clamp(104px, calc(13 * var(--vh, 1vh)), 154px) auto 0;
+  padding: clamp(44px, calc(5.2 * var(--vw, 1vw)), 84px);
   border-radius: 42px;
   color: #263243;
   background: #fff;
@@ -90,15 +90,15 @@
 .map-flow .level-map { animation: flow-panel-in 520ms cubic-bezier(.16,1,.3,1) both; }
 .map-kicker, .task-heading strong { color: var(--assessment-color); }
 .map-kicker { margin: 0 0 8px; font-weight: 800; font-size: 14px; letter-spacing: .08em; }
-.level-map h2 { margin: 0; font-size: clamp(28px, 3.1vw, 48px); letter-spacing: -.06em; line-height: 1; }
+.level-map h2 { margin: 0; font-size: clamp(28px, calc(3.1 * var(--vw, 1vw)), 48px); letter-spacing: -.06em; line-height: 1; }
 .level-map > p:not(.map-kicker) { max-width: 390px; margin: 14px 0 0; color: #657080; line-height: 1.55; }
 .map-path {
   position: relative;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: start;
-  gap: clamp(12px, 2vw, 34px);
-  margin-top: clamp(56px, 10vh, 112px);
+  gap: clamp(12px, calc(2 * var(--vw, 1vw)), 34px);
+  margin-top: clamp(56px, calc(10 * var(--vh, 1vh)), 112px);
   padding-right: 13%;
 }
 .map-path::before {
@@ -148,7 +148,7 @@
 .assessment-guides {
   position: absolute;
   z-index: 2;
-  width: clamp(152px, 16vw, 274px);
+  width: clamp(152px, calc(16 * var(--vw, 1vw)), 274px);
   height: auto;
   object-fit: contain;
   pointer-events: none;
@@ -159,25 +159,25 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(66.8vw, 1120px);
-  height: 80dvh;
-  margin: clamp(104px, 13vh, 154px) auto 0;
-  padding: clamp(40px, 4.15vw, 52px) clamp(40px, 3.4vw, 56px) clamp(28px, 3.4vw, 40px);
-  border-radius: clamp(36px, 3.5vw, 52px);
+  width: min(calc(66.8 * var(--vw, 1vw)), 1120px);
+  height: calc(80 * var(--dvh, 1dvh));
+  margin: clamp(104px, calc(13 * var(--vh, 1vh)), 154px) auto 0;
+  padding: clamp(40px, calc(4.15 * var(--vw, 1vw)), 52px) clamp(40px, calc(3.4 * var(--vw, 1vw)), 56px) clamp(28px, calc(3.4 * var(--vw, 1vw)), 40px);
+  border-radius: clamp(36px, calc(3.5 * var(--vw, 1vw)), 52px);
   color: #263243;
   background: #fff;
   box-shadow: 0 24px 0 #0000000d, 0 22px 48px #00000012;
   transform: translateX(clamp(-4px, -.24vw, -2px));
 }
 .task-flow .task-panel { animation: flow-panel-in 520ms cubic-bezier(.16,1,.3,1) both; }
-.task-panel .assessment-guides { right: 9.5%; top: -117px; width: clamp(168px, 14vw, 234px); filter: brightness(0) invert(1); }
+.task-panel .assessment-guides { right: 9.5%; top: -117px; width: clamp(168px, calc(14 * var(--vw, 1vw)), 234px); filter: brightness(0) invert(1); }
 .task-heading { display: flex; align-items: center; gap: 10px; color: #3e4c61; font-size: 14px; font-weight: 700; }
 .task-heading > svg { width: 21px; height: 21px; color: var(--assessment-color); }
 .task-heading strong { margin-left: auto; font-size: 12px; }
-.task-body { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, 2.1vh, 25px); }
+.task-body { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, calc(2.1 * var(--vh, 1vh)), 25px); }
 .task-body { animation: task-content-in 380ms 110ms cubic-bezier(.16,1,.3,1) both; }
-.task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(22px, 2.1vw, 29px); line-height: 1.2; letter-spacing: -.045em; }
-.answer-options { display: grid; gap: 8px; width: 100%; margin-top: clamp(15px, 2vh, 21px); }
+.task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(22px, calc(2.1 * var(--vw, 1vw)), 29px); line-height: 1.2; letter-spacing: -.045em; }
+.answer-options { display: grid; gap: 8px; width: 100%; margin-top: clamp(15px, calc(2 * var(--vh, 1vh)), 21px); }
 .answer-options button { display: flex; align-items: center; gap: 15px; min-height: 56px; padding: 0 21px; border: 0; border-radius: 20px; color: #425162; background: color-mix(in srgb, var(--assessment-soft) 58%, #fff); text-align: left; font-size: 15px; font-weight: 600; }
 .answer-options button > span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; color: var(--assessment-color); background: var(--assessment-soft); font-size: 12px; flex: 0 0 auto; }
 .answer-options button > svg { margin-left: auto; color: var(--assessment-color); }
@@ -328,14 +328,14 @@
   --assessment-deep: #155cca;
   position: fixed;
   left: 50%;
-  bottom: clamp(32px, 6dvh, 52px);
-  width: min(66.8vw, 1120px);
+  bottom: clamp(32px, calc(6 * var(--dvh, 1dvh)), 52px);
+  width: min(calc(66.8 * var(--vw, 1vw)), 1120px);
   transform: translateX(-50%);
   z-index: 7;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 0 clamp(40px, 3.4vw, 56px) clamp(24px, 3vh, 34px);
+  padding: 0 clamp(40px, calc(3.4 * var(--vw, 1vw)), 56px) clamp(24px, calc(3 * var(--vh, 1vh)), 34px);
   background: transparent;
   pointer-events: none;
 }
@@ -397,7 +397,7 @@
 .chat-bubble.is-streaming p > :last-child::after { content: "▍"; margin-left: 1px; color: var(--assessment-color); animation: md-caret 900ms steps(1) infinite; }
 @keyframes md-caret { 50% { opacity: 0; } }
 .conversation-task { min-height: 0; }
-.conversation-task h2 { font-size: clamp(27px, 2.45vw, 34px); letter-spacing: -.05em; }
+.conversation-task h2 { font-size: clamp(27px, calc(2.45 * var(--vw, 1vw)), 34px); letter-spacing: -.05em; }
 .conversation-task .chat-thread {
   display: flex;
   flex: 1;
@@ -422,7 +422,7 @@
   border-radius: 20px 20px 20px 6px;
   color: #29364a;
   background: color-mix(in srgb, var(--assessment-soft) 69%, #fff);
-  font-size: clamp(16px, 1.18vw, 18px);
+  font-size: clamp(16px, calc(1.18 * var(--vw, 1vw)), 18px);
   font-weight: 500;
   line-height: 1.68;
 }
@@ -460,12 +460,12 @@
 @media (min-width: 841px) {
   .task-flow .task-panel {
     position: absolute;
-    top: 16dvh;
+    top: calc(16 * var(--dvh, 1dvh));
     bottom: auto;
     left: 0;
     right: 0;
-    width: min(66.8vw, 1120px);
-    height: 80dvh;
+    width: min(calc(66.8 * var(--vw, 1vw)), 1120px);
+    height: calc(80 * var(--dvh, 1dvh));
     margin: 0 auto;
     transform: none;
     animation: none;
@@ -544,12 +544,12 @@
   .level-map, .task-panel { width: 100%; min-height: 0; height: auto; margin-top: 90px; border-radius: 30px; }
   .task-flow .task-panel {
     position: absolute;
-    top: 16dvh;
+    top: calc(16 * var(--dvh, 1dvh));
     bottom: auto;
     left: 0;
     right: 0;
     width: 100%;
-    height: 80dvh;
+    height: calc(80 * var(--dvh, 1dvh));
     margin: 0;
     transform: none;
     animation: none;
@@ -636,8 +636,8 @@
 }
 
 /* === 对话框字体放大 === */
-.conversation-task .chat-bubble p { font-size: clamp(19px, 1.45vw, 23px); line-height: 1.7; }
-.conversation-task .chat-bubble.is-feedback p { font-size: clamp(19px, 1.45vw, 23px); }
+.conversation-task .chat-bubble p { font-size: clamp(19px, calc(1.45 * var(--vw, 1vw)), 23px); line-height: 1.7; }
+.conversation-task .chat-bubble.is-feedback p { font-size: clamp(19px, calc(1.45 * var(--vw, 1vw)), 23px); }
 .conversation-task .chat-bubble span { font-size: 14px; }
 .conversation-task .task-composer input { font-size: 20px; }
 .story-line p { font-size: 19px; line-height: 1.75; }

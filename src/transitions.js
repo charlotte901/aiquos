@@ -1,3 +1,5 @@
+import { getStageSize } from "./stage.js";
+
 const SCROLL_DURATION = 840;
 
 /** The home and login pages share a virtual scroll surface; no browser bar. */
@@ -12,13 +14,16 @@ export async function animateScrollPage(host, outgoing, incoming, scrollY = 0, r
   const outFrozen = outgoing;
   const inFrozen = incoming;
 
+  // The frozen mirrors are laid into `.split-transition`, which sits inside the
+  // stage, so their width is the frame's and not the window's (see stage.js).
+  const [frameWidth] = getStageSize();
   stage.className = "scroll-page-stage";
   track.className = "scroll-page-track";
   outFace.className = "scroll-page-face";
   inFace.className = "scroll-page-face scroll-page-incoming";
-  outFrozen.style.width = `${innerWidth}px`;
+  outFrozen.style.width = `${frameWidth}px`;
   outFrozen.style.transform = `translateY(${-scrollY}px)`;
-  inFrozen.style.width = `${innerWidth}px`;
+  inFrozen.style.width = `${frameWidth}px`;
   if (reverse) inFace.classList.add("is-before");
   outFace.append(outFrozen);
   inFace.append(inFrozen);

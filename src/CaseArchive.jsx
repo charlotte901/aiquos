@@ -13,6 +13,7 @@ import {
 import { favoriteFromCase, toggleFavorite, useFavoriteSaved } from "./favorites-store";
 import { CaseScreen } from "./CaseScreen";
 import { CASES as LIVE_CASES } from "./cases";
+import { getFrameScaleFromDom, getStageSize } from "./stage";
 import {
   addJourneyKey,
   isDefaultJourney,
@@ -593,39 +594,44 @@ function PosterRoute({ move = null, delay = 80 }) {
   const drawnRef = useRef(0);
   const cardRef = useRef(null);
   const [route, setRoute] = useState(() => buildRouteDashes(
-    window.innerWidth || 1280,
-    window.innerHeight || 800,
+    ...getStageSize(),
   ));
   const [drawn, setDrawn] = useState(0);
 
-  // Rebuild the wave in real pixels whenever the scene changes size, so the
-  // dashes never stretch with the viewport aspect. The centered card is measured
-  // from the stable scene only: the travelling stamps are scaled and offset, so
-  // their boxes would move the keep-out around mid-flight.
+  // Rebuild the wave in design pixels whenever the scene changes size, so the
+  // dashes never stretch with the frame's aspect. The viewBox has to be the
+  // SVG's own layout box — a `getBoundingClientRect` would be screen pixels,
+  // which the frame only agrees with at scale 1, so every other window size
+  // would draw the route at `1 / scale` of its true size. The centered card is
+  // measured from the stable scene only: the travelling stamps are scaled and
+  // offset, so their boxes would move the keep-out around mid-flight.
   const syncRoute = useCallback(() => {
     const node = svgRef.current;
     if (!node) return;
+    const width = node.clientWidth;
+    const height = node.clientHeight;
+    if (width < 2 || height < 2) return;
     const rect = node.getBoundingClientRect();
-    if (rect.width < 2 || rect.height < 2) return;
+    const scale = rect.width > 0 ? rect.width / width : 1;
     const card = document.querySelector(".case-poster-scene.is-stable .case-poster-feature");
     if (card) {
       const box = card.getBoundingClientRect();
       if (box.width > 2 && box.height > 2) {
         cardRef.current = {
-          x: box.left - rect.left,
-          y: box.top - rect.top,
-          width: box.width,
-          height: box.height,
+          x: (box.left - rect.left) / scale,
+          y: (box.top - rect.top) / scale,
+          width: box.width / scale,
+          height: box.height / scale,
         };
       }
     }
     const nextCard = cardRef.current;
     setRoute((current) => (
-      Math.abs(current.width - rect.width) < 1
-      && Math.abs(current.height - rect.height) < 1
+      Math.abs(current.width - width) < 1
+      && Math.abs(current.height - height) < 1
       && current.card === nextCard
         ? current
-        : buildRouteDashes(rect.width, rect.height, nextCard)
+        : buildRouteDashes(width, height, nextCard)
     ));
   }, []);
 
@@ -895,8 +901,12 @@ function measureCornerPoses(feature) {
   const origin = feature.getBoundingClientRect();
   const originX = origin.left + origin.width / 2;
   const originY = origin.top + origin.height / 2;
-  const width = window.innerWidth || 1;
-  const height = window.innerHeight || 1;
+  // Screen pixels -> design pixels. The poses are consumed as `px` translations
+  // by the feature rule, and the scene they are relative to is inside the scaled
+  // design stage, so a screen-pixel offset would be multiplied by the frame
+  // scale a second time: at 1280x720 the stamp would finish its flight 1/3 of
+  // the way short of the corner and the settled peek would appear beyond it.
+  const scale = getFrameScaleFromDom() || 1;
   const poses = {};
 
   for (const side of PEEK_SIDES) {
@@ -908,12 +918,10 @@ function measureCornerPoses(feature) {
       .split(",")
       .map(Number);
     poses[side] = {
-      // `--stamp-x` is a vw translation and `--stamp-y` a vh one, so the corner
-      // offsets go back out in the units the transform is going to consume.
-      x: ((box.left + box.width / 2 - originX) / width) * 100,
-      y: ((box.top + box.height / 2 - originY) / height) * 100,
-      // The corner stamps are the same box at a smaller clamp, and both are
-      // tilted, so the layout width is the size ratio — not the tilted bounds.
+      x: (box.left + box.width / 2 - originX) / scale,
+      y: (box.top + box.height / 2 - originY) / scale,
+      // The corner stamps are the same box at a smaller share of the feature, so
+      // the layout width is the size ratio — not the tilted bounds.
       scale: peek.offsetWidth / feature.offsetWidth,
       rotation: (Math.atan2(parts[1], parts[0]) * 180) / Math.PI,
       opacity: Number.parseFloat(style.opacity) || 1,
@@ -921,15 +929,15 @@ function measureCornerPoses(feature) {
   }
 
   // The display words leave the frame on the same sweep. They sit at the centre
-  // of the poster, not at its edge, so clearing the viewport costs half the
-  // poster plus the whole word — much further than a margin picked by eye. Both
-  // words are measured because they are different lengths.
+  // of the poster, not at its edge, so clearing the frame costs half the poster
+  // plus the whole word — much further than a margin picked by eye. Both words
+  // are measured because they are different lengths.
   const words = [...scene.querySelectorAll(".case-poster-words span")];
   if (!words.length) return null;
   const boxes = words.map((word) => word.getBoundingClientRect());
   poses.word = {
-    offLeft: (Math.max(...boxes.map((box) => box.right - sceneBox.left)) / width) * 100,
-    offRight: (Math.max(...boxes.map((box) => sceneBox.right - box.left)) / width) * 100,
+    offLeft: (Math.max(...boxes.map((box) => box.right - sceneBox.left)) / scale),
+    offRight: (Math.max(...boxes.map((box) => sceneBox.right - box.left)) / scale),
   };
   return poses;
 }
@@ -1400,10 +1408,14 @@ export function CaseArchive({ onDetailChange }) {
         style={{
           "--scene-ink": sceneVisual.ink,
           "--scene-accent": sceneVisual.accent,
-          "--word-x": `${wordX}vw`,
+          // Design pixels, not `vw`/`vh`. These offsets come from measured rects
+          // (see `measureCornerPoses`, which divides them through by the frame
+          // scale), and `vw` would reintroduce the window as a unit inside a
+          // composition that is deliberately no longer measured against it.
+          "--word-x": `${wordX}px`,
           "--word-opacity": opacity,
-          "--stamp-x": `${x}vw`,
-          "--stamp-y": `${y}vh`,
+          "--stamp-x": `${x}px`,
+          "--stamp-y": `${y}px`,
           "--stamp-scale": scale,
           "--stamp-opacity": opacity,
           "--stamp-rotation": `${reduced ? 0 : pose.rotation * travel}deg`,

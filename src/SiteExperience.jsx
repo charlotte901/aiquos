@@ -26,6 +26,13 @@ import {
 import { animateScrollPage } from "./transitions";
 import { pushPages } from "./slide-transition";
 import { skipCaseIntro } from "./CaseArchive";
+import { getStageSize } from "./stage";
+
+// A move with no cards to cut around takes the whole frame as one band.
+const defaultBands = () => {
+  const height = getStageSize()[1];
+  return [0, 0, height, height];
+};
 
 const route = () => {
   const assessment = getAssessmentRoute();
@@ -329,7 +336,7 @@ export function SiteExperience() {
       );
       const boundaries = cardPage(toPanel)
         ? measureAssessmentBands(toPanel)
-        : boundsFrom ?? [0, 0, innerHeight, innerHeight];
+        : boundsFrom ?? defaultBands();
       const incoming = await freezeView(
         toPanel,
         await collectSceneFrames(toPanel),

@@ -1,4 +1,80 @@
 /* Viewport layout. Visual styling and screen content remain in styles.css. */
+
+/* ==========================================================================
+   The stage: one fixed 16:9 composition, uniformly scaled to the window.
+   ==========================================================================
+
+   Everything else in this file is written against the stage, so a length here
+   is a share of the composition rather than a share of the monitor. Before the
+   stage, each part was sized from the live window with its own px clamp on both
+   ends; the clamps saturated at different widths, so the parts came apart as the
+   window grew. Measured across 1280x720 -> 3840x2160, the intro block's own
+   scale stopped at 1.3 while the cube kept growing to 2.11, which moved that
+   block 52 percentage points across the frame and shrank the display type from
+   27% of the width to 14%. The stage removes the third factor: one scale, one
+   coordinate space, and the proportions are the ones authored below.
+
+   `--frame-scale` is the ONLY transform applied to an ancestor of the layout.
+   A transform also makes this box the containing block for `position: fixed`
+   descendants, which is deliberate — views like `.case-detail` and the forum
+   detail use `inset: 0` to mean "the whole screen", and inside the stage that
+   correctly resolves to the frame rather than to the window. */
+.design-stage-host {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: clip;
+  /* Letterbox. A window that is not 16:9 gains margin on its generous axis; the
+     composition is never stretched to fill it. Tracks whatever the current view
+     puts behind it (the archive sets its own colour field here), so the margin
+     reads as part of the page instead of as a bar. */
+  background: var(--stage-backdrop, var(--pink));
+  transition: background-color 520ms ease;
+}
+
+.design-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
+  transform-origin: center center;
+  isolation: isolate;
+  /* Frame-relative units. `1vw` no longer means 1% of the window inside here —
+     it means 1% of the frame, which is what every rule below has always been
+     describing. Written as px so the values are exact at any scale. */
+  --vw: 19.2px;
+  --vh: 10.8px;
+  --dvh: 10.8px;
+  --vmin: 10.8px;
+  --vmax: 19.2px;
+}
+
+/* Compact is the window itself, unscaled, so the phone keeps the fluid layout it
+   already had rather than a shrunken wide composition. `1vw` means what it says
+   again, and every converted rule below evaluates to the value it had before the
+   stage existed. */
+.design-stage[data-compact="true"] {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 100%;
+  height: auto;
+  min-height: calc(100 * var(--dvh, 1dvh));
+  transform: none;
+  --vw: 1vw;
+  --vh: 1vh;
+  --dvh: 1dvh;
+  --vmin: 1vmin;
+  --vmax: 1vmax;
+}
+
+.design-stage-host[data-compact="true"] {
+  height: auto;
+  min-height: calc(100 * var(--dvh, 1dvh));
+}
+
 html,
 body,
 #root {
@@ -11,7 +87,7 @@ body {
 .app {
   display: block;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: clip;
   /* One fixed header geometry for the whole site. These are reference-composition
      pixels, deliberately not derived from `--ui-scale`: the wordmark, the nav and
@@ -177,8 +253,8 @@ body {
 }
 .app[data-tab="cases"],
 .app[data-tab="cases"] .canvas-space {
-  height: 100dvh;
-  min-height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: hidden;
 }
 .app[data-tab="cases"] .home-tab-screen {
@@ -215,9 +291,9 @@ body {
   padding-top: 0;
 }
 .forum-effect {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  height: 60dvh;
+  width: calc(100 * var(--vw, 1vw));
+  margin-left: calc(50% - calc(50 * var(--vw, 1vw)));
+  height: calc(60 * var(--dvh, 1dvh));
   margin-bottom: 30px;
   overflow: hidden;
   border-radius: 36px;
@@ -353,7 +429,7 @@ body {
   justify-items: center;
   row-gap: 14px;
   place-items: center;
-  padding: calc(96px * var(--ui-scale)) clamp(28px, 5vw, 72px) 28px;
+  padding: calc(96px * var(--ui-scale)) clamp(28px, calc(5 * var(--vw, 1vw)), 72px) 28px;
   background: #fffdfb;
   border-right: 3px solid #000;
 }
@@ -361,7 +437,7 @@ body {
 .forum-compose-stage {
   position: relative;
   width: min(100%, 620px);
-  width: min(100%, 620px, calc((100dvh - 206px) * .8));
+  width: min(100%, 620px, calc((calc(100 * var(--dvh, 1dvh)) - 206px) * .8));
   aspect-ratio: 4 / 5;
   display: grid;
   place-items: center;
@@ -422,7 +498,7 @@ body {
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  padding: calc(92px * var(--ui-scale)) clamp(26px, 4vw, 62px) 28px;
+  padding: calc(92px * var(--ui-scale)) clamp(26px, calc(4 * var(--vw, 1vw)), 62px) 28px;
   background: #fffdfb;
 }
 
@@ -441,7 +517,7 @@ body {
 
 .forum-compose-panel > header h1 {
   margin: 9px 0 0;
-  font-size: clamp(28px, 2.5vw, 38px);
+  font-size: clamp(28px, calc(2.5 * var(--vw, 1vw)), 38px);
   line-height: 1.1;
   letter-spacing: -.5px;
 }
@@ -771,7 +847,7 @@ body {
   inset: 0;
   width: 100%;
   margin: 0;
-  height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(400px, 0.78fr);
   grid-template-rows: minmax(0, 1fr);
@@ -894,7 +970,7 @@ body {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
-  padding: calc(104px * var(--ui-scale)) clamp(26px, 4.2vw, 64px) 26px;
+  padding: calc(104px * var(--ui-scale)) clamp(26px, calc(4.2 * var(--vw, 1vw)), 64px) 26px;
   background: #fffdfb;
 }
 
@@ -909,7 +985,7 @@ body {
 .forum-post-head h1 {
   margin: 16px 0 0;
   color: #17150f;
-  font-size: clamp(26px, 2.4vw, 34px);
+  font-size: clamp(26px, calc(2.4 * var(--vw, 1vw)), 34px);
   line-height: 1.24;
   letter-spacing: -0.4px;
 }
@@ -1165,9 +1241,9 @@ body {
 }
 .case-archive:not(.case-detail) {
   position: relative;
-  width: 100vw;
-  height: 100dvh;
-  margin-left: calc(50% - 50vw);
+  width: calc(100 * var(--vw, 1vw));
+  height: calc(100 * var(--dvh, 1dvh));
+  margin-left: calc(50% - calc(50 * var(--vw, 1vw)));
   overflow: hidden;
   border-radius: 0;
   outline: none;
@@ -1207,7 +1283,7 @@ body {
   z-index: 1;
   pointer-events: none;
   font-family: "DM Sans", "Noto Sans SC", sans-serif;
-  font-size: clamp(92px, 13.35vw, 204px);
+  font-size: clamp(92px, calc(13.35 * var(--vw, 1vw)), 204px);
   font-weight: 800;
   line-height: 0.78;
   letter-spacing: -0.075em;
@@ -1224,7 +1300,7 @@ body {
 }
 
 .case-poster-words span:first-child {
-  top: clamp(62px, 7dvh, 86px);
+  top: clamp(62px, calc(7 * var(--dvh, 1dvh)), 86px);
 }
 
 .case-poster-words span:last-child {
@@ -1259,9 +1335,14 @@ body {
   z-index: 4;
   left: 50%;
   top: 29%;
-  height: min(26.5vw, calc(59dvh * 0.81), 415px);
+  /* Size is set once, by `width`, and the height follows from the art's own
+     aspect. This rule used to carry a `height` as well, and because the later
+     `.case-poster-feature` rule sets a `width`, both applied at once — so
+     `aspect-ratio` was overridden and the stamp box came out 0.92 wide while the
+     artwork was 0.80, i.e. the perforated frame was squeezed 15% horizontally at
+     every size and the two sizing rules could not be reasoned about together. */
+  aspect-ratio: 0.8;
   min-width: 262px;
-  aspect-ratio: 0.81;
   --stamp-tilt-x: 0deg;
   --stamp-tilt-y: 0deg;
   --stamp-shift-x: 0px;
@@ -1363,7 +1444,7 @@ body {
   grid-column: 1 / -1;
   overflow: hidden;
   color: #24201d;
-  font-size: clamp(14px, 1.25vw, 19px);
+  font-size: clamp(14px, calc(1.25 * var(--vw, 1vw)), 19px);
   line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1373,7 +1454,7 @@ body {
 .poster-stamp-caption time {
   margin-top: 6px;
   color: #706862;
-  font-size: clamp(10px, 0.85vw, 13px);
+  font-size: clamp(10px, calc(0.85 * var(--vw, 1vw)), 13px);
 }
 
 .case-poster-open {
@@ -1396,40 +1477,16 @@ body {
   transform: translate(-50%, 5px);
 }
 
+/* Positioning and sizing for the corner stamps live in the `.case-poster-peek`
+   rules further down, next to the feature stamp they are a share of. This pair
+   used to repeat the geometry, which meant a change to one rule set could be
+   silently overridden by the other — the corner tuck below was defeated by the
+   `margin-left: 13%` that used to sit here. Only the box reset stays. */
 .case-poster-peek {
   position: absolute;
   z-index: 3;
-  height: clamp(calc(152px * var(--poster-scale)), calc(14.5vw * var(--poster-scale)), calc(225px * var(--poster-scale)));
-  width: auto;
-  aspect-ratio: 0.81;
   opacity: 0.82;
   transition: transform 300ms ease, opacity 300ms ease;
-}
-
-.case-poster-peek.is-previous {
-  left: 0;
-  top: 5.5%;
-  margin-left: 13%;
-  transform: translateX(-50%) rotate(-1.2deg);
-}
-
-.case-poster-peek.is-next {
-  right: 0;
-  bottom: 5.5%;
-  margin-right: 13%;
-  transform: translateX(50%) rotate(1.2deg);
-}
-
-.case-poster-peek:hover {
-  opacity: 1;
-}
-
-.case-poster-peek.is-previous:hover {
-  transform: translateX(-50%) rotate(-1.2deg);
-}
-
-.case-poster-peek.is-next:hover {
-  transform: translateX(50%) rotate(1.2deg);
 }
 
 /* The compact body hangs off the content layer rather than the stamp root, so a
@@ -1479,7 +1536,7 @@ body {
   background: #ffffff14;
 }
 
-.case-poster-arrow.is-left { left: clamp(32px, 15vw, 150px); }
+.case-poster-arrow.is-left { left: clamp(32px, calc(15 * var(--vw, 1vw)), 150px); }
 /* The two arrows are a mirrored pair — same 109px box, same 46px circle, same 37px
    label, only the outer edge differs — so they must share one inset formula. The
    right arrow used to read clamp(54px, 7vw, 108px), which held it a consistent extra
@@ -1490,7 +1547,7 @@ body {
    inset from the page edge — at 1000px wide the previous peek spans x=-12..104
    while the left arrow starts at x=45, so the two drew straight through each
    other. Tracking the stamp scale moves them clear of the peek band. */
-.case-poster-arrow.is-right { right: clamp(32px, 15vw, 150px); }
+.case-poster-arrow.is-right { right: clamp(32px, calc(15 * var(--vw, 1vw)), 150px); }
 
 .case-poster-rail {
   position: absolute;
@@ -1503,7 +1560,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(3px, 0.45dvh, 6px);
+  gap: clamp(3px, calc(0.45 * var(--dvh, 1dvh)), 6px);
 }
 
 .case-poster-rail::before {
@@ -1571,10 +1628,10 @@ body {
 }
 
 .case-detail {
-  height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
   display: flex;
   align-items: center;
-  padding: calc(112px * var(--ui-scale)) clamp(26px, 4.2vw, 72px) 36px;
+  padding: calc(112px * var(--ui-scale)) clamp(26px, calc(4.2 * var(--vw, 1vw)), 72px) 36px;
   border-radius: 0;
 }
 
@@ -1603,12 +1660,12 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.48fr);
   align-items: center;
-  gap: clamp(30px, 5vw, 78px);
+  gap: clamp(30px, calc(5 * var(--vw, 1vw)), 78px);
 }
 
 .case-detail-figure {
   margin: 0;
-  height: min(620px, 72dvh);
+  height: min(620px, calc(72 * var(--dvh, 1dvh)));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1636,7 +1693,7 @@ body {
 .case-detail-info h1 {
   margin: 0;
   color: #17150f;
-  font-size: clamp(34px, 4.2vw, 58px);
+  font-size: clamp(34px, calc(4.2 * var(--vw, 1vw)), 58px);
   line-height: 1;
   letter-spacing: -1.2px;
 }
@@ -1661,10 +1718,10 @@ body {
   line-height: 1.72;
 }
 .app[data-layout="compact"] .case-archive:not(.case-detail) {
-  height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
 }
 .app[data-layout="compact"] .case-poster-words {
-  font-size: clamp(58px, 18vw, 118px);
+  font-size: clamp(58px, calc(18 * var(--vw, 1vw)), 118px);
   line-height: 0.82;
 }
 .app[data-layout="compact"] .case-poster-words span:first-child {
@@ -1679,7 +1736,7 @@ body {
      design, so a height-driven size would overflow horizontally. Compact
      therefore sizes from the WIDTH instead, which is the scarce axis here. */
   height: auto;
-  width: min(64vw, 356px);
+  width: min(calc(64 * var(--vw, 1vw)), 356px);
   min-width: 0;
   aspect-ratio: 0.81;
 }
@@ -1765,7 +1822,7 @@ body {
 }
 .app[data-layout="compact"] .case-detail-figure,
 .profile-favorite-detail[data-layout="compact"] .case-detail-figure {
-  height: min(460px, 58dvh);
+  height: min(460px, calc(58 * var(--dvh, 1dvh)));
 }
 .app[data-layout="compact"] .case-detail-info h1,
 .profile-favorite-detail[data-layout="compact"] .case-detail-info h1 {
@@ -1849,7 +1906,7 @@ body {
   inset: auto;
   grid-template-columns: 1fr;
   height: auto;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: visible;
 }
 .app[data-layout="compact"] .forum-back,
@@ -1868,7 +1925,7 @@ body {
 
 .app[data-layout="compact"] .forum-compose-screen {
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(310px, 52dvh) minmax(0, 1fr);
+  grid-template-rows: minmax(310px, calc(52 * var(--dvh, 1dvh))) minmax(0, 1fr);
 }
 
 .app[data-layout="compact"] .forum-compose-preview {
@@ -1888,7 +1945,7 @@ body {
 }
 
 .app[data-layout="compact"] .forum-compose-stage {
-  width: min(100%, max(180px, calc((52dvh - 168px) * .8)));
+  width: min(100%, max(180px, calc((calc(52 * var(--dvh, 1dvh)) - 168px) * .8)));
 }
 
 .app[data-layout="compact"] .forum-compose-panel {
@@ -1906,7 +1963,7 @@ body {
 }
 .app[data-layout="compact"] .forum-post-media,
 .profile-favorite-detail[data-layout="compact"] .forum-post-media {
-  height: min(68dvh, 520px);
+  height: min(calc(68 * var(--dvh, 1dvh)), 520px);
   border-right: 0;
   border-bottom: 3px solid #000;
 }
@@ -1956,7 +2013,7 @@ body {
   top: 54px;
   height: 30px;
   transform: none;
-  gap: clamp(22px, 6vw, 42px);
+  gap: clamp(22px, calc(6 * var(--vw, 1vw)), 42px);
   font-size: 13px;
 }
 .app[data-layout="compact"] .home-tab-screen {
@@ -2152,6 +2209,17 @@ body {
 .case-poster-frame {
   position: absolute;
   inset: var(--chrome-block) var(--poster-margin) var(--poster-margin);
+  /* The composition's own measurements, in design pixels. The frame is a fixed
+     1920x1080 box, so these are absolute by construction — no clamp, no unit
+     that silently means something different on a different monitor, and one
+     number that the feature stamp and the two corner peeks are derived from so
+     they cannot disagree about their relative sizes.
+     420px wide (up from an effective 382), and the art is 1122x1402 (0.8), so
+     the height follows at 525. The box used to be 382x415 — an aspect of 0.92,
+     because a `height` and a `width` were both set and `aspect-ratio` was
+     therefore ignored, squeezing the perforated frame 15% out of shape. */
+  --feature-stamp-width: 420px;
+  --peek-stamp-ratio: 0.56;
 }
 
 .case-poster-stage {
@@ -2174,7 +2242,7 @@ body {
 
 .case-poster-words {
   z-index: 1;
-  font-size: clamp(70px, 8.9vw, 142px);
+  font-size: clamp(70px, calc(8.9 * var(--vw, 1vw)), 142px);
   line-height: 0.8;
   letter-spacing: -0.068em;
   color: var(--scene-ink);
@@ -2184,11 +2252,11 @@ body {
 
 .case-poster-words span {
   animation: none;
-  transform: translateX(calc(-50% + var(--word-x, 0vw)));
+  transform: translateX(calc(-50% + var(--word-x, 0px)));
 }
 
 .case-poster-words span:first-child {
-  top: clamp(62px, 7dvh, 86px);
+  top: clamp(62px, calc(7 * var(--dvh, 1dvh)), 86px);
 }
 
 .case-poster-words span:last-child {
@@ -2297,17 +2365,19 @@ body {
 
 .case-poster-feature {
   top: 33.5%;
-  /* `--poster-scale` shrinks the composition by shrinking its parts, not by
-     scaling an ancestor. The flight measures every stamp's rect on each move and
-     re-derives its corner poses from it, so a smaller stamp is carried correctly
-     and the whole scene reads as one smaller composition. */
-  width: min(calc(26.5vw * var(--poster-scale)), calc(59dvh * 0.81 * var(--poster-scale)), calc(415px * var(--poster-scale)));
-  min-width: calc(262px * var(--poster-scale));
-  aspect-ratio: 0.81;
+  /* Sized from one token so the corner peeks — which are a share of it — stay in
+     proportion at every scale. `--poster-scale` still shrinks the composition by
+     shrinking its parts, not by scaling an ancestor. The flight measures every
+     stamp's rect on each move and re-derives its corner poses from it, so a
+     smaller stamp is carried correctly and the whole scene reads as one smaller
+     composition. */
+  width: calc(var(--feature-stamp-width) * var(--poster-scale));
+  aspect-ratio: 0.8;
+  min-width: 0;
   pointer-events: auto;
   opacity: var(--stamp-opacity, 1);
-  transform: translateX(calc(-50% + var(--stamp-x, 0vw) + var(--stamp-shift-x, 0px)))
-    translateY(calc(var(--stamp-y, 0vh) + var(--stamp-shift-y, 0px)))
+  transform: translateX(calc(-50% + var(--stamp-x, 0px) + var(--stamp-shift-x, 0px)))
+    translateY(calc(var(--stamp-y, 0px) + var(--stamp-shift-y, 0px)))
     scale(var(--stamp-scale, 1))
     perspective(900px)
     rotateX(var(--stamp-tilt-x, 0deg))
@@ -2361,30 +2431,40 @@ body {
   outline-offset: 5px;
 }
 
+/* The two corner stamps sit IN the corners and are deliberately cut by the
+   composition's edge, the way the reference frames show them: only the inboard
+   part of each is on screen. `translateX(-100% + 27%)` puts 73% of the stamp
+   outside the left edge, so a 27% sliver shows. Previously each was pushed 13%
+   back toward the middle by a margin and centred *on* the edge, which left a
+   whole stamp floating inside the poster's left and right thirds instead of
+   tucked into its corners — the composition read as five stamps in a row rather
+   than a card with its neighbours peeking in.
+ *
+ * Vertical is the same story: `top: -6%` / `bottom: -6%` tuck the stamps past
+ * the top and bottom edges so their corners are cut too. Top and bottom stay a
+ * point reflection of each other about the poster centre, position and tilt
+ * both, so the two read as the same size. */
 .case-poster-peek {
   z-index: 3;
-  height: clamp(calc(152px * var(--poster-scale)), calc(14.5vw * var(--poster-scale)), calc(225px * var(--poster-scale)));
-  width: auto;
-  aspect-ratio: 0.81;
+  /* A share of the feature stamp rather than a px clamp of its own, so the
+     corners stay proportional to the centre at every scale. */
+  height: auto;
+  width: calc(var(--feature-stamp-width) * var(--peek-stamp-ratio) * var(--poster-scale));
+  aspect-ratio: 0.8;
   opacity: 0.92;
   pointer-events: auto;
 }
 
-/* The two peek stamps are a point reflection of each other about the poster
-   centre: `bottom` mirrors `top`, the horizontal offset mirrors sign, and so
-   does the tilt. Keeping the next stamp on `bottom: -4.5%` / `translateX(60%)`
-   used to push it 10% further out and hang it 42px past the bottom edge, so the
-   two corners read as different sizes. The previous stamp is the reference. */
 .case-poster-peek.is-previous {
-  top: 5.5%;
-  margin-left: 13%;
-  transform: translateX(-50%) rotate(-1.2deg);
+  left: 0;
+  top: -6%;
+  transform: translateX(-73%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next {
-  bottom: 5.5%;
-  margin-right: 13%;
-  transform: translateX(50%) rotate(1.2deg);
+  right: 0;
+  bottom: -6%;
+  transform: translateX(73%) rotate(1.2deg);
 }
 
 .case-poster-peek:hover {
@@ -2392,11 +2472,11 @@ body {
 }
 
 .case-poster-peek.is-previous:hover {
-  transform: translateX(-50%) rotate(-1.2deg);
+  transform: translateX(-73%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next:hover {
-  transform: translateX(50%) rotate(1.2deg);
+  transform: translateX(73%) rotate(1.2deg);
 }
 
 .case-poster .poster-stamp-art {
@@ -2466,13 +2546,13 @@ body {
 }
 
 .poster-stamp-caption strong {
-  font-size: clamp(11px, 0.92vw, 14px);
+  font-size: clamp(11px, calc(0.92 * var(--vw, 1vw)), 14px);
 }
 
 .poster-stamp-caption span,
 .poster-stamp-caption time {
   margin-top: 4px;
-  font-size: clamp(8px, 0.65vw, 10px);
+  font-size: clamp(8px, calc(0.65 * var(--vw, 1vw)), 10px);
 }
 
 .case-poster-open {
@@ -2497,7 +2577,7 @@ body {
 }
 
 .case-poster-mode {
-  left: clamp(24px, 3.2vw, 52px);
+  left: clamp(24px, calc(3.2 * var(--vw, 1vw)), 52px);
   bottom: 27px;
   opacity: 0.72;
 }
@@ -2518,7 +2598,7 @@ body {
 .case-poster-credit {
   left: 50%;
   bottom: 22px;
-  width: min(520px, 48vw);
+  width: min(520px, calc(48 * var(--vw, 1vw)));
   transform: translateX(-50%);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -2835,7 +2915,7 @@ body {
 }
 
 .case-journey-meta strong {
-  font-size: clamp(15px, 1.5vw, 22px);
+  font-size: clamp(15px, calc(1.5 * var(--vw, 1vw)), 22px);
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2970,9 +3050,9 @@ body {
  * its breathing room without introducing a colour the case never had. */
 .case-detail.is-immersive {
   position: relative;
-  width: 100vw;
-  height: 100dvh;
-  margin-left: calc(50% - 50vw);
+  width: calc(100 * var(--vw, 1vw));
+  height: calc(100 * var(--dvh, 1dvh));
+  margin-left: calc(50% - calc(50 * var(--vw, 1vw)));
   padding: 0;
   overflow: hidden;
   /* The tint behind the blur, taken from the poster's own ground and set on the
@@ -2991,7 +3071,7 @@ body {
  * back on the other side or the whole room goes flat. */
 .case-detail.is-immersive .case-detail-blur {
   position: absolute;
-  inset: calc(-1 * clamp(40px, 8vw, 120px));
+  inset: calc(-1 * clamp(40px, calc(8 * var(--vw, 1vw)), 120px));
   z-index: 0;
   background-image: var(--detail-art);
   /* `cover` cropped hard here. The backdrop is wider than it is tall, so a
@@ -3008,7 +3088,7 @@ body {
      smear stays proportional on a tall window where `vw` alone under-blurs. The
      floor keeps it soft on small screens instead of resolving into shapes.
      Kept on one line so the guard test that pins this rule can match it. */
-  filter: blur(max(48px, clamp(34px, 6vmin, 96px))) saturate(1.85) brightness(0.78) contrast(1.06);
+  filter: blur(max(48px, clamp(34px, calc(6 * var(--vmin, 1vmin)), 96px))) saturate(1.85) brightness(0.78) contrast(1.06);
   transform: scale(1.18);
   pointer-events: none;
 }
@@ -3051,8 +3131,8 @@ body {
      only need room for a short column of type. */
   grid-template-columns: minmax(0, 0.5fr) minmax(0, 1.3fr) minmax(0, 0.5fr);
   align-items: center;
-  gap: clamp(20px, 2.6vw, 54px);
-  padding: clamp(56px, 8dvh, 96px) clamp(24px, 3.4vw, 64px) clamp(36px, 6dvh, 76px);
+  gap: clamp(20px, calc(2.6 * var(--vw, 1vw)), 54px);
+  padding: clamp(56px, calc(8 * var(--dvh, 1dvh)), 96px) clamp(24px, calc(3.4 * var(--vw, 1vw)), 64px) clamp(36px, calc(6 * var(--dvh, 1dvh)), 76px);
 }
 
 /* The left column holds two stacked blocks: the archival facts, then the
@@ -3193,7 +3273,7 @@ body {
    soon as the window got wide. */
 .case-detail.is-immersive .case-detail-info h1 {
   max-width: 820px;
-  font-size: clamp(30px, 2.6vw, 50px);
+  font-size: clamp(30px, calc(2.6 * var(--vw, 1vw)), 50px);
   line-height: 1;
   letter-spacing: -0.045em;
   text-transform: uppercase;
@@ -3229,9 +3309,9 @@ body {
 
 .case-showcase-detail {
   position: relative;
-  width: 100vw;
-  height: 100dvh;
-  margin-left: calc(50% - 50vw);
+  width: calc(100 * var(--vw, 1vw));
+  height: calc(100 * var(--dvh, 1dvh));
+  margin-left: calc(50% - calc(50 * var(--vw, 1vw)));
   overflow: hidden;
   background: #15120f;
   color: #fff;
@@ -3250,8 +3330,8 @@ body {
 .case-showcase-detail-media .case-caption {
   z-index: 7;
   left: auto;
-  right: clamp(22px, 3vw, 42px);
-  bottom: clamp(26px, 4vw, 48px);
+  right: clamp(22px, calc(3 * var(--vw, 1vw)), 42px);
+  bottom: clamp(26px, calc(4 * var(--vw, 1vw)), 48px);
 }
 
 .case-showcase-detail-media .case-caption > span {
@@ -3284,9 +3364,9 @@ body {
 .case-showcase-detail-info {
   position: absolute;
   z-index: 5;
-  left: clamp(32px, 6vw, 96px);
-  bottom: clamp(52px, 8dvh, 94px);
-  width: min(650px, 47vw);
+  left: clamp(32px, calc(6 * var(--vw, 1vw)), 96px);
+  bottom: clamp(52px, calc(8 * var(--dvh, 1dvh)), 94px);
+  width: min(650px, calc(47 * var(--vw, 1vw)));
   animation: case-detail-content-in 620ms 380ms both;
 }
 
@@ -3309,7 +3389,7 @@ body {
 
 .case-showcase-detail-info h1 {
   max-width: 850px;
-  font-size: clamp(54px, 7vw, 112px);
+  font-size: clamp(54px, calc(7 * var(--vw, 1vw)), 112px);
   line-height: 0.88;
   letter-spacing: -0.065em;
   text-transform: uppercase;
@@ -3339,8 +3419,8 @@ body {
 .case-showcase-detail-hint {
   position: absolute;
   z-index: 5;
-  right: clamp(26px, 4vw, 58px);
-  bottom: clamp(26px, 4vw, 48px);
+  right: clamp(26px, calc(4 * var(--vw, 1vw)), 58px);
+  bottom: clamp(26px, calc(4 * var(--vw, 1vw)), 48px);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -3371,7 +3451,7 @@ body {
 }
 
 .app[data-layout="compact"] .case-poster-words {
-  font-size: clamp(50px, 15.5vw, 86px);
+  font-size: clamp(50px, calc(15.5 * var(--vw, 1vw)), 86px);
 }
 
 .app[data-layout="compact"] .case-poster-words span:first-child {
@@ -3389,7 +3469,7 @@ body {
      instead — the scarce axis here — and clears the inherited height rule so
      `aspect-ratio` resolves against width. */
   height: auto;
-  width: min(64vw, 356px);
+  width: min(calc(64 * var(--vw, 1vw)), 356px);
   min-width: 0;
   aspect-ratio: 0.81;
 }
@@ -3423,7 +3503,7 @@ body {
 
 .app[data-layout="compact"] .case-poster-credit {
   bottom: 56px;
-  width: 82vw;
+  width: calc(82 * var(--vw, 1vw));
   grid-template-columns: 1fr auto;
   font-size: 8px;
 }
@@ -3451,7 +3531,7 @@ body {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   align-items: stretch;
-  gap: clamp(12px, 2dvh, 20px);
+  gap: clamp(12px, calc(2 * var(--dvh, 1dvh)), 20px);
   padding: calc(96px + env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
 }
 
@@ -3512,7 +3592,7 @@ body {
 }
 
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-info h1 {
-  font-size: clamp(26px, 8vw, 38px);
+  font-size: clamp(26px, calc(8 * var(--vw, 1vw)), 38px);
 }
 
 .app[data-layout="compact"] .case-detail.is-immersive .case-detail-copy {
@@ -3534,7 +3614,7 @@ body {
 }
 
 .app[data-layout="compact"] .case-showcase-detail-info h1 {
-  font-size: clamp(40px, 13vw, 68px);
+  font-size: clamp(40px, calc(13 * var(--vw, 1vw)), 68px);
 }
 
 .app[data-layout="compact"] .case-showcase-detail-copy {
@@ -3667,20 +3747,28 @@ body {
 }
 
 .app[data-tab="cases"] .case-poster-words {
-  font-size: clamp(calc(84px * var(--poster-scale)), calc(12.4vw * var(--poster-scale)), calc(184px * var(--poster-scale)));
+  font-size: clamp(calc(84px * var(--poster-scale)), calc(calc(12.4 * var(--vw, 1vw)) * var(--poster-scale)), calc(184px * var(--poster-scale)));
   font-weight: 900;
 }
 
 .app[data-tab="cases"] .case-poster-words span:first-child {
-  top: clamp(24px, 5dvh, 38px);
+  top: clamp(24px, calc(5 * var(--dvh, 1dvh)), 38px);
 }
 
 .app[data-tab="cases"] .case-poster-words span:last-child {
-  bottom: clamp(22px, 4.2dvh, 42px);
+  bottom: clamp(22px, calc(4.2 * var(--dvh, 1dvh)), 42px);
 }
 
+/* Centred in the band between the two display words, by construction.
+ *
+ * The band runs from the top word's lower edge to the bottom word's upper edge:
+ * measured at the design size, 173px to 748px of the 925px frame, so its centre
+ * is at 49.78%. The stamp's own centre is put on that, which means subtracting
+ * half its height — `width / 0.8 / 2`, i.e. `width / 1.6`. Deriving it from the
+ * size token rather than writing a literal keeps the two in step: a fixed `top`
+ * plus a box that grows is exactly how the stamp came to rest 1px off "CREATE". */
 .app[data-tab="cases"] .case-poster-feature {
-  top: 28.5%;
+  top: calc(49.78% - var(--feature-stamp-width) * var(--poster-scale) / 1.6);
 }
 
 /* Clear of the fixed header, and pinned to the left edge instead of the centre.
@@ -3697,7 +3785,7 @@ body {
 }
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-words {
-  font-size: clamp(calc(54px * var(--poster-scale)), calc(17vw * var(--poster-scale)), calc(96px * var(--poster-scale)));
+  font-size: clamp(calc(54px * var(--poster-scale)), calc(calc(17 * var(--vw, 1vw)) * var(--poster-scale)), calc(96px * var(--poster-scale)));
 }
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-words span:first-child {
@@ -3710,7 +3798,7 @@ body {
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-feature {
   top: 31%;
-  width: min(58vw, calc(72dvh * 0.81), 333px);
+  width: min(calc(58 * var(--vw, 1vw)), calc(calc(72 * var(--dvh, 1dvh)) * 0.81), 333px);
 }
 
 .app[data-layout="compact"][data-tab="cases"] .case-poster-all {

@@ -1,3 +1,5 @@
+import { getFrameScaleFromDom, getStageSize } from "./stage.js";
+
 export const CARD_FLIGHT = { exit: 520, enter: 620, stagger: 28, overlap: 260 };
 
 /** Entire cards travel beyond the viewport; no masks or cuts cross the artwork. */
@@ -24,7 +26,13 @@ export function getCardFlight(kind, index, count, rect, viewport, reverse = fals
 
 export async function animateCards(host, outgoing, incoming, scrollY = 0, reverse = false) {
   const animations = [];
-  const viewport = { width: innerWidth, height: innerHeight };
+  // The flight layers are children of the stage, so "clear the screen" means
+  // clearing the frame. Card rects are screen pixels; dividing through by the
+  // frame scale puts them in the same space as the frame's own width/height, or
+  // the two would disagree by the scale factor at every size but 1:1.
+  const [frameWidth, frameHeight] = getStageSize();
+  const scale = getFrameScaleFromDom() || 1;
+  const viewport = { width: frameWidth, height: frameHeight };
   const slowPreview = import.meta.env?.DEV && new URLSearchParams(location.search).has("card-preview");
   const speed = slowPreview ? 12 : 1;
   host.replaceChildren();
@@ -33,12 +41,16 @@ export async function animateCards(host, outgoing, incoming, scrollY = 0, revers
     const layer = document.createElement("div");
     layer.className = `card-flight-layer flight-${kind}`;
     frozen.style.width = `${viewport.width}px`;
-    frozen.style.transform = kind === "out" ? `translateY(${-scrollY}px)` : "none";
+    frozen.style.transform = kind === "out" ? `translateY(${-scrollY / scale}px)` : "none";
     layer.append(frozen);
     host.append(layer);
     const cards = [...frozen.querySelectorAll(".choose-card, .assessment-card, .profile-card")];
     cards.forEach((card, index) => {
-      const motion = getCardFlight(kind, index, cards.length, card.getBoundingClientRect(), viewport, reverse);
+      const box = card.getBoundingClientRect();
+      const motion = getCardFlight(kind, index, cards.length, {
+        top: box.top / scale,
+        bottom: box.bottom / scale,
+      }, viewport, reverse);
       card.dataset.flight = kind;
       animations.push(card.animate(motion.keyframes, {
         ...motion.options, duration: motion.options.duration * speed, delay: motion.options.delay * speed,

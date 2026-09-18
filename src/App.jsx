@@ -9,6 +9,7 @@ import { Brand } from "./Brand";
 import { CubeDisplay } from "./CubeDisplay";
 import { LibraryHub } from "./LibraryHub";
 import { getFlatLayout } from "./cube-geometry";
+import { useStageSize } from "./DesignStage";
 import { getViewportLayout } from "./layout";
 import {
   CASES,
@@ -124,10 +125,10 @@ export function App({
   pushing = false,
   onCubeMotionChange,
 }) {
-  const [size, setSize] = useState({
-    width: document.documentElement.clientWidth,
-    height: window.innerHeight,
-  });
+  // The size the site is composed against: the fixed 16:9 design frame in wide
+  // mode, the window in compact. Not the window in both, which is what let the
+  // composition track the monitor (see stage.js).
+  const size = useStageSize();
   const [faces, setFaces] = useState(() => getCaseFaces(0));
   const [preset, setPreset] = useState(0);
   const initialCaseIds = useRef(new Set(Object.values(getCaseFaces(0)).map((item) => item.id)));
@@ -196,27 +197,6 @@ export function App({
     }, CASE_INTERVAL);
     return () => clearTimeout(timer);
   }, [casesReady, active, transitionBusy, playing, visible, modal, preset, choosePreset]);
-  useEffect(() => {
-    const resize = () => {
-      const next = {
-        width: document.documentElement.clientWidth,
-        height: window.innerHeight,
-      };
-      setSize((previous) =>
-        previous.width === next.width && previous.height === next.height
-          ? previous
-          : next,
-      );
-    };
-    resize();
-    const observer = new ResizeObserver(resize);
-    observer.observe(document.body);
-    window.addEventListener("resize", resize);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
   const layout = getViewportLayout(size.width, size.height);
   const flat = getFlatLayout(size.width, size.height);
   // The header is the nav and the account pill only. The AIQUOS wordmark used to

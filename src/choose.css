@@ -1,7 +1,7 @@
 .choose-screen {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: hidden;
   background: #08080a;
   color: #fff;
@@ -53,7 +53,7 @@
    padding offsets the flatter CHOOSE! wordmark (837/175 vs 822/244) so both
    pages start their card rows on the same line. */
 .choose-screen[data-compact="true"] .choose-layout { padding: 106px 24px 36px; }
-.choose-screen[data-compact="true"] .choose-wordmark { width: min(76vw, 420px); height: auto; aspect-ratio: 837 / 175; transform: none; }
+.choose-screen[data-compact="true"] .choose-wordmark { width: min(calc(76 * var(--vw, 1vw)), 420px); height: auto; aspect-ratio: 837 / 175; transform: none; }
 .choose-screen[data-compact="true"] .choose-grid { width: 100%; max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 32px; transform: none; }
 .choose-screen[data-compact="true"] .choose-card { grid-column: auto; width: auto; height: auto; aspect-ratio: 426 / 503; border-radius: 12px; }
 .choose-screen[data-compact="true"] .choose-card:last-child { grid-column: 1 / -1; width: calc((100% - 16px) / 2); justify-self: center; }

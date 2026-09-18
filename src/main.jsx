@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { SiteExperience } from "./SiteExperience.jsx";
+import { DesignStage } from "./DesignStage.jsx";
 import "./styles.css";
 import "./responsive.css";
 import "./cases.css";
@@ -17,6 +18,8 @@ import "./profile-details.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <SiteExperience />
+    <DesignStage>
+      <SiteExperience />
+    </DesignStage>
   </React.StrictMode>,
 );

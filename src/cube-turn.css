@@ -59,7 +59,7 @@
   pointer-events: none;
 }
 .app.is-login-view .canvas-space {
-  height: max(420px, 100dvh);
+  height: max(420px, calc(100 * var(--dvh, 1dvh)));
 }
 .app.is-login-view .get-started {
   display: flex;

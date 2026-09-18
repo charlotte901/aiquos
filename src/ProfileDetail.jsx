@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -30,6 +30,7 @@ import { AwakeningReportModal } from "./AwakeningReport";
 import { useAccount } from "./account-store";
 import { PROFILE_DETAILS } from "./profile-layout";
 import { getViewportLayout } from "./layout";
+import { useStageSize } from "./DesignStage";
 import {
   removeFavorite,
   useFavorites,
@@ -422,20 +423,14 @@ function applyBoardLayout(cards, map) {
 }
 
 function useViewportLayout() {
-  const [layout, setLayout] = useState(() =>
-    getViewportLayout(document.documentElement.clientWidth, window.innerHeight),
+  // Composed against the design frame in wide mode, the window in compact — see
+  // stage.js. Reading the window here is what made the detail pages resize with
+  // the monitor while the pages around them held their proportions.
+  const size = useStageSize();
+  return useMemo(
+    () => getViewportLayout(size.width, size.height),
+    [size.width, size.height],
   );
-
-  useEffect(() => {
-    const update = () => setLayout(
-      getViewportLayout(document.documentElement.clientWidth, window.innerHeight),
-    );
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  return layout;
 }
 
 export function ProfileDetail({ id, onBack, onHome, busy }) {

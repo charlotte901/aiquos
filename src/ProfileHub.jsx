@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
+import { useStageSize } from "./DesignStage";
 import { PROFILE_CARDS, PROFILE_ART, PROFILE_WORDMARK, getProfileLayout } from "./profile-layout";
 
 /** Cut one card's pixels out of the source art once, then let object-fit
@@ -31,12 +32,7 @@ function ProfileCardArt({ crop }) {
 }
 
 export function ProfileHub({ onBack, onOpen, busy }) {
-  const [size, setSize] = useState(() => ({ width: innerWidth, height: innerHeight }));
-  useEffect(() => {
-    const resize = () => setSize({ width: document.documentElement.clientWidth, height: innerHeight });
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
+  const size = useStageSize();
   const layout = getProfileLayout(size.width, size.height);
   return (
     <main className="profile-screen" data-compact={layout.compact} style={layout.variables} aria-label="个人中心">

@@ -1,3 +1,5 @@
+import { getFrameScaleFromDom, getStageSize } from "./stage.js";
+
 export const STRIP_DIRECTIONS = [-1, 1, -1];
 export const TRANSITION_DURATION = 1080;
 
@@ -20,14 +22,24 @@ export function getCardStripBounds(height, cards, headingBottom) {
 }
 
 export function measureAssessmentBands(root) {
+  // Card rects come back in screen pixels; the strip clip paths they produce are
+  // applied inside the stage, which is in design pixels. Dividing through by the
+  // frame scale is what keeps a seam on the whitespace it was measured from once
+  // the frame is no longer 1:1 with the window. Everything measured inside one
+  // stage shares that scale, so the boundaries stay correct relative to each
+  // other at any window size.
+  const scale = getFrameScaleFromDom() || 1;
   const cards = [...root.querySelectorAll(".assessment-card, .choose-card, .profile-card")].map((card) =>
     card.getBoundingClientRect(),
   );
   const heading = root.querySelector(".assessment-wordmark, .choose-wordmark, .profile-wordmark");
   return getCardStripBounds(
-    innerHeight,
-    cards,
-    heading?.getBoundingClientRect().bottom ?? 0,
+    getStageSize()[1],
+    cards.map((box) => ({
+      top: box.top / scale,
+      bottom: box.bottom / scale,
+    })),
+    (heading?.getBoundingClientRect().bottom ?? 0) / scale,
   );
 }
 
@@ -143,7 +155,7 @@ function duplicateFrozen(source) {
 
 export function holdView(host, view, scrollY = 0) {
   const frozen = duplicateFrozen(view);
-  frozen.style.width = `${innerWidth}px`;
+  frozen.style.width = `${getStageSize()[0]}px`;
   frozen.style.transform = `translateY(${-scrollY}px)`;
   host.replaceChildren(frozen);
   host.classList.add("is-running");
@@ -155,10 +167,13 @@ export async function animateStrips(
   incoming,
   scrollY = 0,
   reverse = false,
-  boundaries = [0, 0, innerHeight, innerHeight],
+  boundaries = null,
 ) {
-  const width = innerWidth;
-  const height = innerHeight;
+  // The strips are children of the stage, so their clip insets and travel
+  // distance are design pixels. Seal the read once, here, so both cannot be
+  // taken in different units.
+  const [width, height] = getStageSize();
+  const bands = boundaries ?? [0, 0, height, height];
   // Development-only slow motion for screenshot-based transition inspection.
   const slowPreview =
     import.meta.env?.DEV &&
@@ -175,7 +190,7 @@ export async function animateStrips(
       const strip = document.createElement("div");
       strip.className = `transition-strip strip-${kind}`;
       strip.dataset.band = String(index);
-      strip.style.clipPath = `inset(${boundaries[index]}px 0 ${height - boundaries[index + 1]}px 0)`;
+      strip.style.clipPath = `inset(${bands[index]}px 0 ${height - bands[index + 1]}px 0)`;
       const frozen = duplicateFrozen(view);
       frozen.style.width = `${width}px`;
       frozen.style.transform =

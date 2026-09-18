@@ -1,16 +1,11 @@
-import { useEffect, useState } from "react";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { SourceCrop } from "./AssessmentHub";
 import { TestWordmark } from "./TestWordmark";
+import { useStageSize } from "./DesignStage";
 import { CHOICES, CHOOSE_ART, CHOOSE_WORDMARK, getChooseLayout } from "./choose-layout";
 
 export function ChooseHub({ onBack, onTest, onReports, onProfile, busy }) {
-  const [size, setSize] = useState(() => ({ width: innerWidth, height: innerHeight }));
-  useEffect(() => {
-    const resize = () => setSize({ width: document.documentElement.clientWidth, height: innerHeight });
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
+  const size = useStageSize();
   const layout = getChooseLayout(size.width, size.height);
   return (
     <main className="choose-screen" data-compact={layout.compact} style={layout.variables} aria-label="选择你的下一步">

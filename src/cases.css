@@ -174,7 +174,7 @@
   opacity: 0.8;
 }
 .app[data-layout="compact"] .case-carousel {
-  width: min(300px, calc(100vw - 36px));
+  width: min(300px, calc(calc(100 * var(--vw, 1vw)) - 36px));
 }
 .intro-copy h2 {
   letter-spacing: -0.035em;

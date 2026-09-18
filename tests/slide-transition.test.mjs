@@ -2,16 +2,23 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { pushPages, SLIDE_DURATION, SLIDE_EASING } from "../src/slide-transition.js";
 import { STRIP_EASING } from "../src/split-transition.js";
+import { DESIGN_WIDTH } from "../src/stage.js";
 
 const HOME = ".home-stage";
 const CASES = ".home-tab-screen";
 const VIEWPORT = 1500;
 
 /** Minimal stand-ins for the three things pushPages touches: the two travelling
- * layers, the app shell it marks with `data-pushing`, and the viewport width.
- * Everything records itself, so the test can assert *order* as well as values —
- * the reverse-push bug was purely an ordering mistake. */
-function harness({ manual = false } = {}) {
+ * layers, the app shell it marks with `data-pushing`, and the stage the travel
+ * is measured against. Everything records itself, so the test can assert *order*
+ * as well as values — the reverse-push bug was purely an ordering mistake.
+ *
+ * `stage` is a design-sized stage (1920 wide) rather than the 1500 window, and
+ * the difference is the point: the layers being pushed live inside the scaled
+ * stage, so the distance that clears the composition is the frame's width. A
+ * window-derived travel would stop 420px short here and leave the departing page
+ * still 28% on screen. */
+function harness({ manual = false, stage = true } = {}) {
   const log = [];
   const frames = {};
   const pending = [];
@@ -41,6 +48,9 @@ function harness({ manual = false } = {}) {
       };
     },
   });
+  const stageNode = stage
+    ? { clientWidth: DESIGN_WIDTH, clientHeight: 1080, getBoundingClientRect: () => ({ width: DESIGN_WIDTH, height: 1080 }) }
+    : null;
 
   const layers = { [HOME]: makeLayer("home"), [CASES]: makeLayer("cases") };
   const shell = {
@@ -66,7 +76,11 @@ function harness({ manual = false } = {}) {
   };
   globalThis.innerWidth = VIEWPORT;
   globalThis.document = {
-    querySelector: (selector) => (selector === ".app" ? shell : layers[selector] ?? null),
+    querySelector: (selector) => (
+      selector === ".app" ? shell
+        : selector === ".design-stage" ? stageNode
+          : layers[selector] ?? null
+    ),
   };
   globalThis.window = { addEventListener: () => {}, removeEventListener: () => {} };
 
@@ -101,11 +115,11 @@ test("forward: home leaves to the left and cases arrives from the right", async 
 
     assert.deepEqual(h.frames.home, {
       from: "translateX(0px)",
-      to: `translateX(${-VIEWPORT}px)`,
+      to: `translateX(${-DESIGN_WIDTH}px)`,
       options: { duration: SLIDE_DURATION, easing: SLIDE_EASING, fill: "both" },
     });
     assert.deepEqual(h.frames.cases, {
-      from: `translateX(${VIEWPORT}px)`,
+      from: `translateX(${DESIGN_WIDTH}px)`,
       to: "translateX(0px)",
       options: { duration: SLIDE_DURATION, easing: SLIDE_EASING, fill: "both" },
     });
@@ -114,6 +128,10 @@ test("forward: home leaves to the left and cases arrives from the right", async 
     // has to land between the two animations, not after them.
     assert.ok(h.log.indexOf("enter") > h.log.indexOf("animate:home"));
     assert.ok(h.log.indexOf("enter") < h.log.indexOf("animate:cases"));
+    // The travel is the frame's width, not the window's — the layers travel
+    // inside the scaled stage, so a window-derived distance leaves the departing
+    // page partly on screen when the push has finished.
+    assert.notEqual(DESIGN_WIDTH, VIEWPORT);
   } finally {
     h.restore();
   }
@@ -126,23 +144,36 @@ test("reverse: the same two moves, mirrored", async () => {
 
     assert.deepEqual(h.frames.cases, {
       from: "translateX(0px)",
-      to: `translateX(${VIEWPORT}px)`,
+      to: `translateX(${DESIGN_WIDTH}px)`,
       options: { duration: SLIDE_DURATION, easing: SLIDE_EASING, fill: "both" },
     });
     assert.deepEqual(h.frames.home, {
-      from: `translateX(${-VIEWPORT}px)`,
+      from: `translateX(${-DESIGN_WIDTH}px)`,
       to: "translateX(0px)",
       options: { duration: SLIDE_DURATION, easing: SLIDE_EASING, fill: "both" },
     });
 
-    // The two pages tile the viewport at every step: the arriving layer offset
+    // The two pages tile the frame at every step: the arriving layer offset
     // is the exact negative of the departing one's travel, which is what makes
     // the seam invisible on a shared ground.
     assert.equal(
       h.frames.home.from,
-      `translateX(${-VIEWPORT}px)`,
-      "coming home, the homepage starts exactly one viewport to the left",
+      `translateX(${-DESIGN_WIDTH}px)`,
+      "coming home, the homepage starts exactly one frame-width to the left",
     );
+  } finally {
+    h.restore();
+  }
+});
+
+test("with no stage mounted the travel falls back to the design width", async () => {
+  // Transitions can be asked to run before the stage has laid out (and in tests,
+  // which have no DOM). The fallback must be the design size rather than 0, or a
+  // push would animate a zero-distance travel and read as an instant cut.
+  const h = harness({ stage: false });
+  try {
+    await pushPages({ forward: true, enter: () => {} });
+    assert.equal(h.frames.home.to, `translateX(${-DESIGN_WIDTH}px)`);
   } finally {
     h.restore();
   }

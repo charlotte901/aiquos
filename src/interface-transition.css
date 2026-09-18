@@ -192,7 +192,7 @@
 .login-screen {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: hidden;
   background: #08080a;
 }
@@ -211,7 +211,7 @@
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   padding: 72px 18px 48px;
 }
 
@@ -219,7 +219,7 @@
   position: relative;
   inset: auto;
   z-index: auto;
-  width: min(640px, 100%, calc(100dvh - 112px));
+  width: min(640px, 100%, calc(calc(100 * var(--dvh, 1dvh)) - 112px));
   height: auto;
   aspect-ratio: 1;
   max-height: none;
@@ -249,7 +249,7 @@ body:has(.site-experience[data-view="login"]) {
 .library-screen {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   background: #ff9677;
   color: #fff;
 }
@@ -277,7 +277,7 @@ body:has(.site-experience[data-view="login"]) {
 
 .library-layout h1 {
   margin: 0;
-  font-size: clamp(32px, 5vw, 58px);
+  font-size: clamp(32px, calc(5 * var(--vw, 1vw)), 58px);
   line-height: 1.05;
   letter-spacing: 0;
 }
@@ -314,7 +314,7 @@ body:has(.site-experience[data-view="login"]) {
 .account-settings-screen {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   background: var(--pink);
   color: #fff;
 }
@@ -337,7 +337,7 @@ body:has(.site-experience[data-view="login"]) {
 
 .account-settings-card {
   overflow: hidden;
-  padding: clamp(26px, 5vw, 40px);
+  padding: clamp(26px, calc(5 * var(--vw, 1vw)), 40px);
   border-radius: 28px;
   background: #fff;
   color: #181d29;
@@ -377,7 +377,7 @@ body:has(.site-experience[data-view="login"]) {
 .account-settings-title {
   margin: 7px 0 0;
   color: #101014;
-  font-size: clamp(30px, 4vw, 44px);
+  font-size: clamp(30px, calc(4 * var(--vw, 1vw)), 44px);
   line-height: 1.05;
 }
 
@@ -468,7 +468,7 @@ body:has(.site-experience[data-view="login"]) {
 .profile-detail-screen {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   background: var(--detail-color);
 }
 
@@ -506,7 +506,7 @@ body:has(.site-experience[data-view="login"]) {
   }
 
   .login-surface {
-    width: min(640px, 100%, calc(100dvh - 96px));
+    width: min(640px, 100%, calc(calc(100 * var(--dvh, 1dvh)) - 96px));
   }
 
   .library-layout {

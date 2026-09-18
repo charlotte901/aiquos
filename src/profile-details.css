@@ -1,7 +1,7 @@
 /* Profile detail surfaces borrow the assessment flow's colored stage and
  * single white operation panel, while keeping each center feature distinct. */
 .profile-detail-screen {
-  height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
@@ -53,9 +53,9 @@
 .profile-detail-panel {
   position: relative;
   width: min(1120px, calc(100% - 88px));
-  min-height: calc(100dvh - 168px);
+  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 168px);
   margin: 108px auto 48px;
-  padding: clamp(30px, 4vw, 52px);
+  padding: clamp(30px, calc(4 * var(--vw, 1vw)), 52px);
   border-radius: 42px;
   color: #263243;
   background: #fff;
@@ -79,7 +79,7 @@
 .detail-panel-head h1 {
   margin: 0;
   color: #17233a;
-  font-size: clamp(30px, 3.3vw, 46px);
+  font-size: clamp(30px, calc(3.3 * var(--vw, 1vw)), 46px);
   line-height: 1.05;
   letter-spacing: -.06em;
 }
@@ -111,7 +111,7 @@
 }
 
 .organization-head .detail-panel-head h1 {
-  font-size: clamp(22px, 2.2vw, 31px);
+  font-size: clamp(22px, calc(2.2 * var(--vw, 1vw)), 31px);
 }
 
 .organization-head .detail-panel-head > span {
@@ -120,9 +120,9 @@
 
 .organization-panel {
   width: min(1560px, calc(100% - 64px));
-  height: calc(100dvh - 100px);
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 100px);
   min-height: 0;
-  padding-top: clamp(46px, 5vw, 68px);
+  padding-top: clamp(46px, calc(5 * var(--vw, 1vw)), 68px);
   margin: 84px auto 24px;
   display: flex;
   flex-direction: column;
@@ -301,12 +301,12 @@
 }
 
 .class-info-grid article {
-  min-height: clamp(140px, 20vh, 172px);
+  min-height: clamp(140px, calc(20 * var(--vh, 1vh)), 172px);
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 9px;
-  padding: clamp(26px, 3vh, 34px) 22px;
+  padding: clamp(26px, calc(3 * var(--vh, 1vh)), 34px) 22px;
   border: 1.5px solid color-mix(in srgb, var(--detail-color) 24%, #fff);
   border-radius: 28px;
   background: #fff;
@@ -339,7 +339,7 @@
   display: flex;
   flex-direction: column;
   z-index: 1;
-  padding: clamp(42px, 5vh, 56px) clamp(34px, 4vw, 48px) clamp(30px, 4vh, 40px);
+  padding: clamp(42px, calc(5 * var(--vh, 1vh)), 56px) clamp(34px, calc(4 * var(--vw, 1vw)), 48px) clamp(30px, calc(4 * var(--vh, 1vh)), 40px);
   border: 1.5px solid #e4e9f3;
   border-radius: 34px;
   color: #687382;
@@ -373,7 +373,7 @@
   grid-auto-columns: 1fr;
   align-items: end;
   flex: 1 1 auto;
-  min-height: clamp(150px, 24vh, 230px);
+  min-height: clamp(150px, calc(24 * var(--vh, 1vh)), 230px);
   height: auto;
   gap: 14px;
 }
@@ -523,7 +523,7 @@
 
 @media (max-height: 820px) {
   .organization-panel {
-    height: calc(100dvh - 92px);
+    height: calc(calc(100 * var(--dvh, 1dvh)) - 92px);
     padding-top: 44px;
     margin-top: 70px;
   }
@@ -601,8 +601,8 @@
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   width: 100%;
-  height: 100dvh;
-  min-height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
+  min-height: calc(100 * var(--dvh, 1dvh));
   margin: 0;
   background: transparent;
   box-shadow: none;
@@ -684,9 +684,9 @@
 
 .works-canvas {
   min-width: 0;
-  height: calc(100dvh - 48px);
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 48px);
   margin: 24px 24px 24px 4px;
-  padding: clamp(18px, 2.4vw, 32px);
+  padding: clamp(18px, calc(2.4 * var(--vw, 1vw)), 32px);
   border-radius: 34px;
   background: #fff;
   box-shadow: -12px 0 48px color-mix(in srgb, #062b13 10%, transparent);
@@ -712,7 +712,7 @@
 .works-head h1 {
   margin: 0;
   color: #241c15;
-  font-size: clamp(32px, 3.2vw, 46px);
+  font-size: clamp(32px, calc(3.2 * var(--vw, 1vw)), 46px);
   line-height: 1.03;
   letter-spacing: -.06em;
 }
@@ -817,7 +817,7 @@
   }
 
   .works-canvas {
-    height: calc(100dvh - 36px);
+    height: calc(calc(100 * var(--dvh, 1dvh)) - 36px);
     margin: 18px 18px 18px 4px;
     padding: 14px;
     border-radius: 26px;
@@ -1127,7 +1127,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: clamp(16px, 2vw, 26px);
+  padding: clamp(16px, calc(2 * var(--vw, 1vw)), 26px);
   border-radius: 42px;
   background: #fff;
   box-shadow: 0 26px 0 #0000000d, 0 26px 64px #00000024;
@@ -1160,7 +1160,7 @@
 
 .favorites-head h1 {
   margin: 8px 0 0;
-  font-size: clamp(32px, 4vw, 50px);
+  font-size: clamp(32px, calc(4 * var(--vw, 1vw)), 50px);
   line-height: 1;
   letter-spacing: -.06em;
 }
@@ -1178,7 +1178,7 @@
   justify-items: center;
   align-content: center;
   gap: 10px;
-  min-height: calc(100dvh - 260px);
+  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 260px);
   color: #ffffffd9;
   text-align: center;
 }
@@ -1271,9 +1271,9 @@
   gap: 44px;
   align-items: stretch;
   width: min(1560px, calc(100% - 64px));
-  min-height: calc(100dvh - 150px);
+  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 150px);
   margin: 104px auto 48px;
-  padding: clamp(30px, 3.4vw, 50px);
+  padding: clamp(30px, calc(3.4 * var(--vw, 1vw)), 50px);
 }
 
 .profile-records .records-calendar,
@@ -1301,7 +1301,7 @@
 
 .account-panel-host {
   width: min(1440px, calc(100% - 64px));
-  height: calc(100dvh - 112px);
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 112px);
   margin: 84px auto 28px;
 }
 
@@ -1317,9 +1317,9 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: clamp(14px, 2.4dvh, 26px);
+  gap: clamp(14px, calc(2.4 * var(--dvh, 1dvh)), 26px);
   min-height: 0;
-  padding: clamp(30px, 5dvh, 64px) clamp(34px, 4vw, 54px);
+  padding: clamp(30px, calc(5 * var(--dvh, 1dvh)), 64px) clamp(34px, calc(4 * var(--vw, 1vw)), 54px);
   overflow: hidden;
   color: #fff;
   background:
@@ -1352,13 +1352,13 @@
   z-index: 1;
   display: grid;
   justify-items: center;
-  gap: clamp(12px, 1.8dvh, 20px);
+  gap: clamp(12px, calc(1.8 * var(--dvh, 1dvh)), 20px);
 }
 
 .account-avatar-control {
   display: grid;
   justify-items: center;
-  gap: clamp(10px, 1.5dvh, 16px);
+  gap: clamp(10px, calc(1.5 * var(--dvh, 1dvh)), 16px);
 }
 
 .account-avatar {
@@ -1366,13 +1366,13 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  width: min(240px, 58vw, 34dvh);
+  width: min(240px, calc(58 * var(--vw, 1vw)), calc(34 * var(--dvh, 1dvh)));
   aspect-ratio: 1;
-  border: min(7px, .9dvh) solid #fff;
-  border-radius: min(66px, 8dvh);
+  border: min(7px, calc(.9 * var(--dvh, 1dvh))) solid #fff;
+  border-radius: min(66px, calc(8 * var(--dvh, 1dvh)));
   background: #fff;
   color: var(--detail-color, #7a98e2);
-  font-size: min(100px, 22dvh);
+  font-size: min(100px, calc(22 * var(--dvh, 1dvh)));
   font-weight: 900;
   box-shadow: 0 22px 46px #17233a2e;
 }
@@ -1390,7 +1390,7 @@
   gap: 6px;
   min-height: 34px;
   padding: 0 15px;
-  min-height: clamp(38px, 4.4dvh, 46px);
+  min-height: clamp(38px, calc(4.4 * var(--dvh, 1dvh)), 46px);
   border: 1.5px solid #ffffff80;
   border-radius: 999px;
   cursor: pointer;
@@ -1415,7 +1415,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: clamp(16px, 2.4dvh, 22px) clamp(20px, 2.5vw, 26px);
+  padding: clamp(16px, calc(2.4 * var(--dvh, 1dvh)), 22px) clamp(20px, calc(2.5 * var(--vw, 1vw)), 26px);
   border: 1px solid #ffffff4d;
   border-radius: 24px;
   background: #ffffff21;
@@ -1425,14 +1425,14 @@
 
 .account-side-card strong {
   display: block;
-  font-size: clamp(22px, 3dvh, 26px);
+  font-size: clamp(22px, calc(3 * var(--dvh, 1dvh)), 26px);
 }
 
 .account-side-card span {
   display: block;
   margin-top: 5px;
   color: #ffffffcc;
-  font-size: clamp(13px, 1.6dvh, 15px);
+  font-size: clamp(13px, calc(1.6 * var(--dvh, 1dvh)), 15px);
   font-weight: 700;
 }
 
@@ -1443,7 +1443,7 @@
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: clamp(14px, 2.2dvh, 20px) 10px;
+  padding: clamp(14px, calc(2.2 * var(--dvh, 1dvh)), 20px) 10px;
   border-radius: 22px;
   background: #ffffff1c;
 }
@@ -1461,14 +1461,14 @@
 
 .account-side-stats dt {
   color: #ffffffc4;
-  font-size: clamp(11px, 1.2dvh, 12px);
+  font-size: clamp(11px, calc(1.2 * var(--dvh, 1dvh)), 12px);
   font-weight: 800;
 }
 
 .account-side-stats dd {
   margin: 0;
   color: #17233a;
-  font-size: clamp(15px, 1.8dvh, 17px);
+  font-size: clamp(15px, calc(1.8 * var(--dvh, 1dvh)), 17px);
   font-weight: 900;
 }
 
@@ -1478,7 +1478,7 @@
   position: relative;
   z-index: 1;
   color: #ffffffd6;
-  font-size: clamp(12px, 1.4dvh, 13px);
+  font-size: clamp(12px, calc(1.4 * var(--dvh, 1dvh)), 13px);
   line-height: 1.55;
   text-align: center;
 }
@@ -1489,27 +1489,27 @@
   flex-direction: column;
   justify-content: center;
   min-height: 0;
-  padding: clamp(18px, 2.5dvh, 64px) clamp(36px, 4vw, 64px);
+  padding: clamp(18px, calc(2.5 * var(--dvh, 1dvh)), 64px) clamp(36px, calc(4 * var(--vw, 1vw)), 64px);
   background: #fff;
 }
 
 .account-editor header {
   display: grid;
-  gap: clamp(12px, 1.5dvh, 20px);
-  margin-bottom: clamp(18px, 2.6dvh, 34px);
+  gap: clamp(12px, calc(1.5 * var(--dvh, 1dvh)), 20px);
+  margin-bottom: clamp(18px, calc(2.6 * var(--dvh, 1dvh)), 34px);
 }
 
 .account-editor h2 {
   margin: 0;
   color: #17233a;
-  font-size: clamp(32px, 5.5dvh, 50px);
+  font-size: clamp(32px, calc(5.5 * var(--dvh, 1dvh)), 50px);
   line-height: 1.05;
   letter-spacing: -.05em;
 }
 
 .account-editor header span {
   width: fit-content;
-  padding: clamp(6px, .9dvh, 8px) 14px;
+  padding: clamp(6px, calc(.9 * var(--dvh, 1dvh)), 8px) 14px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--detail-color, #7a98e2) 9%, #fff);
   color: color-mix(in srgb, var(--detail-color, #7a98e2) 76%, #17233a);
@@ -1526,7 +1526,7 @@
 }
 
 .account-editor form {
-  gap: clamp(10px, 1.4dvh, 16px);
+  gap: clamp(10px, calc(1.4 * var(--dvh, 1dvh)), 16px);
   padding-top: 0;
 }
 
@@ -1535,8 +1535,8 @@
   grid-template-columns: 150px minmax(0, 1fr);
   align-items: center;
   gap: 14px;
-  min-height: clamp(54px, 7.8dvh, 84px);
-  padding: clamp(6px, .7dvh, 12px) 12px clamp(6px, .7dvh, 12px) 24px;
+  min-height: clamp(54px, calc(7.8 * var(--dvh, 1dvh)), 84px);
+  padding: clamp(6px, calc(.7 * var(--dvh, 1dvh)), 12px) 12px clamp(6px, calc(.7 * var(--dvh, 1dvh)), 12px) 24px;
   border: 1.5px solid transparent;
   border-radius: 22px;
   background: #f3f5fa;
@@ -1556,7 +1556,7 @@
 }
 
 .settings-field input {
-  height: clamp(44px, 5.2dvh, 54px);
+  height: clamp(44px, calc(5.2 * var(--dvh, 1dvh)), 54px);
   border: 0;
   outline: 0;
   background: transparent;
@@ -1585,8 +1585,8 @@
   right: 5px;
   display: grid;
   place-items: center;
-  width: clamp(38px, 4.4dvh, 44px);
-  height: clamp(38px, 4.4dvh, 44px);
+  width: clamp(38px, calc(4.4 * var(--dvh, 1dvh)), 44px);
+  height: clamp(38px, calc(4.4 * var(--dvh, 1dvh)), 44px);
   border-radius: 11px;
   background: color-mix(in srgb, var(--detail-color, #7a98e2) 10%, #fff);
   color: color-mix(in srgb, var(--detail-color, #7a98e2) 76%, #17233a);
@@ -1596,9 +1596,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: clamp(14px, 2vw, 22px);
-  margin-top: clamp(6px, 1dvh, 10px);
-  padding: clamp(16px, 2.5dvh, 28px);
+  gap: clamp(14px, calc(2 * var(--vw, 1vw)), 22px);
+  margin-top: clamp(6px, calc(1 * var(--dvh, 1dvh)), 10px);
+  padding: clamp(16px, calc(2.5 * var(--dvh, 1dvh)), 28px);
   border-radius: 30px;
   background: #f7f8fc;
 }
@@ -1618,7 +1618,7 @@
 }
 
 .save-button {
-  min-height: clamp(44px, 5.4dvh, 58px);
+  min-height: clamp(44px, calc(5.4 * var(--dvh, 1dvh)), 58px);
   border-radius: 999px;
   background: var(--detail-color, #f568a3);
   color: #fff;
@@ -1628,7 +1628,7 @@
 
 .logout-button {
   width: auto;
-  min-height: clamp(44px, 5.4dvh, 58px);
+  min-height: clamp(44px, calc(5.4 * var(--dvh, 1dvh)), 58px);
   border: 1.5px solid color-mix(in srgb, var(--detail-color, #7a98e2) 24%, #fff);
   border-radius: 999px;
   background: #fff;
@@ -1650,7 +1650,7 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  height: 100dvh;
+  height: calc(100 * var(--dvh, 1dvh));
   overflow: hidden;
   padding: 96px 0 32px;
 }
@@ -1658,7 +1658,7 @@
 .account-settings-layout .account-settings-card {
   width: 100%;
   min-height: 0;
-  max-height: calc(100dvh - 128px);
+  max-height: calc(calc(100 * var(--dvh, 1dvh)) - 128px);
 }
 
 @media (max-width: 980px) {
@@ -1685,7 +1685,7 @@
   }
 
   .organization-panel {
-    height: calc(100dvh - 106px);
+    height: calc(calc(100 * var(--dvh, 1dvh)) - 106px);
     padding: 60px 14px 16px;
   }
 

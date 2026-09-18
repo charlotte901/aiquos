@@ -3,7 +3,7 @@
 .profile-screen {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh, 1dvh));
   overflow: hidden;
   background: #08080a;
   color: #fff;
@@ -87,7 +87,7 @@
   padding: 112px 24px 36px;
 }
 .profile-screen[data-compact="true"] .profile-wordmark {
-  width: min(78vw, 440px);
+  width: min(calc(78 * var(--vw, 1vw)), 440px);
   height: auto;
   aspect-ratio: 813 / 174;
 }
