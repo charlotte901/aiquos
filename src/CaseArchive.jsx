@@ -29,50 +29,84 @@ import {
   writeRemovedKeys,
 } from "./case-library";
 
-const CASE_PROJECTS = [  {
-    title: "Aiquos Identity Refresh",
-    tags: "品牌重塑 · 视觉系统",
+const CASE_PROJECTS = [
+  {
+    // 1.webp — a black cat in heavy black-framed glasses, drawn in a loose
+    // brush-and-ink style. Kept first because the poster opens on this case and
+    // its world carries `HOME_GROUND` (see below), so the archive inherits the
+    // home page's pink instead of cutting to a different colour on the way in.
+    image: 1,
+    title: "戴眼镜的黑猫",
+    tags: "AI 生成插画 · 角色设定",
+    year: 2026,
+    description:
+      "对 AI 说一句想要的角色，得到一张有脾气的猫。蓬乱的毛、镜片的反光和那副不太高兴的表情都由模型一次画完，人只从几版里挑出最像自己那只的——不需要会画画，也能把宠物变成可以挂起来的角色插画。",
+  },
+  {
+    // 3.webp — a torn-paper collage poster: snow mountains, a yurt and yaks over
+    // a hand-annotated sheet, on a deep blue ground.
+    image: 3,
+    title: "高原拼贴海报",
+    tags: "AI 生成海报 · 拼贴构成",
     year: 2025,
+    // Ground sampled from the artwork's own deep blue, so the poster and the
+    // stamp share one colour instead of the stamp sitting on an unrelated field.
+    world: { top: "CUT", bottom: "PASTE", background: "#07599b", ink: "#ffeccc", accent: "#ffd166" },
     description:
-      "一次由 AI 参与收敛的品牌重塑。以原有的粉色为起点，标志的多个方向、字体配对与页面节奏都由模型先铺开，再由人挑出最安静的那一版——目标是让网站、印刷物和展陈物料说出同一种语气。",
-  },  {
-    title: "Spatial Learning Toolkit",
-    tags: "学习路径 · 空间模块",
+      "让 AI 按一句话生成一张海报。雪山、毡房与牦牛的插画，撕纸便签的排布，连同手写标注和印章的位置，都由模型一次铺好，人只决定留下哪些——得到的成品像手工拼贴了一下午，实际只是把想要的感觉说清楚了。",
+  },
+  {
+    // 5.webp — a flat storybook illustration of a girl and a white cat side by
+    // side on a warm yellow ground.
+    image: 5,
+    title: "女孩与白猫",
+    tags: "AI 生成插画 · 绘本风",
+    year: 2026,
+    // The artwork's warm yellow ground, with dark brown ink on it.
+    world: { top: "DRAW", bottom: "CLOSER", background: "#f7d88e", ink: "#3f352f", accent: "#c98b5e" },
+    description:
+      "让 AI 把一段关系画成一张图。猫毛的蓬松感、眼里那点蓝和脸上的雀斑都由模型定下，两个神情要对上视线，是反复改了几轮的结果——想给谁画一张专属的图，不必再去找一张勉强合适的现成画。",
+  },
+  {
+    // 2.webp — a watercolour portrait of a girl whose head fills a fishbowl,
+    // aqua and blush tones. The avatar case.
+    image: 2,
+    title: "鱼缸里的女孩",
+    tags: "AI 生成头像 · 水彩质感",
+    year: 2026,
+    // Aqua from the water, with a deeper teal for the ink so the display type
+    // stays legible on it.
+    world: { top: "BLOOM", bottom: "BENEATH", background: "#8cd1da", ink: "#14484f", accent: "#f4a9a9" },
+    description:
+      "把自己想要的样子说给 AI 听，得到一张能直接当头像的画。水彩的晕染、鱼群的位置和视线朝向都试过几轮，人在其中只做挑选——头像不一定是照片，也可以是一张 AI 画出来的、更接近自己的脸。",
+  },
+  {
+    // 4.webp — an anime-style still of a bus under sunlit green leaves.
+    image: 4,
+    title: "夏日公交",
+    tags: "AI 生成场景 · 动画质感",
     year: 2025,
+    // The foliage green, with pale ink for the sunlit feel of the still.
+    world: { top: "SUMMER", bottom: "RIDE", background: "#37845c", ink: "#eaffef", accent: "#ffe98a" },
     description:
-      "AI 把抽象的学习路径摊开成可以拖动的空间模块。信息架构与交互原型由模型快速铺出多套方案，人负责判断哪一种真的让人看得清任务的全貌和彼此的依赖关系。",
-  },  {
-    title: "Studio Workflow Assistant",
-    tags: "协作面板 · 流程梳理",
-    year: 2025,
-    description:
-      "AI 为小型工作室起草的协作面板。流程梳理、字段设计与说明文案都由模型先给出，把简报、素材、修改记录和交付检查收进同一条流程，减少在多个工具之间搬运信息的次数。",
-  },  {
-    title: "Retail Navigation Concept",
-    tags: "门店导览 · 实时路线",
-    year: 2024,
-    description:
-      "AI 参与设计的门店导览概念。实时路线与分层信息如何降噪、促销信息该压到多低，都由模型先给出可比较的版本，再用真实动线验证——让指引只在需要的时候出现。",
-  },  {
-    title: "Quiet City Guide",
-    tags: "城市漫游 · 编辑体例",
-    year: 2024,
-    description:
-      "AI 按编辑体例产出的低干扰城市漫游内容。图片筛选、短段落撰写与步行路线编排批量生成，人再删掉多余的部分，让散步重新变成一件可以自己发现事情的过程。",
-  },  {
+      "想要的只是一个夏天，AI 给了一整张画面。树叶的透光、车窗上的反光和站牌上的小字都由一句话铺开，接着改的全是光的温度而不是像素——用文字反复调一张图的空气感，直到它像记忆里的那个下午。",
+  },
+  {
+    image: 6,
     title: "Modular Sound Archive",
     tags: "声音档案 · 片段重组",
     year: 2024,
     description:
       "AI 把声音档案拆成了可组合的片段。素材的标签体系与检索维度由模型从原始录音中提取，访问者能按地点、时间和材质重新编排自己的听觉路径，同一批素材可以拼出完全不同的叙事。",
-  },  {
+  },
+  {
+    image: 7,
     title: "The Last Ice",
     tags: "海报设计 · 视觉定稿",
     year: 2026,
     description:
       "为一部虚构的气候短片设计的海报，视觉方向由 AI 生成、人来定稿。一块巨大的冰被当作棚拍产品来打光，冰里封着一把鲜红的塑料椅，荒谬却拍得像真的。珊瑚橘的纸面上只留大片空白，所有信息都用贴纸完成——深蓝的片名、写着 42°C 的圆标、银灰的 KEEP UNTIL SUNSET、红底编号 03，全部歪斜、卷边、裁切不齐。手写的一句 “it was still cold when we left.” 让整张海报停在一种安静的荒谬上。",
   },
-
 ];
 
 const LIVE_CASE_DETAILS = {
@@ -152,7 +186,13 @@ const LIVE_CASE_DETAILS = {
   },
 };
 
-const projectImage = (index) => `/assets/cases/${index + 1}.webp`;
+/** The artwork for an archive case, by its own `image` NUMBER (1-based, matching
+ * the file name in `public/assets/cases/`). It takes the number rather than a
+ * position so a case's picture travels with the case: reordering `CASE_PROJECTS`
+ * used to renumber every cover, and the AI-generated images ended up on the
+ * wrong entries. Nil means "no artwork of its own" and falls back to the
+ * positional name. */
+const projectImage = (imageNumber) => `/assets/cases/${imageNumber}.webp`;
 
 /** The journey route is a true sine wave running along the screen diagonal —
  * from the upper-left corner, behind the centered stamp, to the lower-right
@@ -309,9 +349,12 @@ const WORLD_KEYS = {
   "live:browser-ops": "AUTOMATE",
 };
 
-// Retail Navigation Concept is the archive case that positionally owned
-// NOTICE/WONDER, so it keeps them; 电脑控制 gets words of its own.
-const ARCHIVE_WORLD_KEYS = { 3: "NOTICE", 6: "KEEP" };
+// The Last Ice is the archive case that owns KEEP/UNTIL SUNSET, which is the
+// poster it actually is. Index 3 used to map to NOTICE/WONDER for Retail
+// Navigation Concept; that case is no longer in the archive, and its slot now
+// carries its own world, so the stale entry is gone rather than left pointing at
+// whichever case happens to land there next.
+const ARCHIVE_WORLD_KEYS = { 6: "KEEP" };
 
 const WORLD_BY_TOP = Object.fromEntries(POSTER_WORLDS.map((world) => [world.top, world]));
 
@@ -325,7 +368,7 @@ const CASE_POOL = [
     key: `archive:${archiveIndex}`,
     type: "archive",
     archiveIndex,
-    cover: projectImage(archiveIndex),
+    cover: projectImage(item.image),
   })),
   ...LIVE_CASES.map((item) => ({
     ...item,
@@ -337,8 +380,14 @@ const CASE_POOL = [
 ];
 
 CASE_POOL.forEach((entry, poolIndex) => {
+  // A case may name its own world, and that wins: the AI-image cases each carry
+  // a ground sampled from their own artwork, so the poster behind a stamp and
+  // the stamp itself agree instead of the picture sitting on an unrelated field.
+  const own = entry.world ? WORLD_BY_TOP[entry.world.top] ?? entry.world : null;
   const named =
-    WORLD_BY_TOP[WORLD_KEYS[entry.key]] ?? WORLD_BY_TOP[ARCHIVE_WORLD_KEYS[entry.archiveIndex]];
+    own
+    ?? WORLD_BY_TOP[WORLD_KEYS[entry.key]]
+    ?? WORLD_BY_TOP[ARCHIVE_WORLD_KEYS[entry.archiveIndex]];
   entry.world = named ?? POSTER_WORLDS[poolIndex % POSTER_WORLDS.length];
 });
 
@@ -778,7 +827,7 @@ export function CaseDetail({
   // Live cases carry their own cover; archive entries are addressed by position.
   // Using the positional image for a live case showed an unrelated archive poster
   // as the detail artwork and, worse, blurred that poster behind the piece.
-  const artwork = project.cover ?? projectImage(index);
+  const artwork = project.cover ?? projectImage(index + 1);
   // The standfirst only exists in the immersive split layout; the stacked panel
   // keeps the description in one piece.
   const { lead, body } = splitDescription(project.description);

@@ -2251,10 +2251,14 @@ body {
   --feature-stamp-width: min(21.9vw, 40vh);
   --peek-stamp-ratio: 0.56;        /* the corners, a little over half the centre */
   /* How far each corner stamp is tucked in from its edge, as a share of the
-     frame. The two are the same number because the corners are a point
-     reflection of each other; the previous stamp's is the one to change if the
-     pair ever needs to move together. */
-  --peek-inset-y: 6%;
+     frame. ONE number moves both, and in the directions they are named for:
+     the previous stamp sits on `top`, so a smaller value lifts it toward the
+     top-left corner, and the next sits on `bottom`, so the same smaller value
+     drops it toward the bottom-right. That is why the pair shares a token
+     rather than carrying two — they are a point reflection about the centre.
+     Negative values push each stamp past its edge so the corner is cut by the
+     top or bottom as well as the side, the way the reference frames show it. */
+  --peek-inset-y: -6%;
 }
 
 .case-poster-stage {
@@ -3850,8 +3854,14 @@ body {
    the two centred elements landed on top of each other and the button read as
    part of the navigation. Sitting under the chrome and off to one side keeps them
    independent at every viewport. */
+/* Pinned to the very top of the poster, above the peek stamp's path, the way the
+   reference frames put their INDEX label in the corner. It used to start at
+   `--chrome-block` (the far side of the header), which put it squarely where the
+   top-left stamp travels: the stamp's top edge overran the pill's bottom by 52px
+   and the two printed through each other. The stamp now passes beneath a pill
+   that reads as part of the corner furniture rather than as an obstacle. */
 .app[data-tab="cases"] .case-poster-all {
-  top: var(--chrome-block);
+  top: calc(10px * var(--ui-scale));
   left: var(--chrome-inset-x);
   right: auto;
   transform: none;

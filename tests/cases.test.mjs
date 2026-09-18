@@ -871,7 +871,31 @@ test("every live case has its own detail copy and artwork", async () => {
   }
 
   // The artwork must resolve from the case, not from its position in the pool.
-  assert.match(src, /const artwork = project\.cover \?\? projectImage\(index\);/);
+  assert.match(src, /const artwork = project\.cover \?\? projectImage\(index \+ 1\);/);
+  // ...and `projectImage` takes the case's own 1-based image NUMBER. It used to
+  // take a 0-based index and add one inside, so a caller that already held the
+  // number silently got the next file — the AI-image cases each wore their
+  // neighbour's artwork. The +1 now lives at the one positional call site.
+  assert.match(
+    src,
+    /const projectImage = \(imageNumber\) => `\/assets\/cases\/\$\{imageNumber\}\.webp`/,
+  );
+  assert.match(src, /cover: projectImage\(item\.image\)/);
+  assert.ok(
+    !/projectImage\(item\.image \+ 1\)/.test(src),
+    "a case's `image` is already the file number",
+  );
+  // Every named file must exist, and every archive case must name one.
+  const numbers = [...src.matchAll(/\n    image: (\d+),/g)].map(([, n]) => n);
+  for (const number of numbers) {
+    await access(new URL(`../public/assets/cases/${number}.webp`, import.meta.url));
+  }
+  const archiveBlock = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
+  assert.equal(
+    numbers.length,
+    (archiveBlock.match(/\n    title:/g) ?? []).length,
+    "every archive case must name the artwork it actually is",
+  );
 });
 
 test("every case kind has a renderer, and a still is never loaded as a scene", async () => {
