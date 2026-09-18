@@ -158,6 +158,20 @@ body:has(.site-experience[data-view="reports"])::-webkit-scrollbar {
   background: #f2f6ff;
 }
 
+.report-meta {
+  margin: 10px 0 0;
+  color: #6b7484;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.report-meta.is-demo {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f6f2ff;
+  color: #7a5db0;
+}
+
 .awakening-rating strong {
   color: var(--report-blue-deep);
   font-size: 27px;

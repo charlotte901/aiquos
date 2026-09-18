@@ -28,6 +28,7 @@ import {
 } from "./assessment-flow";
 import { generateArkImage, streamDeepSeek } from "./deepseek";
 import { MarkdownLite } from "./markdown-lite";
+import { DIMENSIONS as SCORING_DIMENSIONS } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
 const GUIDES = "/assets/crops/assessment-guides-crop.png";
 
@@ -555,11 +556,46 @@ function TaskAction({ disabled, onClick, label, variant = "" }) {
   return <button type="button" className={`task-action ${variant}`.trim()} disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
 }
 
+function LiveDimensionStrip({ result }) {
+  // While the attempt is in progress only per-dimension estimates with
+  // evidence are shown — no overall score or grade (integration guide).
+  const dimensions = result?.dimensions ?? SCORING_DIMENSIONS;
+  const answered = result?.answeredCount ?? 0;
+  const total = result?.totalQuestions ?? COMPREHENSIVE_QUESTION_COUNT;
+  return (
+    <aside className="live-dimension-strip" aria-label="六维实时画像">
+      <div className="live-dimension-head">
+        <span>六维实时画像</span>
+        <strong>{`已答 ${answered} / ${total}`}</strong>
+      </div>
+      <ul>
+        {dimensions.map((dimension) => (
+          <li
+            key={dimension.key}
+            className={dimension.score === null || dimension.score === undefined ? "is-pending" : ""}
+          >
+            <span title={dimension.name}>{dimension.short}</span>
+            <div
+              className="live-dimension-track"
+              role="img"
+              aria-label={`${dimension.name}${dimension.score === null || dimension.score === undefined ? "，待测评" : ` ${dimension.score} 分`}`}
+            >
+              <i style={{ width: `${dimension.score ?? 0}%` }} />
+            </div>
+            <b aria-hidden="true">{dimension.score ?? "—"}</b>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
 function ComprehensiveTask({
   stage,
   onComplete,
   onSelectComprehensiveQuestion,
-  onRecordComprehensiveOutcome,
+  onAnswerComprehensive,
+  comprehensiveResult,
 }) {
   const level = getComprehensiveLevel(stage);
   const [question, setQuestion] = useState(null);
@@ -606,7 +642,7 @@ function ComprehensiveTask({
       : answerResult.partialCorrect
         ? "partial"
         : "wrong";
-    onRecordComprehensiveOutcome(outcome);
+    onAnswerComprehensive?.(question, selectedKeys, outcome);
   };
 
   const nextQuestion = () => {
@@ -687,6 +723,7 @@ function ComprehensiveTask({
 
       {phase === "quiz" && question && (
         <>
+          <LiveDimensionStrip result={comprehensiveResult} />
           <h2>{question.q}</h2>
           <p className="quiz-brief">
             第 {questionIndex + 1} / {COMPREHENSIVE_QUESTION_COUNT} 题
@@ -752,7 +789,8 @@ export function AssessmentTask({
   onPick,
   onComplete,
   onSelectComprehensiveQuestion,
-  onRecordComprehensiveOutcome,
+  onAnswerComprehensive,
+  comprehensiveResult,
   busy,
 }) {
   const theme = ASSESSMENT_THEMES[id];
@@ -773,7 +811,8 @@ export function AssessmentTask({
           key={`${taskKey}-comprehensive`}
           {...props}
           onSelectComprehensiveQuestion={onSelectComprehensiveQuestion}
-          onRecordComprehensiveOutcome={onRecordComprehensiveOutcome}
+          onAnswerComprehensive={onAnswerComprehensive}
+          comprehensiveResult={comprehensiveResult}
         />
         : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
     </section>

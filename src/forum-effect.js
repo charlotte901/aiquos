@@ -257,6 +257,35 @@
                 return typeof p === 'string' ? (PALETTES[p] ?? PALETTE) : p;
             }
 
+            /** Retint the field without touching the running animation.
+             *
+             * The board hands this the topic's colour, so the stage behind the
+             * letter cards takes the discussion's own hue. Only `bg` changes:
+             * the card and handle colours are the sampled CHOOSE/TEST/CENTER
+             * palette and are what make the animation recognisably itself. The
+             * draw loop already cross-fades `prevPal.bg` into `pal.bg` over
+             * FIELD_FADE, so reusing that path gives the wipe for free.
+             *
+             * While stopped there is no frame to cross-fade, and a `prevPal`
+             * would make `renderStill()` (reduced motion) draw the *old* colour
+             * at t=0 — so a stopped engine switches outright and the caller
+             * re-renders the still. */
+            setField(color) {
+                if (!color || this.field === color) return;
+                this.field = color;
+                if (this.pal.bg === color) return;
+                this.prevPal = this.running ? { ...this.pal } : null;
+                this.pal = { ...this.pal, bg: color };
+            }
+
+            /** Keep the field through variant changes. `applyVariant` resolves a
+             * fresh palette on every cycle, which would otherwise wash the topic
+             * colour back to the paper background once a loop completes. */
+            applyField() {
+                if (!this.field || this.pal.bg === this.field) return;
+                this.pal = { ...this.pal, bg: this.field };
+            }
+
             applyVariant(i) {
                 const v = this.variants.length ? this.variants[i % this.variants.length] : {};
                 this.prevPal = this.started ? this.pal : null;
@@ -264,6 +293,9 @@
                 this.vi = i;
                 this.word = v.word ?? this.opts.word ?? WORD;
                 this.pal = this.resolvePalette(v.palette ?? this.opts.palette);
+                // Re-apply the topic field after the variant's own palette, or a
+                // completed loop would wash the board's colour back to paper.
+                this.applyField();
                 this.shape = v.shape ?? this.opts.shape ?? 'rect';
                 this.handleShape = v.handle ?? this.opts.handleShape ?? 'circle';
                 this.seed = v.seed ?? this.opts.seed ?? 0;

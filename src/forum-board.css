@@ -1,0 +1,674 @@
+/* The Forum board — a wall of hung work on a solid colour field.
+ *
+ * The composition is the product's own language, borrowed from Home and Cases:
+ * one colour, one object, type doing the rest. A dark ground is what makes the
+ * white mounts read as a gallery rather than as cards on a page, and it is why
+ * the display word and the header's labels default to white here.
+ *
+ * Nothing here animates width/height/top/left; entries and lifts are transform
+ * and opacity only, and every entry effect is an `animation` so it cannot
+ * capture an element's hover `transition`.
+ */
+
+/* ── the field ───────────────────────────────────────────────────────────── */
+
+/* The board root publishes the current field colour. Two things read it: the
+   tab screen behind the board, so the page edge matches the field as it scrolls
+   away, and the header's ink logic, which samples the field element itself. */
+.forum-board-root {
+  --forum-board-field: var(--field-color, var(--forum-pink));
+  min-height: 100%;
+}
+
+/* The field is sized so its whole composition fits one screen: the eyebrow, the
+   display word and the protagonist all have to be visible together, or the
+   poster reads as a page that was cut off. `100vh` minus the header band, not
+   `min-height` on a grid that then grows past it. */
+.forum-field {
+  position: relative;
+  width: calc(100% + 2 * var(--tab-screen-inset-x, 0px));
+  margin-left: calc(-1 * var(--tab-screen-inset-x, 0px));
+  margin-right: calc(-1 * var(--tab-screen-inset-x, 0px));
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  row-gap: clamp(14px, calc(2.4 * var(--vh, 1vh)), 36px);
+  min-height: calc(100 * var(--dvh, 1dvh));
+  padding: clamp(86px, calc(11 * var(--vh, 1vh)), 132px) clamp(22px, calc(3.4 * var(--vw, 1vw)), 60px)
+    clamp(26px, calc(3.4 * var(--vh, 1vh)), 46px);
+  overflow: hidden;
+  color: var(--field-ink, #fff);
+  background: var(--field-color, var(--forum-pink));
+  transition: background-color 520ms cubic-bezier(0.32, 0.72, 0, 1), color 520ms ease;
+}
+
+.forum-field.is-tall {
+  min-height: calc(100 * var(--dvh, 1dvh));
+}
+
+/* The journal wants a shallower field: its lead story lives below the fold of
+   the masthead, so the colour block is a header rather than the whole page. */
+
+
+.forum-field-eyebrow {
+  justify-self: start;
+  margin: 0;
+  color: color-mix(in srgb, var(--field-ink, #fff) 78%, transparent);
+  font-size: clamp(11px, calc(0.82 * var(--vw, 1vw)), 14px);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* ── the display word ────────────────────────────────────────────────────── */
+
+/* Sized from the word's own letter count, so a ten-letter topic word and a
+   seven-letter one both span the picture instead of one of them floating small
+   in the middle. The height cap is what keeps a short word from dominating
+   vertically; `--letters` is written by `SplitWord`.
+ *
+ * `--word-scale` lets each variant set how loud the word is: on the letter board
+ * it is the composition, on the wall it is the wall's header, and in the journal
+ * it is a masthead. One word, three volumes, so the variants differ in
+ * proportion rather than in parts. */
+.forum-field {
+  --word-scale: 1;
+}
+
+.forum-word {
+  display: block;
+  max-width: 100%;
+  font-family: "DM Sans", "Noto Sans SC", sans-serif;
+  font-size: calc(
+    min(
+        calc(138 * var(--vw, 1vw) / var(--letters, 7)),
+        calc(27 * var(--vh, 1vh)),
+        268px
+      ) * var(--word-scale, 1)
+  );
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 4px 30px #17150f1a;
+}
+
+.forum-field[data-ink="dark"] .forum-word {
+  text-shadow: 0 4px 30px #ffffff42;
+}
+
+.forum-word > span {
+  display: inline-block;
+  animation: forum-word-rise 660ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 52ms);
+}
+
+@keyframes forum-word-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.34em) rotate(3deg);
+  }
+  64% {
+    opacity: 1;
+    transform: translateY(-0.05em) rotate(-0.6deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
+
+/* ── the stamp ───────────────────────────────────────────────────────────── */
+
+.forum-stamp {
+  position: relative;
+  display: inline-grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 9px 11px 8px;
+  border: 1.5px dashed color-mix(in srgb, var(--stamp-color, #17150f) 62%, transparent);
+  border-radius: 10px;
+  color: inherit;
+  transform: rotate(-3.5deg);
+}
+
+.forum-stamp-ring {
+  position: absolute;
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--stamp-color, #17150f) 30%, transparent);
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+.forum-stamp-date {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
+}
+
+/* ── filters, as one caption line ────────────────────────────────────────── */
+
+.forum-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.forum-filters-topics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.forum-pill {
+  height: 28px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 26%, transparent);
+  border-radius: 100px;
+  background: transparent;
+  color: color-mix(in srgb, var(--field-ink, #fff) 82%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease,
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.forum-pill:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--field-ink, #fff) 52%, transparent);
+}
+
+.forum-pill[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--pill-color, #17150f);
+  color: var(--pill-ink, #fff);
+}
+
+.forum-pill-count {
+  font-size: 10.5px;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-filters-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.forum-sorter {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.forum-sorter button {
+  height: 26px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 100px;
+  background: transparent;
+  color: color-mix(in srgb, var(--field-ink, #fff) 62%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.forum-sorter button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--field-ink, #fff) 16%, transparent);
+  color: var(--field-ink, #fff);
+}
+
+/* Search is a rule on the field, not a box on it: an underlined input reads as
+   part of the composition, where a bordered field would read as chrome. */
+.forum-query {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 168px;
+  padding-bottom: 3px;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--field-ink, #fff) 30%, transparent);
+  transition: border-color 220ms ease;
+}
+
+.forum-query:focus-within {
+  border-color: var(--field-ink, #fff);
+}
+
+.forum-query-label {
+  color: color-mix(in srgb, var(--field-ink, #fff) 58%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.forum-query input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 132px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--field-ink, #fff);
+  font: inherit;
+  font-size: 13px;
+}
+
+.forum-query input::placeholder {
+  color: color-mix(in srgb, var(--field-ink, #fff) 42%, transparent);
+}
+
+.forum-query input:focus-visible {
+  outline: none;
+}
+
+.forum-query input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* ── empty state ─────────────────────────────────────────────────────────── */
+
+.forum-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: clamp(28px, calc(6 * var(--vh, 1vh)), 70px) 20px;
+  text-align: center;
+}
+
+.forum-empty-word {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: clamp(30px, calc(4.6 * var(--vw, 1vw)), 76px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.forum-empty-note {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.78;
+}
+
+.forum-empty-state button {
+  margin-top: 6px;
+  height: 38px;
+  padding: 0 20px;
+  border: 1.5px solid currentColor;
+  border-radius: 100px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.forum-empty-state button:hover {
+  background: var(--field-ink, #fff);
+  color: var(--field-color, #f568a3);
+}
+
+/* ── the wall ─────────────────────────────────────────────────── */
+
+/* A salon hang: every frame the same size, the way a real wall is hung, with
+   the pictures contained inside them. Letting each frame follow its image's
+   aspect (as the masonry did) is what makes a wall look like a feed; equal
+   frames with white space inside them is what makes it look curated.
+
+   Seven units over three columns, the lead spanning two of them: three rows
+   fills exactly, so the wall has no hole in it. */
+/* The wall has to fit the same single screen the letter board's field occupies,
+   so this variant spends its vertical budget differently: a quieter word, thinner
+   margins, and the rest is wall. Sized from measurement rather than taste — the
+   available height is the viewport minus the header band, the word and the
+   filter line, and two rows of frames plus their captions have to come out of
+   what is left. */
+.forum-gallery-board .forum-field {
+  --word-scale: 0.42;
+  row-gap: clamp(10px, calc(1.5 * var(--vh, 1vh)), 20px);
+  padding-top: clamp(70px, calc(8.6 * var(--vh, 1vh)), 96px);
+  padding-bottom: clamp(16px, calc(2.2 * var(--vh, 1vh)), 28px);
+}
+
+.forum-wall {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(16px, calc(1.9 * var(--vw, 1vw)), 32px) clamp(16px, calc(1.9 * var(--vw, 1vw)), 30px);
+  width: 100%;
+  max-width: 1080px;
+  padding: clamp(6px, calc(1.2 * var(--vh, 1vh)), 16px) 0;
+}
+
+/* The wall recedes when one piece is looked at: every piece steps back a little
+   while the hovered one comes forward and straightens. That is the only motion
+   this composition needs, and it is how a room behaves. */
+.forum-wall:has(.forum-piece:hover) .forum-piece {
+  transform: rotate(var(--piece-angle, 0deg)) scale(0.97);
+  opacity: 0.82;
+}
+
+.forum-piece {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  transform: rotate(var(--piece-angle, 0deg));
+  transition:
+    transform 560ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 380ms ease;
+}
+
+.forum-piece[data-reveal="pending"] {
+  opacity: 0;
+}
+
+.forum-piece[data-reveal="in"] {
+  animation: forum-hang-in 720ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
+}
+
+@keyframes forum-hang-in {
+  from {
+    opacity: 0;
+    transform: rotate(var(--piece-angle, 0deg)) translateY(30px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--piece-angle, 0deg)) translateY(0) scale(1);
+  }
+}
+
+.forum-piece:hover,
+.forum-piece:focus-within {
+  transform: rotate(0deg) scale(1.02);
+  opacity: 1;
+}
+
+/* The lead takes two of the three columns and one row. With five pieces a page
+   that is exactly six column-units, i.e. two full rows: the wall has no hole and
+   no dangling piece, which is what a salon hang requires. */
+.forum-piece.is-leader {
+  grid-column: span 2;
+}
+
+/* The lead spans two columns, so at a normal 16:10 crop it becomes the tall row
+   and pushes the second row off the screen. A panoramic crop keeps it the widest
+   thing on the wall (which is the point of a lead) without making it the tallest
+   — the wall's two rows then come out within a few pixels of each other. */
+.forum-piece.is-leader .forum-piece-mat {
+  aspect-ratio: 16 / 6;
+}
+
+/* The mount: a white passe-partout around the work, which is what makes the
+   piece read as a hung print rather than a card with an image in it. */
+.forum-piece-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: clamp(9px, calc(0.9 * var(--vw, 1vw)), 15px);
+  border: 0;
+  border-radius: 2px;
+  background: #fffdfb;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 #ffffff inset,
+    0 22px 48px #4c1a3826,
+    0 5px 14px #4c1a3818;
+}
+
+.forum-piece-mat {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #f4eef1;
+}
+
+.forum-piece-mat img,
+.forum-piece-mat .forum-card-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: contain;
+  transition: transform 620ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.forum-piece:hover .forum-piece-mat img,
+.forum-piece:hover .forum-piece-mat .forum-card-art {
+  transform: scale(1.035);
+}
+
+
+
+.forum-piece.is-leader .forum-piece-mat img {
+  object-fit: cover;
+}
+
+/* The label sits on the wall below the frame, not inside it. */
+.forum-piece-label {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: 100%;
+  text-align: center;
+}
+
+.forum-piece-no {
+  width: 22px;
+  height: 2px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 52%, transparent);
+}
+
+.forum-piece-label h3 {
+  margin: 0;
+  font-size: clamp(12.5px, calc(0.86 * var(--vw, 1vw)), 15px);
+  font-weight: 700;
+  line-height: 1.3;
+  /* One line wherever it fits, two at most: the caption must not grow the wall. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.forum-piece-label p {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px 10px;
+  margin: 0;
+  color: color-mix(in srgb, var(--field-ink, #fff) 62%, transparent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-piece-stamp {
+  position: absolute;
+  top: clamp(14px, calc(1.4 * var(--vw, 1vw)), 24px);
+  right: clamp(14px, calc(1.4 * var(--vw, 1vw)), 24px);
+  opacity: 0;
+  transform: rotate(-10deg) scale(1.3);
+  transition:
+    opacity 300ms ease,
+    transform 460ms cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
+}
+
+/* The stamp "lands" on hover: it arrives oversized and slightly turned, the way
+   a hand stamp comes down on paper. That is the whole interaction. */
+.forum-piece:hover .forum-piece-stamp {
+  opacity: 1;
+  transform: rotate(-3.5deg) scale(1);
+}
+
+.forum-wall-foot {
+  width: 100%;
+  max-width: 1240px;
+  padding-top: clamp(16px, calc(2.4 * var(--vh, 1vh)), 32px);
+}
+
+.forum-wall-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 26px 0 84px;
+}
+
+.forum-pager-arrow {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid #17150f2e;
+  border-radius: 50%;
+  background: #ffffffe0;
+  color: #17150f;
+  transition: background-color 220ms ease, transform 220ms ease, opacity 220ms ease;
+}
+
+.forum-pager-arrow:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: #17150f;
+  color: #fff;
+}
+
+.forum-pager-arrow:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+
+.forum-pager-count {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0;
+  color: #17150f;
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.forum-pager-count i {
+  color: #a49e94;
+  font-style: normal;
+}
+
+/* ── compact ─────────────────────────────────────────────────────────────── */
+
+/* Compact: the header stack (account pill, then the nav row) is two lines tall,
+   so the field has to clear both before its own content starts. */
+.app[data-layout="compact"] .forum-field {
+  row-gap: clamp(14px, calc(2.2 * var(--vh, 1vh)), 30px);
+  padding: 118px 20px 26px;
+  min-height: auto;
+}
+
+
+.app[data-layout="compact"] .forum-word {
+  font-size: min(calc(150 * var(--vw, 1vw) / var(--letters, 7)), calc(13 * var(--vh, 1vh)), 74px);
+}
+
+
+
+
+
+
+.app[data-layout="compact"] .forum-filters {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.app[data-layout="compact"] .forum-filters-side {
+  margin-left: 0;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.app[data-layout="compact"] .forum-query {
+  flex: 1 1 auto;
+}
+
+.app[data-layout="compact"] .forum-query input {
+  width: 100%;
+}
+
+
+
+.app[data-layout="compact"] .forum-wall {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 30px;
+}
+
+.app[data-layout="compact"] .forum-piece.is-leader {
+  grid-column: span 1;
+}
+
+.app[data-layout="compact"] .forum-piece-stamp {
+  opacity: 1;
+  transform: rotate(-3.5deg) scale(1);
+}
+
+
+
+
+
+
+
+
+
+/* ── reduced motion ──────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .forum-word > span,
+  .forum-piece[data-reveal] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .forum-field {
+    transition: none;
+  }
+
+  .forum-piece,
+  .forum-piece:hover,
+  .forum-piece:focus-within {
+    transform: none;
+  }
+
+  .forum-wall:has(.forum-piece:hover) .forum-piece {
+    transform: none;
+    opacity: 1;
+  }
+
+  .forum-piece-stamp {
+    opacity: 1;
+    transform: rotate(-3.5deg) scale(1);
+  }
+}

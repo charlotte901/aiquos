@@ -1,5 +1,80 @@
 # AIQUOS visual verification
 
+## Revision: the gallery wins — and a reveal that could silently never fire (2026-09-19)
+
+The user picked 展藏 GALLERY from the three-way comparison, so the letters and journal boards, the bottom view switcher, and the per-view localStorage/URL persistence were removed; `forum-variant-gallery.jsx` became `forum-gallery.jsx`, `forum-variants.css` became `forum-board.css`, and `ForumBoard` renders the wall directly. The board defaults to the ink ground `#17150f` with the word GALLERY (moved from the per-view table into `useForumBoard`'s defaults); a selected topic still retints the field and swaps the word (verified: 测评研究 → `rgb(36,124,241)` + RESEARCH, 回归 through detail / related-rail / composer / favorites).
+
+**The bug worth remembering from this pass: a reveal that could silently never fire.** After the cleanup the wall intermittently rendered as an empty dark field — all five pieces stuck at `data-reveal="pending"`, `opacity: 0`. Instrumentation (run counters on the effect, call counters on the observer callback) showed the effect ran and observed, but the IntersectionObserver callback was *never delivered* — while a manually created observer with identical options fired instantly. The difference was not code but frames: the in-app browser pane was occluded (the user was reading their own browser), and this project already documents that occluded embedded webviews stop delivering rendering frames — the exact failure the homepage's 8-second boot-curtain failsafe exists for. IntersectionObserver is fed by frames, so a reveal gated purely on IO has the same blind spot.
+
+**Fix.** `useReveal` now carries a bounded failsafe in the same spirit: if the observer hasn't settled the items within 2 seconds, a timeout clears the attributes and disconnects. Verified under a deliberately hidden pane: pieces pending at 600 ms and 1600 ms, all settled by 2600 ms (the observed path still gives the stagger whenever frames flow). Reduced motion already cleared the attributes outright.
+
+**Also cleaned in this pass:** the stale `.forum-variant-switch` and letters/journal compact rules, the unused `masthead` slot on `ForumField`, and the last `.forum-tab` token scope (now `.forum-board-root`). Compact 430 px: no horizontal overflow, all pieces settle, dark field renders with white type.
+
+## Revision: the Forum board becomes a poster, in three cuts (2026-09-18, second pass)
+
+**Decision after review: all three stay.** What was built as a three-way comparison became a product feature — the community board has three readings (letters / wall / journal), the switcher is a labelled 视图 control in the family's black-pill chrome, and the choice persists in `localStorage` (`aiquos.forum-view.v1`, best-effort so a private-mode browser just starts on the default). Persistence was verified across a reload (journal chosen → stored → reload → journal returns), and the letter view gained the one thing it lacked beside the other two: an entrance. The postcard now settles onto its angle through the same reveal system the wall and the lead use — the reveal ref moved from the index to the board root so the letter is observed too, with the reduced-motion path clearing the pending state.
+
+The views are three readings of one board, so the regression that matters is that switching never changes content: filters, sort, search, likes and comments were exercised across all three switches, plus the dark-topic retint (讨论场 → `rgb(43,39,51)` field, white nav, contents cut to one entry). Compact at 430px: no overflow on any view and the switcher stays on screen.
+
+The first pass fixed the *missing* pieces (a wordmark, a colour field, a motion language) but kept the *shape* of a web app: a titled hero, a filter bar of nine coloured chips, a member rail, and a nine-colour masonry wall, all above the fold at once. Set beside Home and Cases, which open on one solid colour, one giant word and one protagonist, it read as the one page in the product that was laid out rather than composed. The user's words for it were "很一般而且有点乱，没有艺术性".
+
+The diagnosis that mattered was density, not detail: Home and Cases sit at roughly 1–3 on a visual-density scale (one focal object, enormous negative space, controls disguised as content), while the board sat at 8 (three toolbar rows, fifteen member chips, nine card colours competing in one viewport). Type, colour and spacing were all defensible on their own. What was wrong was how many things were asking for attention.
+
+So the board was rebuilt around one sentence: **a solid field, one protagonist, and type doing the rest.** Three compositions were built to the same rule so the direction could be chosen by looking rather than by argument.
+
+| variant | protagonist | the rest | why it holds together |
+|---|---|---|---|
+| 信箱 LETTERS | today's post as a tilted airmail postcard with an author stamp | numbered index rows with a rule that draws on hover | reuses the Cases poster's anatomy (display word above, object centred) |
+| 展藏 GALLERY | the wall: uniform white mounts, slight angles, lead spanning two columns | paged five to a page, label under each frame | every frame equal, pictures contained — a curated wall, not a feed |
+| 期刊 JOURNAL | one lead story at the fold | numbered contents column | masthead rule and folio above the word, as a front page orders it |
+
+**Measured, not asserted.** Each variant was checked against the viewport it has to live in: the letter field is exactly `100dvh` (`fieldTop: 0`, `fieldBottom: 972` at a 972px viewport, postcard fully inside); the wall fits its screen after the lead's crop was widened to 16/6 and the word dropped to `--word-scale: 0.42` (`footBottom: 968`); the journal's fold shows its lead. Filtering was sampled at the DOM: selecting 测评研究 moves the field to `rgb(36,124,241)`, switches the display word to RESEARCH, sets the eyebrow and cuts the index to two rows.
+
+**Four bugs this pass found and fixed, all of them real and all of them caught by driving the page rather than reading it.**
+
+1. **The composer and the detail crashed with `useRef is not defined`.** Rewriting the module header for the new imports dropped `useRef` while `ForumPostGallery` still used it, and dropped `ForumCard` while the composer preview still rendered it. Both produced a blank pink screen with no visible error until the console was trapped. A component audit (JSX tags used vs imported) now reports clean across all forum modules.
+2. **The gallery wall rendered as an empty field.** Pieces are painted at `opacity: 0` until the reveal observer sees them, and the observer's ref was on the wrong element — the wall had no ref at all. Same class of bug in the journal, where the observer covered the contents list but not the lead story.
+3. **The postcard could not be clicked.** It carried a pointer-following tilt: at 776px wide, rotating toward the cursor moves the card away from it, so the pointer chases its own target and the element never settles. Playwright reported `not-stable` rather than a click failure, which is exactly what a person would feel as "the card slides away as I reach for it". The tilt was removed; the hover is now a straighten and a lift, which says "pick me up" without moving the target.
+4. **A dark topic made the header labels invisible.** Carried over from the first pass but re-verified here: the field scrolls under the header, so the nav's ink is decided from the field's luminance *and* whether it actually overlaps the header band.
+
+**Regression checks after the rebuild.** Variant switching preserves filters, sort, search, likes and comments (state lives in `useForumBoard`). Detail opens from the letter and from the wall, with its white panel, black rules, comments and related rail intact. Publishing a post works end to end and the new post becomes the featured letter with the right stamp and count. The favorites centre still reuses `ForumDetail` with `返回收藏` and no related rail (that host passes no `onOpenPost`). Compact at 430px: no horizontal overflow in any of the three variants, and the field clears the two-line compact header. `npx vite build` passes.
+
+**Deliberate non-changes.** The detail page, the composer's brutalist form, the favorites/account wiring, `forum-topics.js` and `community-members.js` data, and the `art` cover set are untouched. `forum-effect.js` (the RealitySplit engine) is kept in the tree but is no longer mounted on this tab: a poster does not need an ambient animation competing with its protagonist, and the engine remains available if a later direction wants it back.
+
+
+## Revision: the Forum tab rejoins the family (2026-09-18)
+
+The Forum tab was the one page that did not look like it belonged to the product. Home, Cases, CHOOSE, TEST and CENTER all open on a big white wordmark over a brand-coloured field; Forum opened on a paper-white canvas with no title at all — a decision recorded as “Forum shows no kicker/title”. The boards, rules and panels below it were already family furniture, so the gap was three layers: the wordmark, the field colour, and a motion language.
+
+**What was added.** A `FORUM!` wordmark in the same DM Sans 900 + bouncing-letters treatment the family uses (no bespoke artwork was supplied for this page, so it is built from type rather than a crop), on a hero whose ground is the brand pink `#f568a3` and which retints to the selected topic's own colour. Filtering by 测评研究 turns the stage blue, 每周精选 amber, and so on — verified by sampling the hero's computed background after each chip click (`rgb(36,124,241)` for 测评研究, `rgb(255,183,3)` for 每周精选).
+
+**The field retint cost one method, not one animation.** The engine already cross-fades `prevPal.bg → pal.bg` over `FIELD_FADE` on every frame, so `setField(color)` reuses that path: it only swaps `bg`, leaving the letter cards and handles on their sampled CHOOSE/TEST/CENTER palette, and `applyField()` re-applies it inside `applyVariant` so a completed loop cannot wash the topic colour back to paper. Measured over a full cycle: the topic colour holds through the variant change instead of reverting after ~10s, which is what the first implementation did before `applyField` was wired in.
+
+| what | how it was checked | result |
+|---|---|---|
+| topic filter | click 测评研究 | 15 cards → 3 |
+| member filter | click 知遥测不准 | 15 cards → 1 |
+| search | type 雷达图 | 15 cards → 1, exact title |
+| sort | click 最热 | highest-liked post moves to first |
+| field retint | sample hero background | tracks the topic colour, survives the loop |
+| publish | fill form, submit | 15 → 16, new post first, counts update |
+| detail | open a post | title/summary/body/3 comments, black rules intact |
+| related rail | open a 测评研究 post | same-topic cards render, tap swaps the post in place |
+
+**Three bugs this revision found and fixed.**
+
+1. **The tokens were scoped to the wrong root.** `--forum-panel` was declared on `.forum-tab`, but the detail and the composer *replace* that element rather than nesting inside it. `var(--forum-panel)` therefore resolved to nothing on those screens and the panel painted transparent under inherited white text — a white-on-white detail page. The block now targets all three roots (`.forum-tab`, `.forum-detail-screen`, `.forum-compose-screen`). Verified by reading computed styles back: panel `rgb(255,253,251)`, heading `rgb(23,21,15)`.
+
+2. **The full-bleed hero overflowed onto phones.** `--tab-screen-inset-x` is the amount the hero cancels to reach the edges, and the compact override changed the tab screen's horizontal padding to `25px` without changing the variable — so on a 430px screen the hero still bled by the wide `72px×ui-scale` inset and ran 47px off the left edge, clipping the wordmark's first letter. Measured before (`hero.left: -47`) and after (`hero.left: 0`, `scrollWidth === innerWidth`). The compact and cases overrides now set the variable alongside the padding.
+
+3. **A dark topic made the nav vanish.** The hero scrolls up *under* the site header, so once `讨论场` (`#2b2733`) was selected the tab's default black nav labels sat on the dark field and became unreadable — caught on a scrolled screenshot, not in the un-scrolled pass. `fieldInk()` is now exported from `ForumEffect` and the board writes its verdict to `.app[data-field-ink]`, which the stylesheet uses to flip the nav labels, their underlines and the compact brand mark. Cleared on unmount so white labels cannot strand on another tab. Verified: dark topic → nav `rgb(255,255,255)`; amber topic keeps the tab's black.
+
+**Also fixed while verifying:** the composer button sits at the same height as the site header, and the header bar spans `left: 54px → right: 41px` with only its two children interactive — its empty middle swallowed the click (`Timeout … covered by <header class="site-header">`). The bar is now `pointer-events: none` on the Forum tab with `auto` restored on the nav and account pill, so its layout is untouched while the page beneath receives clicks.
+
+**Deliberate non-changes.** The card, detail and composer art (square cards, the coloured footer rule, `3px solid #000` separators, the `#fffdfb` panel, the composer's brutalist form) is unchanged — it was already the family language. `forum-effect.js`'s animation maths are untouched apart from the two new methods. `forum-topics.js` and `community-members.js` data were not edited: the geometric covers read the `art` field (`dots/grid/arcs/waves/rings`) that has been in the data since it was authored but was never drawn.
+
+**Regression checks.** Cases poster still renders with no horizontal overflow (`insetX` unchanged at `calc(72px * 0.949)` on wide). Forum → Cases → Forum round trip keeps 15 cards and the hero. Favorites centre → forum detail still renders with `返回收藏` and does *not* show the related rail (that host passes no `onOpenPost`, and the rail is now conditional so it cannot render dead buttons).
+
 ## Revision: the departing stamp hands its box to the corner peek (2026-09-15)
 
 Reported symptom, and it was **direction-dependent** — which is what made it worth measuring rather than re-reasoning: going **forward** a page, the **top-left** stamp is wrong; going **back** a page, the **bottom-right** one is. In both cases it sits at the wrong home for a moment and then shrinks and slides up-and-right (backwards) / left-and-down (forwards) into place.

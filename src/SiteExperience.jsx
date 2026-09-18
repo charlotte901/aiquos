@@ -12,7 +12,22 @@ import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
 import { createAdaptiveController } from "./comprehensive-adaptive";
-import { COMPREHENSIVE_QUESTIONS } from "./comprehensive-quiz";
+import {
+  COMPREHENSIVE_LEVELS,
+  COMPREHENSIVE_QUESTION_COUNT,
+  COMPREHENSIVE_QUESTIONS,
+} from "./comprehensive-quiz";
+import {
+  appendHistorySnapshot,
+  clearAttemptDraft,
+  createAttempt,
+  currentResult,
+  isAttemptComplete,
+  loadAttemptDraft,
+  recordAnswer,
+  saveAttemptDraft,
+  snapshotAttempt,
+} from "./assessment-attempt";
 import { getProfileDetailId, getProfileDetailRoute } from "./profile-layout";
 import { animateCards } from "./card-transition";
 import { CUBE_TURN_DURATION } from "./cube-geometry";
@@ -40,7 +55,10 @@ const route = () => {
   if (getProfileDetailRoute()) return "profile-detail";
   if (location.hash === "#assessments") return "assessments";
   if (location.hash === "#cases") return "cases";
-  if (location.hash === "#forum") return "forum";
+  /* The community view rides in the hash as `#forum/<view>`, so a chosen reading
+     is shareable and visible in the URL bar. The prefix match is what keeps
+     those URLs on the forum instead of falling through to home. */
+  if (/^#forum(\/|$)/.test(location.hash)) return "forum";
   if (location.hash === "#account-settings") return "account-settings";
   if (location.hash === "#reports") return "reports";
   if (location.hash === "#choose") return "choose";
@@ -121,6 +139,14 @@ export function SiteExperience() {
     practical: 1,
   });
   const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
+  // One comprehensive Attempt at a time: evidence from every submitted answer
+  // accumulates here and is rescored from the complete set (integration guide).
+  // An unfinished draft survives reloads; a completed attempt becomes an
+  // immutable history snapshot exactly once.
+  const [attemptState, setAttemptState] = useState(() => {
+    const draft = loadAttemptDraft();
+    return draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null };
+  });
   const [moving, setMoving] = useState(false);
   // Narrower than `moving`: true only while a page push is in flight. The two
   // pages are siblings and only one of them is the current tab, so switching
@@ -376,7 +402,17 @@ export function SiteExperience() {
   }
 
   function startAssessment(id) {
-    if (id === "comprehensive") adaptiveController.current.reset();
+    if (id === "comprehensive") {
+      adaptiveController.current.reset();
+      // Card click always starts a clean run: fresh routing state, fresh
+      // attempt, draft cleared so no earlier unfinished run can bleed in.
+      const attempt = createAttempt({
+        questions: COMPREHENSIVE_QUESTIONS,
+        totalQuestions: COMPREHENSIVE_LEVELS.length * COMPREHENSIVE_QUESTION_COUNT,
+      });
+      clearAttemptDraft();
+      setAttemptState({ attempt, result: null });
+    }
     openAssessmentMap(id);
   }
 
@@ -389,8 +425,14 @@ export function SiteExperience() {
     return adaptiveController.current.select(levelId, stage);
   }
 
-  function recordComprehensiveOutcome(outcome) {
+  function submitComprehensiveAnswer(question, selectedKeys, outcome) {
     adaptiveController.current.record(outcome);
+    setAttemptState((current) => {
+      if (!current.attempt) return current;
+      const next = recordAnswer(current.attempt, question, selectedKeys);
+      saveAttemptDraft(next.attempt);
+      return next;
+    });
   }
 
   function openAssessmentStage(stage) {
@@ -404,6 +446,17 @@ export function SiteExperience() {
     const id = assessmentRoute.id;
     const nextStage = Math.min(5, stage + 1);
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] ?? 1, nextStage) }));
+    // The final stage closes the Attempt: store the completed result as an
+    // immutable snapshot exactly once, drop the draft, and open the awakening
+    // report instead of returning to the map.
+    if (id === "comprehensive" && stage === COMPREHENSIVE_LEVELS.length && isAttemptComplete(attemptState.result)) {
+      appendHistorySnapshot(snapshotAttempt(attemptState.attempt, attemptState.result));
+      clearAttemptDraft();
+      setAttemptState({ attempt: null, result: null });
+      setAssessmentRoute({ id, stage: COMPREHENSIVE_LEVELS.length, mode: "map" });
+      go("reports");
+      return;
+    }
     setAssessmentRoute({ id, stage: nextStage, mode: "map" });
     go("assessment-map", assessmentHash(id));
   }
@@ -516,6 +569,7 @@ export function SiteExperience() {
           onBack={() => go("profile")}
           onHome={() => go("home")}
           busy={moving}
+          active={view === "profile-detail"}
         />
       </div>
       <div
@@ -543,7 +597,8 @@ export function SiteExperience() {
             onPick={openAssessmentStage}
             onComplete={completeAssessmentStage}
             onSelectComprehensiveQuestion={selectComprehensiveQuestion}
-            onRecordComprehensiveOutcome={recordComprehensiveOutcome}
+            onAnswerComprehensive={submitComprehensiveAnswer}
+            comprehensiveResult={attemptState.result}
             busy={moving}
           />
         )}

@@ -1,0 +1,1180 @@
+/* Forum — the community square.
+ *
+ * Lifted out of `responsive.css`, where ~700 lines of the board sat between the
+ * Cases poster and the compact overrides. The Forum tab is the one page whose
+ * art is entirely its own (letter-card stage, masonry wall, detail split,
+ * composer), so it now owns one file the way `cases.css` owns the poster.
+ *
+ * Design tokens come from the rest of the product rather than being invented
+ * here: brand pink `#f568a3`, the paper ground `#fff4fa`, the white operation
+ * panel `#fffdfb` and ink `#17150f` are Home/Cases/CHOOSE values, and the tag
+ * palette is `forum-topics.js`'s own sampled CHOOSE/TEST/CENTER colours. The
+ * wordmark face is the same "DM Sans 900 + bouncing letters" treatment the
+ * family uses, because no bespoke FORUM! artwork was supplied. */
+
+/* The tokens have to live on every Forum root, not just the board: the detail
+ * and the composer replace the board in the tree rather than nesting inside it,
+ * so a token block scoped to the board would leave `var(--forum-panel)`
+ * undefined on the detail — which renders as a transparent panel with inherited
+ * white text, i.e. a white-on-white page. `.profile-favorite-detail` is the
+ * third root because the favorites centre reuses `ForumDetail` verbatim. */
+.forum-board-root,
+.forum-detail-screen,
+.forum-compose-screen {
+  --forum-pink: #f568a3;
+  --forum-paper: #fff4fa;
+  --forum-panel: #fffdfb;
+  --forum-ink: #17150f;
+  --forum-muted: #8b828b;
+  /* The hero stage's ground. JS overrides this inline for the topic field. */
+  --forum-field: var(--forum-pink);
+}
+
+/* The board itself (field, display word, postcard, wall, index) lives in
+   `forum-variants.css`. What remains here is the chrome the board and the
+   detail/composer share: the tokens, the detail split, and the composer. */
+
+
+/* ── card and cover primitives ───────────────────────────────────────────── */
+
+/* The wall of full-colour cards is retired, but the card itself is still the
+   product's unit of content: the composer previews a real one, and the
+   postcard and the detail both embed its cover. What remains is exactly that
+   shared surface, with nothing board-specific left in it. */
+.forum-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: var(--card-color);
+  color: var(--card-ink);
+  box-shadow: 0 18px 44px #4c1a3829;
+}
+
+.forum-card-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  background: #fff;
+}
+
+.forum-card-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Image-less posts carry the topic's pattern. `art` on every topic already
+   names one (`dots / grid / arcs / waves / rings`); this gives it a frame so
+   the postcard, the wall and the composer preview all render it the same way. */
+.forum-card-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--art-ratio, 3 / 4);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--card-color) 88%, #ffffff);
+}
+
+.forum-card-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The card's inner blocks. The wall is gone, but the composer still previews a
+   real card, so these are what that preview is built from: a tag pill, the
+   title, the summary, and a footer rule with the post's numbers on it. */
+.forum-card-body {
+  padding: 22px 22px 0;
+}
+
+.forum-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #ffffff2e;
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.forum-card-title {
+  margin: 14px 0 0;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.forum-card-summary {
+  margin: 12px 0 0;
+  color: color-mix(in srgb, var(--card-ink) 84%, transparent);
+  font-size: 13.5px;
+  line-height: 1.66;
+}
+
+.forum-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 14px;
+  margin-top: 20px;
+  padding: 13px 22px 20px;
+  font-size: 12px;
+}
+
+.forum-card-meta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22px;
+  right: 22px;
+  height: 1px;
+  background: color-mix(in srgb, var(--card-ink) 20%, transparent);
+}
+
+.forum-card-meta {
+  position: relative;
+}
+
+.forum-card-meta time,
+.forum-card-meta span {
+  color: color-mix(in srgb, var(--card-ink) 72%, transparent);
+}
+
+.forum-card-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.forum-card-meta b {
+  color: var(--card-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-card-meta strong {
+  font-size: 12.5px;
+}
+
+.forum-card-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--card-ink);
+}
+
+.member-avatar {
+  display: grid;
+  place-items: center;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  user-select: none;
+}
+
+/* ── compose entry ──────────────────────────────────────────────────────── */
+
+/* On the Forum tab the header spans the full width but only its two children
+   (the nav and the account pill) are interactive. Without this, the header's
+   empty middle and right edge swallow clicks aimed at anything sitting at the
+   same height — the composer button at `top/right: 24px/41px` was unreachable
+   behind it. `pointer-events: none` on the bar and `auto` on its children keeps
+   the bar's own layout untouched while letting the page beneath it receive
+   clicks. */
+.app[data-tab="forum"] .site-header {
+  pointer-events: none;
+}
+
+.app[data-tab="forum"] .site-header nav,
+.app[data-tab="forum"] .site-header .home-account {
+  pointer-events: auto;
+}
+
+/* The hero scrolls up under the header, and the field can be dark (`讨论场`
+   `#2b2733`) or amber. The tab's default nav ink is black, which disappears
+   against a dark field; `data-field-ink` on `.app` carries the hero's own
+   light/dark decision down to the nav so the labels stay legible at every
+   scroll position and every topic. */
+.app[data-tab="forum"][data-field-ink="light"] .site-header nav a {
+  color: #ffffff;
+}
+
+.app[data-tab="forum"][data-field-ink="light"] .site-header nav a:after {
+  background: #ffffff;
+}
+
+.app[data-tab="forum"][data-field-ink="light"] .site-header .brand-small canvas {
+  filter: brightness(1);
+}
+
+.forum-compose-button {
+  position: fixed;
+  z-index: 8;
+  top: calc(24px * var(--ui-scale));
+  right: calc(41px * var(--ui-scale));
+  height: 44px;
+  min-width: 104px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 100px;
+  background: #030303;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 12px 28px #17150f26;
+}
+
+.forum-compose-button:hover {
+  transform: translateY(-2px);
+}
+
+/* ── composer ───────────────────────────────────────────────────────────── */
+
+.forum-compose-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(410px, .88fr);
+  background: var(--forum-panel);
+  color: var(--forum-ink);
+}
+
+.forum-compose-preview {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  row-gap: 14px;
+  place-items: center;
+  padding: calc(96px * var(--ui-scale)) clamp(28px, calc(5 * var(--vw, 1vw)), 72px) 28px;
+  background: var(--forum-panel);
+  border-right: 3px solid #000;
+}
+
+.forum-compose-stage {
+  position: relative;
+  width: min(100%, 620px);
+  width: min(100%, 620px, calc((calc(100 * var(--dvh, 1dvh)) - 206px) * .8));
+  aspect-ratio: 4 / 5;
+  display: grid;
+  place-items: center;
+}
+
+.forum-compose-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.forum-compose-preview-image,
+.forum-compose-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.forum-compose-preview-image.is-active,
+.forum-compose-media img.is-active {
+  opacity: 1;
+}
+
+.forum-compose-remove {
+  position: absolute;
+  z-index: 4;
+  top: 15px;
+  right: 15px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #17150f26;
+  border-radius: 50%;
+  background: var(--forum-panel);
+  color: var(--forum-ink);
+  box-shadow: 0 8px 20px #17150f24;
+}
+
+.forum-compose-remove:hover {
+  background: var(--forum-ink);
+  color: #fff;
+}
+
+/* The empty slot and the live preview share one frame. With no image chosen
+   the preview renders the real card the reader is about to publish, so the
+   left pane is a preview rather than a placeholder rectangle. */
+.forum-compose-media-empty {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+.forum-compose-card-preview {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.forum-compose-card-preview .forum-card {
+  width: min(100%, 340px);
+  margin: 0;
+  cursor: default;
+  box-shadow: 0 20px 48px #4c1a382e;
+}
+
+.forum-compose-card-preview .forum-card:hover {
+  transform: none;
+  filter: none;
+}
+
+.forum-compose-panel {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: calc(92px * var(--ui-scale)) clamp(26px, calc(4 * var(--vw, 1vw)), 62px) 28px;
+  background: var(--forum-panel);
+}
+
+.forum-compose-panel > header {
+  padding-bottom: 15px;
+  border-bottom: 3px solid #000;
+}
+
+.forum-compose-panel > header p {
+  margin: 0;
+  color: #a49e94;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.forum-compose-panel > header h1 {
+  margin: 9px 0 0;
+  font-size: clamp(28px, calc(2.5 * var(--vw, 1vw)), 38px);
+  line-height: 1.1;
+  letter-spacing: -.5px;
+}
+
+.forum-compose-form {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding-right: 4px;
+}
+
+.forum-compose-form::-webkit-scrollbar {
+  display: none;
+}
+
+.forum-compose-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 21px;
+}
+
+.forum-compose-field label {
+  color: #56505a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.forum-compose-field input,
+.forum-compose-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid #e2d4da;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--forum-ink);
+  font: inherit;
+  font-size: 14px;
+  resize: none;
+}
+
+.forum-compose-field textarea {
+  min-height: 182px;
+  line-height: 1.72;
+}
+
+.forum-compose-field input:focus-visible,
+.forum-compose-field textarea:focus-visible {
+  outline: 2px solid var(--forum-pink);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+.forum-compose-row {
+  display: grid;
+  grid-template-columns: minmax(120px, .48fr) minmax(0, 1fr);
+  gap: 15px;
+}
+
+.forum-compose-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.forum-compose-tags button {
+  min-height: 34px;
+  padding: 0 15px;
+  border: 1px solid #e2d4da;
+  border-radius: 100px;
+  background: #fff;
+  color: #56505a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.forum-compose-tags button[aria-pressed="true"] {
+  border-color: var(--forum-ink);
+  background: var(--forum-ink);
+  color: #fff;
+}
+
+.forum-compose-add-tag {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.forum-compose-add-tag button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid var(--forum-ink);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--forum-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.forum-compose-add-tag button:disabled {
+  border-color: #e2d4da;
+  color: #a49e94;
+}
+
+.forum-compose-file {
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 17px;
+  border: 1px solid var(--forum-ink);
+  border-radius: 100px;
+  overflow: hidden;
+  color: var(--forum-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.forum-compose-file input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.forum-publish-button {
+  width: 100%;
+  height: 50px;
+  margin-top: 26px;
+  border: 0;
+  border-radius: 100px;
+  background: var(--forum-pink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.forum-publish-button:hover:not(:disabled) {
+  background: var(--forum-ink);
+}
+
+.forum-publish-button:disabled {
+  cursor: not-allowed;
+  background: #e7dcdf;
+  color: #a49e94;
+}
+
+/* ── detail ─────────────────────────────────────────────────────────────── */
+
+.forum-detail-screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  height: calc(100 * var(--dvh, 1dvh));
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(400px, 0.78fr);
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--forum-panel);
+  color: var(--forum-ink);
+}
+
+.forum-back {
+  position: fixed;
+  z-index: 4;
+  top: calc(24px * var(--ui-scale));
+  right: calc(41px * var(--ui-scale));
+  height: 44px;
+  min-width: 122px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 100px;
+  background: #030303;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.forum-post-media {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  height: 100%;
+  background: #fff;
+  border-right: 3px solid #000;
+  overflow: hidden;
+}
+
+.forum-post-media.is-empty {
+  background: #fff8f5;
+}
+
+/* A text-only post opens on its topic's pattern. The art is square by
+   construction and centred, with the same white backing the photographs get, so
+   the split layout looks the same either way. */
+.forum-post-media.is-art {
+  display: grid;
+  place-items: center;
+  padding: 6%;
+  background: #fff;
+}
+
+.forum-post-media.is-art .forum-card-art {
+  width: min(100%, 76vh);
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+}
+
+.forum-gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  user-select: none;
+  transition: opacity 260ms ease;
+}
+
+.forum-gallery-image.is-active {
+  opacity: 1;
+}
+
+.forum-gallery-nav {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--forum-ink);
+  background: transparent;
+  transform: translateY(-50%);
+  filter: drop-shadow(0 0 8px #fff) drop-shadow(0 3px 9px #ffffffa8);
+  opacity: .86;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.forum-gallery-nav:hover,
+.forum-gallery-nav:focus-visible {
+  opacity: 1;
+}
+
+.forum-gallery-nav.is-prev:hover,
+.forum-gallery-nav.is-prev:focus-visible { transform: translateY(-50%) translateX(-2px); }
+.forum-gallery-nav.is-next:hover,
+.forum-gallery-nav.is-next:focus-visible { transform: translateY(-50%) translateX(2px); }
+
+.forum-gallery-nav.is-prev { left: 18px; }
+.forum-gallery-nav.is-next { right: 18px; }
+.forum-gallery-nav svg { width: 20px; height: 20px; }
+
+.forum-gallery-dots {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: transparent;
+  transform: translateX(-50%);
+}
+
+.forum-gallery-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border-radius: 50%;
+  background: #17150f59;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.forum-gallery-dots button.is-active {
+  background: var(--forum-ink);
+}
+
+.forum-post-panel {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  padding: calc(104px * var(--ui-scale)) clamp(26px, calc(4.2 * var(--vw, 1vw)), 64px) 26px;
+  background: var(--forum-panel);
+}
+
+.forum-post-tag {
+  width: fit-content;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.forum-post-head h1 {
+  margin: 16px 0 0;
+  color: var(--forum-ink);
+  font-size: clamp(26px, calc(2.4 * var(--vw, 1vw)), 34px);
+  line-height: 1.24;
+  letter-spacing: -0.4px;
+}
+
+.forum-post-head p {
+  margin: 12px 0 0;
+  color: #4c454b;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.forum-post-head {
+  padding-bottom: 15px;
+  border-bottom: 3px solid #000;
+}
+
+.forum-post-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  margin-top: 18px;
+  padding-right: 4px;
+}
+
+.forum-post-body::-webkit-scrollbar {
+  display: none;
+}
+
+.forum-post-body p {
+  margin: 0 0 17px;
+  color: var(--forum-ink);
+  font-size: 15px;
+  line-height: 1.88;
+}
+
+.forum-post-comments {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #efe3e8;
+}
+
+.forum-comments-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--forum-ink);
+}
+
+.forum-comments-title strong {
+  font-size: 17px;
+}
+
+.forum-comments-title span {
+  color: var(--forum-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-comments-empty {
+  margin: 18px 0 0;
+  color: var(--forum-muted);
+  font-size: 14px;
+}
+
+.forum-post-comments ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.forum-post-comments li {
+  padding: 16px 0;
+}
+
+.forum-post-comments li + li {
+  border-top: 1px solid #f4ebeef;
+}
+
+.forum-post-comments strong {
+  margin-right: 8px;
+  color: var(--forum-ink);
+  font-size: 13px;
+}
+
+.forum-post-comments time {
+  color: var(--forum-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-post-comments p {
+  margin: 7px 0 0;
+  color: #37323a;
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.forum-comment-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.forum-comment-head strong {
+  margin-right: 0;
+}
+
+/* Related discussions close the detail's reading column: the same topic's
+   other cards, so a reader can keep going without going back to the wall. */
+.forum-related {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 3px solid #000;
+}
+
+.forum-related-title {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.forum-related-title strong {
+  font-size: 17px;
+}
+
+.forum-related-title span {
+  color: var(--forum-muted);
+  font-size: 13px;
+}
+
+.forum-related-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+
+.forum-related-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.forum-related-card {
+  flex: 0 0 216px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 16px 14px;
+  border-radius: 0;
+  background: var(--related-color, var(--forum-ink));
+  color: var(--related-ink, #fff);
+  text-align: left;
+  transition: transform 220ms cubic-bezier(0.22, 0.68, 0.24, 1);
+}
+
+.forum-related-card:hover,
+.forum-related-card:focus-visible {
+  transform: translateY(-4px);
+  outline: none;
+}
+
+.forum-related-card strong {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+.forum-related-card small {
+  color: color-mix(in srgb, var(--related-ink, #fff) 70%, transparent);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-related-empty {
+  margin: 0;
+  color: var(--forum-muted);
+  font-size: 13px;
+}
+
+.forum-comment-composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #efe3e8;
+}
+
+.forum-comment-composer input {
+  min-width: 0;
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid #e2d4da;
+  border-radius: 100px;
+  background: #fff;
+  color: var(--forum-ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.forum-comment-composer input::placeholder {
+  color: #a49e94;
+}
+
+.forum-comment-composer input:focus-visible {
+  outline: 2px solid var(--forum-pink);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+.forum-comment-composer button {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 100px;
+  background: var(--forum-ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.forum-comment-composer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.36;
+}
+
+.forum-post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.forum-post-author {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 11px;
+}
+
+.forum-post-avatar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.forum-post-author div {
+  min-width: 0;
+}
+
+.forum-post-author strong {
+  display: block;
+  overflow: hidden;
+  color: var(--forum-ink);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forum-post-author time {
+  display: block;
+  margin-top: 2px;
+  color: var(--forum-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-post-stats {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.forum-post-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--forum-ink);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-post-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  border-top: 1px solid #efe3e8;
+  background: var(--forum-panel);
+}
+
+.forum-like-button {
+  height: 34px;
+  min-width: 72px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 100px;
+  background: #f568a31f;
+  color: var(--forum-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.forum-like-button:hover {
+  transform: translateY(-1px);
+  background: #f568a32e;
+}
+
+.forum-like-button.is-liked {
+  background: var(--forum-pink);
+  color: #fff;
+}
+
+/* ── compact ────────────────────────────────────────────────────────────── */
+
+
+/* The wordmark stays small enough on a phone that the engine's letter cards
+   still read as the subject of the stage rather than as a backdrop behind a
+   second giant letterform. */
+
+
+
+
+
+
+
+/* Compact keeps the wide card's own padding model (media and footer rule run
+   edge to edge, the inner blocks carry the inset) and only tightens the inset.
+   The previous rule padded the card itself *and* left `.forum-card-body`'s own
+   24px in place, so phone cards got 44px of leading on both sides. */
+.app[data-layout="compact"] .forum-card-body {
+  padding: 20px 20px 0;
+}
+
+.app[data-layout="compact"] .forum-card-meta {
+  padding: 14px 20px 18px;
+}
+
+.app[data-layout="compact"] .forum-card-meta::before {
+  left: 20px;
+  right: 20px;
+}
+
+.app[data-layout="compact"] .forum-card-title {
+  font-size: 20px;
+}
+
+.app[data-layout="compact"] .forum-detail-screen,
+.profile-favorite-detail[data-layout="compact"] .forum-detail-screen {
+  position: static;
+  inset: auto;
+  grid-template-columns: 1fr;
+  height: auto;
+  min-height: calc(100 * var(--dvh, 1dvh));
+  overflow: visible;
+}
+
+.app[data-layout="compact"] .forum-back,
+.profile-favorite-detail[data-layout="compact"] .forum-back {
+  top: max(22px, env(safe-area-inset-top));
+  right: 25px;
+}
+
+.app[data-layout="compact"] .forum-compose-button {
+  top: max(22px, env(safe-area-inset-top));
+  right: 25px;
+  height: 38px;
+  min-width: 82px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+.app[data-layout="compact"] .forum-compose-screen {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(310px, calc(52 * var(--dvh, 1dvh))) minmax(0, 1fr);
+}
+
+.app[data-layout="compact"] .forum-compose-preview {
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  place-items: start center;
+  scrollbar-width: none;
+  align-content: start;
+  row-gap: 12px;
+  padding: 86px 22px 20px;
+  border-right: 0;
+  border-bottom: 3px solid #000;
+}
+
+.app[data-layout="compact"] .forum-compose-preview::-webkit-scrollbar {
+  display: none;
+}
+
+.app[data-layout="compact"] .forum-compose-stage {
+  width: min(100%, max(180px, calc((calc(52 * var(--dvh, 1dvh)) - 168px) * .8)));
+}
+
+.app[data-layout="compact"] .forum-compose-panel {
+  padding: 22px 22px 28px;
+}
+
+.app[data-layout="compact"] .forum-compose-row {
+  grid-template-columns: 1fr;
+}
+
+.app[data-layout="compact"] .forum-compose-add-tag {
+  grid-template-columns: 1fr;
+}
+
+.app[data-layout="compact"] .forum-compose-add-tag button {
+  min-height: 38px;
+}
+
+.app[data-layout="compact"] .forum-post-media,
+.profile-favorite-detail[data-layout="compact"] .forum-post-media {
+  height: min(calc(68 * var(--dvh, 1dvh)), 520px);
+  border-right: 0;
+  border-bottom: 3px solid #000;
+}
+
+.app[data-layout="compact"] .forum-post-panel,
+.profile-favorite-detail[data-layout="compact"] .forum-post-panel {
+  padding: 104px 25px 36px;
+}
+
+.app[data-layout="compact"] .forum-post-head h1,
+.profile-favorite-detail[data-layout="compact"] .forum-post-head h1 {
+  font-size: 27px;
+}
+
+.app[data-layout="compact"] .forum-post-body,
+.profile-favorite-detail[data-layout="compact"] .forum-post-body {
+  overflow: visible;
+}
+
+.app[data-layout="compact"] .forum-comment-composer input,
+.profile-favorite-detail[data-layout="compact"] .forum-comment-composer input {
+  font-size: 16px;
+}
+
+.app[data-layout="compact"] .forum-post-footer,
+.profile-favorite-detail[data-layout="compact"] .forum-post-footer {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.app[data-layout="compact"] .forum-post-stats,
+.profile-favorite-detail[data-layout="compact"] .forum-post-stats {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.app[data-layout="compact"] .forum-post-body p,
+.profile-favorite-detail[data-layout="compact"] .forum-post-body p {
+  display: block;
+  font-size: 16px;
+}

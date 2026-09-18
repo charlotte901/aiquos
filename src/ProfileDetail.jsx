@@ -27,6 +27,7 @@ import { AccountSettings } from "./AccountSettings";
 import { CaseDetail } from "./CaseArchive";
 import { ForumDetail } from "./ForumBoard";
 import { AwakeningReportModal } from "./AwakeningReport";
+import { loadAttemptHistory } from "./assessment-attempt";
 import { useAccount } from "./account-store";
 import { PROFILE_DETAILS } from "./profile-layout";
 import { getViewportLayout } from "./layout";
@@ -216,6 +217,31 @@ const ASSESSMENT_RECORDS = Object.fromEntries(RECORD_OFFSETS.map((offset, index)
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+// Completed comprehensive attempts become real calendar records; their stored
+// snapshot opens in the awakening-report modal unchanged.
+function getRealRecordsByDay() {
+  const byDay = {};
+  for (const snapshot of loadAttemptHistory()) {
+    const completed = new Date(snapshot.completedAt);
+    if (Number.isNaN(completed.getTime())) continue;
+    const started = new Date(snapshot.startedAt);
+    const minutes = Number.isNaN(started.getTime())
+      ? null
+      : Math.max(1, Math.round((completed - started) / 60000));
+    const key = dateKey(completed);
+    byDay[key] = [...(byDay[key] ?? []), {
+      id: `attempt-${snapshot.completedAt}`,
+      type: "综合题",
+      title: "综合能力闯关",
+      score: `${snapshot.result.overallScore} 分 · ${snapshot.result.grade}`,
+      time: `${String(completed.getHours()).padStart(2, "0")}:${String(completed.getMinutes()).padStart(2, "0")}${minutes ? ` · ${minutes} 分钟` : ""}`,
+      status: "已完成",
+      snapshot,
+    }];
+  }
+  return byDay;
 }
 
 function getCalendarCells(year, month) {
@@ -433,7 +459,7 @@ function useViewportLayout() {
   );
 }
 
-export function ProfileDetail({ id, onBack, onHome, busy }) {
+export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   const detail = PROFILE_DETAILS[id];
   const { accountId } = useAccount();
   const worksLayoutKey = `aiquos-board:works:${accountId}`;
@@ -459,6 +485,13 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
   const [reportOpen, setReportOpen] = useState(false);
   const [recordDrafts, setRecordDrafts] = useState({});
   const [recordEntries, setRecordEntries] = useState({});
+  const [realRecordsByDay, setRealRecordsByDay] = useState(getRealRecordsByDay);
+  const [reportSnapshot, setReportSnapshot] = useState(null);
+  useEffect(() => {
+    // The detail panel stays mounted while hidden; re-read completed attempts
+    // each time the page becomes visible so fresh history shows up.
+    if (active) setRealRecordsByDay(getRealRecordsByDay());
+  }, [active]);
   const worksBoardRef = useRef(null);
   const favoriteBoardRef = useRef(null);
   const favorites = useFavorites();
@@ -514,7 +547,7 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
     setFavoriteLayouts(loadBoardLayout(favoriteLayoutKey));
   }, [favoriteLayoutKey]);
   const selectedKey = dateKey(selected);
-  const records = ASSESSMENT_RECORDS[selectedKey] ?? [];
+  const records = [...(realRecordsByDay[selectedKey] ?? []), ...(ASSESSMENT_RECORDS[selectedKey] ?? [])];
   const recordDraft = recordDrafts[selectedKey] ?? "";
   const selectedRecordEntries = recordEntries[selectedKey] ?? [];
   const cells = getCalendarCells(cursor.year, cursor.month);
@@ -1089,7 +1122,7 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
                     onClick={() => setSelected(date)}
                   >
                     <span>{date.getDate()}</span>
-                    {(ASSESSMENT_RECORDS[key] || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
+                    {(ASSESSMENT_RECORDS[key] || realRecordsByDay[key]?.length || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
                   </button>
                 );
               })}
@@ -1132,7 +1165,7 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
             {records.length ? (
               <ul>
                 {records.map((record) => (
-                  <li key={record.title}>
+                  <li key={record.id ?? record.title}>
                     <span>{record.type}</span>
                     <div>
                       <h2>{record.title}</h2>
@@ -1142,7 +1175,10 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
                           type="button"
                           className="record-report-button"
                           aria-haspopup="dialog"
-                          onClick={() => setReportOpen(true)}
+                          onClick={() => {
+                            setReportSnapshot(record.snapshot ?? null);
+                            setReportOpen(true);
+                          }}
                         >
                           觉醒报告
                         </button>
@@ -1160,7 +1196,7 @@ export function ProfileDetail({ id, onBack, onHome, busy }) {
           </div>
         </section>
       )}
-      <AwakeningReportModal open={reportOpen} onClose={() => setReportOpen(false)} />
+      <AwakeningReportModal open={reportOpen} onClose={() => setReportOpen(false)} snapshot={reportSnapshot} />
     </main>
   );
 }

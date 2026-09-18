@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   BookmarkSimple,
@@ -18,159 +11,27 @@ import {
   Plus,
   X,
 } from "@phosphor-icons/react";
-import { ForumEffect } from "./ForumEffect";
+import { ForumCard, ForumCardMedia, MemberAvatar } from "./forum-card";
 import { favoriteFromForum, toggleFavorite, useFavoriteSaved } from "./favorites-store";
 import { useAccount } from "./account-store";
-import { resolveMember, memberColor, memberInk } from "./community-members";
-import { TOPIC_POSTS } from "./forum-topics";
+import {
+  useForumBoard,
+  useFieldInk,
+  useReveal,
+  topicWord,
+  createComment,
+  createForumTimestamp,
+  readFileAsDataUrl,
+} from "./forum-board";
+import { GalleryBoard } from "./forum-gallery";
 
-const FORUM_TAGS = [
-  { name: "学习笔记", color: "#f568a3", ink: "#ffffff", accent: "#ffd7ec" },
-  { name: "实战案例", color: "#247cf1", ink: "#ffffff", accent: "#c8e0ff" },
-  { name: "作品分享", color: "#00a96d", ink: "#ffffff", accent: "#bdf2d8" },
-  { name: "讨论场", color: "#7438e5", ink: "#ffffff", accent: "#e0ccff" },
-  { name: "每周精选", color: "#ffb703", ink: "#17150f", accent: "#fff0c2" },
-];
-
-/** 最新话题在前：15 个成员账号（昵称发布）的 AI 测评专题。 */
-const POSTS = TOPIC_POSTS;
-
-function MemberAvatar({ name, size = 34, className = "", tooltip = true }) {
-  const member = resolveMember(name);
-  const display = member ? member.nickname : name;
-  return (
-    <span
-      className={`member-avatar${className ? ` ${className}` : ""}`}
-      style={{
-        width: size,
-        height: size,
-        background: memberColor(name),
-        color: memberInk(name),
-        fontSize: Math.max(11, Math.round(size * 0.42)),
-      }}
-      title={tooltip && member ? `${display} · ${member.role}` : undefined}
-      aria-hidden="true"
-    >
-      {display.slice(0, 1)}
-    </span>
-  );
-}
-
-/** 图片加载失败时收起图位；用状态而非直接改 DOM，重渲染即自动重试。 */
-function ForumCardMedia({ image }) {
-  const [broken, setBroken] = useState(false);
-
-  if (broken) return null;
-
-  return (
-    <span className="forum-card-media" aria-hidden="true">
-      <img
-        src={image}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        draggable="false"
-        onError={() => setBroken(true)}
-      />
-    </span>
-  );
-}
-
-function ForumTitle({ text }) {
-  const titleRef = useRef(null);
-  const textRef = useRef(null);
-  const [lines, setLines] = useState([]);
-
-  const measure = useCallback(() => {
-    const text = textRef.current;
-    const title = titleRef.current;
-    if (!text || !title) return;
-
-    const range = document.createRange();
-    range.selectNodeContents(text);
-    const boxes = Array.from(range.getClientRects()).filter((box) => box.width > 0);
-    const titleBox = title.getBoundingClientRect();
-
-    setLines(
-      boxes.map((box, index) => ({
-        id: `${index}-${Math.round(box.width)}`,
-        top: box.bottom - titleBox.top - 1.5,
-        left: box.left - titleBox.left,
-        width: box.width,
-        delay: index * 80,
-      })),
-    );
-  }, [text]);
-
-  useLayoutEffect(measure, [measure]);
-
-  useEffect(() => {
-    let timer;
-    const delayedMeasure = () => {
-      clearTimeout(timer);
-      timer = setTimeout(measure, 120);
-    };
-
-    document.fonts?.ready.then(measure).catch(() => {});
-    window.addEventListener("resize", delayedMeasure);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", delayedMeasure);
-    };
-  }, [measure]);
-
-  return (
-    <h3 className="forum-card-title" ref={titleRef}>
-      <span ref={textRef}>{text}</span>
-      <span className="forum-title-lines" aria-hidden="true">
-        {lines.map((line) => (
-          <i
-            key={line.id}
-            style={{
-              top: `${line.top}px`,
-              left: `${line.left}px`,
-              width: `${line.width}px`,
-              transitionDelay: `${line.delay}ms`,
-            }}
-          />
-        ))}
-      </span>
-    </h3>
-  );
-}
-
-function createComment(content) {
-  const now = new Date();
-
-  return {
-    id: `${now.getTime()}-${Math.random().toString(16).slice(2)}`,
-    author: "你",
-    createdAt: new Intl.DateTimeFormat("zh-CN", {
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(now),
-    content,
-  };
-}
-
-function createForumTimestamp() {
-  const now = new Date();
-  const pad = (value) => String(value).padStart(2, "0");
-
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-}
-
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
+const FORUM_TAG_COLORS = {
+  学习笔记: { color: "#f568a3", ink: "#ffffff", accent: "#ffd7ec" },
+  实战案例: { color: "#247cf1", ink: "#ffffff", accent: "#c8e0ff" },
+  作品分享: { color: "#00a96d", ink: "#ffffff", accent: "#bdf2d8" },
+  讨论场: { color: "#7438e5", ink: "#ffffff", accent: "#e0ccff" },
+  每周精选: { color: "#ffb703", ink: "#17150f", accent: "#fff0c2" },
+};
 
 function ForumComposer({ onBack, onPublish }) {
   const [tagIndex, setTagIndex] = useState(0);
@@ -184,10 +45,36 @@ function ForumComposer({ onBack, onPublish }) {
   const [createdAt] = useState(createForumTimestamp);
   const { nickname } = useAccount();
   const author = nickname.trim() || "智核学员";
-  const tags = useMemo(() => [...FORUM_TAGS, ...customTags], [customTags]);
+  const tags = useMemo(
+    () => [...Object.entries(FORUM_TAG_COLORS).map(([name, value]) => ({ name, ...value })), ...customTags],
+    [customTags],
+  );
   const tag = tags[Math.min(tagIndex, tags.length - 1)];
   const previewIndex = Math.min(activeImage, Math.max(0, images.length - 1));
   const canPublish = [title, summary, content].every((value) => value.trim());
+
+  // The left pane shows the actual card the reader is about to publish, so it
+  // fills in as they type instead of being a frame that only means something
+  // once a picture is chosen.
+  const previewPost = useMemo(
+    () => ({
+      id: "compose-preview",
+      tag: tag.name,
+      title: title.trim() || "标题会出现在这里",
+      summary: summary.trim() || "梗概会出现在这里，用来告诉读者这篇值不值得点开。",
+      author,
+      createdAt,
+      views: 0,
+      likes: 0,
+      color: tag.color,
+      ink: tag.ink,
+      line: tag.line ?? tag.ink,
+      accent: tag.accent,
+      art: "dots",
+      imageRatio: "4 / 3",
+    }),
+    [tag, title, summary, author, createdAt],
+  );
 
   const selectImages = async (event) => {
     const files = Array.from(event.target.files ?? []).filter((file) => file.type.startsWith("image/"));
@@ -249,6 +136,8 @@ function ForumComposer({ onBack, onPublish }) {
       ink: tag.ink,
       line: tag.line ?? tag.ink,
       accent: tag.accent,
+      art: "dots",
+      imageRatio: "4 / 3",
       content: content.split(/\n+/).map((paragraph) => paragraph.trim()).filter(Boolean),
     });
   };
@@ -318,7 +207,11 @@ function ForumComposer({ onBack, onPublish }) {
               </div>
             </span>
           ) : (
-            <span className="forum-compose-media-empty" aria-hidden="true" />
+            <span className="forum-compose-media-empty">
+              <span className="forum-compose-card-preview">
+                <ForumCard post={previewPost} interactive={false} className="is-preview" />
+              </span>
+            </span>
           )}
         </div>
 
@@ -459,7 +352,7 @@ function ForumActionBar({ post, activity, onToggleLike, onAddComment }) {
           </span>
         </div>
       </footer>
-  </div>
+    </div>
   );
 }
 
@@ -471,7 +364,21 @@ function ForumPostGallery({ post }) {
     setActiveImage(0);
   }, [post.id]);
 
-  if (!images.length) return <figure className="forum-post-media is-empty" aria-label="这篇帖子没有图片" />;
+  if (!images.length) {
+    // No photograph — show the topic's pattern rather than an empty frame, so a
+    // text-only post still opens with its own cover.
+    return (
+      <figure className="forum-post-media is-art" aria-label="这篇帖子没有图片">
+        <ForumCardMedia
+          art={post.art}
+          color={post.color}
+          ink={post.ink}
+          accent={post.accent}
+          ratio="1 / 1"
+        />
+      </figure>
+    );
+  }
 
   return (
     <figure className="forum-post-media">
@@ -533,6 +440,8 @@ export function ForumDetail({
   onBack,
   onToggleLike,
   onAddComment,
+  onOpenPost,
+  related = [],
   returnLabel = "返回论坛",
 }) {
   const bodyRef = useRef(null);
@@ -608,6 +517,40 @@ export function ForumDetail({
               </ul>
             )}
           </div>
+
+          {/* Same topic, other voices: the reading column ends with somewhere to
+              go instead of a dead end back at the wall. Only rendered when the
+              host can actually open a post — the favorites centre reuses this
+              component without that wiring, and a rail of buttons that do
+              nothing would be worse than no rail. */}
+          {onOpenPost && (
+            <section className="forum-related" aria-label="相关讨论">
+              <div className="forum-related-title">
+                <strong>相关讨论</strong>
+                <span>{post.tag}</span>
+              </div>
+              {related.length ? (
+                <div className="forum-related-rail">
+                  {related.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className="forum-related-card"
+                      style={{ "--related-color": item.color, "--related-ink": item.ink }}
+                      onClick={() => onOpenPost(item.id)}
+                    >
+                      <strong>{item.title}</strong>
+                      <small>
+                        {item.author} · {item.likes.toLocaleString("zh-CN")} 赞
+                      </small>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="forum-related-empty">这个话题下暂时只有这一篇，去看看其他讨论。</p>
+              )}
+            </section>
+          )}
         </div>
 
         <ForumActionBar
@@ -624,126 +567,78 @@ export function ForumDetail({
   );
 }
 
+/** The Forum tab.
+ *
+ * This is the orchestrator only: it owns which surface is on screen (board,
+ * detail, composer) and hands the board's state to the wall. The state itself
+ * lives in `useForumBoard`, so a filter, a like or a comment survives going into
+ * a post and coming back. */
 export function ForumBoard({ onDetailChange }) {
-  const [posts, setPosts] = useState(POSTS);
+  const board = useForumBoard();
   const [isComposing, setIsComposing] = useState(false);
   const [activeId, setActiveId] = useState(null);
-  const [activity, setActivity] = useState(() =>
-    Object.fromEntries(
-      POSTS.map((post) => [post.id, { liked: false, comments: post.comments ?? [] }]),
-    ),
+  const activePost = board.posts.find((post) => post.id === activeId);
+
+  const revealRef = useReveal([
+    board.visiblePosts.length,
+    board.activeTopic,
+    board.activeMember,
+    board.sort,
+    board.query,
+  ]);
+
+  // The field's ink has to reach the shell so the header's own labels can flip
+  // when the dark wall (or a topic's colour) scrolls under them.
+  useFieldInk(board.fieldColor);
+
+  const field = useMemo(
+    () => ({
+      ...board,
+      revealRef,
+      topicWord: topicWord(board.activeTopic),
+    }),
+    [board, revealRef],
   );
-  const activePost = posts.find((post) => post.id === activeId);
-
-  const toggleLike = useCallback((id) => {
-    setActivity((current) => {
-      const item = current[id] ?? { liked: false, comments: [] };
-      return { ...current, [id]: { ...item, liked: !item.liked } };
-    });
-  }, []);
-
-  const addComment = useCallback((id, content) => {
-    setActivity((current) => {
-      const item = current[id] ?? { liked: false, comments: [] };
-      return {
-        ...current,
-        [id]: { ...item, comments: [...item.comments, createComment(content)] },
-      };
-    });
-  }, []);
-
-  const publishPost = useCallback((post) => {
-    setPosts((current) => [post, ...current]);
-    setActivity((current) => ({ ...current, [post.id]: { liked: false, comments: [] } }));
-    setIsComposing(false);
-  }, []);
 
   useEffect(() => {
     onDetailChange?.(Boolean(activePost) || isComposing);
   }, [activePost, isComposing, onDetailChange]);
 
   if (isComposing) {
-    return <ForumComposer onBack={() => setIsComposing(false)} onPublish={publishPost} />;
+    return (
+      <ForumComposer
+        onBack={() => setIsComposing(false)}
+        onPublish={(post) => {
+          board.publishPost(post);
+          setIsComposing(false);
+        }}
+      />
+    );
   }
 
   if (activePost) {
-    const activeActivity = activity[activePost.id] ?? { liked: false, comments: [] };
-
     return (
       <ForumDetail
         key={activePost.id}
         post={activePost}
-        activity={activeActivity}
+        activity={board.activityFor(activePost)}
+        related={board.relatedTo(activePost)}
         onBack={() => setActiveId(null)}
-        onToggleLike={toggleLike}
-        onAddComment={addComment}
+        onOpenPost={setActiveId}
+        onToggleLike={board.toggleLike}
+        onAddComment={board.addComment}
       />
     );
   }
 
   return (
-    <>
-      <ForumEffect />
+    <div className="forum-board-root" style={{ "--forum-board-field": board.fieldColor }}>
       <button className="forum-compose-button" type="button" onClick={() => setIsComposing(true)}>
         <Plus size={18} weight="bold" />
         发布
       </button>
-      <section className="forum-board" aria-label="社区帖子">
-        <div className="forum-masonry">
-          {posts.map((post) => {
-            const postActivity = activity[post.id] ?? { liked: false, comments: post.comments ?? [] };
 
-            return (
-              <article
-                key={post.id}
-                className="forum-card"
-                style={{
-                  "--card-color": post.color,
-                  "--card-ink": post.ink,
-                  "--card-line": post.line,
-                  "--card-accent": post.accent,
-                }}
-                tabIndex={0}
-                role="button"
-                aria-label={`展开帖子：${post.title}`}
-                onClick={() => setActiveId(post.id)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setActiveId(post.id);
-                  }
-                }}
-              >
-                {post.image && <ForumCardMedia image={post.image} />}
-                <div className="forum-card-body">
-                  <span className="forum-tag">{post.tag}</span>
-                  <ForumTitle text={post.title} />
-                  <p className="forum-card-summary">{post.summary}</p>
-                </div>
-                <footer className="forum-card-meta">
-                  <span className="forum-card-author">
-                    <MemberAvatar name={post.author} size={28} />
-                    <strong>{post.author}</strong>
-                  </span>
-                  <time>{post.createdAt}</time>
-                  <span>
-                    浏览量
-                    <b>{post.views.toLocaleString("zh-CN")}</b>
-                  </span>
-                  <span>
-                    评论量
-                    <b>{postActivity.comments.length.toLocaleString("zh-CN")}</b>
-                  </span>
-                  <span>
-                    点赞量
-                    <b>{(post.likes + (postActivity.liked ? 1 : 0)).toLocaleString("zh-CN")}</b>
-                  </span>
-                </footer>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-    </>
+      <GalleryBoard board={field} onOpen={setActiveId} />
+    </div>
   );
 }
