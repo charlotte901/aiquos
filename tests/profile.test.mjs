@@ -134,6 +134,7 @@ async function compileProfileDetail() {
       if (components.has(name)) return new Proxy({}, { get: () => () => null });
       if (name === "@phosphor-icons/react") return new Proxy({}, { get: () => () => null });
       if (name === "./report-model.js") return reportModel;
+      if (name === "./account-store") return { useAccount: () => ({ accountId: null }) };
       if (name === "./profile-layout") return { PROFILE_DETAILS: {} };
       if (name === "./layout") return { getViewportLayout: () => ({ compact: false, unit: 1 }) };
       if (name === "./favorites-store") return { removeFavorite() {}, useFavorites: () => [] };

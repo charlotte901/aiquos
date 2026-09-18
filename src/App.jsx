@@ -121,6 +121,7 @@ export function App({
   flattened = false,
   active = true,
   transitionBusy = false,
+  pushing = false,
   onCubeMotionChange,
 }) {
   const [size, setSize] = useState({
@@ -218,20 +219,13 @@ export function App({
   }, []);
   const layout = getViewportLayout(size.width, size.height);
   const flat = getFlatLayout(size.width, size.height);
+  // The header is the nav and the account pill only. The AIQUOS wordmark used to
+  // sit at the far left of this bar; it was removed on request, which is why
+  // `--chrome-inset-x` now reads as breathing room for the nav rather than the
+  // wordmark's left edge. The hero wordmark on Home is a separate element and is
+  // untouched.
   const siteHeader = (
     <header className="site-header">
-      <a
-        href="#home"
-        className="home-brand"
-        aria-label="AIQUOS 首页"
-        onClick={(e) => {
-          e.preventDefault();
-          if (tab === "home") reset();
-          else onHome?.();
-        }}
-      >
-        <Brand compact />
-      </a>
       <nav aria-label="Main navigation">
         <a
           className={tab === "home" && !modal ? "active" : ""}
@@ -265,16 +259,19 @@ export function App({
           Forum
         </a>
       </nav>
-      {tab === "home" && (
-        <button
-          className="pill-button home-account"
-          onClick={onAccountSettings}
-          disabled={transitionBusy}
-          aria-label="账号"
-        >
-          账号
-        </button>
-      )}
+      {/* Mounted on every tab and hidden by the cases/forum rules rather than
+          unmounted: the header holds still through a push, so the account pill
+          should fade with the tab change instead of blinking out of a header
+          that is not moving. Hidden means `visibility: hidden`, so it leaves
+          the tab order and the accessibility tree either way. */}
+      <button
+        className="pill-button home-account"
+        onClick={onAccountSettings}
+        disabled={transitionBusy}
+        aria-label="账号"
+      >
+        账号
+      </button>
     </header>
   );
   function reset() {
@@ -282,6 +279,12 @@ export function App({
     setPlaying(true);
     setModal(null);
   }
+  // Which archive, if any, the tab screen is showing. A push never has to be
+  // consulted here: on the way home the tab stays on `cases` for the whole
+  // travel and only flips once the page has arrived (see pushPages), so the
+  // archive is mounted exactly while it is on screen — including while it is
+  // the half of the sheet sliding out.
+  const screenTab = tab !== "home" ? tab : null;
   return (
     <main
       className={`app ${casesReady ? "is-cases-ready" : "is-case-booting"}`}
@@ -298,16 +301,23 @@ export function App({
           inert={!casesReady && tab === "home"}
         >
           <ReferenceBackground />
-          {tab === "home" && siteHeader}
+          {/* The header is chrome, not page content: it belongs to every tab at
+              the same coordinates. Keeping it in this one child slot on every
+              tab — instead of mounting a copy inside the tab's own layer — is
+              what lets the two pages push past it (see slide-transition.js):
+              the chrome holds still while the pages travel, and because the
+              slot's type never changes React reuses the node, so the brand does
+              not flicker between tabs. */}
+          {(tab === "home" || !detailOpen) && siteHeader}
           <div className="home-stage" inert={tab !== "home"} aria-hidden={tab !== "home"}>
             <div className="home-hero-art"><Brand /></div>
             <div className="intro-copy">
               <h2>
-                AI 时代
+                AI 时代，
                 <br />
                 你的实力
                 <br />
-                到哪一步
+                到哪一步？
               </h2>
               <p>
                 用真实任务，检验你的 AI 能力。
@@ -382,11 +392,19 @@ export function App({
               </p>
             </section>
           </div>
-          {tab !== "home" && (
-            <div className="home-tab-screen" aria-label={`${tab} content`}>
-              {!detailOpen && siteHeader}
-              {tab === "cases" && <LibraryHub variant="cases" onDetailChange={setDetailOpen} />}
-              {tab === "forum" && <LibraryHub variant="forum" onDetailChange={setDetailOpen} />}
+          {/* The tab is what keeps this mounted, and on the way home the tab
+              stays on `cases` until the page has finished travelling, so the
+              archive is never deleted mid-slide. `inert` covers the two cases
+              where it is on screen but not the page in charge: a tab that has
+              already left it, and a push that is carrying it out. */}
+          {screenTab && (
+            <div
+              className="home-tab-screen"
+              aria-label={`${screenTab} content`}
+              inert={tab === "home" || pushing}
+            >
+              {screenTab === "cases" && <LibraryHub variant="cases" onDetailChange={setDetailOpen} />}
+              {screenTab === "forum" && <LibraryHub variant="forum" onDetailChange={setDetailOpen} />}
             </div>
           )}
         </section>

@@ -3,6 +3,119 @@
   perspective: 1600px;
 }
 
+/* The homepage's elements are one plate that can be pushed off the left edge
+   (see slide-transition.js). Giving the plate `.design-canvas`'s own box means
+   every absolutely positioned child inside it keeps the exact geometry it had
+   while the wrapper was static — and, because a transformed element becomes its
+   descendants' containing block, the push moves the children instead of
+   leaving them anchored to the canvas behind.
+   Without an explicit box here the plate would be zero-tall, and every child
+   anchored to a percentage or a bottom edge would jump the moment it moved. */
+.home-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* The cases and forum tabs hide the homepage's elements outright — the tab
+   screen is opaque and covers them, so leaving them painted is wasted work.
+   During a push they are not covered yet: they are the half of the sheet that
+   is still travelling out, so they have to stay on screen until they are.
+   The tab-qualified selector outranks the hide rule, and `transition: none`
+   keeps the reverse push from fading the returning homepage in mid-slide. */
+.app[data-pushing][data-tab="cases"] .home-hero-art,
+.app[data-pushing][data-tab="cases"] .cube-position,
+.app[data-pushing][data-tab="cases"] .intro-copy,
+.app[data-pushing][data-tab="cases"] .case-carousel,
+.app[data-pushing][data-tab="cases"] .next-slide,
+.app[data-pushing][data-tab="home"] .home-hero-art,
+.app[data-pushing][data-tab="home"] .cube-position,
+.app[data-pushing][data-tab="home"] .intro-copy,
+.app[data-pushing][data-tab="home"] .case-carousel,
+.app[data-pushing][data-tab="home"] .next-slide {
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+}
+
+/* Coming home, the chrome has to shed the library's restrained scale — and it
+   has to do it while `data-tab` still reads `cases`, because the page it is
+   sitting over is the one that has not left yet. Suspending the library's chrome
+   rules for the duration (see the `:not([data-pushing="back"])` guards in
+   responsive.css) lets the header fall back to its own resting geometry, which
+   the transition below then eases into over the same beat as the pages.
+   The account pill belongs to the chrome too, so it returns with it: it is
+   hidden on the cases tab and reappears here without `transition: none`, so it
+   fades back in on its own 0.2s clock instead of popping in when the tab flips. */
+.app[data-pushing="back"] .home-account {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* A running transition disables the controls it is covering — the homepage's
+   CTA and account pill both carry `disabled={transitionBusy}` — and the global
+   `button:disabled` rule then drops them to 55%. The strip and card moves never
+   show this because they only ever show frozen copies (assessment.css pins
+   `.transition-strip button:disabled { opacity: 1 }`); the push moves the live
+   page instead, so its own CTA would visibly grey out on the way past. Nothing
+   is clickable here anyway: the layer is `inert` for the whole move.
+   Scoped to `.pill-button` on purpose — the archive's stamps are disabled
+   buttons whose opacity *is* their arrival/departure fade. */
+.app[data-pushing] .home-stage .pill-button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+/* The cases tab re-scales the header into the reference site's restrained
+   navigation (smaller type, brand tucked into the corner, nav centred — see
+   responsive.css). Because the header no longer travels with the page, that
+   change of scale would otherwise snap in place on the push's first frame: the
+   one thing in the frame that does not move would be the one thing that jumps.
+   Easing the geometry lets the chrome settle into the library on the same beat
+   as the pages.
+   Armed only while `data-pushing`, so the frozen-pair moves and the native
+   scroll transition still capture a header already at its final size — and the
+   nav keeps the opacity/visibility pair that cube-turn.css relies on for the
+   flat-pose way station. */
+.app[data-pushing] .site-header,
+.app[data-pushing] .home-brand,
+.app[data-pushing] .site-header nav {
+  transition:
+    left 0.34s ease,
+    right 0.34s ease,
+    top 0.34s ease,
+    width 0.34s ease,
+    height 0.34s ease,
+    gap 0.34s ease,
+    font-size 0.34s ease,
+    letter-spacing 0.34s ease,
+    transform 0.34s ease,
+    /* The brand re-anchors as well as re-scales: the home rule resolves its
+       origin to `left center` (0px 21px on a 42px box) and the cases rule sets
+       `left top`. `transform-origin` is not covered by the `transform` entry,
+       so without this the anchor snaps on the first frame while the scale still
+       holds the home value — a 0.49px upward jump, measured as a whole-brand
+       pixel offset because the logo is a canvas and re-rasters. */
+    transform-origin 0.34s ease,
+    opacity 0.18s ease,
+    visibility 0.18s ease;
+}
+
+/* The nav links carry their own box: the cases rule trims `padding` from 6px to
+   3px, which moves the type up 3px. That lives on the `a`, not on the `nav`, so
+   the block above does not reach it — the links need their own beat. `color` and
+   `background` come along so the underline re-inks on the same clock as the
+   geometry instead of flipping white on frame one. */
+.app[data-pushing] .site-header nav a {
+  transition:
+    padding 0.34s ease,
+    color 0.34s ease,
+    background-color 0.34s ease;
+}
+
+.app[data-pushing] .site-header nav a:after {
+  transition: background-color 0.34s ease;
+}
+
 /* Native view transitions avoid cloning the homepage's live media layers.
    The fallback below preserves the same vertical scroll for older engines. */
 :root[data-vertical-transition]::view-transition-group(root) {
@@ -217,7 +330,7 @@ body:has(.site-experience[data-view="login"]) {
 }
 
 .account-settings-layout {
-  width: min(840px, calc(100% - 40px));
+  width: min(1440px, calc(100% - 64px));
   margin: 0 auto;
   padding: 112px 0 48px;
 }

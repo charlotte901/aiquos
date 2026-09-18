@@ -8,10 +8,10 @@
 
 .profile-records {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 32px;
   align-items: stretch;
-  width: min(1120px, calc(100% - 88px));
+  width: min(1260px, calc(100% - 88px));
   min-height: calc(100dvh - 140px);
   margin: 100px auto 40px;
 }
@@ -26,6 +26,8 @@
 .records-calendar {
   padding: 28px;
   color: #334155;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-header {
@@ -37,7 +39,7 @@
 .calendar-header h1 {
   flex: 1;
   margin: 0;
-  font-size: 22px;
+  font-size: 27px;
   line-height: 1.2;
   color: #111827;
 }
@@ -52,8 +54,8 @@
 .calendar-header button {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   color: #94a3b8;
 }
@@ -74,7 +76,7 @@
 .calendar-week {
   margin: 26px 0 8px;
   color: #94a3b8;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -84,11 +86,11 @@
 
 .calendar-grid button {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   color: #334155;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -146,18 +148,18 @@
 .records-panel header p {
   margin: 0;
   color: #7c5cff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .records-panel header strong {
   color: #111827;
-  font-size: 22px;
+  font-size: 26px;
 }
 
 .records-panel ul {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   align-content: start;
   margin: 18px 0 0;
   padding: 0;
@@ -167,23 +169,23 @@
 .records-panel li {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
+  gap: 18px;
   align-items: center;
-  min-height: 76px;
-  padding: 16px;
-  border-radius: 18px;
+  min-height: 114px;
+  padding: 26px;
+  border-radius: 24px;
   background: #f6f4fb;
 }
 
 .records-panel li span {
   display: grid;
   place-items: center;
-  width: 64px;
-  min-height: 32px;
+  width: 86px;
+  min-height: 44px;
   border-radius: 999px;
   background: #7c5cff;
   color: #fff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -202,28 +204,28 @@
 
 .records-panel h2 {
   color: #111827;
-  font-size: 16px;
+  font-size: 22px;
 }
 
 .records-panel li p {
   margin-top: 5px;
   color: #64748b;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .record-report-button {
   width: fit-content;
-  min-height: 31px;
-  margin-top: 10px;
-  padding: 0 14px;
+  min-height: 42px;
+  margin-top: 12px;
+  padding: 0 18px;
   border: 0;
   border-radius: 999px;
   cursor: pointer;
   background: color-mix(in srgb, var(--detail-color, #7c5cff) 13%, #fff);
   box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--detail-color, #7c5cff) 34%, #fff);
   color: color-mix(in srgb, var(--detail-color, #7c5cff) 72%, #17233a);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   transition: filter .2s ease, transform .2s ease;
 }
@@ -257,7 +259,123 @@
 
 .records-empty strong {
   color: #111827;
-  font-size: 18px;
+  font-size: 24px;
+}
+
+.record-composer {
+  margin-top: auto;
+  padding: 18px;
+  border: 1.5px solid #e5dff5;
+  border-radius: 20px;
+  background: #f7f5fd;
+}
+
+.record-composer label {
+  display: block;
+  color: #111827;
+  font-size: 19px;
+  font-weight: 850;
+}
+
+.record-composer textarea {
+  width: 100%;
+  min-height: 122px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid #ddd5f1;
+  border-radius: 16px;
+  background: #fff;
+  color: #17233a;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+.record-composer textarea:focus {
+  border-color: #7c5cff;
+  box-shadow: 0 0 0 4px #7c5cff1f;
+}
+
+.record-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.record-composer-actions span {
+  color: #78849a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.record-composer-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #7c5cff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  transition: filter .2s ease, transform .2s ease, opacity .2s ease;
+}
+
+.record-composer-actions button:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.record-composer-actions button:active:not(:disabled) {
+  transform: scale(.97);
+}
+
+.record-composer-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.record-composer ul {
+  display: grid;
+  gap: 8px;
+  max-height: 180px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.record-composer ul::-webkit-scrollbar {
+  display: none;
+}
+
+.record-composer li {
+  padding: 12px 14px;
+  border: 1px solid #e8e3f6;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.record-composer li small {
+  color: #7c5cff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.record-composer li p {
+  margin: 5px 0 0;
+  color: #17233a;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .records-empty p {

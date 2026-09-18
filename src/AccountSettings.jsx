@@ -5,15 +5,18 @@ import {
   SignOut,
   Eye,
   EyeSlash,
+  DeviceMobile,
   User,
 } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
+import { setAccount, useAccount } from "./account-store";
 import { useFavorites } from "./favorites-store";
 
 export function AccountSettings({ onBack, onLogout, busy, source = "home", variant = "screen" }) {
-  const [nickname, setNickname] = useState("智核学员");
-  const [accountId, setAccountId] = useState("aiquos-2026");
+  const { nickname, accountId } = useAccount();
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [saved, setSaved] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -37,25 +40,30 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
   const card = (
     <section className="account-settings-card" aria-label="账号资料">
       <aside className="account-side">
-        <div className="account-avatar-control">
-          <div className={`account-avatar${avatarUrl ? " has-image" : ""}`} aria-hidden={avatarUrl ? "true" : undefined}>
-            {avatarUrl ? <img src={avatarUrl} alt="" /> : nickname.trim().charAt(0) || "智"}
+        <div className="account-avatar-stage">
+          <i className="account-stage-arch" aria-hidden="true" />
+          <i className="account-stage-lines" aria-hidden="true" />
+          <div className="account-avatar-control">
+            <div className={`account-avatar${avatarUrl ? " has-image" : ""}`} aria-hidden={avatarUrl ? "true" : undefined}>
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : nickname.trim().charAt(0) || "智"}
+            </div>
+            <button type="button" className="avatar-change-button" onClick={() => avatarInputRef.current?.click()}>
+              <Camera size={15} weight="bold" /> 更换头像
+            </button>
+            <input
+              ref={avatarInputRef}
+              className="sr-only"
+              type="file"
+              accept="image/*"
+              aria-label="选择头像图片"
+              onChange={updateAvatar}
+            />
           </div>
-          <button type="button" className="avatar-change-button" onClick={() => avatarInputRef.current?.click()}>
-            <Camera size={15} weight="bold" /> 更换头像
-          </button>
-          <input
-            ref={avatarInputRef}
-            className="sr-only"
-            type="file"
-            accept="image/*"
-            aria-label="选择头像图片"
-            onChange={updateAvatar}
-          />
         </div>
-        <p className="account-kicker">AIQUOS / ACCOUNT</p>
-        <h1 className="account-settings-title" tabIndex={-1}>{variant === "panel" ? "账号设置" : "账号设置"}</h1>
-        <p className="account-meta">{nickname} · {accountId}</p>
+        <div className="account-side-card">
+          <strong>{nickname}</strong>
+          <span>{accountId}</span>
+        </div>
         <dl className="account-side-stats">
           <div><dt>测评</dt><dd>23 次</dd></div>
           <div><dt>作品</dt><dd>4 项</dd></div>
@@ -66,17 +74,27 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
 
       <div className="account-editor">
         <header>
-          <h2>基础资料</h2>
+          <div>
+            <p className="account-kicker">AIQUOS / ACCOUNT</p>
+            <h2>账号设置</h2>
+          </div>
           <span>本地演示 · 不做登录校验</span>
         </header>
         <form onSubmit={saveProfile}>
           <label className="settings-field">
             <span><User size={18} weight="bold" /> 昵称</span>
-            <input type="text" value={nickname} onChange={(event) => setNickname(event.target.value)} autoComplete="nickname" />
+            <input type="text" value={nickname} onChange={(event) => setAccount({ nickname: event.target.value })} autoComplete="nickname" />
           </label>
           <label className="settings-field">
-            <span><EnvelopeSimple size={18} weight="bold" /> 账号</span>
-            <input type="text" value={accountId} onChange={(event) => setAccountId(event.target.value)} autoComplete="username" />
+            <span><User size={18} weight="bold" /> 账号</span>
+            <input
+              type="text"
+              value={accountId}
+              readOnly
+              disabled
+              title="账号由系统自动分配，不可修改"
+              autoComplete="username"
+            />
           </label>
           <label className="settings-field">
             <span><LockKey size={18} weight="bold" /> 密码</span>
@@ -92,6 +110,14 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
                 {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
               </button>
             </span>
+          </label>
+          <label className="settings-field">
+            <span><EnvelopeSimple size={18} weight="bold" /> 邮箱</span>
+            <input type="email" value={email} placeholder="填写邮箱地址" onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
+          </label>
+          <label className="settings-field">
+            <span><DeviceMobile size={18} weight="bold" /> 手机号</span>
+            <input type="tel" value={phone} placeholder="填写手机号" onChange={(event) => setPhone(event.target.value)} autoComplete="tel" />
           </label>
           <div className="account-actions">
             <p>{saved ? "资料已在本地演示中更新。" : "修改后点击保存，密码不会被上传。"}</p>

@@ -1,6 +1,12 @@
 export const STRIP_DIRECTIONS = [-1, 1, -1];
 export const TRANSITION_DURATION = 1080;
 
+/** Strong at both ends: the sheet is pulled, it does not drift. Shared with the
+ * homepage/case-library push (see slide-transition.js) so every horizontal move
+ * in the site reads as the same gesture — a constant rather than a copied
+ * comment, so the two cannot drift apart. */
+export const STRIP_EASING = "cubic-bezier(.76,0,.24,1)";
+
 /** Cut through the whitespace around the complete card group, never through
  * a card. On phones the middle band contains both rows. Offscreen regions can
  * collapse to zero height without introducing a cut into visible artwork. */
@@ -187,7 +193,7 @@ export async function animateStrips(
           {
             duration: slowPreview ? 30000 : TRANSITION_DURATION,
             delay: index * (slowPreview ? 300 : 85),
-            easing: "cubic-bezier(.76,0,.24,1)",
+            easing: STRIP_EASING,
             fill: "both",
           },
         ),

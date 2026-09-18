@@ -409,12 +409,16 @@ test("the selected task template has real local IP artwork and all task surfaces
   assert.match(source, /streamDeepSeek/);
   assert.match(source, /generateArkImage/);
   assert.match(source, /agent-image/);
-  assert.match(source, /查看原始口语汇报/);
+  assert.match(source, /查看原始素材/);
 });
 
 test("the comprehensive task restores draft location and emits answer and progress payloads", async () => {
   const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
-  const answerBlock = source.slice(source.indexOf("const answer = (keys) =>"), source.indexOf("const nextQuestion = () =>"));
+  const comprehensiveTask = source.slice(source.indexOf("function ComprehensiveTask("));
+  const answerBlock = comprehensiveTask.slice(
+    comprehensiveTask.indexOf("const answer = (keys) =>"),
+    comprehensiveTask.indexOf("const nextQuestion = () =>"),
+  );
 
   assert.match(source, /function ComprehensiveTask\(\{[\s\S]*?attempt,[\s\S]*?onComprehensiveAnswer,[\s\S]*?onComprehensiveProgress,/);
   assert.match(source, /location\.currentQuestionId/);

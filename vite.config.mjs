@@ -2,6 +2,8 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { Readable } from "node:stream";
 import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat } from "./worker/deepseek.js";
+import { OBJECTIVE_QUESTIONS_PATH, handleObjectiveQuestions } from "./worker/objective-quiz.js";
+import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./worker/practical-tasks.js";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -44,6 +46,22 @@ export default defineConfig(({ mode }) => {
           };
           server.middlewares.use(DEEPSEEK_CHAT_PATH, proxy("chat"));
           server.middlewares.use(ARK_IMAGE_PATH, proxy("image"));
+          server.middlewares.use(OBJECTIVE_QUESTIONS_PATH, async (req, res) => {
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handleObjectiveQuestions(new Request(new URL(req.url, base)));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(PRACTICAL_TASKS_PATH, async (req, res) => {
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handlePracticalTasks(new Request(new URL(req.url, base)));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
         },
       },
     ],
