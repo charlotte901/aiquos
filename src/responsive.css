@@ -1415,12 +1415,14 @@ body {
 .case-poster-peek.is-previous {
   left: 0;
   top: 5.5%;
+  margin-left: 13%;
   transform: translateX(-50%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next {
   right: 0;
   bottom: 5.5%;
+  margin-right: 13%;
   transform: translateX(50%) rotate(1.2deg);
 }
 
@@ -1429,11 +1431,11 @@ body {
 }
 
 .case-poster-peek.is-previous:hover {
-  transform: translateX(-14%) rotate(-1.2deg);
+  transform: translateX(-50%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next:hover {
-  transform: translateX(14%) rotate(1.2deg);
+  transform: translateX(50%) rotate(1.2deg);
 }
 
 /* The compact body hangs off the content layer rather than the stamp root, so a
@@ -2405,12 +2407,14 @@ body {
    two corners read as different sizes. The previous stamp is the reference. */
 .case-poster-peek.is-previous {
   top: 5.5%;
-  transform: translateX(-14%) rotate(-1.2deg);
+  margin-left: 13%;
+  transform: translateX(-50%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next {
   bottom: 5.5%;
-  transform: translateX(14%) rotate(1.2deg);
+  margin-right: 13%;
+  transform: translateX(50%) rotate(1.2deg);
 }
 
 .case-poster-peek:hover {
@@ -2418,11 +2422,11 @@ body {
 }
 
 .case-poster-peek.is-previous:hover {
-  transform: translateX(-14%) rotate(-1.2deg);
+  transform: translateX(-50%) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next:hover {
-  transform: translateX(14%) rotate(1.2deg);
+  transform: translateX(50%) rotate(1.2deg);
 }
 
 .case-poster .poster-stamp-art {
