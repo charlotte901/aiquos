@@ -570,7 +570,7 @@ test("the opened case sits on a blurred copy of its own artwork, never a crop", 
 test("the last ice ships as a case with its own poster and copy", async () => {
   const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   assert.match(src, /title: "The Last Ice"/);
-  assert.match(src, /tags: "AI 生成海报 · 视觉定稿"/);
+  assert.match(src, /tags: "AI 海报"/);
   // The artwork is the one the case declares, not the one its position would
   // imply. Deriving it from the case count was correct only while the case was
   // appended last with no `image` of its own; the moment the archive was

@@ -37,7 +37,7 @@ const CASE_PROJECTS = [
     // rather than cutting to a different colour.
     image: 1,
     title: "戴眼镜的黑猫",
-    tags: "AI 生成插画 · 角色设定",
+    tags: "AI 生图",
     year: 2026,
     description:
       "对 AI 说一句想要的角色，得到一张有脾气的猫。蓬乱的毛、镜片的反光和那副不太高兴的表情都由模型一次画完，人只从几版里挑出最像自己那只的——不需要会画画，也能把宠物变成可以挂起来的角色插画。",
@@ -46,7 +46,7 @@ const CASE_PROJECTS = [
     // 6.webp — a watercolour parrot on a branch, green wash and ink linework.
     image: 6,
     title: "笼外的鹦鹉",
-    tags: "AI 生成插画 · 水彩笔触",
+    tags: "AI 生图",
     year: 2025,
     // Sampled from the leaf-green wash behind the bird.
     world: { top: "PERCH", bottom: "OUTSIDE", background: "#5f8f52", ink: "#f4ffe8", accent: "#ffd98a" },
@@ -58,7 +58,7 @@ const CASE_PROJECTS = [
     // a hand-annotated sheet, on a deep blue ground.
     image: 3,
     title: "高原拼贴海报",
-    tags: "AI 生成海报 · 拼贴构成",
+    tags: "AI 海报",
     year: 2025,
     // Ground sampled from the artwork's own deep blue, so the poster and the
     // stamp share one colour instead of the stamp sitting on an unrelated field.
@@ -71,7 +71,7 @@ const CASE_PROJECTS = [
     // block of ice, on coral-orange paper.
     image: 7,
     title: "The Last Ice",
-    tags: "AI 生成海报 · 视觉定稿",
+    tags: "AI 海报",
     year: 2026,
     // The poster's own coral orange, which is what the case is.
     world: { top: "KEEP", bottom: "UNTIL SUNSET", background: "#e8623c", ink: "#2b1a12", accent: "#ffd98a" },
@@ -83,7 +83,7 @@ const CASE_PROJECTS = [
     // side on a warm yellow ground.
     image: 5,
     title: "女孩与白猫",
-    tags: "AI 生成插画 · 绘本风",
+    tags: "AI 生图",
     year: 2026,
     // The artwork's warm yellow ground, with dark brown ink on it.
     world: { top: "DRAW", bottom: "CLOSER", background: "#f7d88e", ink: "#3f352f", accent: "#c98b5e" },
@@ -95,7 +95,7 @@ const CASE_PROJECTS = [
     // aqua and blush tones. The avatar case.
     image: 2,
     title: "鱼缸里的女孩",
-    tags: "AI 生成头像 · 水彩质感",
+    tags: "AI 头像",
     year: 2026,
     // Aqua from the water, with a deeper teal for the ink so the display type
     // stays legible on it.
@@ -107,7 +107,7 @@ const CASE_PROJECTS = [
     // 4.webp — an anime-style still of a bus under sunlit green leaves.
     image: 4,
     title: "夏日公交",
-    tags: "AI 生成场景 · 动画质感",
+    tags: "AI 生图",
     year: 2025,
     // The foliage green, with pale ink for the sunlit feel of the still.
     world: { top: "SUMMER", bottom: "RIDE", background: "#37845c", ink: "#eaffef", accent: "#ffe98a" },
@@ -123,70 +123,70 @@ const LIVE_CASE_DETAILS = {
   // layout, so it has to stand alone as the capability statement.
   "wing-it": {
     title: "Wing It",
-    tags: "分镜剪辑 · 中文配音",
+    tags: "AI 视频",
     year: 2026,
     description:
       "AI 把一段故事剪成了成片。分镜、节奏、转场与中文解说词由模型给出，配音也由模型合成，人只负责提出想要的方向。音轨可以单独开关，方便对照画面与解说。",
   },
   mario: {
     title: "超级马里奥",
-    tags: "游戏代码 · 可试玩",
+    tags: "AI 写游戏",
     year: 2026,
     description:
       "AI 写出了一款能玩的游戏，而不是画了一张游戏截图。横版关卡、碰撞判定与镜头跟随都由模型产出的代码驱动，在这个页面里实时运行——你可以直接上手操作。",
   },
   conbini: {
     title: "日式便利店",
-    tags: "场景生成 · 实时渲染",
+    tags: "AI 建模",
     year: 2026,
     description:
       "AI 搭出了一个可以走进去的雨夜街角。霓虹招牌、积水反光与店内灯光不是渲染好的影片，而是实时计算的光照——角度一直在变，画面一直在动。",
   },
   pirate: {
     title: "暴风雨海盗船",
-    tags: "海浪模拟 · 实时演算",
+    tags: "AI 建模",
     year: 2026,
     description:
       "AI 让一艘船在风暴里真实地摇晃。浪涌高度、船体姿态与天色变化互相关联，不是循环播放的动画，而是持续演算的动态过程。",
   },
   penguin: {
     title: "企鹅叠叠乐",
-    tags: "文生模型 · 一键生成",
+    tags: "AI 建模",
     year: 2026,
     description:
       "一句话就生成了一个可用的 3D 模型。输入只有一句描述——一只顶着红茶、奶盅与橡皮鸭的企鹅——模型直接给出完整的网格、贴图与法线，没有手工建模，也没有中途修形。",
   },
   "moon-route": {
     title: "人类登上月球",
-    tags: "史料整理 · 信息图",
+    tags: "AI PPT",
     year: 1969,
     description:
       "AI 把一堆史料整理成了一张看得懂的图。阿波罗十一号的六个节点——升空、地月转移、环月轨道、鹰号落月、月面停留、溅落太平洋——各自带着日期落在手绘航线上。米黄新闻纸与朱红套印是模型按当年报纸制图语言还原的版式。",
   },
   "onboarding-schedule": {
     title: "迎新志愿服务排班表",
-    tags: "需求排班 · 表格生成",
+    tags: "AI 表格",
     year: 2026,
     description:
       "AI 把零散的迎新需求排成了一张能直接执行的表。服务点位、时段、人数与负责人之间的约束由模型自己权衡，65 名志愿者被分配到 17 个点位上，谁值全天、谁只来上午，都在表里对齐。表头、合并单元格与分页沿用了 Excel 的版式，输出即可交付。",
   },
   "stop-motion": {
     title: "纸箱宇航员",
-    tags: "定格动画 · 逐帧拍摄",
+    tags: "AI 视频",
     year: 2026,
     description:
       "AI 拍出了一部定格动画，而不是一段流畅的 CG。飞船内壁的划痕、毛毡宇航服的绒毛与角色的每一次顿挫都带着逐帧拍摄的手感，灯光在金属面板上留下真实的色偏。角色动作逐帧推进，飞船起降、舱门开合与角色行走都按定格节奏一格格拍出来。",
   },
   "security-audit": {
     title: "红客挑战赛",
-    tags: "安全审计 · 双漏洞",
+    tags: "AI 网络审计",
     year: 2026,
     description:
       "在官方授权的竞赛环境中，模型对字节跳动某平台的 AI 视频生成服务发起测试。它没有依赖任何人工提示或既有 POC，自己从全量网络流量中定位关键接口，推断出只在前端生效的产品约束，构造请求验证服务端校验缺位；随后又通过差分请求推断出敏感能力的门控只依赖客户端可写配置。两处缺陷相互独立，模型都完成了请求重放、成品留存与客观指标实测，并输出 P0–P2 纵深防御方案。全程无人工介入。",
   },
   "browser-ops": {
     title: "电脑控制",
-    tags: "浏览器操作 · 无人值守",
+    tags: "AI 电脑操作",
     year: 2026,
     description:
       "AI 直接接管了一台电脑的浏览器，而不是调用某个站点的接口。它在地图上拖动平移、按缩放按钮逐级放大；在 Wikipedia 的表单里输入关键词、检索并跳到指定章节；在 Excalidraw 的画布上用鼠标拖出矩形、椭圆与一条自由曲线。整段过程没有写死的坐标脚本，页面布局变了它就重新找目标，全部动作实时完成，全程无人值守。",
