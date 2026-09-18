@@ -275,10 +275,25 @@ test("the previous and next peek stamps mirror each other in every rule", async 
       if (pTop !== null || nBottom !== null) {
         assert.equal(pTop, nBottom, `${label} #${i}: bottom must mirror top`);
       }
-      const pX = number(p.body, /translateX\((-?[\d.]+)%\)/);
-      const nX = number(n.body, /translateX\((-?[\d.]+)%\)/);
-      assert.ok(typeof pX === "number" && typeof nX === "number", `${label} #${i}: both need a translateX`);
-      assert.equal(pX, -nX, `${label} #${i}: translateX must flip sign`);
+      // The horizontal bleed. The wide path states it as one shared amount
+      // (`--peek-bleed-x`, declared once on the base peek rule) so both corners
+      // are retuned together: `previous` cancels it, `next` adds it, and that
+      // sign flip is the mirror. The compact path pins its own literals, so a
+      // plain `translateX(N%)` pair is accepted there as long as it flips sign.
+      const pShared = /translateX\(calc\(-1 \* var\(--peek-bleed-x\)/.test(p.body);
+      const nShared = /translateX\(calc\(var\(--peek-bleed-x\)|translateX\(var\(--peek-bleed-x\)\)/.test(n.body);
+      if (pShared || nShared) {
+        assert.ok(pShared, `${label} #${i}: previous must cancel --peek-bleed-x`);
+        assert.ok(nShared, `${label} #${i}: next must add --peek-bleed-x`);
+      } else {
+        const pX = number(p.body, /translateX\((-?[\d.]+)%\)/);
+        const nX = number(n.body, /translateX\((-?[\d.]+)%\)/);
+        assert.ok(
+          typeof pX === "number" && typeof nX === "number",
+          `${label} #${i}: both corners need a horizontal offset`,
+        );
+        assert.equal(pX, -nX, `${label} #${i}: translateX must flip sign`);
+      }
       const pRot = number(p.body, /rotate\((-?[\d.]+)deg\)/);
       const nRot = number(n.body, /rotate\((-?[\d.]+)deg\)/);
       assert.ok(typeof pRot === "number" && typeof nRot === "number", `${label} #${i}: both need a rotate`);

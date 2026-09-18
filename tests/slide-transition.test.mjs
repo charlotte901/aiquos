@@ -166,14 +166,14 @@ test("reverse: the same two moves, mirrored", async () => {
   }
 });
 
-test("with no stage mounted the travel falls back to the design width", async () => {
+test("with no stage mounted the travel falls back to the window", async () => {
   // Transitions can be asked to run before the stage has laid out (and in tests,
-  // which have no DOM). The fallback must be the design size rather than 0, or a
-  // push would animate a zero-distance travel and read as an instant cut.
+  // which have no DOM). The fallback must be the window rather than 0, or a push
+  // would animate a zero-distance travel and read as an instant cut.
   const h = harness({ stage: false });
   try {
     await pushPages({ forward: true, enter: () => {} });
-    assert.equal(h.frames.home.to, `translateX(${-DESIGN_WIDTH}px)`);
+    assert.equal(h.frames.home.to, `translateX(${-VIEWPORT}px)`);
   } finally {
     h.restore();
   }

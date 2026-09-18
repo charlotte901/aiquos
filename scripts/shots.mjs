@@ -102,6 +102,27 @@ const goTo = (tab) => `(() => {
   return location.hash;
 })()`;
 
+/** Wait until the app has left its boot curtain.
+ *
+ * The app deliberately paints nothing but the pink ground until its scene frames
+ * arrive (or its 8s fallback fires), so a capture taken on a fixed sleep can land
+ * inside the curtain and save a solid-colour PNG that looks like a broken page.
+ * A cold Vite transform can push readiness past any constant we would pick, so
+ * wait for the class the app itself sets. */
+async function waitReady(session, timeoutMs = 30000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const ready = await session.evaluate(
+        `document.querySelector('.app')?.classList.contains('is-cases-ready') === true`,
+      );
+      if (ready) return true;
+    } catch {}
+    await sleep(250);
+  }
+  return false;
+}
+
 const { child, profile } = await launch();
 mkdirSync(OUT, { recursive: true });
 try {
@@ -113,9 +134,11 @@ try {
     });
     for (const tab of TABS) {
       await session.send("Page.navigate", { url: URL_ARG });
+      await waitReady(session);
       await sleep(SETTLE);
       if (tab !== "home") {
         await session.evaluate(goTo(tab));
+        await waitReady(session);
         await sleep(SETTLE);
       }
       const shot = await session.send("Page.captureScreenshot", {

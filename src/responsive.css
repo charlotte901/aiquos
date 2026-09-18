@@ -1,34 +1,38 @@
 /* Viewport layout. Visual styling and screen content remain in styles.css. */
 
 /* ==========================================================================
-   The stage: one fixed 16:9 composition, uniformly scaled to the window.
+   The stage: the viewport itself, filled edge to edge.
    ==========================================================================
 
-   Everything else in this file is written against the stage, so a length here
-   is a share of the composition rather than a share of the monitor. Before the
-   stage, each part was sized from the live window with its own px clamp on both
-   ends; the clamps saturated at different widths, so the parts came apart as the
-   window grew. Measured across 1280x720 -> 3840x2160, the intro block's own
-   scale stopped at 1.3 while the cube kept growing to 2.11, which moved that
-   block 52 percentage points across the frame and shrank the display type from
-   27% of the width to 14%. The stage removes the third factor: one scale, one
-   coordinate space, and the proportions are the ones authored below.
+   The site is adaptive: it fills whatever viewport it is given, and every
+   element holds a fixed *share* of it. Those shares are the `--vw` / `--vh`
+   variables below — 1% of the viewport width / height — so a rule can say "this
+   stamp is a 22nd of the picture" and mean it at every window size.
 
-   `--frame-scale` is the ONLY transform applied to an ancestor of the layout.
-   A transform also makes this box the containing block for `position: fixed`
-   descendants, which is deliberate — views like `.case-detail` and the forum
-   detail use `inset: 0` to mean "the whole screen", and inside the stage that
-   correctly resolves to the frame rather than to the window. */
+   They exist so that a size can be a share *and* stay one number in one place.
+   The failure they replace: sizes taken from the window with px clamps on both
+   ends. The clamps saturated at different window sizes, so the parts drifted
+   apart relative to one another — measured across 1280x720 -> 3840x2160, the
+   intro block's own scale stopped at 1.3 while the cube kept growing to 2.11,
+   which moved that block 52 percentage points across the picture and shrank the
+   display type from 27% of the width to 14%. A share has no third factor to
+   drift by. */
 .design-stage-host {
+  display: contents;
+}
+
+.design-stage {
+  /* 1% of the viewport, per axis. Same values the fluid layout always used, now
+     named — which is what lets a rule lock an element's share of the picture
+     without a px clamp that saturates. */
+  --vw: 1vw;
+  --vh: 1vh;
+  --dvh: 1dvh;
+  --vmin: 1vmin;
+  --vmax: 1vmax;
   position: relative;
   width: 100%;
-  height: 100dvh;
-  overflow: clip;
-  /* Letterbox. A window that is not 16:9 gains margin on its generous axis; the
-     composition is never stretched to fill it. The margin has to read as part of
-     the page rather than as a bar around a coloured field, so it takes whatever
-     the current view puts behind it: the rules below follow the view, and the
-     archive hoists its own (per-case) colour with `--stage-backdrop`. */
+  min-height: 100dvh;
   background: var(--stage-backdrop, var(--pink));
   transition: background-color 520ms ease;
 }
@@ -36,11 +40,11 @@
 /* The views whose own ground is not the brand pink. `.case-poster` is absent on
    purpose — the archive hoists its per-case colour from the script side, because
    that one changes with the case and during the wipe. */
-.design-stage-host:has(.site-experience[data-view="forum"]) {
+.design-stage:has(.site-experience[data-view="forum"]) {
   background: #fff4fa;
 }
 
-.design-stage-host:has(
+.design-stage:has(
     .site-experience[data-view="choose"],
     .site-experience[data-view="assessments"],
     .site-experience[data-view="assessment-map"],
@@ -51,49 +55,6 @@
     .site-experience[data-view="login"]
   ) {
   background: #08080a;
-}
-
-.design-stage {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 1920px;
-  height: 1080px;
-  transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
-  transform-origin: center center;
-  isolation: isolate;
-  /* Frame-relative units. `1vw` no longer means 1% of the window inside here —
-     it means 1% of the frame, which is what every rule below has always been
-     describing. Written as px so the values are exact at any scale. */
-  --vw: 19.2px;
-  --vh: 10.8px;
-  --dvh: 10.8px;
-  --vmin: 10.8px;
-  --vmax: 19.2px;
-}
-
-/* Compact is the window itself, unscaled, so the phone keeps the fluid layout it
-   already had rather than a shrunken wide composition. `1vw` means what it says
-   again, and every converted rule below evaluates to the value it had before the
-   stage existed. */
-.design-stage[data-compact="true"] {
-  position: relative;
-  left: auto;
-  top: auto;
-  width: 100%;
-  height: auto;
-  min-height: calc(100 * var(--dvh, 1dvh));
-  transform: none;
-  --vw: 1vw;
-  --vh: 1vh;
-  --dvh: 1dvh;
-  --vmin: 1vmin;
-  --vmax: 1vmax;
-}
-
-.design-stage-host[data-compact="true"] {
-  height: auto;
-  min-height: calc(100 * var(--dvh, 1dvh));
 }
 
 html,
@@ -110,36 +71,39 @@ body {
   width: 100%;
   min-height: calc(100 * var(--dvh, 1dvh));
   overflow: clip;
-  /* One fixed header geometry for the whole site. These are reference-composition
-     pixels, deliberately not derived from `--ui-scale`: the wordmark, the nav and
-     the account pill must sit in the same place at the same size on Home and on
-     the archive, so the header reads as chrome the pages move underneath rather
-     than as a responsive element each page re-lays-out. */
-  --chrome-inset-x: 54px;
-  --chrome-inset-right: 41px;
-  --chrome-inset-y: 24px;
-  --chrome-height: 51px;
+  /* One header geometry for the whole site, in the SAME scale as the page
+     (`--ui-scale`): the wordmark, the nav and the account pill must sit in the
+     same place at the same size on Home and on the archive, so the header reads
+     as chrome the pages move underneath rather than as a responsive element each
+     page re-lays-out. These were fixed px, which is why the header held 7.1% of
+     the height at 720p but only 2.4% at 2160p — a constant inset on a growing
+     picture drifts toward the corner. Sharing the page's one scale fixes that
+     without breaking the "same on every tab" rule, because that rule was always
+     about the tabs agreeing with each other, not about the number being static. */
+  --chrome-inset-x: calc(54px * var(--ui-scale, 1));
+  --chrome-inset-right: calc(41px * var(--ui-scale, 1));
+  --chrome-inset-y: calc(24px * var(--ui-scale, 1));
+  --chrome-height: calc(51px * var(--ui-scale, 1));
   /* The nav row rides above the header's own top edge, so the three parts read as
      one line lifted toward the top of the page rather than a bar with the links
      hanging below the wordmark. It is a single token so Home and the archive can
      never disagree about where that line sits — the nav used to be moved to
      `top: 0` on the archive alone, which slid it up 34px the moment you left
-     Home. Same fixed scale on both tabs for the same reason. */
-  --chrome-nav-top: -6px;
+     Home. Same scale on both tabs for the same reason. */
+  --chrome-nav-top: calc(-6px * var(--ui-scale, 1));
   --chrome-nav-scale: 0.92;
-  --chrome-nav-size: 12px;
-  --chrome-nav-gap: 34px;
+  --chrome-nav-size: calc(12px * var(--ui-scale, 1));
+  --chrome-nav-gap: calc(34px * var(--ui-scale, 1));
   /* One wordmark scale for every tab. The archive used to shrink it to 0.58 while
      Home used `--ui-scale`, so the logo changed size on the way across. */
-  --chrome-brand-scale: 0.92;
-  /* Fixed breathing room between the header and whatever a tab puts under it. */
-  --chrome-gap: 34px;
+  --chrome-brand-scale: calc(0.92 * var(--ui-scale, 1));
+  /* Breathing room between the header and whatever a tab puts under it. */
+  --chrome-gap: calc(34px * var(--ui-scale, 1));
   --chrome-block: calc(var(--chrome-inset-y) + var(--chrome-height) + var(--chrome-gap));
   /* The archive composition is intentionally smaller than the frame it sits in,
      so it reads as one stamp on the page rather than filling it edge to edge.
-     `--poster-margin` sets the outer whitespace and `--poster-scale` shrinks the
-     whole scene (words, stamps and route together) around its centre. */
-  --poster-margin: 46px;
+     `--poster-scale` shrinks the whole scene (words, stamps and route together)
+     around its centre. */
   --poster-scale: 0.92;
 }
 .canvas-space {
@@ -153,9 +117,12 @@ body {
   transform: none;
 }
 .pink-frame {
-  inset: 8px var(--edge) 10px;
+  /* In the page's own scale: the frame is inset by a share of the picture, so a
+     constant 8/10px would let the border thin out toward nothing on a big screen
+     (1.1% of the height at 720p, 0.4% at 2160p). */
+  inset: calc(8px * var(--ui-scale, 1)) var(--edge) calc(10px * var(--ui-scale, 1));
   width: calc(100% - var(--edge) * 2);
-  height: calc(100% - 18px);
+  height: calc(100% - 18px * var(--ui-scale, 1));
 }
 .site-header {
   left: var(--chrome-inset-x);
@@ -221,19 +188,24 @@ body {
   transform: scale(var(--ui-scale));
   transform-origin: top right;
 }
+/* The whole block is already scaled by `--ui-scale`, so these offsets are plain
+   design px. Writing `--ui-scale` here as well squared the offset: on a 2160p
+   window the headline sat 7.7 percentage points lower in the picture than at
+   720p, because the offset was multiplied by the scale once inside the box and
+   again by the box's own transform. */
 .intro-copy h2 {
   position: relative;
-  top: calc(56px * var(--ui-scale));
+  top: 56px;
   width: fit-content;
   margin-left: auto;
   text-align: center;
 }
 .intro-copy > p {
   position: relative;
-  top: calc(56px * var(--ui-scale));
+  top: 56px;
   width: fit-content;
   margin-left: auto;
-  margin-bottom: calc(84px * var(--ui-scale));
+  margin-bottom: 84px;
   text-align: center;
 }
 .color-switches {
@@ -264,7 +236,12 @@ body {
   z-index: 6;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: calc(112px * var(--ui-scale)) calc(72px * var(--ui-scale)) calc(52px * var(--ui-scale));
+  /* The horizontal inset is a named token because a child that bleeds past it
+     (see `.forum-effect`) has to cancel exactly this much and no more. It was
+     written twice as a literal calc, so the bleed guessed 32px against a real
+     76px and pushed the page 76px wide. */
+  --tab-screen-inset-x: calc(72px * var(--ui-scale));
+  padding: calc(112px * var(--ui-scale)) var(--tab-screen-inset-x) calc(52px * var(--ui-scale));
 }
 .app[data-tab="cases"] .home-tab-screen {
   background: var(--pink);
@@ -311,9 +288,31 @@ body {
 .app[data-tab="forum"] .library-layout {
   padding-top: 0;
 }
+/* Full-bleed, without `100vw`. The old form was `width: 100vw` plus
+   `margin-left: calc(50% - 50vw)`, which only cancels out when the parent's
+   content box is centred in the viewport — inside `.library-layout`, whose
+   width is `min(1440px, 100% - 64px)`, the two halves disagree and the element
+   was pushed 76px past the right edge, which is what put a horizontal scrollbar
+   along the bottom of the Forum tab. Pulling the parent's own padding back out
+   by the same amount it has is symmetric by construction and cannot overshoot. */
+/* Full-bleed, without viewport units and without touching box-sizing.
+ *
+ * The old form was `width: 100vw; margin-left: calc(50% - 50vw)`. That only
+ * cancels out when the parent's content box is centred in the viewport; inside
+ * `.library-layout` (width `min(1440px, 100% - 64px)`) the halves disagree and
+ * the block was pushed 76px past the right edge — which put a horizontal
+ * scrollbar along the bottom of the Forum tab.
+ *
+ * `overflow: clip` is what makes the negative margins safe inside the scroll
+ * container: the box is laid out edge to edge, but its own overflow can never
+ * extend the scrollable area, so no bar is generated. `border-box` is kept
+ * (the global default) because `content-box` here added the extra width to the
+ * scroll area instead of covering it. */
 .forum-effect {
-  width: calc(100 * var(--vw, 1vw));
-  margin-left: calc(50% - calc(50 * var(--vw, 1vw)));
+  max-width: none;
+  width: calc(100% + 2 * var(--tab-screen-inset-x, 0px));
+  margin-left: calc(-1 * var(--tab-screen-inset-x, 0px));
+  margin-right: calc(-1 * var(--tab-screen-inset-x, 0px));
   height: calc(60 * var(--dvh, 1dvh));
   margin-bottom: 30px;
   overflow: hidden;
@@ -1321,7 +1320,7 @@ body {
 }
 
 .case-poster-words span:first-child {
-  top: clamp(62px, calc(7 * var(--dvh, 1dvh)), 86px);
+  top: calc(7 * var(--dvh, 1dvh));
 }
 
 .case-poster-words span:last-child {
@@ -1465,7 +1464,7 @@ body {
   grid-column: 1 / -1;
   overflow: hidden;
   color: #24201d;
-  font-size: clamp(14px, calc(1.25 * var(--vw, 1vw)), 19px);
+  font-size: calc(0.99 * var(--vw, 1vw));
   line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1475,7 +1474,7 @@ body {
 .poster-stamp-caption time {
   margin-top: 6px;
   color: #706862;
-  font-size: clamp(10px, calc(0.85 * var(--vw, 1vw)), 13px);
+  font-size: calc(0.68 * var(--vw, 1vw));
 }
 
 .case-poster-open {
@@ -1557,7 +1556,7 @@ body {
   background: #ffffff14;
 }
 
-.case-poster-arrow.is-left { left: clamp(32px, calc(15 * var(--vw, 1vw)), 150px); }
+.case-poster-arrow.is-left { left: calc(7.8 * var(--vw, 1vw)); }
 /* The two arrows are a mirrored pair — same 109px box, same 46px circle, same 37px
    label, only the outer edge differs — so they must share one inset formula. The
    right arrow used to read clamp(54px, 7vw, 108px), which held it a consistent extra
@@ -1568,7 +1567,7 @@ body {
    inset from the page edge — at 1000px wide the previous peek spans x=-12..104
    while the left arrow starts at x=45, so the two drew straight through each
    other. Tracking the stamp scale moves them clear of the peek band. */
-.case-poster-arrow.is-right { right: clamp(32px, calc(15 * var(--vw, 1vw)), 150px); }
+.case-poster-arrow.is-right { right: calc(7.8 * var(--vw, 1vw)); }
 
 .case-poster-rail {
   position: absolute;
@@ -2229,18 +2228,33 @@ body {
  * that the flight coordinate space is expressed in. */
 .case-poster-frame {
   position: absolute;
-  inset: var(--chrome-block) var(--poster-margin) var(--poster-margin);
-  /* The composition's own measurements, in design pixels. The frame is a fixed
-     1920x1080 box, so these are absolute by construction — no clamp, no unit
-     that silently means something different on a different monitor, and one
-     number that the feature stamp and the two corner peeks are derived from so
-     they cannot disagree about their relative sizes.
-     420px wide (up from an effective 382), and the art is 1122x1402 (0.8), so
-     the height follows at 525. The box used to be 382x415 — an aspect of 0.92,
-     because a `height` and a `width` were both set and `aspect-ratio` was
-     therefore ignored, squeezing the perforated frame 15% out of shape. */
-  --feature-stamp-width: 420px;
-  --peek-stamp-ratio: 0.56;
+  /* The composition's own margins, as shares of the picture: 10.5% of the
+     height clears the fixed header, 2.4% of the width is the side/bottom
+     breathing room. They used to be fixed px (109 / 46), which is what made the
+     composition's *area* grow toward the edges on a larger screen — the frame
+     held 78% of the height at 720p and 89% at 1440p, so everything inside
+     drifted ~10 percentage points even with every internal size locked. */
+  inset: calc(10.5 * var(--dvh, 1dvh)) calc(2.4 * var(--vw, 1vw))
+    calc(2.4 * var(--vw, 1vw));
+  /* The featured stamp's width, as the smaller of two shares: 21.9% of the
+     picture's width, or 40% of its height (the art is 1122x1402 = 0.8, so 40vh
+     of height is 50vh of width and the stamp can never be taller than half the
+     picture). At 16:9 the width term is the smaller one — 21.9vw == 38.9vh
+     there — so this is exactly 21.9% of the width and the shape does not change
+     with the aspect. On a wider window than 16:9 the height term takes over and
+     keeps the stamp clear of the two display words, which is what an
+     unconstrained width-based size failed to do: at 3440x1440 it grew to 27% of
+     the width and pushed through "CREATE".
+     It used to be 382 wide by 415 tall — an aspect of 0.92, because a `height`
+     and a `width` were both set and `aspect-ratio` was ignored, squeezing the
+     perforated frame 15% out of shape. */
+  --feature-stamp-width: min(21.9vw, 40vh);
+  --peek-stamp-ratio: 0.56;        /* the corners, a little over half the centre */
+  /* How far each corner stamp is tucked in from its edge, as a share of the
+     frame. The two are the same number because the corners are a point
+     reflection of each other; the previous stamp's is the one to change if the
+     pair ever needs to move together. */
+  --peek-inset-y: 6%;
 }
 
 .case-poster-stage {
@@ -2263,7 +2277,7 @@ body {
 
 .case-poster-words {
   z-index: 1;
-  font-size: clamp(70px, calc(8.9 * var(--vw, 1vw)), 142px);
+  font-size: min(calc(7.4 * var(--vw, 1vw)), calc(13.16 * var(--vh, 1vh)));
   line-height: 0.8;
   letter-spacing: -0.068em;
   color: var(--scene-ink);
@@ -2277,7 +2291,7 @@ body {
 }
 
 .case-poster-words span:first-child {
-  top: clamp(62px, calc(7 * var(--dvh, 1dvh)), 86px);
+  top: calc(7 * var(--dvh, 1dvh));
 }
 
 .case-poster-words span:last-child {
@@ -2476,16 +2490,38 @@ body {
   pointer-events: auto;
 }
 
+/* Tucked into the poster's top-left and bottom-right corners: the outer side
+   hangs past the frame edge and is cut by it, so each stamp reads as a
+   neighbour peeking in from off-frame rather than as a card floating inside.
+   Two tuned amounts, both deliberate:
+   - `--peek-bleed-x` is how much of the stamp's own width hangs outside. 38%
+     leaves 62% on screen — enough to read the stamp and keep a comfortable
+     click target, clearly cut by the frame edge.
+   - `top: 12%` / `bottom: 12%` settle the stamps just below the "CASE LIBRARY"
+     pill and just above the credit line, which occupy the very corners.
+   Hover repeats the base transform; anything else would snap the stamp back. */
+.case-poster-peek {
+  --peek-bleed-x: 38%;
+}
+
+/* `margin-*: -2.4vw` steps the stamp back out to the WINDOW's edge, cancelling
+   the frame's own side margin, so the bleed below is the whole of what is cut.
+   Without it the visible cut was `bleed - frame margin`: 12.6% of the stamp at
+   1280x720 but only 4.5% at 3440x1440, because the margin is a share of the
+   width and the stamp is not. With it, both corners are cut by exactly
+   `--peek-bleed-x` (38% of the stamp) at every window size and aspect. */
 .case-poster-peek.is-previous {
   left: 0;
-  top: -6%;
-  transform: translateX(-73%) rotate(-1.2deg);
+  top: var(--peek-inset-y);
+  margin-left: calc(-2.4 * var(--vw, 1vw));
+  transform: translateX(calc(-1 * var(--peek-bleed-x))) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next {
   right: 0;
-  bottom: -6%;
-  transform: translateX(73%) rotate(1.2deg);
+  bottom: var(--peek-inset-y);
+  margin-right: calc(-2.4 * var(--vw, 1vw));
+  transform: translateX(var(--peek-bleed-x)) rotate(1.2deg);
 }
 
 .case-poster-peek:hover {
@@ -2493,11 +2529,11 @@ body {
 }
 
 .case-poster-peek.is-previous:hover {
-  transform: translateX(-73%) rotate(-1.2deg);
+  transform: translateX(calc(-1 * var(--peek-bleed-x))) rotate(-1.2deg);
 }
 
 .case-poster-peek.is-next:hover {
-  transform: translateX(73%) rotate(1.2deg);
+  transform: translateX(var(--peek-bleed-x)) rotate(1.2deg);
 }
 
 .case-poster .poster-stamp-art {
@@ -2545,14 +2581,17 @@ body {
     opacity: 1;
   }
 
-  /* Hover pulls each peek 6% back toward the centre and eases the tilt; the
-     values mirror, so the two corners react identically. */
+  /* Hover pulls each peek 6% back toward the centre and eases the tilt; both
+     corners derive from the same bleed, so they react identically. Written as
+     `bleed - 6%` rather than a literal: the literals here were tuned when the
+     bleed was 50%, and against the current 38% they pushed the stamp further
+     out on hover instead of easing it in. */
   .case-poster-peek.is-previous:hover {
-    transform: translateX(-44%) rotate(-0.5deg);
+    transform: translateX(calc(-1 * var(--peek-bleed-x) + 6%)) rotate(-0.5deg);
   }
 
   .case-poster-peek.is-next:hover {
-    transform: translateX(44%) rotate(0.5deg);
+    transform: translateX(calc(var(--peek-bleed-x) - 6%)) rotate(0.5deg);
   }
 
   .case-poster-arrow:hover svg {
@@ -2598,7 +2637,7 @@ body {
 }
 
 .case-poster-mode {
-  left: clamp(24px, calc(3.2 * var(--vw, 1vw)), 52px);
+  left: calc(2.7 * var(--vw, 1vw));
   bottom: 27px;
   opacity: 0.72;
 }
@@ -2619,15 +2658,28 @@ body {
 .case-poster-credit {
   left: 50%;
   bottom: 22px;
-  width: min(520px, calc(48 * var(--vw, 1vw)));
+  width: calc(27 * var(--vw, 1vw));
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* `max-content` on the two outer columns, not `1fr`. With `1fr` the columns
+     may shrink below their content, so the tags (which hold a Chinese phrase and
+     a separator) wrapped at 1280x720 and left a single character alone on the
+     second line while the title beside it stayed on one — the footer read as
+     broken text rather than as one line. `max-content` sizes each column to what
+     it actually holds, so the line can only break if the whole credit genuinely
+     has nowhere to fit. */
+  grid-template-columns: max-content auto max-content;
   align-items: center;
   gap: 18px;
   text-align: center;
   letter-spacing: 0.04em;
   opacity: 0.68;
+}
+
+/* One line, always: the credit is a single caption, and the CJK tag phrase is
+   short enough that wrapping it is never the right outcome. */
+.case-poster-credit > * {
+  white-space: nowrap;
 }
 
 .case-poster-credit span {
@@ -3768,16 +3820,16 @@ body {
 }
 
 .app[data-tab="cases"] .case-poster-words {
-  font-size: clamp(calc(84px * var(--poster-scale)), calc(calc(12.4 * var(--vw, 1vw)) * var(--poster-scale)), calc(184px * var(--poster-scale)));
+  font-size: calc(min(8.8 * var(--vw, 1vw), 15.64 * var(--vh, 1vh)) * var(--poster-scale));
   font-weight: 900;
 }
 
 .app[data-tab="cases"] .case-poster-words span:first-child {
-  top: clamp(24px, calc(5 * var(--dvh, 1dvh)), 38px);
+  top: calc(3.5 * var(--dvh, 1dvh));
 }
 
 .app[data-tab="cases"] .case-poster-words span:last-child {
-  bottom: clamp(22px, calc(4.2 * var(--dvh, 1dvh)), 42px);
+  bottom: calc(3.9 * var(--dvh, 1dvh));
 }
 
 /* Centred in the band between the two display words, by construction.

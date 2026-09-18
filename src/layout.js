@@ -8,21 +8,23 @@ const BRAND_SHIFT_X = 48;
  * Artwork uses uniform scales so the wordmark and screen homographies stay true.
  * Very short viewports scroll instead of hiding controls or shrinking all text.
  *
- * In wide mode the `width`/`viewportHeight` a caller passes are the DESIGN FRAME
- * (see stage.js), not the window, so every expression below evaluates to one
- * fixed set of numbers and the composition is identical at every window size.
- * That is why the `clamp`s here are harmless now: they exist to protect the
- * compact path, which is still handed the real window. They used to cap the wide
- * path too, at different widths per expression, which is what made the parts
- * drift apart relative to one another as the monitor grew.
+ * Every element here scales by the SAME factor — `min(width / 1536,
+ * height / 1024)`, unclamped. That equality is the whole point: this factor used
+ * to be clamped to 0.72..1.3 for the text and UI while the cube and wordmark
+ * scaled by the same formula *unclamped*, so above ~2000px wide the artwork kept
+ * growing and everything driven by `unit` stopped — the intro block moved 52
+ * percentage points across the picture and the display type lost two thirds of
+ * its relative width between 1280x720 and 3840x2160. With one shared factor the
+ * parts cannot drift apart: at 16:9 every window renders the same composition.
  */
 export function getViewportLayout(width, viewportHeight) {
   const compact =
     width < 700 || (width < 1000 && width / viewportHeight < 1.05);
   const height = Math.max(viewportHeight, compact ? 760 : 680);
-  const unit = compact
-    ? 1
-    : clamp(Math.min(width / 1536, height / 1024), 0.72, 1.3);
+  // One scale for the whole page. `clamp` is gone, not tightened: a floor or a
+  // ceiling here is what let the text stop growing while the artwork continued.
+  const scale = Math.min(width / 1536, height / 1024);
+  const unit = compact ? 1 : scale;
   const cubeTop = compact
     ? clamp(height * 0.17, 130, 180)
     : (height * 282) / 1024;
@@ -87,7 +89,7 @@ export function getViewportLayout(width, viewportHeight) {
       "--hint-top": `${cubeBottom + 28}px`,
       "--stats-width": compact ? `${width - 36}px` : `${842 * unit}px`,
       "--stats-height": compact ? "70px" : `${92 * unit}px`,
-      "--edge": compact ? "7px" : "11px",
+      "--edge": compact ? "7px" : "calc(11px * var(--ui-scale, 1))",
     },
   };
 }
