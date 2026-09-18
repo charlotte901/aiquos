@@ -1,32 +1,18 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import {
-  ArrowCounterClockwise,
-  ArrowDown,
   ArrowLeft,
   ArrowRight,
-  ArrowUp,
   BookmarkSimple,
-  Plus,
-  X,
 } from "@phosphor-icons/react";
 import { favoriteFromCase, toggleFavorite, useFavoriteSaved } from "./favorites-store";
 import { CaseScreen } from "./CaseScreen";
 import { CASES as LIVE_CASES } from "./cases";
 import { getFrameScaleFromDom, getStageSize } from "./stage";
 import {
-  addJourneyKey,
-  isDefaultJourney,
   JOURNEY_MAX,
-  JOURNEY_MIN,
-  moveJourney,
-  readColors,
   readJourney,
-  readRemovedKeys,
-  removeJourneyKey,
-  writeColors,
   writeJourney,
-  writeRemovedKeys,
 } from "./case-library";
 
 const CASE_PROJECTS = [
@@ -399,29 +385,6 @@ CASE_POOL.forEach((entry, poolIndex) => {
 
 const CASE_POOL_KEYS = CASE_POOL.map((entry) => entry.key);
 
-/** Each case's shipped poster colours, so the panel can show a colour picker's
- * value and offer a per-case reset without having to read the live world back
- * out (which may already carry an override). */
-const COLOR_DEFAULTS = Object.fromEntries(
-  CASE_POOL.map((entry) => [entry.key, { background: entry.world.background, ink: entry.world.ink }]),
-);
-
-/** Fold the journey down to one entry per case, first occurrence wins.
- *
- * Deleting a case has to take it out of the journey too, and both lists are
- * user-editable, so this is the single place that reconciles them. */
-function pruneJourneyToPool(journeyKeys, poolKeys) {
-  const allowed = new Set(poolKeys);
-  const seen = new Set();
-  const out = [];
-  for (const key of journeyKeys) {
-    if (!allowed.has(key) || seen.has(key)) continue;
-    seen.add(key);
-    out.push(key);
-  }
-  return out;
-}
-
 /** The journey the poster opens with, interleaving the archive covers with the
  * live scenes.
  *
@@ -549,94 +512,6 @@ function PosterStamp({ project, compact = false, morph = null, transitionName })
 /** The journey editor: the poster's running order with controls to move an entry
  * up or down, take it out, and a pool of every case that is not on the journey
  * yet. Purely a list editor — nothing here creates new content. */
-function JourneyEditor({ journey, pool, onMove, onAdd, onRemove, onReset, isDefault, max = JOURNEY_MAX }) {
-  const lastIndex = journey.length - 1;
-  const atCap = journey.length >= max;
-  return (
-    <div className="case-journey-editor">
-      <div className="case-journey-head">
-        <p>
-          JOURNEY ORDER <span>{String(journey.length).padStart(2, "0")}</span>
-          <i aria-hidden="true">/</i>{String(max).padStart(2, "0")}
-          <i aria-hidden="true">·</i>SAVED IN THIS BROWSER
-        </p>
-        <button type="button" onClick={onReset} disabled={isDefault}>
-          <ArrowCounterClockwise size={13} aria-hidden="true" />
-          RESET
-        </button>
-      </div>
-
-      <ol className="case-journey-list">
-        {journey.map((entry, index) => (
-          <li key={entry.key} className="case-journey-row">
-            <span className="case-journey-order">{String(index + 1).padStart(2, "0")}</span>
-            <img className="case-journey-cover" src={entry.cover} alt="" draggable="false" />
-            <span className="case-journey-meta">
-              <strong>{entry.title}</strong>
-              <small>
-                {entry.type === "live" ? "LIVE CASE" : "ARCHIVE"}
-                <i aria-hidden="true">•</i>{entry.tags}<i aria-hidden="true">•</i>{entry.year}
-              </small>
-            </span>
-            <span className="case-journey-controls">
-              <button
-                type="button"
-                onClick={() => onMove(index, index - 1)}
-                disabled={index === 0}
-                aria-label={`上移：${entry.title}`}
-              >
-                <ArrowUp size={13} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onMove(index, index + 1)}
-                disabled={index === lastIndex}
-                aria-label={`下移：${entry.title}`}
-              >
-                <ArrowDown size={13} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="is-remove"
-                onClick={() => onRemove(entry.key)}
-                disabled={journey.length <= JOURNEY_MIN}
-                aria-label={`从旅程中移除：${entry.title}`}
-              >
-                <X size={13} aria-hidden="true" />
-              </button>
-            </span>
-          </li>
-        ))}
-      </ol>
-
-      <div className="case-journey-pool">
-        <p className="case-journey-pool-head">
-          可添加案例 <span>{String(pool.length).padStart(2, "0")}</span>
-          {atCap ? <i>· 旅程已满 {max}，先移除一个再加</i> : null}
-        </p>
-        {pool.length === 0 ? (
-          <p className="case-journey-pool-empty">案例池里的全部案例都已经在旅程中了。</p>
-        ) : (
-          <ul className="case-journey-pool-list">
-            {pool.map((entry) => (
-              <li key={entry.key}>
-                <button type="button" onClick={() => onAdd(entry.key)} disabled={atCap}>
-                  <img src={entry.cover} alt="" draggable="false" />
-                  <span>
-                    <strong>{entry.title}</strong>
-                    <small>{entry.type === "live" ? "LIVE CASE" : "ARCHIVE"}<i aria-hidden="true">•</i>{entry.tags}</small>
-                  </span>
-                  <Plus size={14} aria-hidden="true" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function ShowcaseCaseDetail({ project, index, total, onBack, transitionName }) {
   return (
     <section className="case-archive case-showcase-detail" aria-label={`${project.title} 案例`}>
@@ -1037,8 +912,6 @@ function measureCornerPoses(feature) {
 export function CaseArchive({ onDetailChange }) {
   const [active, setActive] = useState(0);
   const [openProject, setOpenProject] = useState(null);
-  const [indexOpen, setIndexOpen] = useState(false);
-  const [detailOrigin, setDetailOrigin] = useState("featured");
   const [transition, setTransition] = useState(null);
   const [intro, setIntro] = useState(() => {
     if (caseIntroPlayed) return false;
@@ -1056,26 +929,10 @@ export function CaseArchive({ onDetailChange }) {
   const touchStart = useRef(null);
   const pointerStart = useRef(null);
   const featureRef = useRef(null);
-  const [editing, setEditing] = useState(false);
-  // Cases the developer panel has deleted. Held as a set of keys so the pool
-  // below is derived, never mutated — `CASE_POOL` stays the canonical content
-  // list and a reset simply clears this.
-  const [removedKeys, setRemovedKeys] = useState(() => readRemovedKeys(CASE_POOL_KEYS));
-  // Per-case poster colours, keyed the same way. Only cases the developer
-  // actually recoloured appear here; everything else reads its own default.
-  const [colorOverrides, setColorOverrides] = useState(() => readColors(CASE_POOL_KEYS, COLOR_DEFAULTS));
-  const livePool = useMemo(() => {
-    const removed = new Set(removedKeys);
-    return CASE_POOL.filter((entry) => !removed.has(entry.key)).map((entry) => {
-      const override = colorOverrides[entry.key];
-      // The world is copied, not mutated: `CASE_POOL` entries are module-level
-      // objects shared across mounts, so writing through them would leak a
-      // recolour into the next mount and into every other reader.
-      return override
-        ? { ...entry, world: { ...entry.world, ...override } }
-        : entry;
-    });
-  }, [removedKeys, colorOverrides]);
+  // The pool is the canonical content list, read-only. It used to be filtered by
+  // a developer panel's deletions and recoloured by its colour pickers; with that
+  // panel gone, `CASE_POOL` is what the poster walks.
+  const livePool = CASE_POOL;
   const livePoolByKey = useMemo(() => new Map(livePool.map((entry) => [entry.key, entry])), [livePool]);
   const [journeyKeys, setJourneyKeys] = useState(() =>
     readJourney(CASE_POOL_KEYS, DEFAULT_JOURNEY_KEYS, JOURNEY_MAX),
@@ -1089,27 +946,9 @@ export function CaseArchive({ onDetailChange }) {
     (index) => ((index % journeyCount) + journeyCount) % journeyCount,
     [journeyCount],
   );
-  const addablePool = useMemo(() => {
-    const onJourney = new Set(journeyKeys);
-    return livePool.filter((entry) => !onJourney.has(entry.key));
-  }, [journeyKeys, livePool]);
-
-  const closeIndex = useCallback(() => {
-    setEditing(false);
-    setIndexOpen(false);
-  }, []);
-
   useEffect(() => {
     writeJourney(journeyKeys);
   }, [journeyKeys]);
-
-  useEffect(() => {
-    writeRemovedKeys(removedKeys);
-  }, [removedKeys]);
-
-  useEffect(() => {
-    writeColors(colorOverrides);
-  }, [colorOverrides]);
 
   // Editing the journey can strand the reader past its end, or leave a case
   // detail pointing at a slot that no longer exists. Reel both back in, and drop
@@ -1127,8 +966,8 @@ export function CaseArchive({ onDetailChange }) {
   }, [journeyCount]);
 
   useEffect(() => {
-    onDetailChange?.(openProject !== null || indexOpen);
-  }, [indexOpen, openProject, onDetailChange]);
+    onDetailChange?.(openProject !== null);
+  }, [openProject, onDetailChange]);
 
   useEffect(() => {
     if (openProject !== null) return;
@@ -1137,7 +976,7 @@ export function CaseArchive({ onDetailChange }) {
     const canvasScroller = feature?.closest(".design-canvas");
     if (tabScroller) tabScroller.scrollTop = 0;
     if (canvasScroller) canvasScroller.scrollTop = 0;
-  }, [indexOpen, openProject]);
+  }, [openProject]);
 
   useEffect(() => () => {
     cancelAnimationFrame(animationFrame.current);
@@ -1219,11 +1058,9 @@ export function CaseArchive({ onDetailChange }) {
     animationFallback.current = window.setTimeout(finish, duration + 140);
   }, [openProject, intro, wrapFeatured]);
 
-  const changeOpenProject = useCallback((nextProject, nextIndexOpen = null, nextOrigin = null) => {
+  const changeOpenProject = useCallback((nextProject) => {
     const commit = () => flushSync(() => {
       setOpenProject(nextProject);
-      if (nextIndexOpen !== null) setIndexOpen(nextIndexOpen);
-      if (nextOrigin !== null) setDetailOrigin(nextOrigin);
     });
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
@@ -1235,21 +1072,17 @@ export function CaseArchive({ onDetailChange }) {
   }, []);
 
   const closeProject = useCallback(() => {
-    changeOpenProject(null, detailOrigin === "library");
-  }, [changeOpenProject, detailOrigin]);
+    changeOpenProject(null);
+  }, [changeOpenProject]);
 
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key !== "Escape") return;
-      if (indexOpen) {
-        closeIndex();
-        return;
-      }
       if (openProject !== null) closeProject();
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [closeIndex, closeProject, indexOpen, openProject]);
+  }, [closeProject, openProject]);
 
   const project = journey[wrapFeatured(active)];
   const visual = project.world;
@@ -1291,101 +1124,26 @@ export function CaseArchive({ onDetailChange }) {
     element.style.removeProperty("--stamp-shift-y");
   };
 
-  const reorderJourney = useCallback((from, to) => {
-    setJourneyKeys((current) => moveJourney(current, from, to));
-  }, []);
-
-  const addToJourney = useCallback((key) => {
-    setJourneyKeys((current) => (
-      current.length >= JOURNEY_MAX ? current : addJourneyKey(current, key)
-    ));
-  }, []);
-
-  const removeFromJourney = useCallback((key) => {
-    setJourneyKeys((current) => removeJourneyKey(current, key));
-  }, []);
-
-  const resetJourneyList = useCallback(() => {
-    setJourneyKeys(DEFAULT_JOURNEY_KEYS.slice());
-  }, []);
-
-  /** Delete a case from the pool for good.
-   *
-   * The journey is reconciled in the same update so a removed case cannot linger
-   * on the poster or leave `wrapFeatured` pointing at a slot that no longer
-   * exists. `pruneJourneyToPool` keeps at least the remaining live pool, and the
-   * `journeyCount` effect below reels the poster's index back in if it was
-   * sitting past the new end. */
-  const removeFromPool = useCallback((key) => {
-    setRemovedKeys((current) => (current.includes(key) ? current : [...current, key]));
-    setJourneyKeys((current) => pruneJourneyToPool(
-      current,
-      CASE_POOL_KEYS.filter((poolKey) => poolKey !== key),
-    ));
-  }, []);
-
-  const restorePool = useCallback(() => {
-    setRemovedKeys([]);
-  }, []);
-
-  /** Recolour one case's two master colours. Both are written together so a
-   * half-applied override can never reach a render. */
-  const setCaseColor = useCallback((key, channel, value) => {
-    setColorOverrides((current) => {
-      const fallback = COLOR_DEFAULTS[key];
-      if (!fallback) return current;
-      const existing = current[key] ?? fallback;
-      return { ...current, [key]: { ...existing, [channel]: value } };
-    });
-  }, []);
-
-  const resetCaseColor = useCallback((key) => {
-    setColorOverrides((current) => {
-      if (!(key in current)) return current;
-      const next = { ...current };
-      delete next[key];
-      return next;
-    });
-  }, []);
-
   if (openProject !== null) {
-    if (detailOrigin === "featured") {
-      const featuredProject = journey[wrapFeatured(openProject)];
-      if (featuredProject.type === "archive") {
-        return (
-          <CaseDetail
-            project={featuredProject}
-            index={featuredProject.archiveIndex}
-            total={journeyCount}
-            immersive
-            returnLabel="返回案例"
-            transitionName="case-art"
-            onBack={closeProject}
-          />
-        );
-      }
+    const featuredProject = journey[wrapFeatured(openProject)];
+    if (featuredProject.type === "archive") {
       return (
-        <ShowcaseCaseDetail
+        <CaseDetail
           project={featuredProject}
-          index={wrapFeatured(openProject)}
+          index={featuredProject.archiveIndex}
           total={journeyCount}
+          immersive
+          returnLabel="返回案例"
           transitionName="case-art"
           onBack={closeProject}
         />
       );
     }
-
-    // Opened from the developer panel. Read through the pool rather than from
-    // `CASE_PROJECTS` directly: the pool is what carries each case's `world`, so
-    // going straight to the source list would drop the poster's colours and any
-    // recolour applied in the panel, leaving the blurred backdrop on its
-    // fallback ground.
-    const project = livePoolByKey.get(`archive:${openProject}`) ?? CASE_PROJECTS[openProject];
     return (
-      <CaseDetail
-        project={project}
-        index={openProject}
-        immersive
+      <ShowcaseCaseDetail
+        project={featuredProject}
+        index={wrapFeatured(openProject)}
+        total={journeyCount}
         transitionName="case-art"
         onBack={closeProject}
       />
@@ -1451,7 +1209,7 @@ export function CaseArchive({ onDetailChange }) {
           className="case-poster-feature"
           key="feature"
           aria-label={`打开案例：${project.title}`}
-          onClick={() => changeOpenProject(active, false, "featured")}
+          onClick={() => changeOpenProject(active)}
           onPointerMove={tiltFeature}
           onPointerLeave={resetFeatureTilt}
           onBlur={resetFeatureTilt}
@@ -1537,7 +1295,7 @@ export function CaseArchive({ onDetailChange }) {
 
   return (
     <section
-      className={`case-archive case-poster${indexOpen ? " is-index-open" : ""}${intro ? " is-intro" : ""}`}
+      className={`case-archive case-poster${intro ? " is-intro" : ""}`}
       aria-label="Case archive"
       aria-describedby="case-poster-instructions"
       aria-busy={Boolean(transition)}
@@ -1548,7 +1306,6 @@ export function CaseArchive({ onDetailChange }) {
         "--poster-accent": shownVisual.accent,
       }}
       onKeyDown={(event) => {
-        if (indexOpen) return;
         if (event.repeat) return;
         if (
           event.key === "ArrowLeft"
@@ -1568,10 +1325,9 @@ export function CaseArchive({ onDetailChange }) {
           event.preventDefault();
           move(1);
         }
-        if (event.key === "Enter") changeOpenProject(active, false, "featured");
+        if (event.key === "Enter") changeOpenProject(active);
       }}
       onWheel={(event) => {
-        if (indexOpen) return;
         event.preventDefault();
         const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
           ? event.deltaY
@@ -1588,12 +1344,10 @@ export function CaseArchive({ onDetailChange }) {
         move(delta > 0 ? 1 : -1);
       }}
       onTouchStart={(event) => {
-        if (indexOpen) return;
         const touch = event.touches[0];
         touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
       }}
       onTouchEnd={(event) => {
-        if (indexOpen) return;
         if (touchStart.current === null) return;
         const touch = event.changedTouches[0];
         const distanceX = touchStart.current.x - (touch?.clientX ?? touchStart.current.x);
@@ -1603,7 +1357,7 @@ export function CaseArchive({ onDetailChange }) {
         if (Math.abs(distance) > 44) move(distance > 0 ? 1 : -1);
       }}
       onPointerDown={(event) => {
-        if (indexOpen || event.pointerType === "touch" || event.button !== 0) return;
+        if (event.pointerType === "touch" || event.button !== 0) return;
         if (event.target.closest?.("button, a")) return;
         pointerStart.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
         event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -1686,13 +1440,6 @@ export function CaseArchive({ onDetailChange }) {
         <ArrowRight aria-hidden="true" />
       </button>
 
-      <button
-        type="button"
-        className="case-poster-all"
-        onClick={() => setIndexOpen(true)}
-      >
-        CASE LIBRARY
-      </button>
       <p className="case-poster-credit">
         {/* Capability first, as on the stamp; the emphasised middle slot names
             the piece, which is the masthead convention this strip follows. Only
@@ -1703,140 +1450,6 @@ export function CaseArchive({ onDetailChange }) {
         <time>{shownProject.year}</time>
       </p>
 
-      {/* Developer panel, not a designed page.
-       *
-       * This is a working tool for inspecting and reordering the case pool, so it
-       * is deliberately plain: a native <dialog>-style box, system monospace, no
-       * poster fonts, no brand colours, no entrance animation. It reads like
-       * devtools because that is what it is — the styled "CASE LIBRARY" surface
-       * it replaces kept being mistaken for product UI, and its centred header
-       * collided with the nav once the nav moved up.
-       *
-       * The data and the journey editing are unchanged: same CASE_PROJECTS list,
-       * same open-a-case action (`detailOrigin: "library"`), same JourneyEditor. */}
-      {indexOpen && (
-        <section
-          className="case-devpanel"
-          role="dialog"
-          aria-modal="true"
-          aria-label="案例库开发者面板"
-        >
-          <header className="case-devpanel-bar">
-            <strong>case pool</strong>
-            <span className="case-devpanel-meta">
-              {journeyCount} / {JOURNEY_MAX} in journey
-              {" · "}
-              {livePool.length} live
-              {removedKeys.length > 0 ? ` · ${removedKeys.length} deleted` : ""}
-            </span>
-            <span className="case-devpanel-spacer" />
-            {removedKeys.length > 0 && (
-              <button type="button" className="case-devpanel-btn" onClick={restorePool}>
-                restore {removedKeys.length} deleted
-              </button>
-            )}
-            <button
-              type="button"
-              className="case-devpanel-btn"
-              aria-pressed={editing}
-              onClick={() => setEditing((current) => !current)}
-            >
-              {editing ? "done" : "edit journey"}
-            </button>
-            <button type="button" className="case-devpanel-btn" onClick={closeIndex}>
-              close
-            </button>
-          </header>
-
-          <div className="case-devpanel-body">
-            {editing ? (
-              <JourneyEditor
-                journey={journey}
-                pool={addablePool}
-                onMove={reorderJourney}
-                onAdd={addToJourney}
-                onRemove={removeFromJourney}
-                onReset={resetJourneyList}
-                isDefault={isDefaultJourney(journeyKeys, DEFAULT_JOURNEY_KEYS)}
-                max={JOURNEY_MAX}
-              />
-            ) : (
-              /* Every case in the pool, one row each: two colour pickers for the
-                 case's master colours, its identity, and a delete. The colours
-                 are live — the row writes straight into `colorOverrides`, so the
-                 poster repaints as the picker moves. */
-              <ol className="case-devpanel-list">
-                {livePool.map((entry) => {
-                  const colors = colorOverrides[entry.key] ?? COLOR_DEFAULTS[entry.key];
-                  const onJourney = journeyKeys.includes(entry.key);
-                  return (
-                    <li key={entry.key} className="case-devpanel-item">
-                      <span className="case-devpanel-n">
-                        {entry.type === "live" ? "L" : String(entry.archiveIndex + 1).padStart(2, "0")}
-                      </span>
-                      <span className="case-devpanel-copy">
-                        <button
-                          type="button"
-                          className="case-devpanel-title case-devpanel-open"
-                          onClick={() => {
-                            if (entry.type === "archive") {
-                              changeOpenProject(entry.archiveIndex, false, "library");
-                            }
-                          }}
-                          disabled={entry.type !== "archive"}
-                        >
-                          {entry.title}
-                        </button>
-                        <span className="case-devpanel-key">
-                          {entry.key} · {entry.tags} · {entry.year}
-                          {onJourney ? " · on journey" : ""}
-                        </span>
-                      </span>
-                      <span className="case-devpanel-colors">
-                        <label className="case-devpanel-color">
-                          <input
-                            type="color"
-                            value={colors.background}
-                            aria-label={`${entry.title} 背景色`}
-                            onChange={(event) => setCaseColor(entry.key, "background", event.target.value)}
-                          />
-                          <span>bg</span>
-                        </label>
-                        <label className="case-devpanel-color">
-                          <input
-                            type="color"
-                            value={colors.ink}
-                            aria-label={`${entry.title} 文字色`}
-                            onChange={(event) => setCaseColor(entry.key, "ink", event.target.value)}
-                          />
-                          <span>ink</span>
-                        </label>
-                        {colorOverrides[entry.key] && (
-                          <button
-                            type="button"
-                            className="case-devpanel-btn case-devpanel-sm"
-                            onClick={() => resetCaseColor(entry.key)}
-                          >
-                            reset
-                          </button>
-                        )}
-                      </span>
-                      <button
-                        type="button"
-                        className="case-devpanel-btn case-devpanel-sm case-devpanel-del"
-                        aria-label={`删除案例 ${entry.title}`}
-                        onClick={() => removeFromPool(entry.key)}
-                      >
-                        delete
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
-            )}
-          </div>
-        </section>
-      )}
     </section>
   );
 }

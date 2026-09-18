@@ -2189,12 +2189,6 @@ body {
   cursor: grabbing;
 }
 
-.case-poster.is-index-open,
-.case-devpanel {
-  touch-action: pan-y;
-  user-select: auto;
-}
-
 .case-poster::after {
   z-index: 8;
 }
@@ -2360,7 +2354,6 @@ body {
 
 .case-poster.is-intro .case-poster-mode,
 .case-poster.is-intro .case-poster-credit,
-.case-poster.is-intro .case-poster-all,
 .case-poster.is-intro .case-poster-arrow {
   animation: case-intro-fade 560ms ease 1160ms both;
 }
@@ -2464,8 +2457,7 @@ body {
 
 .case-poster-feature:focus-visible,
 .case-poster-peek:focus-visible,
-.case-poster-arrow:focus-visible,
-.case-poster-all:focus-visible {
+.case-poster-arrow:focus-visible {
   outline: 3px solid var(--scene-accent, var(--poster-accent));
   outline-offset: 5px;
 }
@@ -2626,8 +2618,7 @@ body {
 }
 
 .case-poster-mode,
-.case-poster-credit,
-.case-poster-all {
+.case-poster-credit {
   position: absolute;
   z-index: 10;
   margin: 0;
@@ -2644,19 +2635,6 @@ body {
   left: calc(2.7 * var(--vw, 1vw));
   bottom: 27px;
   opacity: 0.72;
-}
-
-.case-poster-all {
-  top: 98px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 12px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--poster-background);
-  box-shadow: 0 0 0 1px currentColor inset;
-  cursor: pointer;
-  transition: background-color 520ms ease, color 280ms ease;
 }
 
 .case-poster-credit {
@@ -2706,439 +2684,9 @@ body {
    tool for inspecting and reordering cases, so it should look like one. It sits
    above everything and does not inherit the poster's ink/background variables,
    which is why every colour here is written literally. */
-.case-devpanel {
-  position: absolute;
-  inset: 0;
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  background: #1c1c1e;
-  color: #e8e8ea;
-  cursor: default;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.45;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
 /* A single sticky bar, so the controls stay reachable while the list scrolls.
    No oversized heading — the old panel's 122px title was the main reason it read
    as a designed page, and its sticky box needed a shadow hack to stay opaque. */
-.case-devpanel-bar {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-bottom: 1px solid #3a3a3e;
-  background: #232326;
-}
-
-.case-devpanel-bar strong {
-  font-weight: 600;
-  color: #fff;
-}
-
-.case-devpanel-meta {
-  color: #8e8e93;
-}
-
-.case-devpanel-spacer {
-  flex: 1 1 auto;
-}
-
-.case-devpanel-btn {
-  padding: 4px 10px;
-  border: 1px solid #4a4a4f;
-  border-radius: 4px;
-  background: #2c2c30;
-  color: #e8e8ea;
-  font: inherit;
-  cursor: pointer;
-}
-
-.case-devpanel-btn:hover,
-.case-devpanel-btn:focus-visible {
-  background: #3a3a40;
-  outline: none;
-}
-
-/* Pressed state is a colour change, not a filled pill: it has to be obvious at a
-   glance which mode the panel is in. */
-.case-devpanel-btn[aria-pressed="true"] {
-  background: #0a84ff;
-  border-color: #0a84ff;
-  color: #fff;
-}
-
-.case-devpanel-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  padding: 6px 0 24px;
-}
-
-.case-devpanel-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* One pool row: index, identity, the two colour pickers, and delete. Laid out on
-   a fixed grid so the pickers line up in a column down the list and can be
-   compared at a glance while tuning a palette. */
-.case-devpanel-item {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 12px;
-  padding: 5px 12px;
-  border-bottom: 1px solid #2a2a2e;
-}
-
-.case-devpanel-item:hover {
-  background: #242428;
-}
-
-.case-devpanel-n {
-  color: #8e8e93;
-  text-align: right;
-}
-
-.case-devpanel-copy {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.case-devpanel-title {
-  overflow: hidden;
-  color: #fff;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The title opens the case when there is something to open; live cases have no
-   static detail page, so it stays a plain label rather than a dead control. */
-.case-devpanel-open {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.case-devpanel-open:disabled {
-  cursor: default;
-  opacity: 1;
-}
-
-.case-devpanel-open:not(:disabled):hover {
-  text-decoration: underline;
-}
-
-.case-devpanel-key {
-  overflow: hidden;
-  color: #8e8e93;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.case-devpanel-colors {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.case-devpanel-color {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #8e8e93;
-  cursor: pointer;
-}
-
-/* Strip the native swatch chrome so the two pickers read as a tidy pair of
-   colour chips rather than two browser-default widgets. */
-.case-devpanel-color input[type="color"] {
-  width: 26px;
-  height: 20px;
-  padding: 0;
-  border: 1px solid #4a4a4f;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.case-devpanel-color input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 2px;
-}
-
-.case-devpanel-color input[type="color"]::-webkit-color-swatch {
-  border: 0;
-  border-radius: 2px;
-}
-
-.case-devpanel-sm {
-  padding: 2px 7px;
-  font-size: 11px;
-}
-
-.case-devpanel-del:hover,
-.case-devpanel-del:focus-visible {
-  background: #ff453a;
-  border-color: #ff453a;
-  color: #fff;
-}
-
-.case-journey-editor {
-  padding-bottom: 12px;
-}
-
-.case-journey-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 14px 2px;
-  border-top: 1px solid #17150f;
-  border-bottom: 1px solid #17150f;
-}
-
-.case-journey-head p,
-.case-journey-pool-head {
-  margin: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-}
-
-.case-journey-head p span,
-.case-journey-pool-head span {
-  font-weight: 800;
-}
-
-.case-journey-head p i,
-.case-journey-meta i,
-.case-journey-pool-list i {
-  font-style: normal;
-  opacity: 0.45;
-}
-
-.case-journey-head button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 0 3px;
-  border: 0;
-  border-bottom: 1px solid currentColor;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-}
-
-.case-journey-head button:disabled {
-  opacity: 0.34;
-  border-bottom-color: transparent;
-}
-
-.case-journey-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-bottom: 1px solid #17150f;
-}
-
-.case-journey-row {
-  display: grid;
-  grid-template-columns: 44px 54px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
-  padding: 11px 2px;
-  border-bottom: 1px solid #17150f3d;
-}
-
-.case-journey-row:last-child {
-  border-bottom: 0;
-}
-
-.case-journey-order {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-.case-journey-cover {
-  width: 54px;
-  height: 40px;
-  object-fit: cover;
-  border: 1px solid #17150f;
-  background: #e6dcd0;
-}
-
-.case-journey-meta {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
-.case-journey-meta strong {
-  font-size: clamp(15px, calc(1.5 * var(--vw, 1vw)), 22px);
-  line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.case-journey-meta small,
-.case-journey-pool-list small {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.72;
-}
-
-.case-journey-controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.case-journey-controls button {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #17150f;
-  background: transparent;
-  color: inherit;
-  transition: background-color 160ms ease, color 160ms ease;
-}
-
-.case-journey-controls button:hover:not(:disabled),
-.case-journey-controls button:focus-visible:not(:disabled) {
-  background: #17150f;
-  color: #f6eee6;
-  outline: none;
-}
-
-.case-journey-controls button.is-remove:hover:not(:disabled),
-.case-journey-controls button.is-remove:focus-visible:not(:disabled) {
-  background: #ef5c9b;
-  color: #17150f;
-}
-
-.case-journey-controls button:disabled {
-  opacity: 0.28;
-  cursor: not-allowed;
-}
-
-.case-journey-pool {
-  margin-top: 26px;
-}
-
-.case-journey-pool-head {
-  padding-bottom: 12px;
-  border-bottom: 1px solid #17150f;
-}
-
-.case-journey-pool-empty {
-  margin: 16px 2px 0;
-  font-size: 13px;
-  opacity: 0.7;
-}
-
-.case-journey-pool-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0;
-  border-bottom: 1px solid #17150f;
-}
-
-.case-journey-pool-list li {
-  border-bottom: 1px solid #17150f3d;
-}
-
-.case-journey-pool-list button {
-  width: 100%;
-  padding: 10px 2px;
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 18px;
-  align-items: center;
-  gap: 12px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  transition: background-color 160ms ease;
-}
-
-.case-journey-pool-list button:hover,
-.case-journey-pool-list button:focus-visible {
-  background: #ef5c9b;
-  outline: none;
-}
-
-.case-journey-pool-list img {
-  width: 46px;
-  height: 34px;
-  object-fit: cover;
-  border: 1px solid #17150f;
-  background: #e6dcd0;
-}
-
-.case-journey-pool-list button > span {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.case-journey-pool-list strong {
-  font-size: 15px;
-  line-height: 1.1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The detail view borrows the camera-app treatment: the case's own artwork,
- * pushed back behind a heavy blur, becomes the room the case sits in.
- *
- * The old version instead cropped the artwork with `object-fit: cover` and laid
- * gradients over it, so opening a case replaced the piece with a full-bleed
- * excerpt of itself. Here the real artwork is shown whole and the blur is a
- * separate layer derived from the same file, which is what gives the composition
- * its breathing room without introducing a colour the case never had. */
-.case-detail.is-immersive {
-  position: relative;
-  width: calc(100 * var(--vw, 1vw));
-  height: calc(100 * var(--dvh, 1dvh));
-  margin-left: calc(50% - calc(50 * var(--vw, 1vw)));
-  padding: 0;
-  overflow: hidden;
-  /* The tint behind the blur, taken from the poster's own ground and set on the
-     element so the backdrop sits on the case's colour rather than on black. The
-     fallback only applies if a case ships without a world. */
-  background: var(--detail-ground, #171512);
-  color: #fff;
-}
-
 /* The blurred copy of the artwork. It is the same image at `cover`, scaled past
    the viewport so the blur's soft edge can never reveal a bare rim, and it is
    inset negatively by that same overhang.
@@ -3567,11 +3115,6 @@ body {
   transform: translateX(76%) rotate(1.2deg);
 }
 
-.app[data-layout="compact"] .case-poster-all {
-  top: 108px;
-  font-size: 9px;
-}
-
 .app[data-layout="compact"] .case-poster-mode {
   left: 18px;
   bottom: 28px;
@@ -3716,62 +3259,8 @@ body {
 
 /* On a narrow screen the pool row keeps both pickers but drops the key line, so
    the case title and the colour chips stay reachable without horizontal scroll. */
-.app[data-layout="compact"] .case-devpanel-item {
-  grid-template-columns: 30px minmax(0, 1fr) auto;
-  gap: 8px;
-}
-
-.app[data-layout="compact"] .case-devpanel-key {
-  display: none;
-}
-
-.app[data-layout="compact"] .case-devpanel-del {
-  grid-column: 3;
-}
-
-.app[data-layout="compact"] .case-journey-head {
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.app[data-layout="compact"] .case-journey-row {
-  grid-template-columns: 26px 40px minmax(0, 1fr);
-  gap: 10px;
-}
-
-.app[data-layout="compact"] .case-journey-cover {
-  width: 40px;
-  height: 40px;
-}
-
-.app[data-layout="compact"] .case-journey-meta strong {
-  font-size: 15px;
-}
-
-.app[data-layout="compact"] .case-journey-meta small {
-  display: none;
-}
-
 /* The three controls would squeeze the title off a phone, so they drop to their
    own row under it. */
-.app[data-layout="compact"] .case-journey-controls {
-  grid-column: 2 / -1;
-  justify-content: flex-end;
-}
-
-.app[data-layout="compact"] .case-journey-controls button {
-  width: 40px;
-  height: 34px;
-}
-
-.app[data-layout="compact"] .case-journey-pool-list {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.app[data-layout="compact"] .case-journey-pool-list small {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .case-detail.is-immersive .case-detail-info,
   .case-detail.is-immersive .case-detail-back {
@@ -3860,13 +3349,6 @@ body {
    top-left stamp travels: the stamp's top edge overran the pill's bottom by 52px
    and the two printed through each other. The stamp now passes beneath a pill
    that reads as part of the corner furniture rather than as an obstacle. */
-.app[data-tab="cases"] .case-poster-all {
-  top: calc(10px * var(--ui-scale));
-  left: var(--chrome-inset-x);
-  right: auto;
-  transform: none;
-}
-
 .app[data-layout="compact"][data-tab="cases"] .case-poster-words {
   font-size: clamp(calc(54px * var(--poster-scale)), calc(calc(17 * var(--vw, 1vw)) * var(--poster-scale)), calc(96px * var(--poster-scale)));
 }
@@ -3882,10 +3364,6 @@ body {
 .app[data-layout="compact"][data-tab="cases"] .case-poster-feature {
   top: 31%;
   width: min(calc(58 * var(--vw, 1vw)), calc(calc(72 * var(--dvh, 1dvh)) * 0.81), 333px);
-}
-
-.app[data-layout="compact"][data-tab="cases"] .case-poster-all {
-  left: 18px;
 }
 
 .app[data-tab="cases"] .case-poster-mode {

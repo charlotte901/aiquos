@@ -3,14 +3,9 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import { getCaseLayers } from "../src/case-buffer.js";
 import {
-  addJourneyKey,
-  isDefaultJourney,
   isStaleGroupedJourney,
-  JOURNEY_MIN,
-  readJourney,
-  moveJourney,
   normalizeJourney,
-  removeJourneyKey,
+  readJourney,
 } from "../src/case-library.js";
 import {
   CASES,
@@ -204,17 +199,18 @@ test("the case pool is the archive plus the live scenes, and the default journey
 
   const stamp = archive.slice(
     archive.indexOf("function PosterStamp"),
-    archive.indexOf("function JourneyEditor"),
+    archive.indexOf("function ShowcaseCaseDetail"),
   );
   assert.match(stamp, /<img[\s\S]*src=\{project\.cover\}/);
   assert.doesNotMatch(stamp, /CaseScreen|<iframe|<video/);
   assert.match(archive, /LIVE CASE/);
-  assert.match(archive, /CASE LIBRARY/);
-  // The pool row opens by `archiveIndex`, not the row's own position: the pool is
-  // filtered by deletions and recolours, so a row index no longer maps to
-  // `CASE_PROJECTS` and using it would open the wrong case.
-  assert.match(archive, /changeOpenProject\(entry\.archiveIndex, false, "library"\)/);
-  assert.match(archive, /detailOrigin === "library"/);
+  // The CASE LIBRARY pill is gone, and with it the developer panel it opened:
+  // the button was that panel's only entry point, so keeping either would leave
+  // an unreachable surface. Nothing may bring them back.
+  assert.ok(!/CASE LIBRARY/.test(archive), "the CASE LIBRARY pill must stay deleted");
+  assert.ok(!/case-devpanel/.test(archive), "the developer panel must stay deleted");
+  assert.ok(!/indexOpen/.test(archive), "no panel-open state may remain");
+
 });
 
 test("the default journey weaves the archive covers through the live scenes", async () => {
@@ -289,37 +285,6 @@ test("the default journey weaves the archive covers through the live scenes", as
   assert.equal(kinds[0], "A", "the poster still opens on the archive cover carrying HOME_GROUND");
 });
 
-test("the case library can reorder, add to and remove from the journey", async () => {
-  const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
-  const css = await readFile(new URL("../src/responsive.css", import.meta.url), "utf8");
-  assert.match(archive, /<JourneyEditor/);
-  assert.match(archive, /onMove=\{reorderJourney\}/);
-  assert.match(archive, /onAdd=\{addToJourney\}/);
-  assert.match(archive, /onRemove=\{removeFromJourney\}/);
-  assert.match(archive, /onReset=\{resetJourneyList\}/);
-  assert.match(archive, /aria-label=\{`上移：\$\{entry\.title\}`\}/);
-  assert.match(archive, /aria-label=\{`下移：\$\{entry\.title\}`\}/);
-  assert.match(archive, /aria-label=\{`从旅程中移除：\$\{entry\.title\}`\}/);
-  assert.match(archive, /onClick=\{\(\) => onAdd\(entry\.key\)\}/);
-  assert.match(archive, /disabled=\{index === 0\}/);
-  assert.match(archive, /disabled=\{index === lastIndex\}/);
-  // The journey can never be emptied, and edits are kept in this browser.
-  assert.match(archive, /disabled=\{journey\.length <= JOURNEY_MIN\}/);
-  // The cap travels with the read, so a saved journey that predates newly added
-  // cases can adopt them without growing past what the editor allows.
-  assert.match(archive, /readJourney\(CASE_POOL_KEYS, DEFAULT_JOURNEY_KEYS, JOURNEY_MAX\)/);
-  assert.match(archive, /writeJourney\(journeyKeys\)/);
-  assert.match(archive, /isDefault=\{isDefaultJourney\(journeyKeys, DEFAULT_JOURNEY_KEYS\)\}/);
-  // Shrinking the journey reels the reader back in and cancels a page change in
-  // flight for the old list.
-  assert.match(archive, /const next = Math\.min\(activeRef\.current, journeyCount - 1\)/);
-  // Leaving the dialog always leaves edit mode behind.
-  assert.match(archive, /const closeIndex = useCallback\(\(\) => \{\s*setEditing\(false\);\s*setIndexOpen\(false\);/);
-  assert.match(css, /\.case-journey-row \{/);
-  assert.match(css, /\.case-journey-pool-list \{/);
-  assert.match(css, /\.app\[data-layout="compact"\] \.case-journey-controls/);
-});
-
 test("the previous and next peek stamps mirror each other in every rule", async () => {
   const css = await readFile(new URL("../src/responsive.css", import.meta.url), "utf8");
   // The two corner stamps are a point reflection about the poster centre, so
@@ -383,21 +348,6 @@ test("the previous and next peek stamps mirror each other in every rule", async 
   }
 });
 
-test("the journey editor reorders, adds and removes without damaging the list", () => {
-  const base = ["a", "b", "c"];
-  assert.deepEqual(moveJourney(base, 0, 2), ["b", "c", "a"]);
-  assert.deepEqual(moveJourney(base, 2, 0), ["c", "a", "b"]);
-  assert.deepEqual(moveJourney(base, 1, 1), base);
-  assert.deepEqual(moveJourney(base, 0, 99), ["b", "c", "a"]);
-  assert.deepEqual(moveJourney(base, 9, 0), base);
-  assert.deepEqual(base, ["a", "b", "c"]);
-  assert.deepEqual(addJourneyKey(base, "d"), ["a", "b", "c", "d"]);
-  assert.deepEqual(addJourneyKey(base, "a"), base);
-  assert.deepEqual(removeJourneyKey(base, "b"), ["a", "c"]);
-  assert.deepEqual(removeJourneyKey(["a"], "a"), ["a"]);
-  assert.equal(JOURNEY_MIN, 1);
-});
-
 test("a stored journey is filtered against the pool and falls back when unusable", () => {
   const pool = ["a", "b", "c"];
   assert.deepEqual(normalizeJourney(["c", "a"], pool, ["a"]), ["c", "a"]);
@@ -409,9 +359,6 @@ test("a stored journey is filtered against the pool and falls back when unusable
   assert.deepEqual(normalizeJourney("nope", pool, ["a"]), ["a"]);
   assert.deepEqual(normalizeJourney(null, pool, ["a"]), ["a"]);
   assert.deepEqual(normalizeJourney(["gone"], pool, ["a"]), ["a"]);
-  assert.ok(isDefaultJourney(["a", "b"], ["a", "b"]));
-  assert.ok(!isDefaultJourney(["b", "a"], ["a", "b"]));
-  assert.ok(!isDefaultJourney(["a"], ["a", "b"]));
 });
 
 test("a saved journey that is only the old grouped default is replaced", async () => {
@@ -491,8 +438,6 @@ test("a saved journey that is only the old grouped default is replaced", async (
     if (saved.localStorage === undefined) delete globalThis.localStorage;
     else globalThis.localStorage = saved.localStorage;
   }
-  assert.ok(!isDefaultJourney(["b", "a"], ["a", "b"]));
-  assert.ok(!isDefaultJourney(["a"], ["a", "b"]));
 });
 
 test("a case added after the journey was saved still reaches the poster", () => {
@@ -520,88 +465,6 @@ test("a case added after the journey was saved still reaches the poster", () => 
   // never be reintroduced by the adoption step.
   const pruned = normalizeJourney(["archive:0"], ["archive:0"], fallback);
   assert.deepEqual(pruned, ["archive:0"], "a deleted case stays deleted");
-});
-
-test("the developer panel is a flat tool surface, not a second poster page", async () => {
-  const css = await readFile(new URL("../src/responsive.css", import.meta.url), "utf8");
-  // The later of the two `.case-devpanel` rules is the panel itself; an earlier
-  // one only carries touch-action/user-select alongside `.is-index-open`.
-  const panel = css.match(/\.case-devpanel \{[^}]*position: absolute[\s\S]*?\n\}/);
-  assert.ok(panel, "the developer panel rule should exist");
-  const block = panel[0];
-  // Must cover the poster and sit above every piece of poster chrome.
-  assert.match(block, /position: absolute/);
-  assert.match(block, /inset: 0/);
-  assert.match(block, /z-index: 40/);
-  // A system stack and literal colours: the panel must not inherit the poster's
-  // ink/background variables, or it would recolour itself with the case.
-  assert.match(block, /ui-monospace/);
-  assert.ok(
-    !/var\(--poster-/.test(block),
-    "the panel must not read the poster's colour variables",
-  );
-  // No entrance animation and no oversized display heading: those are what made
-  // the previous surface read as product UI instead of devtools.
-  assert.ok(!/animation:/.test(block), "the panel must not animate in");
-  assert.ok(!/case-project-index/.test(css), "the old styled library surface must be gone");
-});
-
-test("deleting a case prunes it from the journey and can be undone", async () => {
-  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
-  const fn = src.match(/function pruneJourneyToPool\([\s\S]*?\n\}/);
-  assert.ok(fn, "pruneJourneyToPool should exist");
-  // A removed case must not survive on the poster, and a journey can never keep
-  // a duplicate after the pool shrinks under it.
-  const prune = (journeyKeys, poolKeys) => {
-    const allowed = new Set(poolKeys);
-    const seen = new Set();
-    const out = [];
-    for (const key of journeyKeys) {
-      if (!allowed.has(key) || seen.has(key)) continue;
-      seen.add(key);
-      out.push(key);
-    }
-    return out;
-  };
-  assert.deepEqual(prune(["a", "b", "c"], ["a", "c"]), ["a", "c"]);
-  assert.deepEqual(prune(["a", "b"], ["a", "b"]), ["a", "b"]);
-  assert.deepEqual(prune(["a", "a", "b"], ["a", "b"]), ["a", "b"]);
-  assert.deepEqual(prune(["gone", "a"], ["a"]), ["a"]);
-  // The panel keeps a `restore` control so a deletion is reversible.
-  assert.match(src, /const restorePool = useCallback/);
-  assert.match(src, /setRemovedKeys\(\[\]\)/);
-});
-
-test("the poster journey caps at twenty and the panel enforces it", async () => {
-  const { JOURNEY_MAX } = await import("../src/case-library.js");
-  assert.equal(JOURNEY_MAX, 20);
-  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
-  // The cap is enforced on add, not merely displayed.
-  assert.match(src, /current\.length >= JOURNEY_MAX \? current : addJourneyKey/);
-  // And the add control is disabled once the journey is full.
-  assert.match(src, /disabled=\{atCap\}/);
-});
-
-test("poster colours are validated before they reach the stylesheet", async () => {
-  const { normalizeColor, normalizeColors } = await import("../src/case-library.js");
-  assert.equal(normalizeColor("#AABBCC", "#000000"), "#aabbcc");
-  assert.equal(normalizeColor("  #123456 ", "#000000"), "#123456");
-  // Anything that is not a plain six-digit hex falls back rather than reaching
-  // CSS, which is what keeps a hand-edited storage blob from breaking the poster.
-  for (const bad of ["red", "#abc", "#12345", "rgb(1,2,3)", "", null, 42, {}]) {
-    assert.equal(normalizeColor(bad, "#000000"), "#000000");
-  }
-  const defaults = { a: { background: "#111111", ink: "#eeeeee" } };
-  assert.deepEqual(
-    normalizeColors({ a: { background: "#222222", ink: "#dddddd" } }, ["a"], defaults),
-    { a: { background: "#222222", ink: "#dddddd" } },
-  );
-  // Unknown keys are dropped and a bad channel falls back on its own.
-  assert.deepEqual(
-    normalizeColors({ b: { background: "#222222" }, a: { background: "nope" } }, ["a"], defaults),
-    { a: { background: "#111111", ink: "#eeeeee" } },
-  );
-  assert.deepEqual(normalizeColors(null, ["a"], defaults), {});
 });
 
 test("the opened case sits on a blurred copy of its own artwork, never a crop", async () => {
