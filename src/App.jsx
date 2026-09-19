@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { Brand } from "./Brand";
 import { CubeDisplay } from "./CubeDisplay";
+import { HomeAgent } from "./HomeAgent";
 import { LibraryHub } from "./LibraryHub";
 import { getFlatLayout } from "./cube-geometry";
 import { useStageSize } from "./DesignStage";
@@ -398,6 +399,12 @@ export function App({
           )}
         </section>
       </div>
+      {/* The resident agent lives on the home tab: mounted through the outgoing
+          half of a push so it fades with the page instead of vanishing at the
+          tab flip, and hidden whenever a case detail covers the screen. */}
+      {(tab === "home" || (pushing && pushFrom === "home")) && !detailOpen && (
+        <HomeAgent leaving={tab !== "home"} />
+      )}
       {modal === "about" && (
         <Modal
           title="Learn. Create. Achieve."

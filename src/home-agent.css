@@ -1,0 +1,364 @@
+/* The homepage's resident agent 「小Q」: a small white-bodied robot in the
+ * brand palette, parked bottom-left, with a chat panel styled like the site's
+ * museum mounts. Everything is CSS — no image assets. */
+
+.home-agent {
+  position: fixed;
+  left: clamp(16px, 2.6vw, 42px);
+  bottom: clamp(14px, 3.4vh, 34px);
+  z-index: 30;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+.home-agent.is-leaving {
+  opacity: 0;
+  transform: translateY(14px) scale(0.92);
+  pointer-events: none;
+}
+
+/* ── The doll ────────────────────────────────────────────────────────────── */
+
+.home-agent-figure {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.agent-doll {
+  position: relative;
+  display: block;
+  width: 86px;
+  height: 104px;
+  animation: agent-bob 3.4s ease-in-out infinite;
+}
+@keyframes agent-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+.agent-shadow {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -4px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(76, 26, 56, 0.32);
+  filter: blur(5px);
+}
+.agent-body {
+  position: absolute;
+  inset: 18px 8px 10px;
+  border-radius: 26px;
+  background: linear-gradient(170deg, #ffffff 0%, #fffdfb 62%, #fdeef5 100%);
+  box-shadow:
+    0 10px 24px rgba(76, 26, 56, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+    inset 0 -6px 12px rgba(245, 104, 163, 0.14);
+}
+.agent-visor {
+  position: absolute;
+  inset: 12px 12px auto;
+  height: 38px;
+  border-radius: 16px;
+  background: linear-gradient(165deg, #241f31 0%, #17150f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  overflow: hidden;
+}
+.agent-eye {
+  width: 9px;
+  height: 13px;
+  border-radius: 5px;
+  background: #ff9cc6;
+  box-shadow: 0 0 10px rgba(255, 156, 198, 0.95);
+  animation: agent-blink 4.6s ease-in-out infinite;
+}
+@keyframes agent-blink {
+  0%, 91%, 100% { transform: scaleY(1); }
+  94% { transform: scaleY(0.12); }
+  97% { transform: scaleY(1); }
+}
+.agent-arm {
+  position: absolute;
+  top: 46%;
+  width: 12px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffe3f0, #fbc9de);
+  box-shadow: inset 0 0 0 1px rgba(245, 104, 163, 0.25);
+}
+.agent-arm.is-left { left: -9px; transform: rotate(9deg); }
+.agent-arm.is-right { right: -9px; transform: rotate(-9deg); }
+.agent-antenna {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 15px;
+  background: #e7a9c6;
+}
+.agent-antenna i {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffd7ea, #f568a3 70%);
+  box-shadow: 0 0 0 3px rgba(245, 104, 163, 0.22), 0 0 12px rgba(245, 104, 163, 0.85);
+  animation: agent-glow 2.6s ease-in-out infinite;
+}
+@keyframes agent-glow {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(245, 104, 163, 0.2), 0 0 10px rgba(245, 104, 163, 0.7); }
+  50% { box-shadow: 0 0 0 5px rgba(245, 104, 163, 0.3), 0 0 18px rgba(245, 104, 163, 1); }
+}
+.home-agent-figure:hover .agent-doll {
+  animation-play-state: running;
+  transform: scale(1.06) rotate(-2deg);
+}
+.home-agent-figure:hover .agent-doll,
+.home-agent-figure:focus-visible .agent-doll {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.home-agent-figure:focus-visible {
+  outline: 2px solid #d94f8c;
+  outline-offset: 4px;
+  border-radius: 18px;
+}
+
+/* ── Teaser bubble ───────────────────────────────────────────────────────── */
+
+.home-agent-teaser {
+  position: absolute;
+  left: 6px;
+  bottom: 116px;
+  width: max-content;
+  max-width: 220px;
+  padding: 9px 14px;
+  border-radius: 14px 14px 14px 4px;
+  background: #fffdfb;
+  color: #6b3550;
+  font-size: 12.5px;
+  font-weight: 700;
+  box-shadow: 0 10px 26px rgba(76, 26, 56, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  animation: agent-teaser-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes agent-teaser-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Chat panel ──────────────────────────────────────────────────────────── */
+
+.home-agent-panel {
+  position: absolute;
+  left: 0;
+  bottom: 118px;
+  width: min(344px, calc(100vw - 40px));
+  height: min(468px, calc(100dvh - 190px));
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  background: #fffdfb;
+  box-shadow:
+    0 30px 70px rgba(76, 26, 56, 0.34),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  transform-origin: 24px bottom;
+  animation: agent-panel-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
+}
+@keyframes agent-panel-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.home-agent-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px 11px 16px;
+  border-bottom: 1px solid #f6dbe9;
+  background: linear-gradient(180deg, #fff6fa, #fffdfb);
+}
+.home-agent-head-doll {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: linear-gradient(165deg, #241f31, #17150f);
+}
+.home-agent-head-doll .agent-visor {
+  position: static;
+  inset: auto;
+  height: auto;
+  background: transparent;
+  gap: 5px;
+}
+.home-agent-head-doll .agent-eye {
+  width: 5px;
+  height: 8px;
+  border-radius: 3px;
+}
+.home-agent-head-meta { display: grid; gap: 1px; flex: 1; }
+.home-agent-head-meta strong {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #332030;
+}
+.home-agent-head-meta span {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #c2407a;
+}
+.home-agent-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: #f9e3ee;
+  color: #b04a7d;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+.home-agent-close:hover { background: #f3cede; transform: scale(1.06); }
+
+.home-agent-log {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 14px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  background: linear-gradient(180deg, #fff6fa 0%, #fdeef5 100%);
+}
+.home-agent-log::-webkit-scrollbar { display: none; }
+
+.home-agent-msg {
+  max-width: 84%;
+  padding: 9px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.home-agent-msg.is-agent {
+  align-self: flex-start;
+  border-radius: 14px 14px 14px 4px;
+  background: #ffffff;
+  color: #4a2537;
+  box-shadow: 0 2px 8px rgba(76, 26, 56, 0.08), inset 0 0 0 1px #f6d7e6;
+}
+.home-agent-msg.is-user {
+  align-self: flex-end;
+  border-radius: 14px 14px 4px 14px;
+  background: linear-gradient(135deg, #ff7cb7, #f568a3);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(245, 104, 163, 0.35);
+}
+
+.home-agent-typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px 0;
+}
+.home-agent-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e58bb4;
+  animation: agent-typing 1.1s ease-in-out infinite;
+}
+.home-agent-typing i:nth-child(2) { animation-delay: 0.14s; }
+.home-agent-typing i:nth-child(3) { animation-delay: 0.28s; }
+@keyframes agent-typing {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.home-agent-quicks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 0 4px;
+}
+.home-agent-quicks button {
+  padding: 6px 11px;
+  border: 1px solid #f0bcd3;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #b04a7d;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.home-agent-quicks button:hover {
+  background: #f568a3;
+  border-color: #f568a3;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.home-agent-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid #f6dbe9;
+  background: #fffdfb;
+}
+.home-agent-composer input {
+  flex: 1;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid #f0bcd3;
+  border-radius: 999px;
+  outline: none;
+  background: #ffffff;
+  color: #332030;
+  font-size: 13px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.home-agent-composer input::placeholder { color: #c99bb4; }
+.home-agent-composer input:focus {
+  border-color: #f568a3;
+  box-shadow: 0 0 0 3px rgba(245, 104, 163, 0.22);
+}
+.home-agent-composer button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff7cb7, #f568a3);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(245, 104, 163, 0.4);
+  transition: filter 160ms ease, transform 160ms ease, opacity 160ms ease;
+}
+.home-agent-composer button:hover:enabled { filter: brightness(1.06); transform: translateY(-1px); }
+.home-agent-composer button:disabled { opacity: 0.45; cursor: default; }
+
+@media (max-width: 640px) {
+  .home-agent-panel {
+    width: calc(100vw - 32px);
+    left: 0;
+  }
+  .agent-doll { width: 72px; height: 90px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-doll, .agent-eye, .agent-antenna i, .home-agent-teaser,
+  .home-agent-panel, .home-agent-typing i { animation: none !important; }
+}

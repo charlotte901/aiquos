@@ -8,6 +8,7 @@ import "./responsive.css";
 import "./cases.css";
 import "./forum.css";
 import "./forum-board.css";
+import "./home-agent.css";
 import "./assessment.css";
 import "./assessment-flow.css";
 import "./choose.css";
