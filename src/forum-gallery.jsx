@@ -167,20 +167,9 @@ export function GalleryBoard({ board, onOpen, onCompose }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [safePage, pages]);
 
-  const subtitle = board.activeTopic
-    ? `${board.activeTopic} · 共有 ${board.topicCounts[board.activeTopic] ?? 0} 个案例与实践复盘`
-    : "点击任意悬浮案例，探索作品、核心提示词、模型参数与发布者复盘。";
-
   return (
     <div className="forum-gallery-board">
-      <ForumField
-        color={board.fieldColor}
-        word={board.topicWord}
-        eyebrow={board.activeTopic ? `TOPIC · ${board.activeTopic}` : "AIQUOS COMMUNITY"}
-        badge={board.activeTopic ? "分类展区" : "案例研讨社区"}
-        subtitle={subtitle}
-        tall
-      >
+      <ForumField color={board.fieldColor} word={board.topicWord} tall>
         {/* Floating side arrows for paging */}
         {pages > 1 && safePage > 0 && (
           <button

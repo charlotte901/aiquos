@@ -3,16 +3,13 @@ import { MemberAvatar } from "./forum-card";
 import { fieldInk } from "./forum-board";
 
 /** The board's ground: one solid colour with film-grain texture, edge to edge,
- * carrying the topic's display word and hero typography.
+ * carrying the topic's display word.
  *
  * It carries `data-forum-field` so the shell can tell when the field has
  * scrolled under the header and flip the nav's ink. */
 export function ForumField({
   color,
   word,
-  eyebrow,
-  subtitle,
-  badge = "智核社区",
   children,
   className = "",
   tall = false,
@@ -27,14 +24,6 @@ export function ForumField({
       data-ink={light ? "light" : "dark"}
       style={{ "--field-color": color, "--field-ink": ink }}
     >
-      <header className="forum-field-hero">
-        <div className="forum-field-kicker">
-          <span className="forum-kicker-dot" aria-hidden="true" />
-          <span className="forum-field-eyebrow">{eyebrow ?? "AIQUOS COMMUNITY"}</span>
-          <span className="forum-kicker-badge">{badge}</span>
-        </div>
-        {subtitle && <p className="forum-field-subtitle">{subtitle}</p>}
-      </header>
       {word && <SplitWord text={word} />}
       {children}
     </section>

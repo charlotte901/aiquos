@@ -957,14 +957,23 @@ body {
 .app[data-tab="cases"]:not([data-pushing="back"]) .site-header nav a:after {
   background: #ffffff;
 }
+/* The forum tab reads the nav exactly like the archive: white labels over the
+   board's colour field. Every forum ground (pink, blue, purple, green) is a
+   mid/dark tone that carries white ink, so the tab's default can just be white
+   — the same continuous look as the cases tab on both sides of a push. */
+.app[data-tab="forum"] .site-header nav {
+  height: 28px;
+  letter-spacing: 0.05em;
+}
 .app[data-tab="forum"] .site-header nav a {
-  color: #17150f;
+  color: #ffffff;
+  padding: 3px 0;
 }
 .app[data-tab="forum"] .site-header nav a:after {
-  background: #17150f;
+  background: #ffffff;
 }
 .app[data-tab="forum"] .site-header .brand-small canvas {
-  filter: brightness(0);
+  filter: brightness(1);
 }
 .app[data-tab="cases"] .home-hero-art,
 .app[data-tab="cases"] .cube-position,

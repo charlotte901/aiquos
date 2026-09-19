@@ -64,65 +64,8 @@
   z-index: 2;
 }
 
-/* ── Hero Header & Wordmark ──────────────────────────────────────────────── */
+/* ── Display Wordmark in background ──────────────────────────────────────── */
 
-.forum-field-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 8px;
-  margin: 0 auto;
-  max-width: 820px;
-}
-
-.forum-field-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: color-mix(in srgb, #ffffff 16%, transparent);
-  border: 1px solid color-mix(in srgb, #ffffff 24%, transparent);
-  backdrop-filter: blur(8px);
-}
-
-.forum-kicker-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 8px #ffffff;
-}
-
-.forum-field-eyebrow {
-  margin: 0;
-  color: #ffffff;
-  font-size: clamp(11px, calc(0.82 * var(--vw, 1vw)), 13px);
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.forum-kicker-badge {
-  padding: 1px 7px;
-  border-radius: 6px;
-  background: color-mix(in srgb, #ffffff 22%, transparent);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.forum-field-subtitle {
-  margin: 0;
-  color: color-mix(in srgb, #ffffff 86%, transparent);
-  font-size: clamp(12.5px, calc(0.95 * var(--vw, 1vw)), 14px);
-  font-weight: 500;
-  line-height: 1.6;
-  letter-spacing: 0.02em;
-}
-
-/* Display Wordmark in background */
 .forum-word {
   display: block;
   max-width: 100%;
@@ -141,8 +84,7 @@
   text-align: center;
   white-space: nowrap;
   pointer-events: none;
-  opacity: 0.28;
-  text-shadow: 0 4px 30px rgb(0 0 0 / 0.2);
+  color: #ffffff;
   margin: 2px 0 6px;
 }
 
