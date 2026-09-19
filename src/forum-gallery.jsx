@@ -13,7 +13,7 @@ import {
 import { MemberAvatar } from "./forum-card";
 import { ForumField, AuthorStamp, ForumEmpty } from "./forum-bits";
 
-const PER_PAGE = 6;
+const PER_PAGE = 9;
 
 /** A deterministic subtle tilt per post so it hangs organically on the salon wall. */
 function hangAngle(id) {

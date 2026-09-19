@@ -288,12 +288,12 @@ export function useReveal(deps = [], selector = "[data-reveal]") {
     const root = ref.current;
     if (!root) return;
 
-    const items = Array.from(root.querySelectorAll(selector));
-    if (!items.length) return;
+    const live = () => Array.from(root.querySelectorAll(selector));
+    if (!live().length) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced || typeof IntersectionObserver === "undefined") {
-      items.forEach((item) => item.removeAttribute("data-reveal"));
+      live().forEach((item) => item.removeAttribute("data-reveal"));
       return;
     }
 
@@ -313,22 +313,36 @@ export function useReveal(deps = [], selector = "[data-reveal]") {
       { rootMargin: "0px 0px -6% 0px", threshold: 0.04 },
     );
 
-    items.forEach((item) => observer.observe(item));
-
     // Failsafe, for the same reason the homepage's boot curtain has one: some
     // embedded webviews stop delivering frames while their pane is occluded, and
     // an IntersectionObserver is fed by frames — so in exactly those environments
     // the callback never arrives and the pieces sit at `opacity: 0` forever. The
     // observed path stays first (it is what gives the stagger as you scroll);
     // this only guarantees the content eventually appears.
-    const failsafe = setTimeout(() => {
-      items.forEach((item) => item.removeAttribute("data-reveal"));
-      observer.disconnect();
-    }, 2000);
+    let failsafe = null;
+    const arm = () => {
+      // Observing an already-observed node is a no-op, so this is safe to run
+      // over the whole wall each time; only unrevealed items carry the
+      // attribute by the time they get here.
+      live().forEach((item) => observer.observe(item));
+      clearTimeout(failsafe);
+      failsafe = setTimeout(() => {
+        live().forEach((item) => item.removeAttribute("data-reveal"));
+        observer.disconnect();
+      }, 2000);
+    };
+    arm();
+
+    // Paging swaps the wall's children without remounting the wall (and hot
+    // reloads can change the page size without changing this effect's deps),
+    // so the dep list alone misses the new nodes. Re-arm on child swaps.
+    const mutations = new MutationObserver(arm);
+    mutations.observe(root, { childList: true });
 
     return () => {
       clearTimeout(failsafe);
       observer.disconnect();
+      mutations.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

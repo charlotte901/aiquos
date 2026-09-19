@@ -28,8 +28,8 @@
   margin-left: calc(-1 * var(--tab-screen-inset-x, 0px));
   margin-right: calc(-1 * var(--tab-screen-inset-x, 0px));
   min-height: calc(100 * var(--dvh, 1dvh));
-  padding: clamp(74px, calc(8.5 * var(--vh, 1vh)), 96px) clamp(20px, calc(3 * var(--vw, 1vw)), 54px)
-    clamp(28px, calc(3.5 * var(--vh, 1vh)), 48px);
+  padding: clamp(54px, calc(6 * var(--vh, 1vh)), 72px) clamp(20px, calc(3 * var(--vw, 1vw)), 54px)
+    clamp(24px, calc(3 * var(--vh, 1vh)), 38px);
   overflow: hidden;
   color: #ffffff;
   background-color: var(--field-color, var(--forum-pink, #f568a3));
@@ -132,7 +132,7 @@
         calc(138 * var(--vw, 1vw) / var(--letters, 7)),
         calc(20 * var(--vh, 1vh)),
         210px
-      ) * 0.44
+      ) * 0.38
   );
   font-weight: 900;
   line-height: 0.82;
@@ -143,7 +143,7 @@
   pointer-events: none;
   opacity: 0.28;
   text-shadow: 0 4px 30px rgb(0 0 0 / 0.2);
-  margin: 4px 0 10px;
+  margin: 2px 0 6px;
 }
 
 .forum-word > span {
@@ -171,13 +171,13 @@
 
 .gallery-toolbar-wrap {
   width: 100%;
-  max-width: 1140px;
+  max-width: 1260px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin: 0 auto clamp(14px, calc(2 * var(--vh, 1vh)), 24px);
+  margin: 0 auto clamp(10px, calc(1.5 * var(--vh, 1vh)), 18px);
   padding: 10px 16px;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.18);
@@ -357,14 +357,15 @@
 
 /* ── The Floating Salon Wall ─────────────────────────────────────────────── */
 
+/* The wall hangs like a real salon wall: multi-column masonry flow keeps every
+   piece at its own aspect ratio while packing the columns tight — a uniform
+   grid left tall pink holes beside any portrait-ratio piece. */
 .forum-floating-wall {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
-  gap: clamp(20px, calc(2.2 * var(--vw, 1vw)), 34px) clamp(16px, calc(2 * var(--vw, 1vw)), 30px);
+  columns: 3;
+  column-gap: clamp(14px, calc(1.4 * var(--vw, 1vw)), 20px);
   width: 100%;
-  max-width: 1140px;
-  padding: clamp(6px, calc(1 * var(--vh, 1vh)), 14px) 0;
+  max-width: 1260px;
+  padding: clamp(4px, calc(0.8 * var(--vh, 1vh)), 10px) 0;
 }
 
 .forum-floating-wall:has(.forum-piece:hover) .forum-piece {
@@ -375,8 +376,10 @@
 .forum-piece {
   position: relative;
   display: grid;
-  gap: 12px;
+  gap: 9px;
   justify-items: center;
+  break-inside: avoid;
+  margin-bottom: clamp(18px, calc(2 * var(--vh, 1vh)), 26px);
   perspective: 1200px;
   transform-style: preserve-3d;
   transform: rotate(var(--piece-angle, 0deg));
@@ -416,7 +419,7 @@
   position: relative;
   display: block;
   width: 100%;
-  padding: clamp(10px, calc(0.95 * var(--vw, 1vw)), 14px);
+  padding: clamp(9px, calc(0.8 * var(--vw, 1vw)), 12px);
   border: 0;
   border-radius: 16px;
   background: #fffdfb;
@@ -669,7 +672,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin: clamp(16px, calc(2.5 * var(--vh, 1vh)), 30px) auto 0;
+  margin: clamp(12px, calc(1.8 * var(--vh, 1vh)), 24px) auto 0;
   padding: 5px 12px;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.20);
@@ -731,10 +734,17 @@
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
+@media (max-width: 1180px) {
+  .forum-floating-wall {
+    columns: 2;
+    max-width: 720px;
+  }
+}
+
 @media (max-width: 900px) {
   .forum-floating-wall {
-    grid-template-columns: 1fr;
-    max-width: 500px;
+    columns: 1;
+    max-width: 540px;
   }
   .gallery-toolbar-wrap {
     flex-direction: column;
