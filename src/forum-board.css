@@ -139,30 +139,27 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid color-mix(in srgb, #ffffff 30%, transparent);
+  border: 1px solid #ffffff;
   border-radius: 999px;
-  background: color-mix(in srgb, #ffffff 16%, transparent);
-  color: #ffffff;
+  background: #ffffff;
+  color: #17150f;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 0.06);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
   transition: all 180ms ease;
 }
 
 .gallery-channel-pill:hover {
   transform: translateY(-1px);
-  background: color-mix(in srgb, #ffffff 24%, transparent);
-  border-color: color-mix(in srgb, #ffffff 48%, transparent);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.14);
 }
 
 .gallery-channel-pill.is-active {
-  background: #ffffff;
-  color: #17150f;
-  border-color: #ffffff;
   font-weight: 800;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+  box-shadow:
+    0 0 0 2px var(--channel-color, #f568a3),
+    0 4px 16px rgb(0 0 0 / 0.14);
 }
 
 .gallery-channel-pill .pill-dot {
@@ -244,7 +241,7 @@
   transform: scaleX(1);
 }
 
-/* Search: a round glass button at rest; it expands into a pill while focused
+/* Search: a round white button at rest; it expands into a pill while focused
    or while it carries a query (CSS-only — `:placeholder-shown` reads the
    input's value), so the resting row stays just labels and dots. */
 .gallery-search-box {
@@ -256,13 +253,17 @@
   height: 36px;
   padding: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, #ffffff 16%, transparent);
-  border: 1px solid color-mix(in srgb, #ffffff 30%, transparent);
-  color: #ffffff;
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  color: #17150f;
   cursor: pointer;
-  backdrop-filter: blur(12px);
   overflow: hidden;
-  transition: width 280ms cubic-bezier(0.16, 1, 0.3, 1), background 200ms ease;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+  transition: width 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
+}
+
+.gallery-search-box:hover {
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.14);
 }
 
 .gallery-search-box:focus-within,
@@ -271,9 +272,7 @@
   gap: 8px;
   padding: 0 12px;
   cursor: text;
-  background: color-mix(in srgb, #ffffff 24%, transparent);
-  border-color: rgb(255 255 255 / 0.55);
-  box-shadow: 0 2px 12px rgb(0 0 0 / 0.08);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.14);
 }
 
 .gallery-search-box > svg {
@@ -286,7 +285,7 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #ffffff;
+  color: #17150f;
   font: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -300,6 +299,10 @@
 }
 
 .gallery-search-box input::placeholder {
+  color: rgb(23 21 15 / 0.42);
+}
+
+.gallery-search-box input::placeholder {
   color: color-mix(in srgb, #ffffff 58%, transparent);
 }
 
@@ -309,7 +312,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: #17150f;
   cursor: pointer;
 }
 
