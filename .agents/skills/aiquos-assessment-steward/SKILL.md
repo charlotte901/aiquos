@@ -74,6 +74,19 @@ a row (falls back only if a level offers no alternative), and exposure
 counters (`aiquos.adaptive-exposure.v1`) demote over-served questions across
 runs. The hidden state still only chooses questions; it never renders a score.
 
+## Admin console (`/admin.html`, `src/admin/`)
+
+Bank edits are real and always publish: `PUT /api/admin/bank` validates with the
+vendored validator and bumps the version (no no-bump save exists — do not add
+one; the bump IS the version contract). Serving reads through
+`worker/bank-store.js`; the vite middleware persists overrides to gitignored
+`worker/bank-overrides.json`. The student app follows publishes via the
+`bankVersion` in serving responses (cached at `aiquos.bank-version.v1`);
+drafts validate against that cached version, history keeps old versions
+visible. The roster merges a deterministic demo cohort with the machine's real
+runs (`src/admin/cohort.js`) — replace that module's loaders with API calls
+when a real backend lands.
+
 ## QA gates before calling an assessment change done
 
 ```sh

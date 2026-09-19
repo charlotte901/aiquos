@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f568a3" />
+    <meta name="robots" content="noindex" />
+    <title>AIQUOS 管理端</title>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Same first-paint splash family as the student app, ink variant. -->
+      <style>
+        #root:empty::after {
+          content: "";
+          position: fixed;
+          inset: 0;
+          display: block;
+          background: #171d2b;
+        }
+        #root:empty::before {
+          content: "";
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          width: 46px;
+          height: 46px;
+          margin: -23px 0 0 -23px;
+          border: 3px solid rgb(255 255 255 / 0.25);
+          border-top-color: #f568a3;
+          border-radius: 25%;
+          animation: aiquos-admin-boot 900ms linear infinite;
+        }
+        @keyframes aiquos-admin-boot {
+          to { transform: rotate(360deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          #root:empty::before { animation: none; }
+        }
+      </style>
+    </div>
+    <script type="module" src="/src/admin/main.jsx"></script>
+  </body>
+</html>

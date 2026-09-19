@@ -2,6 +2,7 @@ import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat 
 import { OBJECTIVE_QUESTIONS_PATH, handleObjectiveQuestions } from "./objective-quiz.js";
 import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./practical-tasks.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./comprehensive-quiz.js";
+import { ADMIN_BANK_PATH, handleAdminBank } from "./admin.js";
 
 export default {
   async fetch(request, env) {
@@ -16,6 +17,9 @@ export default {
     }
     if (new URL(request.url).pathname === COMPREHENSIVE_QUESTION_PATH) {
       return handleComprehensiveQuestion(request);
+    }
+    if (new URL(request.url).pathname === ADMIN_BANK_PATH) {
+      return handleAdminBank(request);
     }
     if (new URL(request.url).pathname === ARK_IMAGE_PATH) {
       return handleArkImage(request, env.ARK_API_KEY);

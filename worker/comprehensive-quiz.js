@@ -6,7 +6,6 @@
 // opaque routing session between requests and reports the outcome of the
 // question it just answered. Scoring stays client-side per the vendored
 // package's integration guide (pure ESM in browser code).
-import bank from "../src/comprehensive-questions.json" with { type: "json" };
 import { validateQuestionBank } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 import {
   applyAdaptiveOutcome,
@@ -16,14 +15,26 @@ import {
   selectAdaptiveQuestion,
   startAdaptiveStage,
 } from "../src/comprehensive-adaptive.js";
+import { getBankState } from "./bank-store.js";
 
 export const COMPREHENSIVE_QUESTION_PATH = "/api/comprehensive-question";
 
-// Fail fast at startup: the run contract depends on a valid bank.
-validateQuestionBank(bank.questions);
+// The bank is read through the override-aware store so admin edits reach
+// serving immediately; derived maps are cached per bankVersion.
+let bankCache = null;
 
-const LEVEL_IDS = new Set(bank.questions.map((question) => question.levelId));
-const byId = new Map(bank.questions.map((question) => [question.id, question]));
+function currentBank() {
+  const state = getBankState();
+  if (!bankCache || bankCache.bankVersion !== state.bankVersion) {
+    validateQuestionBank(state.questions);
+    bankCache = {
+      ...state,
+      byId: new Map(state.questions.map((question) => [question.id, question])),
+      levelIds: new Set(state.questions.map((question) => question.levelId)),
+    };
+  }
+  return bankCache;
+}
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -59,17 +70,20 @@ function normalizeSession(raw) {
 // wire.
 export function applyOutcomeToSession(session, { outcome, credit = null, questionId }) {
   let next = applyAdaptiveOutcome(session, outcome);
-  if (typeof credit === "number" && questionId && byId.has(questionId)) {
-    const question = byId.get(questionId);
-    next = {
-      ...next,
-      evidence: [...next.evidence, { credit, difficulty: question.difficulty, dimKeys: [...question.dimKeys] }],
-    };
+  if (typeof credit === "number" && questionId) {
+    const question = currentBank().byId.get(questionId);
+    if (question) {
+      next = {
+        ...next,
+        evidence: [...next.evidence, { credit, difficulty: question.difficulty, dimKeys: [...question.dimKeys] }],
+      };
+    }
   }
   return next;
 }
 
 export function selectComprehensive({ levelId, stage, session, exposure, rng = Math.random }) {
+  const bank = currentBank();
   const staged = startAdaptiveStage(session, stage);
   return selectAdaptiveQuestion({ questions: bank.questions, levelId, session: staged, rng, exposure });
 }
@@ -95,7 +109,8 @@ export async function handleComprehensiveQuestion(request) {
     return json({ error: "invalid json body" }, 400);
   }
   const levelId = payload?.levelId;
-  if (typeof levelId !== "string" || !LEVEL_IDS.has(levelId)) {
+  const bank = currentBank();
+  if (typeof levelId !== "string" || !bank.levelIds.has(levelId)) {
     return json({ error: "unknown levelId" }, 400);
   }
   const stage = Math.max(1, Math.min(5, Number(payload.stage ?? 1) || 1));
@@ -112,6 +127,7 @@ export async function handleComprehensiveQuestion(request) {
     question: picked.question,
     session: picked.session,
     exposure: picked.exposure ?? exposure,
+    bankVersion: bank.bankVersion,
     ...(payload.debug ? { debug: debugSnapshot(picked.session) } : {}),
   });
 }

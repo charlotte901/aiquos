@@ -10,3 +10,4 @@ dist/
 
 # Editor autosave leftovers (copies of CaseArchive.jsx) — not source.
 src/XX*
+worker/bank-overrides.json
