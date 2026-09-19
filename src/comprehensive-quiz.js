@@ -1,5 +1,3 @@
-import questionBank from "./comprehensive-questions.json";
-
 export const COMPREHENSIVE_LEVELS = [
   {
     id: "academy",
@@ -94,7 +92,6 @@ export const COMPREHENSIVE_LEVELS = [
 ];
 
 export const COMPREHENSIVE_QUESTION_COUNT = 5;
-export const COMPREHENSIVE_QUESTIONS = questionBank.questions;
 
 const REACTIONS = {
   "林教授": {

@@ -55,9 +55,11 @@ const DRAFT_KEY = "aiquos.comprehensive-attempt.v1";
 const HISTORY_KEY = "aiquos.comprehensive-history.v1";
 const HISTORY_LIMIT = 12;
 
-export function createAttempt({ questions, totalQuestions, assessmentId = "comprehensive" }) {
-  // Validate the bank once before the session starts (integration guide).
-  validateQuestionBank(questions);
+export function createAttempt({ questions = null, totalQuestions, assessmentId = "comprehensive" }) {
+  // Validate the bank once before the session starts (integration guide) when
+  // one is supplied client-side; the worker validates its copy at startup and
+  // every served question is validated by createResponseEvidence regardless.
+  if (questions) validateQuestionBank(questions);
   return {
     assessmentId,
     startedAt: new Date().toISOString(),

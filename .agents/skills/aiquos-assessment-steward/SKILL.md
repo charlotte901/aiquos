@@ -53,24 +53,34 @@ then the workflows.
    node --test tests/comprehensive-adaptive.test.mjs tests/scoring-integration.test.mjs
    ```
 
-## Adaptive routing (`src/comprehensive-adaptive.js`)
+## Adaptive routing (backend-authoritative)
 
-v2 behavior: with no credited evidence selection is exactly the original
-ordering (difficulty distance → under-covered dimensions → type change →
-order). Once credits flow (controller `record(outcome, credit)` — credit from
-`answerCredit()` in `assessment-attempt.js`), a 1-parameter logistic ability
-estimate blends with the position walk (`nextTargetDifficulty`), dimension
-information weights favor the least-measured dimensions, a hard guard prevents
-three same-type questions in a row (falls back only if a level offers no
-alternative), and persistent per-question exposure counters
-(`aiquos.adaptive-exposure.v1`) demote over-served questions across runs.
-The hidden state still only chooses questions; it never renders a score.
+Selection is served by `POST /api/comprehensive-question` (worker module
+`worker/comprehensive-quiz.js`). The worker imports the PURE engine
+(`src/comprehensive-adaptive.js`) and the bank (`src/comprehensive-questions.json`)
+directly — one algorithm, one bank, shared with the test suite; never fork
+either into a worker-local copy. The client threads an opaque server `session`
+between requests (plus the answered question's outcome and the persisted
+exposure counters) and persists it in the attempt draft's `routing` field so
+reloads resume without re-serving used questions.
+
+v2 behavior (unchanged, now executed server-side): with no credited evidence
+selection is exactly the original ordering (difficulty distance →
+under-covered dimensions → type change → order). Once credits flow, a
+1-parameter logistic ability estimate blends with the position walk
+(`nextTargetDifficulty`), dimension information weights favor the
+least-measured dimensions, a hard guard prevents three same-type questions in
+a row (falls back only if a level offers no alternative), and exposure
+counters (`aiquos.adaptive-exposure.v1`) demote over-served questions across
+runs. The hidden state still only chooses questions; it never renders a score.
 
 ## QA gates before calling an assessment change done
 
 ```sh
 node --test tests/*.test.mjs vendor/aiquos-six-dimension-scoring/tests/*.test.mjs
 npx vite build
+curl -s -X POST http://127.0.0.1:4286/api/comprehensive-question \
+  -H "content-type: application/json" -d '{"levelId":"academy","stage":1}'
 ```
 
 Then one browser pass of the full flow (dev server on 127.0.0.1:4286):

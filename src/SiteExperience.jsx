@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { App } from "./App";
@@ -13,11 +13,10 @@ import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
 import { siteViewForHash } from "./routes";
-import { createAdaptiveController } from "./comprehensive-adaptive";
+import { loadExposureStore, saveExposureStore } from "./comprehensive-adaptive";
 import {
   COMPREHENSIVE_LEVELS,
   COMPREHENSIVE_QUESTION_COUNT,
-  COMPREHENSIVE_QUESTIONS,
 } from "./comprehensive-quiz";
 import {
   answerCredit,
@@ -61,6 +60,17 @@ const isAdaptiveDebugOn = () => {
   } catch {
     return false;
   }
+};
+
+// Reconstruct the routing signal of the latest answered question from draft
+// evidence, so a reload between answering and the next request loses nothing.
+const outcomeFromEvidence = (item) => {
+  if (!item || typeof item.credit !== "number") return null;
+  return {
+    outcome: item.credit >= 1 ? "correct" : item.credit <= 0 ? "wrong" : "partial",
+    credit: item.credit,
+    questionId: item.questionId,
+  };
 };
 
 const PANEL = {
@@ -144,15 +154,27 @@ export function SiteExperience() {
     }
     return base;
   });
-  const adaptiveController = useRef(createAdaptiveController(COMPREHENSIVE_QUESTIONS));
   // One comprehensive Attempt at a time: evidence from every submitted answer
   // accumulates here and is rescored from the complete set (integration guide).
   // An unfinished draft survives reloads; a completed attempt becomes an
-  // immutable history snapshot exactly once.
-  const [attemptState, setAttemptState] = useState(() => {
+  // immutable history snapshot exactly once. The draft also carries the
+  // server's routing session so a resumed run keeps its adaptive position.
+  const bootstrap = useRef(null);
+  if (!bootstrap.current) {
     const draft = loadAttemptDraft();
-    return draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null };
-  });
+    bootstrap.current = {
+      state: draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null },
+      routing: draft?.routing ?? null,
+      pendingOutcome: draft?.evidence?.length
+        ? outcomeFromEvidence(draft.evidence[draft.evidence.length - 1])
+        : null,
+    };
+  }
+  const [attemptState, setAttemptState] = useState(() => bootstrap.current.state);
+  // Server-authoritative routing: this client only carries the opaque session
+  // between requests. Selection lives in worker/comprehensive-quiz.js.
+  const routingRef = useRef(bootstrap.current.routing);
+  const pendingOutcomeRef = useRef(bootstrap.current.pendingOutcome);
   // Routing telemetry for the optional aiquos.debug overlay; off by default.
   const [adaptiveTelemetry, setAdaptiveTelemetry] = useState(null);
   const [moving, setMoving] = useState(false);
@@ -411,37 +433,69 @@ export function SiteExperience() {
 
   function startAssessment(id) {
     if (id === "comprehensive") {
-      adaptiveController.current.reset();
-      // Card click always starts a clean run: fresh routing state, fresh
+      // Card click always starts a clean run: fresh routing session, fresh
       // attempt, draft cleared so no earlier unfinished run can bleed in.
       const attempt = createAttempt({
-        questions: COMPREHENSIVE_QUESTIONS,
         totalQuestions: COMPREHENSIVE_LEVELS.length * COMPREHENSIVE_QUESTION_COUNT,
       });
       clearAttemptDraft();
+      routingRef.current = null;
+      pendingOutcomeRef.current = null;
+      setAdaptiveTelemetry(null);
       setAttemptState({ attempt, result: null });
     }
     openAssessmentMap(id);
   }
 
   function leaveAssessmentMap() {
-    if (assessmentRoute.id === "comprehensive") adaptiveController.current.reset();
+    // Leaving keeps the draft (attempt + routing session) intact; the map's
+    // resume banner is the way back in, and a new card click starts clean.
     go("assessments");
   }
 
-  function selectComprehensiveQuestion(levelId, stage) {
-    return adaptiveController.current.select(levelId, stage);
-  }
+  // Ask the backend for the next adaptive question. The routing session is
+  // opaque to this client: send it back untouched, plus the outcome of the
+  // question just answered (if any) and the persisted exposure counters.
+  const fetchComprehensiveQuestion = useCallback(async (levelId, stage) => {
+    const outcome = pendingOutcomeRef.current;
+    pendingOutcomeRef.current = null;
+    try {
+      const response = await fetch("/api/comprehensive-question", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          levelId,
+          stage,
+          session: routingRef.current,
+          exposure: loadExposureStore(),
+          ...(outcome ? { outcome } : {}),
+          debug: isAdaptiveDebugOn(),
+        }),
+      });
+      if (!response.ok) throw new Error(`出题服务返回 ${response.status}`);
+      const data = await response.json();
+      if (!data.question) throw new Error("出题服务未返回题目");
+      routingRef.current = data.session ?? null;
+      if (data.exposure && typeof data.exposure === "object") saveExposureStore(data.exposure);
+      if (isAdaptiveDebugOn() && data.debug) setAdaptiveTelemetry(data.debug);
+      return data;
+    } catch (error) {
+      // Put the outcome back so a retry does not lose the routing signal.
+      if (outcome && !pendingOutcomeRef.current) pendingOutcomeRef.current = outcome;
+      throw error;
+    }
+  }, []);
 
   function submitComprehensiveAnswer(question, selectedKeys, outcome) {
-    // Credit feeds the adaptive router's ability estimate; computed outside
-    // the state updater so StrictMode double-invocation cannot double-record.
-    adaptiveController.current.record(outcome, answerCredit(question, selectedKeys));
-    if (isAdaptiveDebugOn()) setAdaptiveTelemetry(adaptiveController.current.debugInfo());
+    // Evidence/scoring stays client-side (the vendored package's integration
+    // guide explicitly endorses browser scoring); the same credit rides with
+    // the next question request to steer server-side routing.
+    const credit = answerCredit(question, selectedKeys);
+    pendingOutcomeRef.current = { outcome, credit, questionId: question.id };
     setAttemptState((current) => {
       if (!current.attempt) return current;
       const next = recordAnswer(current.attempt, question, selectedKeys);
-      saveAttemptDraft(next.attempt);
+      saveAttemptDraft({ ...next.attempt, routing: routingRef.current });
       return next;
     });
   }
@@ -455,11 +509,11 @@ export function SiteExperience() {
 
   function restartComprehensiveAttempt() {
     const attempt = createAttempt({
-      questions: COMPREHENSIVE_QUESTIONS,
       totalQuestions: COMPREHENSIVE_LEVELS.length * COMPREHENSIVE_QUESTION_COUNT,
     });
     clearAttemptDraft();
-    adaptiveController.current.reset();
+    routingRef.current = null;
+    pendingOutcomeRef.current = null;
     setAdaptiveTelemetry(null);
     setAttemptState({ attempt, result: null });
   }
@@ -648,7 +702,7 @@ export function SiteExperience() {
               onBack={() => openAssessmentMap(assessmentRoute.id)}
               onPick={openAssessmentStage}
               onComplete={completeAssessmentStage}
-              onSelectComprehensiveQuestion={selectComprehensiveQuestion}
+              onFetchComprehensiveQuestion={fetchComprehensiveQuestion}
               onAnswerComprehensive={submitComprehensiveAnswer}
               comprehensiveResult={attemptState.result}
               adaptiveTelemetry={adaptiveTelemetry}

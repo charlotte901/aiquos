@@ -636,13 +636,16 @@ function LiveDimensionStrip({ result }) {
 function ComprehensiveTask({
   stage,
   onComplete,
-  onSelectComprehensiveQuestion,
+  onFetchComprehensiveQuestion,
   onAnswerComprehensive,
   comprehensiveResult,
   adaptiveTelemetry = null,
 }) {
   const level = getComprehensiveLevel(stage);
   const [question, setQuestion] = useState(null);
+  const [questionStatus, setQuestionStatus] = useState("loading");
+  const [reloadToken, setReloadToken] = useState(0);
+  const [advancing, setAdvancing] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState([]);
   const [result, setResult] = useState(null);
@@ -651,7 +654,6 @@ function ComprehensiveTask({
   const [phase, setPhase] = useState("opening");
   const [lineIndex, setLineIndex] = useState(0);
   const taskRef = useRef(null);
-  const questionRequested = useRef(false);
 
   const isLastQuestion = questionIndex === COMPREHENSIVE_QUESTION_COUNT - 1;
   const storyLines = phase === "ending"
@@ -689,28 +691,67 @@ function ComprehensiveTask({
     onAnswerComprehensive?.(question, selectedKeys, outcome);
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (isLastQuestion) {
       setPhase("ending");
       setLineIndex(0);
       return;
     }
-    setQuestion(onSelectComprehensiveQuestion(level.id, stage));
-    setQuestionIndex((current) => current + 1);
-    setSelected([]);
-    setResult(null);
-    setReaction("");
+    if (advancing) return;
+    setAdvancing(true);
+    setQuestionStatus("loading");
+    try {
+      const data = await onFetchComprehensiveQuestion(level.id, stage);
+      setQuestion(data.question);
+      setQuestionIndex((current) => current + 1);
+      setSelected([]);
+      setResult(null);
+      setReaction("");
+      setQuestionStatus("ready");
+    } catch {
+      setQuestionStatus("error");
+    } finally {
+      setAdvancing(false);
+    }
   };
 
   const speakerName = (who) => (who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你");
   const isMulti = question?.type === "multi";
   const canSubmit = isMulti && selected.length > 0 && !result;
 
+  const inflightQuestion = useRef(null);
   useEffect(() => {
-    if (questionRequested.current) return;
-    questionRequested.current = true;
-    setQuestion(onSelectComprehensiveQuestion(level.id, stage));
-  }, [level.id, onSelectComprehensiveQuestion, stage]);
+    // One request per stage entry (or manual retry): the backend owns routing,
+    // so a duplicate call would consume a question from the run's budget. The
+    // in-flight promise is shared across StrictMode's setup→cleanup→setup
+    // cycle: the second setup reuses the first one's request instead of
+    // issuing another, and applies it under its own active flag.
+    const key = `${level.id}:${stage}:${reloadToken}`;
+    let active = true;
+    setQuestionStatus("loading");
+    if (!inflightQuestion.current || inflightQuestion.current.key !== key) {
+      inflightQuestion.current = {
+        key,
+        promise: onFetchComprehensiveQuestion(level.id, stage).catch((error) => {
+          // A failed request must not be reused by the retry-less re-run.
+          if (inflightQuestion.current?.key === key) inflightQuestion.current = null;
+          throw error;
+        }),
+      };
+    }
+    inflightQuestion.current.promise
+      .then((data) => {
+        if (!active) return;
+        setQuestion(data.question);
+        setQuestionStatus("ready");
+      })
+      .catch(() => {
+        if (active) setQuestionStatus("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [level.id, stage, reloadToken, onFetchComprehensiveQuestion]);
 
   useEffect(() => {
     if (!result) return;
@@ -807,11 +848,23 @@ function ComprehensiveTask({
         </div>
       )}
 
-      {phase === "quiz" && !question && (
-        <p className="agent-error" role="alert">当前关卡暂无可用题目，请返回关卡地图后重试。</p>
+      {phase === "quiz" && questionStatus !== "ready" && (
+        <div className="agent-empty quiz-loading">
+          {questionStatus === "error" ? (
+            <>
+              <span>题目加载失败。</span>
+              <button className="source-toggle" type="button" onClick={() => setReloadToken((current) => current + 1)}>重新加载</button>
+            </>
+          ) : (
+            <>
+              <CircleNotch className="reply-spinner" weight="bold" />
+              <span>正在准备题目…</span>
+            </>
+          )}
+        </div>
       )}
 
-      {phase === "quiz" && question && (
+      {phase === "quiz" && questionStatus === "ready" && question && (
         <>
           <LiveDimensionStrip result={comprehensiveResult} />
           {adaptiveTelemetry && (
@@ -871,7 +924,7 @@ function ComprehensiveTask({
           <div className="comprehensive-actions">
             {isMulti && !result
               ? <TaskAction disabled={!canSubmit} onClick={() => answer(selected)} label={selected.length ? `提交答案（已选 ${selected.length} 项）` : "提交答案"} variant="comprehensive" />
-              : result ? <TaskAction disabled={false} onClick={nextQuestion} label={isLastQuestion ? "完成本关" : "继续"} variant="comprehensive" /> : null}
+              : result ? <TaskAction disabled={advancing} onClick={nextQuestion} label={advancing ? "正在准备下一题…" : isLastQuestion ? "完成本关" : "继续"} variant="comprehensive" /> : null}
           </div>
         </>
       )}
@@ -886,7 +939,7 @@ export function AssessmentTask({
   onBack,
   onPick,
   onComplete,
-  onSelectComprehensiveQuestion,
+  onFetchComprehensiveQuestion,
   onAnswerComprehensive,
   comprehensiveResult,
   adaptiveTelemetry = null,
@@ -909,7 +962,7 @@ export function AssessmentTask({
         ? <ComprehensiveTask
           key={`${taskKey}-comprehensive`}
           {...props}
-          onSelectComprehensiveQuestion={onSelectComprehensiveQuestion}
+          onFetchComprehensiveQuestion={onFetchComprehensiveQuestion}
           onAnswerComprehensive={onAnswerComprehensive}
           comprehensiveResult={comprehensiveResult}
           adaptiveTelemetry={adaptiveTelemetry}

@@ -38,6 +38,17 @@ export function clearExposureStore() {
   }
 }
 
+// Store access for the backend-authoritative API client: the counters still
+// live in localStorage (workers are stateless here), sent with each request
+// and replaced by the server's updated copy on success.
+export function loadExposureStore() {
+  return loadExposure();
+}
+
+export function saveExposureStore(counts) {
+  saveExposure(counts);
+}
+
 export function createAdaptiveSession() {
   return {
     position: 1,
