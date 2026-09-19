@@ -282,10 +282,44 @@ body {
   background: var(--pink);
 }
 /* The design canvas itself gets the brand pink so even a sub-pixel gap
-   between two sliding layers shows the continuous surface, never white. */
+   between two sliding layers shows the continuous surface, never white.
+   The outer stage's 520ms colour transition (used by Cases for its per-case
+   backdrop) is suppressed during pushes so a case colour never bleeds
+   through as a "white line" while the slide is in flight. */
 .app[data-tab="cases"] .design-canvas,
 .app[data-tab="forum"] .design-canvas {
   background: var(--pink);
+}
+.app[data-pushing] .design-stage {
+  transition: none;
+  background: var(--pink);
+}
+.app[data-pushing] .design-canvas {
+  background: var(--pink);
+}
+
+/* GPU compositing + interaction lock for smooth tab pushes.
+   `will-change: transform` promotes each sliding layer to its own compositing
+   layer so the transform is GPU-driven instead of triggering repaints.
+   `pointer-events: none` stops hover/scroll from firing into a layer that is
+   already leaving, which was a major source of jank on Forum → Home (the
+   forum's IntersectionObserver and 3D card hover handlers kept firing into a
+   page that was sliding away). */
+.app[data-pushing] .home-stage,
+.app[data-pushing] .home-tab-screen {
+  will-change: transform;
+  pointer-events: none;
+  backface-visibility: hidden;
+}
+
+/* Suppress the Forum's expensive film-grain overlay and 3D card perspective
+   while the page is sliding out — these are the heaviest compositing costs
+   and the reader can't perceive them during a 760ms slide anyway. */
+.app[data-pushing] .forum-field::after {
+  opacity: 0;
+}
+.app[data-pushing] .forum-piece-frame {
+  transform: none !important;
 }
 /* The board supplies its own top padding because its colour field has to run
    under the header and start at the very top of the page: keeping the shared
