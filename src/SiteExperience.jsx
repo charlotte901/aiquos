@@ -11,6 +11,16 @@ import { AwakeningReport } from "./AwakeningReport";
 import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
+
+/** The five login art directions under exploration, in switcher order.
+ *  Temporary — removed once a direction is chosen. */
+const LOGIN_VARIANTS = [
+  ["v1", "① 粉世界"],
+  ["v2", "② 立方体"],
+  ["v3", "③ 门票"],
+  ["v4", "④ 对开"],
+  ["v5", "⑤ 暗场"],
+];
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
 import { siteViewForHash } from "./routes";
 import { loadExposureStore, saveExposureStore } from "./comprehensive-adaptive";
@@ -204,6 +214,9 @@ export function SiteExperience() {
   // involved tab screens during a slide, never the unrelated third one.
   const [pushFrom, setPushFrom] = useState(null);
   const [pushTo, setPushTo] = useState(null);
+  // Login page design exploration: five switchable art directions, picked from
+  // the temporary on-page switcher. `data-login-variant` drives the CSS.
+  const [loginVariant, setLoginVariant] = useState("v1");
   const [cubeMounted, setCubeMounted] = useState(
     () => ["home", "login", "cases", "forum"].includes(route()),
   );
@@ -625,16 +638,51 @@ export function SiteExperience() {
         hidden={view !== "login"}
       >
         <ErrorBoundary>
-          <section className="login-screen" aria-label="登录">
+          <section className="login-screen" data-login-variant={loginVariant} aria-label="登录">
+            <div className="login-stage">
+              <div className="login-composition">
+                <div className="login-word" aria-hidden="true">PLAYGROUND</div>
+                <div className="login-cube" aria-hidden="true">
+                  <span className="login-cube-core">
+                    <i className="login-cube-face is-front">AI</i>
+                    <i className="login-cube-face is-top" />
+                    <i className="login-cube-face is-side" />
+                  </span>
+                  <span className="login-cube-shadow" />
+                </div>
+                <div className="login-poster" aria-hidden="true">
+                  <strong>AIQUOS</strong>
+                  <p>AI 时代，<br />你的实力到哪一步？</p>
+                  <span className="login-poster-stamp">EST. 2026</span>
+                  <span className="login-poster-stamp is-alt">PLAYGROUND</span>
+                </div>
+                <aside className="login-stub" aria-hidden="true">
+                  <span className="login-stub-brand">AIQUOS · ASSESSMENT</span>
+                  <strong className="login-stub-no">№ 2026-0919</strong>
+                  <span className="login-stub-barcode" />
+                  <span className="login-stub-stamp">ADMIT ONE</span>
+                </aside>
+                <div className="login-surface">
+                  <LoginForm onLogin={() => {
+                    go("choose");
+                  }} />
+                </div>
+              </div>
+            </div>
             <button className="pill-button login-back" onClick={() => go("home")} disabled={moving}>
               <ArrowLeft size={18} /> 返回首页
             </button>
-            <div className="login-stage">
-              <div className="login-surface">
-                <LoginForm onLogin={() => {
-                  go("choose");
-                }} />
-              </div>
+            <div className="login-variant-switcher" role="group" aria-label="登录页设计方案切换">
+              {LOGIN_VARIANTS.map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={loginVariant === id}
+                  onClick={() => setLoginVariant(id)}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </section>
         </ErrorBoundary>
