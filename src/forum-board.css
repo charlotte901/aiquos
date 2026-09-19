@@ -29,10 +29,11 @@
     clamp(24px, calc(3 * var(--vh, 1vh)), 42px);
   overflow: hidden;
   color: var(--field-ink, #fff);
-  background:
-    radial-gradient(circle at 50% 16%, color-mix(in srgb, var(--field-color) 78%, #fff) 0%, transparent 66%),
-    linear-gradient(180deg, color-mix(in srgb, var(--field-color) 96%, #000) 0%, color-mix(in srgb, var(--field-color) 86%, #000) 100%);
-  transition: background 560ms cubic-bezier(0.32, 0.72, 0, 1), color 520ms ease;
+  background-color: var(--field-color, var(--forum-pink, #f568a3));
+  background-image:
+    radial-gradient(circle at 50% 12%, rgb(255 255 255 / 0.16) 0%, transparent 68%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.06) 0%, rgb(0 0 0 / 0.04) 100%);
+  transition: background-color 560ms cubic-bezier(0.32, 0.72, 0, 1), color 520ms ease;
 }
 
 .forum-field.is-tall {

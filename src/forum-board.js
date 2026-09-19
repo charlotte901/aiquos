@@ -9,10 +9,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TOPIC_POSTS } from "./forum-topics";
 import { resolveMember } from "./community-members";
 
-/** The board's ground when no topic is selected: a warm, deep velvet obsidian
- * with subtle violet-pink undertone that pairs with the AIQUOS brand palette
- * and the film grain texture. A selected topic takes the topic's own colour. */
-export const FORUM_DEFAULT_FIELD = "#18151f";
+/** The board's default ground: the iconic AIQUOS brand pink, keeping it
+ * completely consistent with the Home and Cases canvases.
+ * A selected topic smoothly morphs into the topic's signature colour. */
+export const FORUM_DEFAULT_FIELD = "#f568a3";
 
 /** Relative luminance, used to decide whether type prints in white or in ink.
  * Two topics (`每周精选`, `校园故事`) carry an amber field with dark ink by
