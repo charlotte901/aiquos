@@ -26,9 +26,12 @@ import {
   currentResult,
   isAttemptComplete,
   loadAttemptDraft,
+  readCurrentBankVersion,
   recordAnswer,
   saveAttemptDraft,
   snapshotAttempt,
+  withBankVersion,
+  writeCurrentBankVersion,
 } from "./assessment-attempt";
 import { getProfileDetailId, getProfileDetailRoute } from "./profile-layout";
 import { animateCards } from "./card-transition";
@@ -161,7 +164,9 @@ export function SiteExperience() {
   // server's routing session so a resumed run keeps its adaptive position.
   const bootstrap = useRef(null);
   if (!bootstrap.current) {
-    const draft = loadAttemptDraft();
+    // Drafts resume only against the bank version the server last served
+    // (cached locally); falls back to the code constant before any fetch.
+    const draft = loadAttemptDraft(readCurrentBankVersion());
     bootstrap.current = {
       state: draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null },
       routing: draft?.routing ?? null,
@@ -477,6 +482,16 @@ export function SiteExperience() {
       if (!data.question) throw new Error("出题服务未返回题目");
       routingRef.current = data.session ?? null;
       if (data.exposure && typeof data.exposure === "object") saveExposureStore(data.exposure);
+      if (typeof data.bankVersion === "string") {
+        writeCurrentBankVersion(data.bankVersion);
+        // Follow an admin publish: re-label the in-progress attempt so its
+        // draft and future snapshot attribute to the bank actually serving.
+        setAttemptState((current) =>
+          current.attempt && current.result?.status !== "completed"
+            ? { attempt: withBankVersion(current.attempt, data.bankVersion), result: current.result }
+            : current,
+        );
+      }
       if (isAdaptiveDebugOn() && data.debug) setAdaptiveTelemetry(data.debug);
       return data;
     } catch (error) {

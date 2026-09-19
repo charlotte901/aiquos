@@ -54,6 +54,9 @@ export const QUESTION_BANK_VERSION = "objective-bank-v6-120";
 const DRAFT_KEY = "aiquos.comprehensive-attempt.v1";
 const HISTORY_KEY = "aiquos.comprehensive-history.v1";
 const HISTORY_LIMIT = 12;
+// Last bankVersion the serving endpoint reported; drafts resume only against
+// it, so an admin publish cleanly supersedes stale in-progress runs.
+const BANK_VERSION_KEY = "aiquos.bank-version.v1";
 
 export function createAttempt({ questions = null, totalQuestions, assessmentId = "comprehensive" }) {
   // Validate the bank once before the session starts (integration guide) when
@@ -181,13 +184,37 @@ export function saveAttemptDraft(attempt) {
   storageSet(DRAFT_KEY, JSON.stringify(attempt));
 }
 
-export function loadAttemptDraft() {
+export function readCurrentBankVersion() {
+  try {
+    return localStorage.getItem(BANK_VERSION_KEY) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCurrentBankVersion(bankVersion) {
+  try {
+    localStorage.setItem(BANK_VERSION_KEY, bankVersion);
+  } catch {
+    // Cache is best-effort; the code constant remains the fallback.
+  }
+}
+
+export function loadAttemptDraft(expectedBankVersion = null) {
   const attempt = migrate(safeParse(storageGet(DRAFT_KEY)), DRAFT_MIGRATORS);
   if (!attempt || !Array.isArray(attempt.evidence)) return null;
   if (attempt.scoringVersion !== SCORING_VERSION) return null;
-  if (attempt.questionBankVersion !== QUESTION_BANK_VERSION) return null;
+  if (attempt.questionBankVersion !== (expectedBankVersion ?? QUESTION_BANK_VERSION)) return null;
   if (!Number.isInteger(attempt.totalQuestions)) return null;
   return attempt;
+}
+
+// Re-label an in-progress attempt when the serving bank version moves (admin
+// publish). Completed snapshots are immutable and never re-labelled.
+export function withBankVersion(attempt, bankVersion) {
+  if (!attempt || typeof bankVersion !== "string") return attempt;
+  if (attempt.questionBankVersion === bankVersion) return attempt;
+  return { ...attempt, questionBankVersion: bankVersion };
 }
 
 export function clearAttemptDraft() {
@@ -206,10 +233,10 @@ export function appendHistorySnapshot(snapshot) {
 export function loadAttemptHistory() {
   const history = migrate(safeParse(storageGet(HISTORY_KEY)), HISTORY_MIGRATORS);
   if (!Array.isArray(history)) return [];
-  return history.filter(
-    (item) => item && item.scoringVersion === SCORING_VERSION
-      && item.questionBankVersion === QUESTION_BANK_VERSION,
-  );
+  // Scoring-model mismatches are hard-incompatible; bank-version differences
+  // are NOT — snapshots keep their recorded version so old reports stay
+  // attributable and visible after an admin publish.
+  return history.filter((item) => item && item.scoringVersion === SCORING_VERSION);
 }
 
 export function latestCompletedSnapshot() {
