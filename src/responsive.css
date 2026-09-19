@@ -34,7 +34,9 @@
   width: 100%;
   min-height: 100dvh;
   background: var(--stage-backdrop, var(--pink));
-  transition: background-color 520ms ease;
+  /* No background transition here on purpose: view-transition snapshots of the
+     incoming page are taken a frame after the view flips, and a colour that is
+     still mid-flight photographs as a black band on the page sliding in. */
 }
 
 /* The views whose own ground is not the brand pink. `.case-poster` is absent on
@@ -44,6 +46,9 @@
   background: #fff4fa;
 }
 
+/* Login is absent on purpose: the ticket page belongs to the pink world, and a
+   black stage behind it leaked into the incoming snapshot whenever the view
+   flipped back to Home. */
 .design-stage:has(
     .site-experience[data-view="choose"],
     .site-experience[data-view="assessments"],
@@ -51,8 +56,7 @@
     .site-experience[data-view="assessment-task"],
     .site-experience[data-view="profile"],
     .site-experience[data-view="profile-detail"],
-    .site-experience[data-view="reports"],
-    .site-experience[data-view="login"]
+    .site-experience[data-view="reports"]
   ) {
   background: #08080a;
 }
