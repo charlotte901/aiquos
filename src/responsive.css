@@ -236,12 +236,24 @@ body {
   z-index: 6;
   overflow: auto;
   overscroll-behavior: contain;
+  /* Never render a scrollbar on a tab screen, even while it still scrolls.
+     During a push the `data-tab` attribute flips while the old page is still
+     sliding out, so that page falls back from its tab's `overflow: hidden`
+     to this `auto` — and a scrollbar would appear at the layer's trailing
+     edge, which is exactly the seam the next page arrives across: a grey
+     track reading as a hairline between the two pages. Hiding the bar keeps
+     the scroll gesture and keeps every layer's client width at the full
+     stage width, so full-bleed fields stay full-bleed. */
+  scrollbar-width: none;
   /* The horizontal inset is a named token because a child that bleeds past it
      (see `.forum-effect`) has to cancel exactly this much and no more. It was
      written twice as a literal calc, so the bleed guessed 32px against a real
      76px and pushed the page 76px wide. */
   --tab-screen-inset-x: calc(72px * var(--ui-scale));
   padding: calc(112px * var(--ui-scale)) var(--tab-screen-inset-x) calc(52px * var(--ui-scale));
+}
+.home-tab-screen::-webkit-scrollbar {
+  display: none;
 }
 /* The tab screens carry their own pink ground via the class (not data-tab),
    so the background survives the mid-push data-tab flip and the two layers
