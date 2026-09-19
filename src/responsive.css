@@ -264,12 +264,12 @@ body {
   display: none;
 }
 /* The Forum board's colour is a solid field it draws itself, full-bleed and
-   finite; the tab screen behind it stays paper, which is the ground the index,
-   the contents column and the journal's lead story are set on. Painting the
-   screen itself in the field colour would carry the board's hue all the way
-   down the page and put dark editorial text on a saturated ground. */
+   finite; the tab screen behind it is now the exact same brand pink as Home
+   and Cases, so the horizontal pushes between Home, Cases and Forum travel on
+   one continuous sheet and never reveal a contrasting seam or a white hairline
+   at the frame edge during motion. */
 .app[data-tab="forum"] .home-tab-screen {
-  background: #fff4fa;
+  background: var(--pink);
 }
 /* The board supplies its own top padding because its colour field has to run
    under the header and start at the very top of the page: keeping the shared
