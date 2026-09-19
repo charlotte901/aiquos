@@ -243,7 +243,17 @@ body {
   --tab-screen-inset-x: calc(72px * var(--ui-scale));
   padding: calc(112px * var(--ui-scale)) var(--tab-screen-inset-x) calc(52px * var(--ui-scale));
 }
+/* The tab screens carry their own pink ground via the class (not data-tab),
+   so the background survives the mid-push data-tab flip and the two layers
+   always slide on one continuous pink surface with no white hairline. */
+.home-tab-screen.is-cases,
+.home-tab-screen.is-forum {
+  background: var(--pink);
+}
 .app[data-tab="cases"] .home-tab-screen {
+  background: var(--pink);
+}
+.app[data-tab="forum"] .home-tab-screen {
   background: var(--pink);
 }
 .app[data-tab="cases"] .design-canvas {
@@ -269,6 +279,12 @@ body {
    one continuous sheet and never reveal a contrasting seam or a white hairline
    at the frame edge during motion. */
 .app[data-tab="forum"] .home-tab-screen {
+  background: var(--pink);
+}
+/* The design canvas itself gets the brand pink so even a sub-pixel gap
+   between two sliding layers shows the continuous surface, never white. */
+.app[data-tab="cases"] .design-canvas,
+.app[data-tab="forum"] .design-canvas {
   background: var(--pink);
 }
 /* The board supplies its own top padding because its colour field has to run

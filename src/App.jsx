@@ -123,6 +123,8 @@ export function App({
   active = true,
   transitionBusy = false,
   pushing = false,
+  pushFrom = null,
+  pushTo = null,
   onCubeMotionChange,
 }) {
   // The size the site is composed against: the fixed 16:9 design frame in wide
@@ -372,9 +374,11 @@ export function App({
               </p>
             </section>
           </div>
-          {/* Sibling tab screens for Cases and Forum, so pushPages can slide
-              Home ↔ Cases ↔ Forum smoothly with zero blank frames. */}
-          {(tab === "cases" || (pushing && (tab === "home" || tab === "forum"))) && (
+          {/* Sibling tab screens for Cases and Forum. Each mounts only when it
+              is the active tab, the push source, or the push destination —
+              so Home → Forum never flashes Cases and Cases ↔ Forum slides
+              both layers correctly. */}
+          {(tab === "cases" || (pushing && (pushFrom === "cases" || pushTo === "cases"))) && (
             <div
               className="home-tab-screen is-cases"
               aria-label="cases content"
@@ -383,7 +387,7 @@ export function App({
               <LibraryHub variant="cases" onDetailChange={setDetailOpen} />
             </div>
           )}
-          {(tab === "forum" || (pushing && (tab === "home" || tab === "cases"))) && (
+          {(tab === "forum" || (pushing && (pushFrom === "forum" || pushTo === "forum"))) && (
             <div
               className="home-tab-screen is-forum"
               aria-label="forum content"

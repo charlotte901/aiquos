@@ -200,6 +200,10 @@ export function SiteExperience() {
   // Deliberately not `moving`, which is also raised for the scroll and frozen
   // moves: those would keep the archive mounted under an unrelated transition.
   const [pushing, setPushing] = useState(false);
+  // The tab we're pushing FROM and TO. App uses these to mount only the two
+  // involved tab screens during a slide, never the unrelated third one.
+  const [pushFrom, setPushFrom] = useState(null);
+  const [pushTo, setPushTo] = useState(null);
   const [cubeMounted, setCubeMounted] = useState(
     () => ["home", "login", "cases", "forum"].includes(route()),
   );
@@ -367,7 +371,11 @@ export function SiteExperience() {
           window.scrollTo(0, 0);
           history.pushState(null, "", hash);
         };
-        flushSync(() => setPushing(true));
+        flushSync(() => {
+          setPushing(true);
+          setPushFrom(view);
+          setPushTo(next);
+        });
         try {
           await pushPages({
             forward,
@@ -384,7 +392,11 @@ export function SiteExperience() {
             },
           });
         } finally {
-          flushSync(() => setPushing(false));
+          flushSync(() => {
+            setPushing(false);
+            setPushFrom(null);
+            setPushTo(null);
+          });
         }
         return;
       }
@@ -587,6 +599,8 @@ export function SiteExperience() {
               flattened={homeShellFlat}
               transitionBusy={moving}
               pushing={pushing}
+              pushFrom={pushFrom}
+              pushTo={pushTo}
               onCubeMotionChange={handleShellMotion}
             />
           )}
