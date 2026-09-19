@@ -630,9 +630,12 @@ export function SiteExperience() {
               <div className="login-composition">
                 <div className="login-word" aria-hidden="true">PLAYGROUND</div>
                 <div className="login-ink-ring" aria-hidden="true" />
-                <span className="login-serial" aria-hidden="true">№ 2026-0919</span>
-                <div className="login-seal" aria-hidden="true">ADMIT ONE</div>
-                <span className="login-stamp-code" aria-hidden="true" />
+                <aside className="login-stub" aria-hidden="true">
+                  <span className="login-stub-brand">AIQUOS · ASSESSMENT</span>
+                  <strong className="login-stub-no">№ 2026-0919</strong>
+                  <span className="login-stub-barcode" />
+                  <span className="login-stub-stamp">ADMIT ONE</span>
+                </aside>
                 <div className="login-surface">
                   <LoginForm onLogin={() => {
                     go("choose");

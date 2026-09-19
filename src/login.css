@@ -229,32 +229,52 @@
   pointer-events: none;
 }
 
-/* The stamp: perforated teeth on every edge. The mask keeps the content box
-   solid and adds a field of circles aligned to the border — only the circles
-   that cross an edge show as bites. */
-.login-screen .login-surface {
-  --tooth: 7px;
-  width: min(452px, 100%);
-  aspect-ratio: auto;
-  padding: calc(var(--tooth) * 2.3);
-  border-radius: 2px;
+/* The admission ticket: one white card, tilted, split by a perforation into
+   the form's main stub and the keepsake stub. The whole ticket slams down. */
+.login-screen .login-composition {
+  display: grid;
+  grid-template-columns: minmax(300px, 402px) 176px;
+  width: min(596px, 100%);
   background: #fffdfb;
-  container-type: normal;
-  overflow: visible;
-  mask:
-    radial-gradient(circle var(--tooth) at 0 0, #0000 96%, #000)
-      0 0 / calc(var(--tooth) * 4.6) calc(var(--tooth) * 4.6) round,
-    linear-gradient(#000 0 0) content-box;
-  mask-composite: add;
-  transform: rotate(-2.4deg);
-  box-shadow: 0 30px 70px rgba(76, 26, 56, 0.34);
+  border-radius: 20px;
+  transform: rotate(-1.6deg);
+  box-shadow: 0 36px 80px rgba(76, 26, 56, 0.34);
   animation: login-stamp-slam 700ms cubic-bezier(0.22, 0.9, 0.32, 1.18) both;
 }
 @keyframes login-stamp-slam {
-  0% { opacity: 0; transform: scale(2.3) rotate(-9deg); }
-  55% { opacity: 1; transform: scale(0.94) rotate(-1.8deg); }
-  78% { transform: scale(1.03) rotate(-2.8deg); }
-  100% { opacity: 1; transform: scale(1) rotate(-2.4deg); }
+  0% { opacity: 0; transform: scale(2.3) rotate(-8deg); }
+  55% { opacity: 1; transform: scale(0.95) rotate(-1deg); }
+  78% { transform: scale(1.03) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-1.6deg); }
+}
+/* Punch holes where the tear line meets the edges, painted with the ground. */
+.login-screen .login-composition::before,
+.login-screen .login-composition::after {
+  content: "";
+  position: absolute;
+  right: calc(176px - 13px);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f568a3;
+  box-shadow: inset 0 2px 4px rgba(76, 26, 56, 0.18);
+}
+.login-screen .login-composition::before { top: -13px; }
+.login-screen .login-composition::after { bottom: -13px; }
+
+.login-screen .login-surface {
+  grid-column: 1;
+  grid-row: 1;
+  width: auto;
+  aspect-ratio: auto;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  container-type: normal;
+  overflow: visible;
+}
+.login-screen .login-form {
+  padding: 42px 40px 36px;
 }
 
 /* One ink ring lifts off right after the slam, like the stamp's imprint. */
@@ -262,7 +282,7 @@
   position: absolute;
   inset: -4px;
   z-index: 3;
-  border-radius: 26px;
+  border-radius: 24px;
   border: 3px solid rgba(245, 104, 163, 0.6);
   opacity: 0;
   pointer-events: none;
@@ -273,7 +293,7 @@
   100% { opacity: 0; transform: scale(1.22); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .login-surface { animation: none; }
+  .login-composition { animation: none; }
   .login-ink-ring { animation: none; }
 }
 
@@ -288,63 +308,74 @@
   gap: 16px;
 }
 
-/* The stamp's own marks, brought back from the ticket direction: a serial
-   number on the inner panel, the ADMIT ONE postmark riding the right edge,
-   and a small barcode at the foot of the panel. */
-.login-screen .login-serial {
-  position: absolute;
-  top: 34px;
-  right: 34px;
-  z-index: 3;
-  font-family: "DM Sans", sans-serif;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #d98cb0;
-}
-.login-screen .login-seal {
-  position: absolute;
-  top: 52%;
-  right: -26px;
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  width: 88px;
-  height: 88px;
-  border: 3px solid rgba(224, 71, 143, 0.78);
-  border-radius: 50%;
-  color: rgba(224, 71, 143, 0.85);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+/* The keepsake stub: perforated off the main stub, carrying the serial,
+   a barcode and the ADMIT ONE seal. */
+.login-screen .login-stub {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 28px 18px;
+  background: linear-gradient(180deg, #fff5f9 0%, #fde7f1 100%);
+  border-left: 2px dashed #e3bccf;
   text-align: center;
-  transform: rotate(-12deg);
-  background: rgba(255, 253, 251, 0.35);
-  box-shadow: 0 6px 18px rgba(76, 26, 56, 0.14);
 }
-.login-screen .login-stamp-code {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  width: 148px;
-  height: 20px;
-  border-radius: 2px;
+.login-stub-brand {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #c04a80;
+}
+.login-stub-no {
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #332030;
+}
+.login-stub-barcode {
+  width: 100%;
+  height: 46px;
+  border-radius: 3px;
   background: repeating-linear-gradient(
     90deg,
-    rgba(23, 21, 15, 0.72) 0 2px,
+    #17150f 0 2px,
     transparent 2px 5px,
-    rgba(23, 21, 15, 0.72) 5px 6px,
+    #17150f 5px 6px,
     transparent 6px 11px
   );
+  opacity: 0.88;
 }
-@media (max-width: 560px) {
-  .login-screen .login-seal {
-    width: 68px;
-    height: 68px;
-    right: -16px;
-    font-size: 9px;
+.login-stub-stamp {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border: 2.5px solid rgba(224, 71, 143, 0.72);
+  border-radius: 50%;
+  color: #e0478f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  transform: rotate(-13deg);
+}
+@media (max-width: 760px) {
+  .login-screen .login-composition {
+    grid-template-columns: 1fr;
+    transform: none;
+  }
+  .login-screen .login-stub {
+    border-left: 0;
+    border-top: 2px dashed #e3bccf;
+    flex-direction: row;
+    padding: 18px 24px;
+  }
+  .login-screen .login-composition::before,
+  .login-screen .login-composition::after {
+    display: none;
   }
 }
 
