@@ -98,7 +98,7 @@ const faces = {
 - `src/cube-geometry.js`、`cube-textures.js`：源图几何校准、外壳材质与单面旋转。
 - `src/CaseScreen.jsx`、`case-buffer.js`：双层预加载、画面就绪检测与切换。
 - `src/LoginForm.jsx`、`login.css`：免验证登录表单与屏幕内自适应布局。
-- `src/ForumBoard.jsx`、`src/forum-gallery.jsx`、`src/forum-board.css`：社区论坛沙龙展藏画廊，具备胶片颗粒质感、3D光标透视倾斜、邮政印章戳记与沉浸式帖子阅读。
+- `src/ForumBoard.jsx`、`src/forum-gallery.jsx`、`src/forum-board.css`：真正的现代化技术社区论坛，具备双列讨论流、频道分类、热门话题榜、活跃导师榜、帖子详情研讨与即时发布评论。
 - `src/styles.css`：样式与响应式布局。
 - `public/assets/aiquos-reference.png`：用户提供的原始美术素材，项目运行所必需。
 - `design-qa.md`：视觉与功能检查记录。

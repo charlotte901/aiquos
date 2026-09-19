@@ -12,6 +12,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { ForumCard, ForumCardMedia, MemberAvatar } from "./forum-card";
+import { resolveMember } from "./community-members";
 import { favoriteFromForum, toggleFavorite, useFavoriteSaved } from "./favorites-store";
 import { useAccount } from "./account-store";
 import {
@@ -447,6 +448,7 @@ export function ForumDetail({
   const bodyRef = useRef(null);
   const comments = activity.comments;
   const saved = useFavoriteSaved(post.id);
+  const member = resolveMember(post.author);
 
   useEffect(() => {
     document
@@ -482,6 +484,14 @@ export function ForumDetail({
 
       <section className="forum-post-panel" aria-label="帖子内容">
         <header className="forum-post-head">
+          <nav className="forum-detail-breadcrumb" aria-label="讨论路径">
+            <button type="button" onClick={onBack}>智核社区</button>
+            <span aria-hidden="true">/</span>
+            <span className="breadcrumb-tag">{post.tag}</span>
+            <span aria-hidden="true">/</span>
+            <span className="breadcrumb-current">讨论详情</span>
+          </nav>
+
           <div className="forum-post-toolbar">
             <span className="forum-post-tag" style={{ background: post.color, color: post.ink }}>
               {post.tag}
@@ -496,8 +506,29 @@ export function ForumDetail({
               {saved ? "已收藏" : "收藏"}
             </button>
           </div>
+
           <h1 id="forum-detail-title">{post.title}</h1>
-          <p>{post.summary}</p>
+
+          <div className="forum-detail-author-card">
+            <MemberAvatar name={post.author} size={42} />
+            <div className="forum-detail-author-body">
+              <div className="author-name-row">
+                <strong>{post.author}</strong>
+                {member?.role && <span className="author-role-tag">{member.role}</span>}
+              </div>
+              <div className="author-meta-row">
+                <time>{post.createdAt}</time>
+                <i aria-hidden="true">•</i>
+                <span>{post.views.toLocaleString("zh-CN")} 次阅读</span>
+                <i aria-hidden="true">•</i>
+                <span>{comments.length} 条讨论</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="forum-detail-summary-quote">
+            <p>{post.summary}</p>
+          </div>
         </header>
 
         <div className="forum-post-body" ref={bodyRef}>
@@ -507,17 +538,17 @@ export function ForumDetail({
 
           <div className="forum-post-comments">
             <div className="forum-comments-title">
-              <strong>评论</strong>
-              <span>{comments.length.toLocaleString("zh-CN")}</span>
+              <strong>讨论与见解</strong>
+              <span>{comments.length.toLocaleString("zh-CN")} 条回复</span>
             </div>
             {comments.length === 0 ? (
-              <p className="forum-comments-empty">还没有评论，来发第一条。</p>
+              <p className="forum-comments-empty">还没有评论，写下你的第一个实战见解。</p>
             ) : (
               <ul>
                 {comments.map((comment) => (
                   <li key={comment.id}>
                     <div className="forum-comment-head">
-                      <MemberAvatar name={comment.author} size={26} />
+                      <MemberAvatar name={comment.author} size={28} />
                       <strong>{comment.author}</strong>
                       <time>{comment.createdAt}</time>
                     </div>
@@ -528,15 +559,10 @@ export function ForumDetail({
             )}
           </div>
 
-          {/* Same topic, other voices: the reading column ends with somewhere to
-              go instead of a dead end back at the wall. Only rendered when the
-              host can actually open a post — the favorites centre reuses this
-              component without that wiring, and a rail of buttons that do
-              nothing would be worse than no rail. */}
           {onOpenPost && (
             <section className="forum-related" aria-label="相关讨论">
               <div className="forum-related-title">
-                <strong>相关讨论</strong>
+                <strong>同话题推荐</strong>
                 <span>{post.tag}</span>
               </div>
               {related.length ? (
@@ -648,7 +674,11 @@ export function ForumBoard({ onDetailChange }) {
         <span>发布讨论</span>
       </button>
 
-      <GalleryBoard board={field} onOpen={setActiveId} />
+      <GalleryBoard
+        board={field}
+        onOpen={setActiveId}
+        onCompose={() => setIsComposing(true)}
+      />
     </div>
   );
 }

@@ -751,24 +751,115 @@
   font-weight: 700;
 }
 
-.forum-post-head h1 {
-  margin: 16px 0 0;
-  color: var(--forum-ink);
-  font-size: clamp(26px, calc(2.4 * var(--vw, 1vw)), 34px);
-  line-height: 1.24;
-  letter-spacing: -0.4px;
+.forum-detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #7b8596;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.forum-post-head p {
+.forum-detail-breadcrumb button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #4a5568;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.forum-detail-breadcrumb button:hover {
+  color: #c2407a;
+}
+
+.breadcrumb-tag {
+  color: #4a5568;
+  font-weight: 700;
+}
+
+.breadcrumb-current {
+  color: #8c96a8;
+}
+
+.forum-post-head h1 {
+  margin: 14px 0 0;
+  color: var(--forum-ink);
+  font-size: clamp(22px, calc(2.1 * var(--vw, 1vw)), 30px);
+  font-weight: 900;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+}
+
+.forum-detail-author-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #f6f8fc;
+  border: 1px solid #e9edf5;
+}
+
+.forum-detail-author-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.author-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.author-name-row strong {
+  color: #171d2b;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.author-role-tag {
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: #e7ecf6;
+  color: #4c566a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.author-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7a8599;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-detail-summary-quote {
   margin: 12px 0 0;
-  color: #4c454b;
-  font-size: 15px;
-  line-height: 1.7;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fdf5f9;
+  border-left: 3px solid #f568a3;
+}
+
+.forum-detail-summary-quote p {
+  margin: 0;
+  color: #4a5568;
+  font-size: 13.5px;
+  line-height: 1.62;
+  font-style: normal;
 }
 
 .forum-post-head {
-  padding-bottom: 15px;
-  border-bottom: 3px solid #000;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #eef1f6;
 }
 
 .forum-post-body {
