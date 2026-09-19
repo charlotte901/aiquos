@@ -288,6 +288,66 @@
   gap: 16px;
 }
 
+/* The stamp's own marks, brought back from the ticket direction: a serial
+   number on the inner panel, the ADMIT ONE postmark riding the right edge,
+   and a small barcode at the foot of the panel. */
+.login-screen .login-serial {
+  position: absolute;
+  top: 34px;
+  right: 34px;
+  z-index: 3;
+  font-family: "DM Sans", sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #d98cb0;
+}
+.login-screen .login-seal {
+  position: absolute;
+  top: 52%;
+  right: -26px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border: 3px solid rgba(224, 71, 143, 0.78);
+  border-radius: 50%;
+  color: rgba(224, 71, 143, 0.85);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  transform: rotate(-12deg);
+  background: rgba(255, 253, 251, 0.35);
+  box-shadow: 0 6px 18px rgba(76, 26, 56, 0.14);
+}
+.login-screen .login-stamp-code {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 148px;
+  height: 20px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(23, 21, 15, 0.72) 0 2px,
+    transparent 2px 5px,
+    rgba(23, 21, 15, 0.72) 5px 6px,
+    transparent 6px 11px
+  );
+}
+@media (max-width: 560px) {
+  .login-screen .login-seal {
+    width: 68px;
+    height: 68px;
+    right: -16px;
+    font-size: 9px;
+  }
+}
+
 /* White chrome pill for the way back. */
 .login-screen .login-back {
   background: #ffffff;

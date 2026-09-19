@@ -630,6 +630,9 @@ export function SiteExperience() {
               <div className="login-composition">
                 <div className="login-word" aria-hidden="true">PLAYGROUND</div>
                 <div className="login-ink-ring" aria-hidden="true" />
+                <span className="login-serial" aria-hidden="true">№ 2026-0919</span>
+                <div className="login-seal" aria-hidden="true">ADMIT ONE</div>
+                <span className="login-stamp-code" aria-hidden="true" />
                 <div className="login-surface">
                   <LoginForm onLogin={() => {
                     go("choose");
