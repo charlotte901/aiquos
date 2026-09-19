@@ -227,6 +227,11 @@
   filter: blur(14px);
   user-select: none;
   pointer-events: none;
+  /* Own layer: the 14px blur rasterises once and is reused by every
+     view-transition snapshot of this page instead of being recomputed
+     mid-transition, which read as a hitch at the start of the slide. */
+  transform: translateZ(0);
+  will-change: filter, transform;
 }
 
 /* The admission ticket: one white card, tilted, split by a perforation into

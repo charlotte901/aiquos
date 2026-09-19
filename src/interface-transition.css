@@ -117,25 +117,28 @@
 }
 
 /* Native view transitions avoid cloning the homepage's live media layers.
-   The fallback below preserves the same vertical scroll for older engines. */
+   The fallback below preserves the same vertical scroll for older engines.
+   The curve and length are the site's push gesture (STRIP_EASING, 760ms) so
+   the vertical hop between Home and Login reads as the same motion as the
+   horizontal pushes — one rhythm, no seam between gesture families. */
 :root[data-vertical-transition]::view-transition-group(root) {
   animation: none;
 }
 
 :root[data-vertical-transition="forward"]::view-transition-old(root) {
-  animation: scroll-page-out 840ms cubic-bezier(.32,.08,.16,1) both;
+  animation: scroll-page-out 760ms cubic-bezier(.76, 0, 0.24, 1) both;
 }
 
 :root[data-vertical-transition="forward"]::view-transition-new(root) {
-  animation: scroll-page-in 840ms cubic-bezier(.32,.08,.16,1) both;
+  animation: scroll-page-in 760ms cubic-bezier(.76, 0, 0.24, 1) both;
 }
 
 :root[data-vertical-transition="reverse"]::view-transition-old(root) {
-  animation: scroll-page-out-reverse 840ms cubic-bezier(.32,.08,.16,1) both;
+  animation: scroll-page-out-reverse 760ms cubic-bezier(.76, 0, 0.24, 1) both;
 }
 
 :root[data-vertical-transition="reverse"]::view-transition-new(root) {
-  animation: scroll-page-in-reverse 840ms cubic-bezier(.32,.08,.16,1) both;
+  animation: scroll-page-in-reverse 760ms cubic-bezier(.76, 0, 0.24, 1) both;
 }
 
 @keyframes scroll-page-out {
