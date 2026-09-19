@@ -689,6 +689,31 @@ export function ForumBoard({ onDetailChange }) {
   const [activeId, setActiveId] = useState(null);
   const activePost = board.posts.find((post) => post.id === activeId);
 
+  // The homepage agent hands cases over by id (and keywords for the search
+  // box): consume a pending handoff on mount, then listen while live.
+  useEffect(() => {
+    const openFromAgent = (id) => {
+      if (board.posts.some((post) => post.id === id)) setActiveId(id);
+    };
+    const pendingCase = window.__aiquosPendingCase;
+    if (pendingCase) {
+      openFromAgent(pendingCase);
+      delete window.__aiquosPendingCase;
+    }
+    const pendingSearch = window.__aiquosPendingSearch;
+    if (pendingSearch) {
+      board.setQuery(pendingSearch);
+      delete window.__aiquosPendingSearch;
+    }
+    const onAgentHandoff = (event) => {
+      const { type, id, keyword } = event.detail || {};
+      if (type === "open-case") openFromAgent(id);
+      if (type === "search-cases" && keyword) board.setQuery(keyword);
+    };
+    window.addEventListener("aiquos:agent-handoff", onAgentHandoff);
+    return () => window.removeEventListener("aiquos:agent-handoff", onAgentHandoff);
+  }, [board]);
+
   const revealRef = useReveal([
     board.visiblePosts.length,
     board.activeTopic,

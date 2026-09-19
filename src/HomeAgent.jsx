@@ -1,14 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, X } from "@phosphor-icons/react";
 import { streamDeepSeek } from "./deepseek";
+import {
+  detectNavigation,
+  executeSkill,
+  findCase,
+  NAV_TARGET_LABEL,
+  parseDirectives,
+  searchCases,
+  stripDirectives,
+} from "./agent-skills.js";
 import { AGENT_GREETING, AGENT_NAME, buildAgentMessages } from "./home-agent-chat";
 
-const QUICK_ASKS = ["你是谁呀？", "怎么开始 AI 测评？", "案例库有什么好玩的？"];
+const QUICK_ASKS = ["你是谁呀？", "带我去案例库看看", "推荐一个案例", "怎么开始 AI 测评？"];
 const TEASER_KEY = "aiquos-agent-teaser-seen";
 
 /** The floating agent on the homepage: a small resident robot 「小Q」 with a
- * chat fed by the DeepSeek proxy (streaming). Lives only on the home tab. */
-export function HomeAgent({ leaving = false }) {
+ * chat fed by the DeepSeek proxy (streaming). Lives only on the home tab.
+ *
+ * Beyond chatting, the model can emit skill directives ([[go:forum]],
+ * [[search-cases:黑猫]], [[recommend-case:id]], [[open-case:id]]) which the
+ * panel strips from the visible text and executes: real navigation, live
+ * library search hand-offs, and case cards rendered inside the chat. */
+export function HomeAgent({ leaving = false, onNavigate = null }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([{ role: "assistant", content: AGENT_GREETING }]);
   const [draft, setDraft] = useState("");
@@ -17,7 +31,6 @@ export function HomeAgent({ leaving = false }) {
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const abortRef = useRef(null);
-  const seenRef = useRef(false);
 
   // A one-time invitation bubble, unless this session already met 小Q.
   useEffect(() => {
@@ -62,9 +75,75 @@ export function HomeAgent({ leaving = false }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const openCaseFromChat = (id) => {
+    window.__aiquosPendingCase = id;
+    window.dispatchEvent(new CustomEvent("aiquos:agent-handoff", {
+      detail: { type: "open-case", id },
+    }));
+    onNavigate?.("forum");
+  };
+
+  const searchFromChat = (keyword) => {
+    const found = searchCases(keyword);
+    window.__aiquosPendingSearch = keyword;
+    window.dispatchEvent(new CustomEvent("aiquos:agent-handoff", {
+      detail: { type: "search-cases", keyword },
+    }));
+    onNavigate?.("forum");
+    return found;
+  };
+
+  /** Run the skill directives a finished reply carries (at most two). */
+  const runDirectives = (rawReply) => {
+    for (const directive of parseDirectives(rawReply).slice(0, 2)) {
+      executeSkill(directive, {
+        go: (view) => {
+          setMessages((current) => [
+            ...current,
+            { role: "assistant", content: "这就带你去 →" },
+          ]);
+          setTimeout(() => onNavigate?.(view), 550);
+        },
+        searchCases: (keyword) => {
+          const found = searchFromChat(keyword);
+          if (!found.length) {
+            setMessages((current) => [
+              ...current,
+              { role: "assistant", content: `案例库里暂时没有和「${keyword}」相关的作品，换个关键词试试？` },
+            ]);
+          }
+        },
+        openCase: (id, action) => {
+          const post = findCase(id);
+          if (!post) return;
+          if (action === "recommend-case") {
+            setMessages((current) => [...current, { role: "assistant", content: "", cards: [post] }]);
+          } else {
+            openCaseFromChat(id);
+          }
+        },
+      });
+    }
+  };
+
   const send = (raw) => {
     const text = (typeof raw === "string" ? raw : draft).trim();
     if (!text || streaming) return;
+
+    // Skill first: navigation intents run locally — instant, and they work
+    // even before a DeepSeek key is configured.
+    const nav = detectNavigation(text);
+    if (nav) {
+      setMessages((current) => [
+        ...current,
+        { role: "user", content: text },
+        { role: "assistant", content: `好嘞，这就带你去${NAV_TARGET_LABEL[nav.target]} →` },
+      ]);
+      sessionStorage.setItem(TEASER_KEY, "1");
+      setTimeout(() => onNavigate?.(nav.target), 700);
+      return;
+    }
+
     const withReply = [...messages, { role: "user", content: text }, { role: "assistant", content: "" }];
     setMessages(withReply);
     setDraft("");
@@ -74,17 +153,20 @@ export function HomeAgent({ leaving = false }) {
     const controller = new AbortController();
     abortRef.current = controller;
     streamDeepSeek({
-      messages: buildAgentMessages(withReply.slice(0, -1)),
+      messages: buildAgentMessages(withReply.slice(0, -1), { currentView: "home" }),
       signal: controller.signal,
       onDelta: (full) => {
         setMessages((current) => {
           const copy = [...current];
-          copy[copy.length - 1] = { role: "assistant", content: full };
+          copy[copy.length - 1] = { role: "assistant", content: stripDirectives(full) };
           return copy;
         });
       },
     })
-      .then(() => setStreaming(false))
+      .then((complete) => {
+        setStreaming(false);
+        runDirectives(complete);
+      })
       .catch((error) => {
         if (controller.signal.aborted) return;
         setStreaming(false);
@@ -103,6 +185,11 @@ export function HomeAgent({ leaving = false }) {
   const onSubmit = (event) => {
     event.preventDefault();
     send();
+  };
+
+  const openCaseFromCard = (id) => {
+    if (open) toggle();
+    openCaseFromChat(id);
   };
 
   return (
@@ -128,7 +215,7 @@ export function HomeAgent({ leaving = false }) {
           <div className="home-agent-log" ref={listRef}>
             {messages.map((message, index) => {
               const isUser = message.role === "user";
-              const isEmptyTail = !isUser && index === messages.length - 1 && !message.content;
+              const isEmptyTail = !isUser && index === messages.length - 1 && !message.content && !message.cards;
               return (
                 <div key={index} className={`home-agent-msg ${isUser ? "is-user" : "is-agent"}`}>
                   {isEmptyTail ? (
@@ -137,6 +224,21 @@ export function HomeAgent({ leaving = false }) {
                     </span>
                   ) : (
                     message.content
+                  )}
+                  {message.cards && (
+                    <div className="home-agent-cards">
+                      {message.cards.map((post) => (
+                        <button key={post.id} type="button" className="home-agent-card"
+                          onClick={() => openCaseFromCard(post.id)}
+                          aria-label={`打开案例：${post.title}`}>
+                          {post.image && <img src={post.image} alt="" loading="lazy" />}
+                          <span className="home-agent-card-meta">
+                            <strong>{post.title}</strong>
+                            <span>{post.tag} · ❤{post.likes}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               );
@@ -155,7 +257,7 @@ export function HomeAgent({ leaving = false }) {
               ref={inputRef}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder={`和${AGENT_NAME}聊聊…`}
+              placeholder={`和${AGENT_NAME}聊聊，或让我带路…`}
               aria-label="输入消息"
               maxLength={500}
             />

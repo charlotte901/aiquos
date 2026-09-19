@@ -403,7 +403,15 @@ export function App({
           half of a push so it fades with the page instead of vanishing at the
           tab flip, and hidden whenever a case detail covers the screen. */}
       {(tab === "home" || (pushing && pushFrom === "home")) && !detailOpen && (
-        <HomeAgent leaving={tab !== "home"} />
+        <HomeAgent
+          leaving={tab !== "home"}
+          onNavigate={(view) => {
+            if (view === "cases") onCases();
+            else if (view === "forum") onForum();
+            else if (view === "assessment") onAssessment();
+            else onHome();
+          }}
+        />
       )}
       {modal === "about" && (
         <Modal
