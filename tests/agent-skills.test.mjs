@@ -1,45 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  detectNavigation,
-  executeSkill,
-  findCase,
-  parseDirectives,
+  buildKnowledgeContext,
+  caseCatalogLine,
   searchCases,
-  stripDirectives,
 } from "../src/agent-skills.js";
-
-test("navigation fires when an action verb meets a destination", () => {
-  assert.deepEqual(detectNavigation("带我去案例库看看"), { target: "cases" });
-  assert.deepEqual(detectNavigation("帮我打开论坛"), { target: "forum" });
-  assert.deepEqual(detectNavigation("怎么开始 AI 测评？"), { target: "assessment" });
-  assert.deepEqual(detectNavigation("回到首页"), { target: "home" });
-});
-
-test("knowledge questions do not trigger navigation", () => {
-  assert.equal(detectNavigation("案例库有什么好玩的？"), null);
-  assert.equal(detectNavigation("测评都考些什么内容？"), null);
-  assert.equal(detectNavigation("你好呀"), null);
-});
-
-test("stripDirectives removes skill directives but keeps the prose", () => {
-  const text = "好嘞，案例库有很多宝藏！[[go:cases]]\n推荐这个：[[recommend-case:case-cat-glasses]]";
-  assert.equal(stripDirectives(text), "好嘞，案例库有很多宝藏！\n推荐这个：");
-});
-
-test("stripDirectives also drops a half-streamed directive at the tail", () => {
-  assert.equal(stripDirectives("没问题！[[go:for"), "没问题！");
-  assert.equal(stripDirectives("干净的一句话"), "干净的一句话");
-});
-
-test("parseDirectives extracts actions and arguments in order", () => {
-  const directives = parseDirectives("[[go:forum]] 随便说说 [[search-cases:黑猫]]");
-  assert.deepEqual(directives, [
-    { action: "go", argument: "forum" },
-    { action: "search-cases", argument: "黑猫" },
-  ]);
-  assert.deepEqual(parseDirectives("没有指令"), []);
-});
 
 test("searchCases finds the glasses cat by keyword", () => {
   const [top] = searchCases("黑猫");
@@ -55,24 +20,32 @@ test("searchCases returns nothing for empty noise", () => {
   assert.deepEqual(searchCases(""), []);
 });
 
-test("executeSkill routes navigation and reports unknown ids", () => {
-  const calls = [];
-  const handlers = {
-    go: (view) => calls.push(["go", view]),
-    searchCases: (keyword) => calls.push(["search", keyword]),
-    openCase: (id, action) => calls.push(["open", id, action]),
-  };
-  assert.equal(executeSkill({ action: "go", argument: "forum" }, handlers), true);
-  assert.equal(executeSkill({ action: "go", argument: "mars" }, handlers), false);
-  assert.equal(executeSkill({ action: "recommend-case", argument: "case-cat-glasses" }, handlers), true);
-  assert.equal(executeSkill({ action: "open-case", argument: "not-a-case" }, handlers), false);
-  assert.deepEqual(calls, [
-    ["go", "forum"],
-    ["open", "case-cat-glasses", "recommend-case"],
-  ]);
+test("caseCatalogLine lists every real case title with its tag", () => {
+  const line = caseCatalogLine();
+  assert.match(line, /戴眼镜的黑猫 · 宣纸水墨神态捕捉（AI 生图）/);
+  assert.match(line, /（AI 代码）/);
 });
 
-test("findCase resolves real ids and rejects invented ones", () => {
-  assert.equal(findCase("case-cat-glasses")?.tag, "AI 生图");
-  assert.equal(findCase("nope"), null);
+test("knowledge context injects matched cases with real data", () => {
+  const context = buildKnowledgeContext("水墨风格的图怎么用提示词写出来？");
+  assert.match(context, /戴眼镜的黑猫/);
+  assert.match(context, /提示词开头/);
+  assert.match(context, /模型/);
+});
+
+test("knowledge context injects the real assessment ladder for learning-path questions", () => {
+  const context = buildKnowledgeContext("我该从哪一步开始学？给我一个学习路径");
+  assert.match(context, /智核学院/);
+  assert.match(context, /智核觉醒报告/);
+  assert.match(context, /考察：/);
+});
+
+test("knowledge context injects forum channels for community questions", () => {
+  const context = buildKnowledgeContext("论坛里大家都在讨论什么？");
+  assert.match(context, /AI 生图 \d+ 帖/);
+  assert.match(context, /提示词、模型参数/);
+});
+
+test("knowledge context stays empty for small talk that needs no data", () => {
+  assert.equal(buildKnowledgeContext("你叫什么名字呀？"), "");
 });

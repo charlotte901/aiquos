@@ -1,123 +1,106 @@
-import { TOPIC_POSTS } from "./forum-topics.js";
-
-/** 小Q's skill system: the model decides, the page acts.
+/** 小Q's teacher knowledge: the parts that make it a mentor on the student's
+ * AI learning path instead of a generic chatbot.
  *
- * DeepSeek replies may embed directives — `[[go:forum]]`,
- * `[[search-cases:黑猫]]`, `[[recommend-case:cat-glasses]]` — which the
- * client strips from the displayed text and executes. That keeps the proxy
- * untouched (plain chat messages only) while giving the model real hands:
- * navigation, library search, and case cards rendered inside the chat. */
+ * Pure and node-testable:
+ * - searchCases(query)      the real case library, scored by the student's words
+ * - buildKnowledgeContext(query)  distils platform facts for THIS question —
+ *   matched cases, the assessment ladder, forum channels — injected into the
+ *   system prompt so answers cite real titles, numbers and next steps. */
 
-export const GO_TARGETS = new Set(["home", "cases", "forum", "assessment"]);
+import { TOPIC_POSTS } from "./forum-topics.js";
+import { COMPREHENSIVE_LEVELS } from "./comprehensive-quiz.js";
 
-const DIRECTIVE_RE = /\[\[\s*(go|search-cases|open-case|recommend-case)\s*:\s*([^\]\n]+?)\s*\]\]/g;
-// A directive still streaming in: an unclosed `[[...` fragment at the tail.
-const PARTIAL_RE = /\[\[[^\]]*$/;
+/** One-line descriptor of the whole real catalogue (for the system prompt). */
+export function caseCatalogLine() {
+  return TOPIC_POSTS.map((post) => `${post.title}（${post.tag}）`).join("；");
+}
 
-/* ── Skill: navigation (runs locally, no model round-trip) ──────────────────
- * Fires only when an action verb AND a destination appear together, so a
- * knowledge question like "案例库有什么好玩的？" still reaches the model. */
-const NAV_SKILLS = [
-  { target: "home", verb: /(回去|回到|返回|送我回)/, place: /(首页|主页|家)/ },
-  {
-    target: "cases",
-    verb: /(带我去|带我去看看|打开|前往|进入|跳转|去(看看|逛逛|逛一逛)?|逛逛|想看)/,
-    place: /(案例库|案例墙|作品库|真实案例)/,
-  },
-  { target: "forum", verb: /(带我去|打开|前往|进入|跳转|去(看看|逛逛|逛一逛)?|逛逛|想逛)/, place: /(论坛|社区)/ },
-  { target: "assessment", verb: /(开始|进入|前往|挑战|来一次|想做|想测|去)/, place: /(测评|闯关|考核|能力测试)/ },
-];
-
-export const NAV_TARGET_LABEL = {
-  home: "首页",
-  cases: "案例库",
-  forum: "论坛",
-  assessment: "AI 测评",
+const TAG_SYNONYMS = {
+  "AI 生图": ["生图", "画", "绘", "图", "水墨", "插画"],
+  "AI 视频": ["视频", "剪辑", "分镜", "影片", "动画"],
+  "AI 代码": ["代码", "游戏", "编程", "canvas", "webgl", "交互"],
+  "AI 办公": ["办公", "ppt", "排班", "表格", "文档", "信息图"],
 };
 
-/** "带我去案例库" → { target: "cases" }; a pure knowledge question like
- * "案例库有什么好玩的？" → null (no action verb, falls through to the model). */
-export function detectNavigation(text) {
-  const t = String(text || "");
-  for (const skill of NAV_SKILLS) {
-    if (skill.verb.test(t) && skill.place.test(t)) return { target: skill.target };
+/** Keywords from the case's own title/tag/model — matched against the student's
+ * words (case-side vocabulary, so "黑猫" hits 「戴眼镜的黑猫」 via the word's
+ * CJK bigrams). */
+function keywordsOf(post) {
+  const words = String(post.title || "")
+    .split(/[·\s,,，、()（）]+/)
+    .map((w) => w.trim().toLowerCase())
+    .filter((w) => w.length >= 2);
+  const bigrams = [];
+  for (const word of words) {
+    for (let i = 0; i + 2 <= word.length; i += 1) bigrams.push(word.slice(i, i + 2));
   }
-  return null;
+  return [
+    ...new Set([
+      ...words,
+      ...bigrams,
+      ...(TAG_SYNONYMS[post.tag] || []).map((w) => w.toLowerCase()),
+      String(post.model || "").toLowerCase(),
+    ]),
+  ].filter(Boolean);
 }
 
-/** Remove every directive (and any half-streamed one at the tail) from text
- * the user should read. */
-export function stripDirectives(text) {
-  return String(text ?? "")
-    .replace(DIRECTIVE_RE, "")
-    .replace(PARTIAL_RE, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-/** All well-formed directives in a finished reply, in order. */
-export function parseDirectives(text) {
-  return [...String(text ?? "").matchAll(DIRECTIVE_RE)].map((match) => ({
-    action: match[1],
-    argument: match[2].trim(),
-  }));
-}
-
-/** Keyword search over the case library: title, tag and summary, newest-style
- * scoring (title hit first). Returns up to three posts. */
-export function searchCases(keyword) {
-  const query = String(keyword ?? "").trim().toLowerCase();
-  if (!query) return [];
-  const terms = query.split(/\s+/).filter(Boolean);
-  const scored = TOPIC_POSTS.map((post) => {
-    const title = post.title.toLowerCase();
-    const tag = (post.tag || "").toLowerCase();
-    const summary = (post.summary || "").toLowerCase();
+/** Top matches of a free-form question against the real case library. */
+export function searchCases(query, limit = 3) {
+  const q = String(query || "").toLowerCase();
+  if (!q.trim()) return [];
+  return TOPIC_POSTS.map((post) => {
     let score = 0;
-    for (const term of terms) {
-      if (title.includes(term)) score += 4;
-      if (tag.includes(term)) score += 2;
-      if (summary.includes(term)) score += 1;
+    const head = post.title.split(" · ")[0].toLowerCase();
+    if (q.includes(head) || head.includes(q.trim())) score += 4;
+    for (const word of keywordsOf(post)) {
+      if (q.includes(word)) score += word.length >= 2 ? 2 : 1;
     }
+    if (q.includes(post.tag.toLowerCase())) score += 3;
     return { post, score };
-  }).filter((entry) => entry.score > 0);
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map((entry) => entry.post);
+  })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || b.post.likes - a.post.likes)
+    .slice(0, limit)
+    .map((entry) => entry.post);
 }
 
-export function findCase(id) {
-  return TOPIC_POSTS.find((post) => post.id === id) || null;
-}
+/** Everything the mentor should know for THIS question, distilled from real
+ * platform data. Empty string when the question needs no injection. */
+export function buildKnowledgeContext(query) {
+  const q = String(query || "");
+  const parts = [];
 
-/** One-line descriptor injected into the system prompt so the model knows the
- * real catalogue without hallucinating ids. */
-export function caseCatalogLine() {
-  return TOPIC_POSTS.map((post) => `${post.id}（${post.tag}）：${post.title}`).join("；");
-}
-
-/** Execute parsed directives. `handlers`:
- *   go(view)                       view ∈ GO_TARGETS
- *   searchCases(query)             keyword for the library
- *   openCase(id, action)           action is "open-case" or "recommend-case"
- *                                  so the caller can choose jump-vs-card.
- * Unknown directives are ignored; navigation never throws. */
-export function executeSkill(directive, handlers) {
-  const { action, argument } = directive;
-  try {
-    if (action === "go" && GO_TARGETS.has(argument)) {
-      handlers.go?.(argument);
-      return true;
-    }
-    if (action === "search-cases" && argument) {
-      handlers.searchCases?.(argument);
-      return true;
-    }
-    if ((action === "recommend-case" || action === "open-case") && findCase(argument)) {
-      handlers.openCase?.(argument, action);
-      return true;
-    }
-  } catch {
-    // A failing skill must never break the conversation render.
+  const cases = searchCases(q, 3);
+  if (cases.length) {
+    parts.push(
+      `【与提问相关的真实案例（来自案例库，讲解时引用其名称、数据与提示词写法）】\n${cases
+        .map((post) => {
+          const promptHead = post.prompt ? `｜提示词开头：${String(post.prompt).slice(0, 60)}…` : "";
+          return `- 《${post.title}》（${post.tag}，模型 ${post.model || "未注明"}，❤${post.likes}，👁${post.views}）：${post.summary}${promptHead}`;
+        })
+        .join("\n")}`,
+    );
   }
-  return false;
+
+  if (/测评|闯关|考核|客观|对话题|实战|报告|评分|星级|从哪|入门|起点|路径|计划|学/.test(q)) {
+    parts.push(
+      `【综合测评的真实结构（给出学习路径建议时引用）】\n${COMPREHENSIVE_LEVELS.map(
+        (level, index) => `${index + 1}. ${level.short}（${level.name}）——考察：${level.dims}`,
+      ).join("\n")}\n完成全部关卡后生成「智核觉醒报告」。`,
+    );
+  }
+
+  if (/论坛|社区|帖子|讨论/.test(q)) {
+    const byTag = TOPIC_POSTS.reduce((acc, post) => {
+      acc[post.tag] = (acc[post.tag] || 0) + 1;
+      return acc;
+    }, {});
+    parts.push(
+      `【论坛的真实频道】\n${Object.entries(byTag)
+        .map(([tag, count]) => `${tag} ${count} 帖`)
+        .join("、")}。案例帖都带完整提示词、模型参数与评论。`,
+    );
+  }
+
+  return parts.join("\n\n");
 }
