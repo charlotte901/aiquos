@@ -462,7 +462,17 @@ export function ForumDetail({
   };
 
   return (
-    <article className="forum-detail-screen" aria-labelledby="forum-detail-title">
+    <article
+      className="forum-detail-screen is-immersive"
+      aria-labelledby="forum-detail-title"
+      style={{
+        "--detail-art": post.image ? `url("${post.image}")` : undefined,
+        "--detail-ground": post.color ?? "#171512",
+      }}
+    >
+      <div className="forum-detail-blur" aria-hidden="true" />
+      <div className="forum-detail-veil" aria-hidden="true" />
+
       <button className="forum-back" type="button" onClick={onBack}>
         <ArrowLeft size={18} />
         {returnLabel}
@@ -633,9 +643,9 @@ export function ForumBoard({ onDetailChange }) {
 
   return (
     <div className="forum-board-root" style={{ "--forum-board-field": board.fieldColor }}>
-      <button className="forum-compose-button" type="button" onClick={() => setIsComposing(true)}>
-        <Plus size={18} weight="bold" />
-        发布
+      <button className="forum-compose-button" type="button" onClick={() => setIsComposing(true)} aria-label="发布新讨论">
+        <Plus size={16} weight="bold" />
+        <span>发布讨论</span>
       </button>
 
       <GalleryBoard board={field} onOpen={setActiveId} />

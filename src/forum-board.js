@@ -9,10 +9,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TOPIC_POSTS } from "./forum-topics";
 import { resolveMember } from "./community-members";
 
-/** The board's ground when no topic is selected: ink. White frames need a dark
- * room — on the homepage's pink the wall read as cards on a poster, on ink it
- * reads as a gallery. A selected topic still takes the topic's own colour. */
-export const FORUM_DEFAULT_FIELD = "#17150f";
+/** The board's ground when no topic is selected: a warm, deep velvet obsidian
+ * with subtle violet-pink undertone that pairs with the AIQUOS brand palette
+ * and the film grain texture. A selected topic takes the topic's own colour. */
+export const FORUM_DEFAULT_FIELD = "#18151f";
 
 /** Relative luminance, used to decide whether type prints in white or in ink.
  * Two topics (`每周精选`, `校园故事`) carry an amber field with dark ink by
@@ -62,7 +62,7 @@ const TOPIC_WORDS = {
 };
 
 export function topicWord(topic) {
-  if (!topic) return "GALLERY";
+  if (!topic) return "COMMUNITY";
   return TOPIC_WORDS[topic] ?? topic.toUpperCase().slice(0, 10);
 }
 

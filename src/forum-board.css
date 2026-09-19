@@ -1,29 +1,19 @@
-/* The Forum board — a wall of hung work on a solid colour field.
+/* The Forum board — a curated salon gallery wall of hung artwork on a textured
+ * colour field, referencing the atmospheric craftsmanship of Home and Cases.
  *
- * The composition is the product's own language, borrowed from Home and Cases:
- * one colour, one object, type doing the rest. A dark ground is what makes the
- * white mounts read as a gallery rather than as cards on a page, and it is why
- * the display word and the header's labels default to white here.
- *
- * Nothing here animates width/height/top/left; entries and lifts are transform
- * and opacity only, and every entry effect is an `animation` so it cannot
- * capture an element's hover `transition`.
+ * It features the authentic film-grain texture from `/assets/case-poster-grain.png`,
+ * 3D cursor-tracking perspective tilt (matching CaseArchive's tiltFeature),
+ * museum passe-partout mounts, and AIQUOS pill button controls.
  */
 
-/* ── the field ───────────────────────────────────────────────────────────── */
+/* ── the field & ground ─────────────────────────────────────────────────── */
 
-/* The board root publishes the current field colour. Two things read it: the
-   tab screen behind the board, so the page edge matches the field as it scrolls
-   away, and the header's ink logic, which samples the field element itself. */
 .forum-board-root {
   --forum-board-field: var(--field-color, var(--forum-pink));
+  position: relative;
   min-height: 100%;
 }
 
-/* The field is sized so its whole composition fits one screen: the eyebrow, the
-   display word and the protagonist all have to be visible together, or the
-   poster reads as a page that was cut off. `100vh` minus the header band, not
-   `min-height` on a grid that then grows past it. */
 .forum-field {
   position: relative;
   width: calc(100% + 2 * var(--tab-screen-inset-x, 0px));
@@ -33,47 +23,103 @@
   grid-template-rows: auto auto minmax(0, 1fr);
   align-items: center;
   justify-items: center;
-  row-gap: clamp(14px, calc(2.4 * var(--vh, 1vh)), 36px);
+  row-gap: clamp(14px, calc(2 * var(--vh, 1vh)), 28px);
   min-height: calc(100 * var(--dvh, 1dvh));
-  padding: clamp(86px, calc(11 * var(--vh, 1vh)), 132px) clamp(22px, calc(3.4 * var(--vw, 1vw)), 60px)
-    clamp(26px, calc(3.4 * var(--vh, 1vh)), 46px);
+  padding: clamp(82px, calc(10 * var(--vh, 1vh)), 116px) clamp(20px, calc(3.2 * var(--vw, 1vw)), 60px)
+    clamp(24px, calc(3 * var(--vh, 1vh)), 42px);
   overflow: hidden;
   color: var(--field-ink, #fff);
-  background: var(--field-color, var(--forum-pink));
-  transition: background-color 520ms cubic-bezier(0.32, 0.72, 0, 1), color 520ms ease;
+  background:
+    radial-gradient(circle at 50% 16%, color-mix(in srgb, var(--field-color) 78%, #fff) 0%, transparent 66%),
+    linear-gradient(180deg, color-mix(in srgb, var(--field-color) 96%, #000) 0%, color-mix(in srgb, var(--field-color) 86%, #000) 100%);
+  transition: background 560ms cubic-bezier(0.32, 0.72, 0, 1), color 520ms ease;
 }
 
 .forum-field.is-tall {
   min-height: calc(100 * var(--dvh, 1dvh));
 }
 
-/* The journal wants a shallower field: its lead story lives below the fold of
-   the masthead, so the colour block is a header rather than the whole page. */
+/* Layer the authentic film grain over the entire field, matching CaseArchive (.case-poster::after) */
+.forum-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("/assets/case-poster-grain.png");
+  background-repeat: repeat;
+  opacity: 0.36;
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
 
+/* Ensure all interactive content sits above the grain texture */
+.forum-field > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── hero header & eyebrow ───────────────────────────────────────────────── */
+
+.forum-field-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  margin: 0 auto;
+  max-width: 820px;
+}
+
+.forum-field-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 18%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.forum-kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--forum-pink, #f568a3);
+  box-shadow: 0 0 8px var(--forum-pink, #f568a3);
+}
 
 .forum-field-eyebrow {
-  justify-self: start;
   margin: 0;
-  color: color-mix(in srgb, var(--field-ink, #fff) 78%, transparent);
-  font-size: clamp(11px, calc(0.82 * var(--vw, 1vw)), 14px);
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  color: color-mix(in srgb, var(--field-ink, #fff) 94%, transparent);
+  font-size: clamp(11px, calc(0.82 * var(--vw, 1vw)), 13px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-/* ── the display word ────────────────────────────────────────────────────── */
+.forum-kicker-badge {
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 18%, transparent);
+  color: var(--field-ink, #fff);
+  font-size: 11px;
+  font-weight: 700;
+}
 
-/* Sized from the word's own letter count, so a ten-letter topic word and a
-   seven-letter one both span the picture instead of one of them floating small
-   in the middle. The height cap is what keeps a short word from dominating
-   vertically; `--letters` is written by `SplitWord`.
- *
- * `--word-scale` lets each variant set how loud the word is: on the letter board
- * it is the composition, on the wall it is the wall's header, and in the journal
- * it is a masthead. One word, three volumes, so the variants differ in
- * proportion rather than in parts. */
+.forum-field-subtitle {
+  margin: 0;
+  color: color-mix(in srgb, var(--field-ink, #fff) 78%, transparent);
+  font-size: clamp(12.5px, calc(0.96 * var(--vw, 1vw)), 14.5px);
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+
+/* ── the display wordmark ────────────────────────────────────────────────── */
+
 .forum-field {
-  --word-scale: 1;
+  --word-scale: 0.46;
 }
 
 .forum-word {
@@ -83,22 +129,24 @@
   font-size: calc(
     min(
         calc(138 * var(--vw, 1vw) / var(--letters, 7)),
-        calc(27 * var(--vh, 1vh)),
-        268px
+        calc(22 * var(--vh, 1vh)),
+        230px
       ) * var(--word-scale, 1)
   );
   font-weight: 900;
   line-height: 0.82;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.045em;
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
   pointer-events: none;
-  text-shadow: 0 4px 30px #17150f1a;
+  opacity: 0.30;
+  text-shadow: 0 4px 40px rgb(0 0 0 / 0.3);
 }
 
 .forum-field[data-ink="dark"] .forum-word {
-  text-shadow: 0 4px 30px #ffffff42;
+  opacity: 0.22;
+  text-shadow: 0 4px 30px rgb(255 255 255 / 0.32);
 }
 
 .forum-word > span {
@@ -122,37 +170,370 @@
   }
 }
 
-/* ── the stamp ───────────────────────────────────────────────────────────── */
+/* ── the postal cancellation stamp ───────────────────────────────────────── */
 
 .forum-stamp {
   position: relative;
   display: inline-grid;
   justify-items: center;
-  gap: 6px;
-  padding: 9px 11px 8px;
-  border: 1.5px dashed color-mix(in srgb, var(--stamp-color, #17150f) 62%, transparent);
-  border-radius: 10px;
-  color: inherit;
+  gap: 4px;
+  padding: 6px 8px 5px;
+  border: 1.5px dashed color-mix(in srgb, var(--stamp-color, #17150f) 72%, transparent);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.88);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
   transform: rotate(-3.5deg);
+  transition: transform 260ms ease, box-shadow 260ms ease;
 }
 
 .forum-stamp-ring {
   position: absolute;
-  inset: 3px;
-  border: 1px solid color-mix(in srgb, var(--stamp-color, #17150f) 30%, transparent);
-  border-radius: 7px;
+  inset: 2px;
+  border: 1px solid color-mix(in srgb, var(--stamp-color, #17150f) 36%, transparent);
+  border-radius: 6px;
   pointer-events: none;
 }
 
 .forum-stamp-date {
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  opacity: 0.72;
+  color: #4a5568;
 }
 
-/* ── filters, as one caption line ────────────────────────────────────────── */
+/* ── the wall & 3D tilt pieces ───────────────────────────────────────────── */
+
+.forum-wall {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(18px, calc(2 * var(--vw, 1vw)), 32px) clamp(16px, calc(2 * var(--vw, 1vw)), 30px);
+  width: 100%;
+  max-width: 1140px;
+  padding: clamp(6px, calc(1 * var(--vh, 1vh)), 16px) 0;
+}
+
+/* The salon wall recedes slightly when one piece is engaged */
+.forum-wall:has(.forum-piece:hover) .forum-piece {
+  transform: rotate(var(--piece-angle, 0deg)) scale(0.975);
+  opacity: 0.85;
+}
+
+.forum-piece {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  transform: rotate(var(--piece-angle, 0deg));
+  transition:
+    transform 560ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 380ms ease;
+}
+
+.forum-piece[data-reveal="pending"] {
+  opacity: 0;
+}
+
+.forum-piece[data-reveal="in"] {
+  animation: forum-hang-in 720ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
+}
+
+@keyframes forum-hang-in {
+  from {
+    opacity: 0;
+    transform: rotate(var(--piece-angle, 0deg)) translateY(28px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--piece-angle, 0deg)) translateY(0) scale(1);
+  }
+}
+
+.forum-piece:hover,
+.forum-piece:focus-within {
+  transform: rotate(0deg) scale(1.02);
+  opacity: 1 !important;
+  z-index: 5;
+}
+
+.forum-piece.is-leader {
+  grid-column: span 2;
+}
+
+.forum-piece.is-leader .forum-piece-mat {
+  aspect-ratio: 16 / 7;
+}
+
+/* Museum passe-partout mount with interactive 3D pointer-tracking perspective tilt */
+.forum-piece-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: clamp(10px, calc(0.95 * var(--vw, 1vw)), 15px);
+  border: 0;
+  border-radius: 14px;
+  background: #fffdfb;
+  cursor: pointer;
+  transform: perspective(1000px) rotateX(var(--piece-tilt-x, 0deg)) rotateY(var(--piece-tilt-y, 0deg)) translate3d(var(--piece-shift-x, 0px), var(--piece-shift-y, 0px), 0px);
+  transform-style: preserve-3d;
+  transition: transform 120ms ease-out, box-shadow 320ms ease;
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.08),
+    0 14px 34px rgb(0 0 0 / 0.18),
+    0 0 0 1px rgb(255 255 255 / 0.8) inset;
+}
+
+.forum-piece-frame:hover {
+  box-shadow:
+    0 4px 10px rgb(0 0 0 / 0.12),
+    0 24px 52px rgb(0 0 0 / 0.28),
+    0 0 0 1px rgb(255 255 255 / 0.95) inset;
+}
+
+.forum-piece-mat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f4eef2;
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.10);
+}
+
+.forum-piece-mat img,
+.forum-piece-mat .forum-card-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 620ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.forum-piece:hover .forum-piece-mat img,
+.forum-piece:hover .forum-piece-mat .forum-card-art {
+  transform: scale(1.04);
+}
+
+/* Featured leader badge */
+.forum-piece-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--card-color, var(--forum-pink));
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  z-index: 2;
+}
+
+/* "OPEN POST / 阅读讨论" capsule hover button, echoing CaseArchive's OPEN CASE badge */
+.forum-piece-open {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translate(-50%, 12px) scale(0.9);
+  opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: #17150fe8;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.3);
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.forum-piece-frame:hover .forum-piece-open {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.forum-piece-stamp {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  transform: rotate(-3.5deg);
+  transition: transform 300ms ease;
+  z-index: 2;
+}
+
+.forum-piece:hover .forum-piece-stamp {
+  transform: rotate(0deg) scale(1.06);
+}
+
+/* ── piece caption & label ───────────────────────────────────────────────── */
+
+.forum-piece-label {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: 100%;
+  text-align: center;
+  color: var(--field-ink, #fff);
+}
+
+.forum-piece-tagline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.forum-piece-tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tag-color, var(--forum-pink)) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tag-color, var(--forum-pink)) 48%, transparent);
+  color: var(--field-ink, #fff);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.forum-piece-lead-hint {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--field-ink, #fff) 60%, transparent);
+}
+
+.forum-piece-label h3 {
+  margin: 2px 0 0;
+  font-size: clamp(13px, calc(0.92 * var(--vw, 1vw)), 15.5px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.forum-piece-label h3:hover {
+  color: color-mix(in srgb, var(--card-color, var(--forum-pink)) 80%, #fff);
+}
+
+.forum-piece-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--field-ink, #fff) 68%, transparent);
+}
+
+.forum-piece-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.forum-piece-views {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forum-piece-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 12%, transparent);
+  color: color-mix(in srgb, var(--field-ink, #fff) 85%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.forum-piece-like-btn:hover {
+  background: color-mix(in srgb, var(--field-ink, #fff) 22%, transparent);
+}
+
+.forum-piece-like-btn.is-liked {
+  color: #ff477e;
+  background: #ff477e26;
+}
+
+/* ── side navigation arrows (matching Cases case-poster-arrow) ───────────── */
+
+.forum-side-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid color-mix(in srgb, var(--field-ink, #fff) 24%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--field-color, #17150f) 62%, transparent);
+  color: var(--field-ink, #fff);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.22);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.forum-side-arrow.is-left {
+  left: clamp(14px, calc(2 * var(--vw, 1vw)), 36px);
+}
+
+.forum-side-arrow.is-right {
+  right: clamp(14px, calc(2 * var(--vw, 1vw)), 36px);
+}
+
+.forum-side-arrow:hover {
+  transform: translateY(-50%) scale(1.08);
+  background: var(--field-ink, #fff);
+  color: var(--field-color, #17150f);
+  border-color: transparent;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.32);
+}
+
+.forum-side-arrow:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+@media (max-width: 960px) {
+  .forum-side-arrow { display: none; }
+}
+
+/* ── filters toolbar ─────────────────────────────────────────────────────── */
+
+.forum-wall-foot {
+  width: 100%;
+  max-width: 1140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: clamp(14px, calc(2 * var(--vh, 1vh)), 24px);
+}
 
 .forum-filters {
   display: flex;
@@ -171,39 +552,53 @@
 }
 
 .forum-pill {
-  height: 28px;
+  height: 30px;
   padding: 0 13px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 26%, transparent);
+  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 24%, transparent);
   border-radius: 100px;
-  background: transparent;
-  color: color-mix(in srgb, var(--field-ink, #fff) 82%, transparent);
+  background: color-mix(in srgb, var(--field-ink, #fff) 6%, transparent);
+  color: color-mix(in srgb, var(--field-ink, #fff) 86%, transparent);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
-  transition:
-    background-color 220ms ease,
-    color 220ms ease,
-    border-color 220ms ease,
-    transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  backdrop-filter: blur(8px);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .forum-pill:hover {
   transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--field-ink, #fff) 52%, transparent);
+  background: color-mix(in srgb, var(--field-ink, #fff) 14%, transparent);
+  border-color: color-mix(in srgb, var(--field-ink, #fff) 46%, transparent);
+  color: var(--field-ink, #fff);
 }
 
 .forum-pill[aria-pressed="true"] {
   border-color: transparent;
-  background: var(--pill-color, #17150f);
-  color: var(--pill-ink, #fff);
+  background: var(--pill-color, #fff);
+  color: var(--pill-ink, #17150f);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.22);
+  font-weight: 800;
+}
+
+.forum-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.forum-pill[aria-pressed="true"] .forum-pill-dot {
+  background: currentColor !important;
 }
 
 .forum-pill-count {
-  font-size: 10.5px;
-  opacity: 0.6;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -211,79 +606,161 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin-left: auto;
 }
 
 .forum-sorter {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 16%, transparent);
+  backdrop-filter: blur(8px);
 }
 
 .forum-sorter button {
   height: 26px;
-  padding: 0 11px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 100px;
+  border-radius: 999px;
   background: transparent;
-  color: color-mix(in srgb, var(--field-ink, #fff) 62%, transparent);
-  font-size: 12px;
+  color: color-mix(in srgb, var(--field-ink, #fff) 70%, transparent);
+  font-size: 11.5px;
   font-weight: 700;
-  transition: background-color 200ms ease, color 200ms ease;
+  cursor: pointer;
+  transition: all 180ms ease;
 }
 
 .forum-sorter button[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--field-ink, #fff) 16%, transparent);
-  color: var(--field-ink, #fff);
+  background: var(--field-ink, #fff);
+  color: var(--field-color, #17150f);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.16);
+  font-weight: 800;
 }
 
-/* Search is a rule on the field, not a box on it: an underlined input reads as
-   part of the composition, where a bordered field would read as chrome. */
 .forum-query {
   position: relative;
   display: inline-flex;
-  align-items: baseline;
-  gap: 9px;
-  min-width: 168px;
-  padding-bottom: 3px;
-  border-bottom: 1.5px solid color-mix(in srgb, var(--field-ink, #fff) 30%, transparent);
-  transition: border-color 220ms ease;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 20%, transparent);
+  backdrop-filter: blur(8px);
+  transition: all 220ms ease;
 }
 
 .forum-query:focus-within {
   border-color: var(--field-ink, #fff);
+  background: color-mix(in srgb, var(--field-ink, #fff) 16%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--field-ink, #fff) 20%, transparent);
 }
 
-.forum-query-label {
-  color: color-mix(in srgb, var(--field-ink, #fff) 58%, transparent);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+.forum-query-icon {
+  color: color-mix(in srgb, var(--field-ink, #fff) 60%, transparent);
+  flex: 0 0 auto;
 }
 
 .forum-query input {
   flex: 1 1 auto;
   min-width: 0;
-  width: 132px;
+  width: 130px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--field-ink, #fff);
   font: inherit;
-  font-size: 13px;
-}
-
-.forum-query input::placeholder {
-  color: color-mix(in srgb, var(--field-ink, #fff) 42%, transparent);
-}
-
-.forum-query input:focus-visible {
+  font-size: 12px;
+  font-weight: 500;
   outline: none;
 }
 
-.forum-query input::-webkit-search-cancel-button {
-  appearance: none;
+.forum-query input::placeholder {
+  color: color-mix(in srgb, var(--field-ink, #fff) 45%, transparent);
+}
+
+.forum-query-clear {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--field-ink, #fff) 24%, transparent);
+  color: var(--field-ink, #fff);
+  cursor: pointer;
+}
+
+/* ── pagination bar ──────────────────────────────────────────────────────── */
+
+.forum-wall-pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-ink, #fff) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--field-ink, #fff) 18%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.forum-pager-arrow {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--field-ink, #fff);
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.forum-pager-arrow:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--field-ink, #fff) 22%, transparent);
+  transform: scale(1.08);
+}
+
+.forum-pager-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.forum-pager-pills {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.forum-pager-dot {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, var(--field-ink, #fff) 60%, transparent);
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.forum-pager-dot.is-active {
+  background: var(--field-ink, #fff);
+  color: var(--field-color, #17150f);
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.18);
 }
 
 /* ── empty state ─────────────────────────────────────────────────────────── */
@@ -303,13 +780,13 @@
   font-weight: 900;
   letter-spacing: -0.04em;
   text-transform: uppercase;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .forum-empty-note {
   margin: 0;
   font-size: 14px;
-  opacity: 0.78;
+  opacity: 0.8;
 }
 
 .forum-empty-state button {
@@ -329,346 +806,29 @@
   color: var(--field-color, #f568a3);
 }
 
-/* ── the wall ─────────────────────────────────────────────────── */
+/* ── responsive adjustments ─────────────────────────────────────────────── */
 
-/* A salon hang: every frame the same size, the way a real wall is hung, with
-   the pictures contained inside them. Letting each frame follow its image's
-   aspect (as the masonry did) is what makes a wall look like a feed; equal
-   frames with white space inside them is what makes it look curated.
-
-   Seven units over three columns, the lead spanning two of them: three rows
-   fills exactly, so the wall has no hole in it. */
-/* The wall has to fit the same single screen the letter board's field occupies,
-   so this variant spends its vertical budget differently: a quieter word, thinner
-   margins, and the rest is wall. Sized from measurement rather than taste — the
-   available height is the viewport minus the header band, the word and the
-   filter line, and two rows of frames plus their captions have to come out of
-   what is left. */
-.forum-gallery-board .forum-field {
-  --word-scale: 0.42;
-  row-gap: clamp(10px, calc(1.5 * var(--vh, 1vh)), 20px);
-  padding-top: clamp(70px, calc(8.6 * var(--vh, 1vh)), 96px);
-  padding-bottom: clamp(16px, calc(2.2 * var(--vh, 1vh)), 28px);
-}
-
-.forum-wall {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
-  gap: clamp(16px, calc(1.9 * var(--vw, 1vw)), 32px) clamp(16px, calc(1.9 * var(--vw, 1vw)), 30px);
-  width: 100%;
-  max-width: 1080px;
-  padding: clamp(6px, calc(1.2 * var(--vh, 1vh)), 16px) 0;
-}
-
-/* The wall recedes when one piece is looked at: every piece steps back a little
-   while the hovered one comes forward and straightens. That is the only motion
-   this composition needs, and it is how a room behaves. */
-.forum-wall:has(.forum-piece:hover) .forum-piece {
-  transform: rotate(var(--piece-angle, 0deg)) scale(0.97);
-  opacity: 0.82;
-}
-
-.forum-piece {
-  position: relative;
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  transform: rotate(var(--piece-angle, 0deg));
-  transition:
-    transform 560ms cubic-bezier(0.32, 0.72, 0, 1),
-    opacity 380ms ease;
-}
-
-.forum-piece[data-reveal="pending"] {
-  opacity: 0;
-}
-
-.forum-piece[data-reveal="in"] {
-  animation: forum-hang-in 720ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
-}
-
-@keyframes forum-hang-in {
-  from {
-    opacity: 0;
-    transform: rotate(var(--piece-angle, 0deg)) translateY(30px) scale(0.96);
+@media (max-width: 900px) {
+  .forum-wall {
+    grid-template-columns: 1fr;
+    max-width: 540px;
   }
-  to {
-    opacity: 1;
-    transform: rotate(var(--piece-angle, 0deg)) translateY(0) scale(1);
+  .forum-piece.is-leader {
+    grid-column: span 1;
+  }
+  .forum-piece.is-leader .forum-piece-mat {
+    aspect-ratio: 16 / 10;
   }
 }
-
-.forum-piece:hover,
-.forum-piece:focus-within {
-  transform: rotate(0deg) scale(1.02);
-  opacity: 1;
-}
-
-/* The lead takes two of the three columns and one row. With five pieces a page
-   that is exactly six column-units, i.e. two full rows: the wall has no hole and
-   no dangling piece, which is what a salon hang requires. */
-.forum-piece.is-leader {
-  grid-column: span 2;
-}
-
-/* The lead spans two columns, so at a normal 16:10 crop it becomes the tall row
-   and pushes the second row off the screen. A panoramic crop keeps it the widest
-   thing on the wall (which is the point of a lead) without making it the tallest
-   — the wall's two rows then come out within a few pixels of each other. */
-.forum-piece.is-leader .forum-piece-mat {
-  aspect-ratio: 16 / 6;
-}
-
-/* The mount: a white passe-partout around the work, which is what makes the
-   piece read as a hung print rather than a card with an image in it. */
-.forum-piece-frame {
-  position: relative;
-  display: block;
-  width: 100%;
-  padding: clamp(9px, calc(0.9 * var(--vw, 1vw)), 15px);
-  border: 0;
-  border-radius: 2px;
-  background: #fffdfb;
-  cursor: pointer;
-  box-shadow:
-    0 1px 0 #ffffff inset,
-    0 22px 48px #4c1a3826,
-    0 5px 14px #4c1a3818;
-}
-
-.forum-piece-mat {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  background: #f4eef1;
-}
-
-.forum-piece-mat img,
-.forum-piece-mat .forum-card-art {
-  display: block;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
-  object-fit: contain;
-  transition: transform 620ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.forum-piece:hover .forum-piece-mat img,
-.forum-piece:hover .forum-piece-mat .forum-card-art {
-  transform: scale(1.035);
-}
-
-
-
-.forum-piece.is-leader .forum-piece-mat img {
-  object-fit: cover;
-}
-
-/* The label sits on the wall below the frame, not inside it. */
-.forum-piece-label {
-  display: grid;
-  justify-items: center;
-  gap: 5px;
-  width: 100%;
-  text-align: center;
-}
-
-.forum-piece-no {
-  width: 22px;
-  height: 2px;
-  background: color-mix(in srgb, var(--field-ink, #fff) 52%, transparent);
-}
-
-.forum-piece-label h3 {
-  margin: 0;
-  font-size: clamp(12.5px, calc(0.86 * var(--vw, 1vw)), 15px);
-  font-weight: 700;
-  line-height: 1.3;
-  /* One line wherever it fits, two at most: the caption must not grow the wall. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.forum-piece-label p {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3px 10px;
-  margin: 0;
-  color: color-mix(in srgb, var(--field-ink, #fff) 62%, transparent);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-
-.forum-piece-stamp {
-  position: absolute;
-  top: clamp(14px, calc(1.4 * var(--vw, 1vw)), 24px);
-  right: clamp(14px, calc(1.4 * var(--vw, 1vw)), 24px);
-  opacity: 0;
-  transform: rotate(-10deg) scale(1.3);
-  transition:
-    opacity 300ms ease,
-    transform 460ms cubic-bezier(0.32, 0.72, 0, 1);
-  pointer-events: none;
-}
-
-/* The stamp "lands" on hover: it arrives oversized and slightly turned, the way
-   a hand stamp comes down on paper. That is the whole interaction. */
-.forum-piece:hover .forum-piece-stamp {
-  opacity: 1;
-  transform: rotate(-3.5deg) scale(1);
-}
-
-.forum-wall-foot {
-  width: 100%;
-  max-width: 1240px;
-  padding-top: clamp(16px, calc(2.4 * var(--vh, 1vh)), 32px);
-}
-
-.forum-wall-pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 26px 0 84px;
-}
-
-.forum-pager-arrow {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 1.5px solid #17150f2e;
-  border-radius: 50%;
-  background: #ffffffe0;
-  color: #17150f;
-  transition: background-color 220ms ease, transform 220ms ease, opacity 220ms ease;
-}
-
-.forum-pager-arrow:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: #17150f;
-  color: #fff;
-}
-
-.forum-pager-arrow:disabled {
-  opacity: 0.32;
-  cursor: not-allowed;
-}
-
-.forum-pager-count {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  margin: 0;
-  color: #17150f;
-  font-family: "DM Sans", sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
-}
-
-.forum-pager-count i {
-  color: #a49e94;
-  font-style: normal;
-}
-
-/* ── compact ─────────────────────────────────────────────────────────────── */
-
-/* Compact: the header stack (account pill, then the nav row) is two lines tall,
-   so the field has to clear both before its own content starts. */
-.app[data-layout="compact"] .forum-field {
-  row-gap: clamp(14px, calc(2.2 * var(--vh, 1vh)), 30px);
-  padding: 118px 20px 26px;
-  min-height: auto;
-}
-
-
-.app[data-layout="compact"] .forum-word {
-  font-size: min(calc(150 * var(--vw, 1vw) / var(--letters, 7)), calc(13 * var(--vh, 1vh)), 74px);
-}
-
-
-
-
-
-
-.app[data-layout="compact"] .forum-filters {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.app[data-layout="compact"] .forum-filters-side {
-  margin-left: 0;
-  width: 100%;
-  justify-content: space-between;
-}
-
-.app[data-layout="compact"] .forum-query {
-  flex: 1 1 auto;
-}
-
-.app[data-layout="compact"] .forum-query input {
-  width: 100%;
-}
-
-
-
-.app[data-layout="compact"] .forum-wall {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 30px;
-}
-
-.app[data-layout="compact"] .forum-piece.is-leader {
-  grid-column: span 1;
-}
-
-.app[data-layout="compact"] .forum-piece-stamp {
-  opacity: 1;
-  transform: rotate(-3.5deg) scale(1);
-}
-
-
-
-
-
-
-
-
-
-/* ── reduced motion ──────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .forum-word > span,
-  .forum-piece[data-reveal] {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .forum-field {
-    transition: none;
-  }
-
   .forum-piece,
-  .forum-piece:hover,
-  .forum-piece:focus-within {
-    transform: none;
-  }
-
-  .forum-wall:has(.forum-piece:hover) .forum-piece {
-    transform: none;
-    opacity: 1;
-  }
-
-  .forum-piece-stamp {
-    opacity: 1;
-    transform: rotate(-3.5deg) scale(1);
+  .forum-piece-frame,
+  .forum-word > span,
+  .forum-side-arrow,
+  .forum-pill {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
