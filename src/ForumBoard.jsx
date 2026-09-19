@@ -5,10 +5,13 @@ import {
   CaretLeft,
   CaretRight,
   ChatCircleDots,
+  Check,
+  Copy,
   Eye,
   Heart,
   PaperPlaneRight,
   Plus,
+  Sparkle,
   X,
 } from "@phosphor-icons/react";
 import { ForumCard, ForumCardMedia, MemberAvatar } from "./forum-card";
@@ -27,17 +30,18 @@ import {
 import { GalleryBoard } from "./forum-gallery";
 
 const FORUM_TAG_COLORS = {
-  学习笔记: { color: "#f568a3", ink: "#ffffff", accent: "#ffd7ec" },
-  实战案例: { color: "#247cf1", ink: "#ffffff", accent: "#c8e0ff" },
-  作品分享: { color: "#00a96d", ink: "#ffffff", accent: "#bdf2d8" },
-  讨论场: { color: "#7438e5", ink: "#ffffff", accent: "#e0ccff" },
-  每周精选: { color: "#ffb703", ink: "#17150f", accent: "#fff0c2" },
+  "AI 生图": { color: "#f568a3", ink: "#ffffff", accent: "#ffd7ec" },
+  "AI 视频": { color: "#247cf1", ink: "#ffffff", accent: "#c8e0ff" },
+  "AI 代码": { color: "#7438e5", ink: "#ffffff", accent: "#e0ccff" },
+  "AI 办公": { color: "#00a96d", ink: "#ffffff", accent: "#bdf2d8" },
 };
 
 function ForumComposer({ onBack, onPublish }) {
   const [tagIndex, setTagIndex] = useState(0);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [model, setModel] = useState("");
   const [content, setContent] = useState("");
   const [customTags, setCustomTags] = useState([]);
   const [newTag, setNewTag] = useState("");
@@ -126,19 +130,21 @@ function ForumComposer({ onBack, onPublish }) {
       tag: tag.name,
       title: title.trim(),
       summary: summary.trim(),
+      prompt: prompt.trim() || undefined,
+      model: model.trim() || "AI 深度模型",
       author,
       createdAt,
       views: 1,
       likes: 0,
       comments: [],
-      image: images[0],
+      image: images[0] || "/assets/cases/1.webp",
       images: images.length ? images : undefined,
       color: tag.color,
       ink: tag.ink,
       line: tag.line ?? tag.ink,
       accent: tag.accent,
       art: "dots",
-      imageRatio: "4 / 3",
+      imageRatio: "16 / 9",
       content: content.split(/\n+/).map((paragraph) => paragraph.trim()).filter(Boolean),
     });
   };
@@ -269,22 +275,44 @@ function ForumComposer({ onBack, onPublish }) {
           </div>
 
           <div className="forum-compose-field">
-            <label htmlFor="forum-compose-title-input">标题</label>
-            <input id="forum-compose-title-input" value={title} maxLength={48} placeholder="写下这次分享的核心" onChange={(event) => setTitle(event.target.value)} />
+            <label htmlFor="forum-compose-title-input">案例标题</label>
+            <input id="forum-compose-title-input" value={title} maxLength={48} placeholder="写下这次案例的核心亮点" onChange={(event) => setTitle(event.target.value)} />
           </div>
 
           <div className="forum-compose-field">
-            <label htmlFor="forum-compose-summary">梗概</label>
-            <input id="forum-compose-summary" value={summary} maxLength={90} placeholder="放在卡片上的简短介绍" onChange={(event) => setSummary(event.target.value)} />
+            <label htmlFor="forum-compose-summary">一句话简介</label>
+            <input id="forum-compose-summary" value={summary} maxLength={90} placeholder="放在悬浮卡片上的简短介绍" onChange={(event) => setSummary(event.target.value)} />
           </div>
 
           <div className="forum-compose-field">
-            <label htmlFor="forum-compose-content">正文</label>
-            <textarea id="forum-compose-content" value={content} placeholder="每空一行会成为一个正文段落" onChange={(event) => setContent(event.target.value)} />
+            <label htmlFor="forum-compose-prompt">AI 核心提示词 (Prompt)</label>
+            <textarea
+              id="forum-compose-prompt"
+              value={prompt}
+              rows={3}
+              placeholder="完整提示词指令，包含关键风格修饰词、负向约束或参数（如 --ar 16:9 --v 6.0）"
+              onChange={(event) => setPrompt(event.target.value)}
+            />
+          </div>
+
+          <div className="forum-compose-field">
+            <label htmlFor="forum-compose-model">所用模型与工具</label>
+            <input
+              id="forum-compose-model"
+              value={model}
+              maxLength={40}
+              placeholder="例如：Midjourney v6.0 / Claude 3.5 Sonnet / Runway Gen-2"
+              onChange={(event) => setModel(event.target.value)}
+            />
+          </div>
+
+          <div className="forum-compose-field">
+            <label htmlFor="forum-compose-content">案例配文与创作复盘</label>
+            <textarea id="forum-compose-content" value={content} placeholder="详细记录创作背景、踩坑经验与提示词调试心得（每空一行成为一个段落）" onChange={(event) => setContent(event.target.value)} />
           </div>
 
           <button className="forum-publish-button" type="submit" disabled={!canPublish}>
-            发布到论坛
+            发布案例到社区
           </button>
         </form>
       </section>
@@ -443,12 +471,24 @@ export function ForumDetail({
   onAddComment,
   onOpenPost,
   related = [],
-  returnLabel = "返回论坛",
+  returnLabel = "返回案例",
 }) {
   const bodyRef = useRef(null);
+  const [copied, setCopied] = useState(false);
   const comments = activity.comments;
   const saved = useFavoriteSaved(post.id);
   const member = resolveMember(post.author);
+
+  const copyPrompt = () => {
+    if (!post.prompt) return;
+    try {
+      navigator.clipboard?.writeText(post.prompt);
+    } catch {
+      // Fallback
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
 
   useEffect(() => {
     document
@@ -532,9 +572,43 @@ export function ForumDetail({
         </header>
 
         <div className="forum-post-body" ref={bodyRef}>
-          {post.content.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+          {post.prompt && (
+            <section className="forum-detail-prompt-card" aria-label="AI 核心提示词">
+              <div className="prompt-card-header">
+                <div className="prompt-header-left">
+                  <Sparkle size={16} weight="fill" className="prompt-icon" />
+                  <strong>AI 核心提示词 · PROMPT</strong>
+                  {post.model && <span className="prompt-model-badge">{post.model}</span>}
+                </div>
+                <button
+                  type="button"
+                  className={`prompt-copy-btn${copied ? " is-copied" : ""}`}
+                  onClick={copyPrompt}
+                  title="复制提示词到剪贴板"
+                >
+                  {copied ? <Check size={14} weight="bold" /> : <Copy size={14} weight="bold" />}
+                  <span>{copied ? "已复制提示词" : "复制提示词"}</span>
+                </button>
+              </div>
+
+              <div className="prompt-card-code">
+                <code>{post.prompt}</code>
+              </div>
+
+              {post.params && (
+                <footer className="prompt-card-footer">
+                  <small>参数配置：{post.params}</small>
+                </footer>
+              )}
+            </section>
+          )}
+
+          <div className="forum-detail-writeup-wrap">
+            <h2 className="writeup-heading">案例配文与实践复盘</h2>
+            {post.content.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
 
           <div className="forum-post-comments">
             <div className="forum-comments-title">

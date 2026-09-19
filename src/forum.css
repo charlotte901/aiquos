@@ -875,6 +875,121 @@
   display: none;
 }
 
+/* ── AI Core Prompt Card in Detail View ──────────────────────────────────── */
+
+.forum-detail-prompt-card {
+  margin: 4px 0 20px;
+  padding: 15px 18px;
+  border-radius: 16px;
+  background: #191c2b;
+  border: 1px solid #282f48;
+  box-shadow: 0 4px 18px rgb(0 0 0 / 0.16);
+  color: #e2e8f0;
+}
+
+.prompt-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.prompt-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prompt-icon {
+  color: #f568a3;
+}
+
+.prompt-header-left strong {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #f1f5f9;
+}
+
+.prompt-model-badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #2b3553;
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.prompt-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid #384366;
+  border-radius: 999px;
+  background: #22283e;
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.prompt-copy-btn:hover {
+  background: #2d3654;
+  border-color: #64748b;
+  color: #ffffff;
+}
+
+.prompt-copy-btn.is-copied {
+  background: #0f766e;
+  border-color: #14b8a6;
+  color: #ffffff;
+}
+
+.prompt-card-code {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #10121d;
+  border: 1px solid #1e2438;
+  max-height: 160px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.prompt-card-code code {
+  display: block;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #93c5fd;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.prompt-card-footer {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 11px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.forum-detail-writeup-wrap {
+  margin-top: 14px;
+}
+
+.writeup-heading {
+  margin: 0 0 12px;
+  color: var(--forum-ink);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
 .forum-post-body p {
   margin: 0 0 17px;
   color: var(--forum-ink);

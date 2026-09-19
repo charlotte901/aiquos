@@ -50,6 +50,10 @@ export function collectTopics(posts) {
  * eight-character Chinese phrase cannot be set at that scale without breaking
  * the line. Falls back to a topical word derived from the tag's own meaning. */
 const TOPIC_WORDS = {
+  "AI 生图": "VISUAL",
+  "AI 视频": "CINEMA",
+  "AI 代码": "ENGINE",
+  "AI 办公": "OFFICE",
   测评研究: "RESEARCH",
   实战案例: "CASEWORK",
   作品分享: "SHOWCASE",

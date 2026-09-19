@@ -114,7 +114,16 @@ const CARD_MOVES = new Set([
 ]);
 // Homepage and case library share one panel node, so they cannot be frozen and
 // cut like the moves above; they push instead, on the live layers themselves.
-const SLIDE_MOVES = new Set(["home>cases", "cases>home"]);
+// We extend the slide transition to cover Home ↔ Cases ↔ Forum across all three tabs.
+const SLIDE_MOVES = new Set([
+  "home>cases",
+  "cases>home",
+  "home>forum",
+  "forum>home",
+  "cases>forum",
+  "forum>cases",
+]);
+const TAB_ORDER = { home: 0, cases: 1, forum: 2 };
 
 function waitForCubeSettle() {
   return new Promise((resolve) => {
@@ -349,8 +358,8 @@ export function SiteExperience() {
       if (SLIDE_MOVES.has(move)) {
         // The arriving page is already travelling; the archive's cold-open
         // would be a second entrance on top of it.
-        const forward = move === "home>cases";
-        if (forward) skipCaseIntro();
+        const forward = (TAB_ORDER[next] ?? 1) > (TAB_ORDER[view] ?? 0);
+        if (forward && next === "cases") skipCaseIntro();
         // The URL moves with the intent either way; only the view has to wait
         // for the reverse, so the archive keeps its own `data-tab` while it
         // travels (see pushPages).
@@ -358,20 +367,24 @@ export function SiteExperience() {
           window.scrollTo(0, 0);
           history.pushState(null, "", hash);
         };
-        setPushing(true);
+        flushSync(() => setPushing(true));
         try {
           await pushPages({
             forward,
+            move,
             enter: forward
               ? () => {
                   flushSync(() => setView(next));
                   arrive();
                 }
               : arrive,
-            commit: forward ? undefined : () => flushSync(() => setView(next)),
+            commit: () => {
+              flushSync(() => setView(next));
+              arrive();
+            },
           });
         } finally {
-          setPushing(false);
+          flushSync(() => setPushing(false));
         }
         return;
       }

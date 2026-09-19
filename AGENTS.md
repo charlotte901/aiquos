@@ -1,5 +1,19 @@
 # Prototype Instructions
 
+Full Case Forum with Floating Salon Gallery, AI Prompts & 3-Tab Push Transitions (2026-09-19, latest):
+- Suspended Salon Gallery on Pink Canvas: restored the curated floating gallery of cases on the iconic AIQUOS brand pink (`#f568a3`) film-grain canvas (`/assets/case-poster-grain.png`). Each case is a suspended museum mount (`#fffdfb`) with subtle natural hanging angle (`hangAngle`), authentic 3D pointer-tracking perspective tilt (`perspective: 1200px`), postal stamp (`AuthorStamp`), category tag badge, gliding hover capsule (`查看案例与提示词 ↗`), and real-time upvote heart button.
+- All Project Cases Integrated: all 17 real cases from AIQUOS (Wing It, Super Mario, Japanese Conbini, Pirate Ship, Penguin 3D, Moon Route PPT, Onboarding Schedule, Cardboard Astronaut Stop-Motion, Red Team Security Audit, Browser-Use Computer Control, Cat in Glasses, Parrot, Collage Poster, The Last Ice, Girl & White Cat, Fishbowl Avatar, Summer Bus) are woven into the forum database (`src/forum-topics.js`), divided cleanly across four core channels: `AI 生图`, `AI 视频`, `AI 代码`, `AI 办公`.
+- AI Prompt & Case Detail Experience (`ForumDetail`):
+  * Dedicated high-contrast **AI 核心提示词 · PROMPT** code card with model badge (`Midjourney v6.0`, `Runway Gen-2`, `Claude 3.5 Sonnet + Three.js`, etc.), parameter tags, and a working one-click **复制提示词** button with toast feedback.
+  * Deep author reflection writeup (`案例配文与实践复盘`) explaining prompt engineering rationale, pitfalls encountered, and takeaways.
+  * Real-time likes and personal center favorites integration.
+  * Authentic community comments stream from mentors, plus working comment composer for immediate interaction.
+- User Posting (`ForumComposer`): supports selecting `AI 生图` / `AI 视频` / `AI 代码` / `AI 办公`, inputting title, AI core prompt, model/tools, description writeup, and image upload/selection; newly published cases immediately append to the top of the floating gallery.
+- Omnidirectional Home ↔ Cases ↔ Forum Push Transitions:
+  * Full horizontal sliding push (`pushPages` with `SLIDE_DURATION = 760ms` and `SLIDE_EASING`) between all three tabs: Home ↔ Cases, Cases ↔ Forum, Home ↔ Forum.
+  * Synchronous `flushSync(() => setPushing(true))` ensures sibling `.home-tab-screen.is-cases` and `.home-tab-screen.is-forum` layers exist in the DOM during the push, preventing blank frames or unmount flickers.
+  * URL and view states commit synchronously upon arrival.
+
 Authentic Community Forum Architecture and Layout Upgrade (2026-09-19, latest): the Forum tab is transformed from an art-gallery wall into a genuine, modern, enterprise-grade community forum (`GalleryBoard` in `src/forum-gallery.jsx` + `src/forum-board.css`):
 - Community Hero Header: branded hero banner with kicker (`AIQUOS 智核社区 · AI 能力与实战讨论场`), bold heading (`真实任务研讨 · 实践经验沉淀`), subtitle, community stat pills (15 篇复盘 / 12 位导师 / 1.8w+ 互动), and a prominent `+ 发起新讨论` action button.
 - Horizontal Channel Navigation: scrollable channel tabs for all 8 categories (`全部讨论`, `测评研究`, `实战案例`, `作品分享`, `学习笔记`, `前沿观察`, `讨论场`, `校园故事`, `效率工具`, `每周精选`) with live post count pills and topic dot indicators.

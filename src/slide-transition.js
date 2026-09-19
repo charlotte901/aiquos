@@ -32,10 +32,36 @@ export const SLIDE_EASING = STRIP_EASING;
 const HOME_LAYER = ".home-stage";
 const CASES_LAYER = ".home-tab-screen";
 
-/** The two layers of one push, in travel order. A forward move sends home off
- * to the left and brings cases in from the right; the reverse plays the same
+function layerSelector(name) {
+  if (name === "home") return HOME_LAYER;
+  if (name === "forum") {
+    return document.querySelector(".home-tab-screen.is-forum")
+      ? ".home-tab-screen.is-forum"
+      : CASES_LAYER;
+  }
+  if (name === "cases") {
+    return document.querySelector(".home-tab-screen.is-cases")
+      ? ".home-tab-screen.is-cases"
+      : CASES_LAYER;
+  }
+  return CASES_LAYER;
+}
+
+/** The two layers of one push, in travel order. A forward move sends home/cases off
+ * to the left and brings cases/forum in from the right; the reverse plays the same
  * strip backwards, so both directions stay one continuous motion. */
-function layers(forward) {
+function layers(forward, move) {
+  if (move && typeof move === "string") {
+    const [from, to] = move.split(">");
+    if (from && to) {
+      const fromSel = layerSelector(from);
+      const toSel = layerSelector(to);
+      return {
+        leaving: document.querySelector(fromSel),
+        arriving: toSel,
+      };
+    }
+  }
   return {
     leaving: document.querySelector(forward ? HOME_LAYER : CASES_LAYER),
     arriving: forward ? CASES_LAYER : HOME_LAYER,
@@ -63,7 +89,7 @@ function layers(forward) {
  * set up in the same task as the departing one, or the first painted frame shows
  * the new page already in place.
  */
-export async function pushPages({ forward, enter, commit }) {
+export async function pushPages({ forward, move = null, enter, commit }) {
   // The travelling layers are inside the stage, so the distance a page moves to
   // clear the frame is the frame's width — not the window's, which is wider and
   // would leave the page still partly on screen at the end of the push.
@@ -76,7 +102,7 @@ export async function pushPages({ forward, enter, commit }) {
   // Everything travels left on the way in and right on the way back.
   const travel = forward ? -width : width;
 
-  const { leaving, arriving: arrivingSelector } = layers(forward);
+  const { leaving, arriving: arrivingSelector } = layers(forward, move);
   // The incoming tab hides the homepage's elements as soon as `data-tab`
   // flips; the push needs them visible because they are the half still leaving.
   // The layout read that follows commits the header's transition before the tab

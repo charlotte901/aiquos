@@ -372,19 +372,24 @@ export function App({
               </p>
             </section>
           </div>
-          {/* The tab is what keeps this mounted, and on the way home the tab
-              stays on `cases` until the page has finished travelling, so the
-              archive is never deleted mid-slide. `inert` covers the two cases
-              where it is on screen but not the page in charge: a tab that has
-              already left it, and a push that is carrying it out. */}
-          {screenTab && (
+          {/* Sibling tab screens for Cases and Forum, so pushPages can slide
+              Home ↔ Cases ↔ Forum smoothly with zero blank frames. */}
+          {(tab === "cases" || (pushing && (tab === "home" || tab === "forum"))) && (
             <div
-              className="home-tab-screen"
-              aria-label={`${screenTab} content`}
-              inert={tab === "home" || pushing}
+              className="home-tab-screen is-cases"
+              aria-label="cases content"
+              inert={tab !== "cases"}
             >
-              {screenTab === "cases" && <LibraryHub variant="cases" onDetailChange={setDetailOpen} />}
-              {screenTab === "forum" && <LibraryHub variant="forum" onDetailChange={setDetailOpen} />}
+              <LibraryHub variant="cases" onDetailChange={setDetailOpen} />
+            </div>
+          )}
+          {(tab === "forum" || (pushing && (tab === "home" || tab === "cases"))) && (
+            <div
+              className="home-tab-screen is-forum"
+              aria-label="forum content"
+              inert={tab !== "forum"}
+            >
+              <LibraryHub variant="forum" onDetailChange={setDetailOpen} />
             </div>
           )}
         </section>

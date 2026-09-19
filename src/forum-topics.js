@@ -1,22 +1,39 @@
-/** 15 个与 AI 测评相关的论坛话题，每个账号发布一篇。
- * 图片暂以 /assets/forum/topic-XX.webp 为占位路径，加载失败时自动隐藏，
- * 等人工生成的图片放入 public/assets/forum/ 后即自动显示。 */
+/** 真实案例论坛数据库 (AIQUOS Real Case Forum Topics)
+ *
+ * 融合项目内全部 17 个真实案例（涵盖 AI 生图 / AI 视频 / AI 代码 / AI 办公），
+ * 每个案例配备真实提示词 (Prompt)、模型信息、发布者创作配文复盘、点赞/收藏/评论数据。
+ */
 
-const TAGS = {
-  测评研究: { color: "#247cf1", ink: "#ffffff", line: "#ffffff", accent: "#c8e0ff" },
-  实战案例: { color: "#7438e5", ink: "#ffffff", line: "#ffffff", accent: "#e0ccff" },
-  作品分享: { color: "#00a96d", ink: "#ffffff", line: "#ffffff", accent: "#bdf2d8" },
-  学习笔记: { color: "#f568a3", ink: "#ffffff", line: "#ffffff", accent: "#ffd7ec" },
-  前沿观察: { color: "#fb5727", ink: "#ffffff", line: "#ffffff", accent: "#ffd2c0" },
-  讨论场: { color: "#2b2733", ink: "#ffffff", line: "#ffffff", accent: "#c9c7cf" },
-  效率工具: { color: "#17150f", ink: "#ffffff", line: "#ffffff", accent: "#c9c7cf" },
-  校园故事: { color: "#ffb703", ink: "#17150f", line: "#17150f", accent: "#fff0c2" },
-  每周精选: { color: "#ffb703", ink: "#17150f", line: "#17150f", accent: "#fff0c2" },
+const TAG_PALETTES = {
+  "AI 生图": { color: "#f568a3", ink: "#ffffff", line: "#ffffff", accent: "#ffd7ec" },
+  "AI 视频": { color: "#247cf1", ink: "#ffffff", line: "#ffffff", accent: "#c8e0ff" },
+  "AI 代码": { color: "#7438e5", ink: "#ffffff", line: "#ffffff", accent: "#e0ccff" },
+  "AI 办公": { color: "#00a96d", ink: "#ffffff", line: "#ffffff", accent: "#bdf2d8" },
 };
 
-function topic(index, tag, author, createdAt, views, likes, title, summary, content, comments, imageRatio, art) {
-  const palette = TAGS[tag];
-  const id = `ai-assess-${String(index).padStart(2, "0")}`;
+function casePost({
+  id,
+  tag,
+  title,
+  summary,
+  author,
+  createdAt,
+  views,
+  likes,
+  image,
+  imageRatio = "16 / 9",
+  model,
+  prompt,
+  params = "",
+  content,
+  comments = [],
+}) {
+  const palette = TAG_PALETTES[tag] ?? {
+    color: "#f568a3",
+    ink: "#ffffff",
+    line: "#ffffff",
+    accent: "#ffd7ec",
+  };
   return {
     id,
     tag,
@@ -26,282 +43,570 @@ function topic(index, tag, author, createdAt, views, likes, title, summary, cont
     createdAt,
     views,
     likes,
-    comments,
-    image: `/assets/forum/${id}.webp`,
+    image,
     imageRatio,
+    model,
+    prompt,
+    params,
+    content,
+    comments,
     color: palette.color,
     ink: palette.ink,
     line: palette.line,
     accent: palette.accent,
-    art,
-    content,
   };
 }
 
 export const TOPIC_POSTS = [
-  topic(
-    1, "测评研究", "知遥测不准", "2026-09-13 20:46", 3627, 421,
-    "我给团队设计了一套 AI 能力分级测评，这是三个月复盘",
-    "L1 到 L5 不是职称，而是任务场景。这套分级让 42 个人的团队第一次用同一种语言讨论“会用 AI”。",
-    [
-      "最开始团队里的评价只有两句话：“他很会用 AI”和“她还在观望”。这种评价没法安排培训，也没法分配工具预算，所以我把它拆成了五级：L1 会提问，L2 会给边界，L3 会多轮修正，L4 会搭流程，L5 会设计测评本身。",
-      "分级的关键不是题目难度，而是任务场景。每一级我们都配了一个真实工作任务：L1 是把一段会议记录整理成待办，L4 是把三个工具串成一条自动流水线。场景对了，分数才有含义。",
-      "三个月跑下来，最大的发现是：级别和工龄几乎不相关。入职两年的运营可以到 L4，工作八年的资深专家可能停在 L2——因为他一直让下属替他操作。",
-      "第二个发现是 L3 的通过率最低。多数人卡在“会不会给模型反馈权”，也就是愿不愿意让 AI 先指出你的问题，再谈修改。这一步是心态问题，不是技能问题。",
-      "下一版我们要补上“衰减测试”：三个月后重新测一次，看能力是不是真的留下来了。测评如果只测一次，它就只是考试；重复测，才是成长曲线。",
+  // ── AI 生图 (Visual Arts) ────────────────────────────────────────────────
+  casePost({
+    id: "case-cat-glasses",
+    tag: "AI 生图",
+    title: "戴眼镜的黑猫 · 宣纸水墨神态捕捉",
+    summary: "对 AI 说一句想要的角色，得到一张有脾气的猫。蓬乱的毛、镜片反光和微怒表情一次成型。",
+    author: "知遥测不准",
+    createdAt: "2026-09-18 19:20",
+    views: 4820,
+    likes: 562,
+    image: "/assets/cases/1.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0 (Raw Mode)",
+    params: "--ar 3:4 --v 6.0 --style raw --stylize 280",
+    prompt:
+      "A quirky British Shorthair black cat wearing thick black-rimmed vintage spectacles, intense intellectual gaze with slight grumpy frown, loose ink wash and dry brushstrokes on textured raw Xuan paper, expressive ink splatter, warm rice paper tone, minimal composition, masterwork --ar 3:4 --v 6.0 --style raw",
+    content: [
+      "做角色的难点不在画得像，而在把‘脾气’画出来。最开始用默认风格，模型总喜欢把猫画成光溜溜的 3D 渲染质感，完全没有文人画那种神气。",
+      "后来发现关键在于限定媒介：‘raw Xuan paper’（生宣）配合‘dry brushstrokes’（枯笔焦墨），再指定黑框老花镜作为荒谬的反差符号，一下子就立住了。",
+      "提示词里的‘intense intellectual gaze with slight grumpy frown’是灵魂：用文学化的神态描述替代简单的表情词，AI 能生成非常有层次的微表情。",
+      "不需要会画画，也能把陪伴自己的宠物变成一张可以挂在书房的角色插画。这就是 AI 给创作者带来的直觉解放。",
     ],
-    [
-      { id: "ai-assess-01-c1", author: "望舒的课堂", createdAt: "2026-09-13 21:30", content: "L3 卡人的观察和我们课堂上的数据一致。给反馈权本质上是放下“我先想好了”的执念。" },
-      { id: "ai-assess-01-c2", author: "陈序优化中", createdAt: "2026-09-13 22:05", content: "衰减测试太对了。我们上季度的培训效果，两个月后就只剩不到一半，就是没有复测机制。" },
-      { id: "ai-assess-01-c3", author: "温叙精选志", createdAt: "2026-09-14 09:12", content: "求一份五级场景清单，想直接搬去我们小组用。" },
+    comments: [
+      {
+        id: "c-cat-1",
+        author: "屿见图表",
+        createdAt: "2026-09-18 20:05",
+        content: "枯笔焦墨和生宣纸纹理控制得太绝了，镜片里那一抹冷光正好压住了黑色的闷。",
+      },
+      {
+        id: "c-cat-2",
+        author: "徐望舒",
+        createdAt: "2026-09-18 21:14",
+        content: "‘脾气’这个词抓得准。好提示词是在跟模型做心理学沟通，不是在列名词清单。",
+      },
+      {
+        id: "c-cat-3",
+        author: "一宁不苟",
+        createdAt: "2026-09-19 09:30",
+        content: "已收藏！准备照这个结构给我家柴犬也写一组提示词试试。",
+      },
     ],
-    "3 / 4", "rings"
-  ),
-  topic(
-    2, "作品分享", "屿见图表", "2026-09-13 16:22", 2418, 316,
-    "把五维雷达图做成会呼吸的测评报告页",
-    "分数不该是一张静止的表。这版报告让每个维度在加载时依次“长”出来，弱项会用一次轻震提醒你。",
-    [
-      "测评报告最怕两件事：一是打开像病历，二是所有人只看总分。我做这版报告页的目标很明确——让读者在十秒内理解“强在哪、弱在哪、下一步做什么”。",
-      "五个维度（提问、边界、修正、流程、评估）的雷达图不是同时出现的，而是按维度顺序依次展开，每格 120 毫秒。视觉动线刚好顺着答题时的思维顺序。",
-      "弱项维度会做一次 4px 的轻震，然后把该维度的改进建议直接挂在顶点上。读者不需要去别处查“我该怎么提高”，点一下就有。",
-      "颜色只用了两级：达标用墨绿，待提升用琥珀。我再三克制了自己想加第三种颜色的冲动——报告不是调色盘，层级要靠位置和动画节奏给，不靠色相。",
-      "上线后我们追踪了阅读行为：报告平均停留时间从 26 秒涨到 1 分 48 秒，建议区的点击率是原来折叠列表的六倍。",
+  }),
+
+  casePost({
+    id: "case-parrot",
+    tag: "AI 生图",
+    title: "笼外的鹦鹉 · 水彩晕染留白与灵动画意",
+    summary: "让 AI 画一只正在看你的鸟。羽毛黄绿过渡、爪子与树枝水彩晕染留白一次成型，眼神充满好奇灵气。",
+    author: "屿见图表",
+    createdAt: "2026-09-17 14:15",
+    views: 3180,
+    likes: 388,
+    image: "/assets/cases/6.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0",
+    params: "--ar 3:4 --v 6.0 --stylize 320",
+    prompt:
+      "A vivid emerald and chartreuse parrot perched quietly on a wild mossy branch, head cocked looking straight at viewer, delicate transparent wet-on-wet watercolor wash, loose calligraphic outlines, natural pigment granulation, organic watercolor paper texture, generous white breathing space --ar 3:4 --v 6.0",
+    content: [
+      "水彩最动人的是水色交融的不可预测性，而传统算法容易把边缘扣得死板。这次调优的核心目标是保留‘湿画法’（wet-on-wet）的自由晕染。",
+      "给提示词加入‘generous white breathing space’（留白）后，画面立刻有了呼吸感，背景没有多余杂色，整只鸟像是在宣纸上刚刚干透。",
+      "爪子扣住树枝的受力感、圆圆的眼圈高光，都是一句话一次生成的。同一组词换几个随机种子，能拿到截然不同的灵动姿态。",
     ],
-    [
-      { id: "ai-assess-02-c1", author: "夏日访谈录", createdAt: "2026-09-13 17:08", content: "停留时间翻四倍这个数据很硬。轻震提醒会不会对部分用户造成焦虑？建议做一组对照。" },
-      { id: "ai-assess-02-c2", author: "白鹿改稿中", createdAt: "2026-09-13 19:44", content: "“报告不是调色盘”建议裱起来，挂在所有写周报的人工位上。" },
+    comments: [
+      {
+        id: "c-par-1",
+        author: "闻人夏",
+        createdAt: "2026-09-17 15:40",
+        content: "留白的呼吸感太重要了！很多新手提示词喜欢写 full background，最后画面挤得透不过气。",
+      },
+      {
+        id: "c-par-2",
+        author: "小满闯关中",
+        createdAt: "2026-09-17 18:22",
+        content: "眼睛里那点亮环真有神气，感觉下一秒它就要扭头啄树枝了。",
+      },
     ],
-    "16 / 9", "dots"
-  ),
-  topic(
-    3, "实战案例", "陈序优化中", "2026-09-12 21:15", 2871, 349,
-    "用 30 道情景题测出提示词工程的真实水平",
-    "不看背诵的模板，只看你在有坑的情境里怎么写。这套题最大的特点是：每道题都埋了一个必须自己发现的陷阱。",
-    [
-      "市面上大部分“提示词工程师认证”考的是背诵：角色、上下文、示例三件套。但真实工作里，难的不是套模板，而是发现“这个需求里藏着一个没说出口的限制”。",
-      "所以我出了 30 道情景题。每道题给一个真实工作片段，里面埋了至少一个陷阱：冲突的目标、缺失的数据、互相矛盾的干系人要求。评分点不在答案漂亮，而在你是否先指出了陷阱。",
-      "举一个例子：需求写着“生成周报，要详细，周三发”。陷阱是“详细”和“周三发”冲突——详细版领导没时间看。先追问篇幅的候选人，这一题就拿分了。",
-      "30 道题我们内部测了 60 多人，成绩分布是漂亮的双峰：会做需求澄清的人稳定在 80 分以上，靠模板硬套的人集中在 40 到 55。中间地带很少，说明这套题确实在测两种不同的工作习惯。",
-      "整套题和评分标准都放在社区共享，欢迎拿去改造。唯一的请求是：如果你改出了更好的陷阱，请发回来。",
+  }),
+
+  casePost({
+    id: "case-collage",
+    tag: "AI 生图",
+    title: "高原拼贴海报 · 混合媒介手工质感复现",
+    summary: "雪山、毡房与牦牛插画，撕纸便签的排布，连同手写标注和印章位置一次铺好，宛如手工拼贴一下午。",
+    author: "苏一宁",
+    createdAt: "2026-09-16 11:30",
+    views: 2950,
+    likes: 342,
+    image: "/assets/cases/3.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0 (Raw)",
+    params: "--ar 3:4 --v 6.0 --style raw",
+    prompt:
+      "Torn paper mixed-media collage poster of Tibetan highlands: snow-capped peaks, nomad felt yurt, yak silhouette, overlapping textured aged parchment strips, red postal rubber stamp, handwritten expedition diary annotations, deep ultramarine blue field background, tactile paper grain --ar 3:4 --v 6.0",
+    content: [
+      "这是一次把现代平面设计与手工日记拼贴融合的尝试。提示词中引入了‘torn paper strips’（撕纸条）和‘aged parchment’（做旧羊皮纸）。",
+      "深蓝色大底衬托出浅色便签的层次，模型自动在纸条边缘模拟出了细碎的纤维毛边与轻微投影，几乎难辨是否为人工实物翻拍。",
+      "通过‘handwritten diary annotations’要求手写笔迹，打破了数字海报容易有的规整僵硬感，故事感立刻丰富起来。",
     ],
-    [
-      { id: "ai-assess-03-c1", author: "观澜出题所", createdAt: "2026-09-12 22:01", content: "“评分点在指出陷阱而不是答案漂亮”这个设计非常高明，直接筛掉了应试型选手。" },
-      { id: "ai-assess-03-c2", author: "野路子开发", createdAt: "2026-09-13 08:47", content: "已经搬走三道题嵌进我们的新人引导流程了，反馈很好。" },
-      { id: "ai-assess-03-c3", author: "知遥测不准", createdAt: "2026-09-13 10:22", content: "双峰分布很关键，说明题目的区分度是真的。中间平坦的题反而要警惕。" },
+    comments: [
+      {
+        id: "c-col-1",
+        author: "陈序优化中",
+        createdAt: "2026-09-16 13:10",
+        content: "纸张纤维毛边的质感很惊艳，克制的深蓝底色让元素非常凝聚。",
+      },
     ],
-    "1 / 1", "grid"
-  ),
-  topic(
-    4, "学习笔记", "一宁不苟", "2026-09-12 14:03", 1988, 267,
-    "从 0 到 1 组织一场 AI 测评周，全流程记录",
-    "七天、四个环节、两百多人次参与。这篇是完整复盘：哪些环节爆了，哪些环节冷场了，预算怎么花在最刀刃上。",
-    [
-      "测评周的框架很简单：周一科普讲座，周三实操闯关，周五结果解读，周末自由组队做“给测评出题”。四个环节分别对应“知道、做到、看懂、创造”。",
-      "报名 260 人，实际到场率 71%。最能留住人的不是讲座，而是周三的闯关——因为现场就出分，人天然不想错过自己的成绩。",
-      "踩的第一个坑是题目难度失衡。第一版 20 题里有 9 题正确率低于 20%，现场哀嚎一片。紧急替换了 5 题，把首题换成了送分题——开局的挫败感会直接决定参与时长。",
-      "第二个坑是结果解读环节变成了讲座。我们原本准备了 40 页 PPT，后来改成只讲三张图：全员分数分布、各维度均值、三个典型答题路径。剩下的时间全部留给人对人的报告解读。",
-      "预算大头花在两处：现场报告解读的志愿者培训和印刷版报告卡。线上展示可以省钱，但拿到手里的一张纸质雷达图，传播效果是截图的三倍。",
+  }),
+
+  casePost({
+    id: "case-ice",
+    tag: "AI 生图",
+    title: "The Last Ice · 虚构环境短片极简海报",
+    summary: "一块巨大的透明冰封着鲜红塑料椅。珊瑚橘纸面留出大片纯净空白，贴纸标签与手写题字安静荒谬。",
+    author: "顾清和",
+    createdAt: "2026-09-15 16:40",
+    views: 3820,
+    likes: 418,
+    image: "/assets/cases/7.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0",
+    params: "--ar 3:4 --v 6.0 --stylize 180",
+    prompt:
+      "Minimalist conceptual art film poster: a bright red plastic monobloc chair frozen solid inside a pristine transparent block of melting ice, soft studio shadow, warm coral orange paper backdrop, crooked label stickers, handwritten title 'it was still cold when we left', high fashion editorial look --ar 3:4 --v 6.0",
+    content: [
+      "艺术海报的核心在于‘安静的荒谬感’。一把最廉价的红色塑料椅，被当成珠宝一样端庄地封存在透明冰块中，打着摄影棚的静物柔光。",
+      "背景使用温暖高饱和的珊瑚橘，与冰块的冷透形成强烈张力。版面特意控制贴纸的不整齐与手写字体，避免 AI 常见的‘死板居中’。",
+      "手写的一句‘it was still cold when we left’把整张海报的情绪收在了冰融化前的静止时刻。",
     ],
-    [
-      { id: "ai-assess-04-c1", author: "小满闯关中", createdAt: "2026-09-12 15:37", content: "“开局的挫败感决定参与时长”是活动设计的黄金法则，我们闯关赛也是这么调的。" },
-      { id: "ai-assess-04-c2", author: "温叙精选志", createdAt: "2026-09-12 18:52", content: "纸质雷达图的传播数据很有意思，下周精选想收这条。" },
+    comments: [
+      {
+        id: "c-ice-1",
+        author: "知遥测不准",
+        createdAt: "2026-09-15 17:30",
+        content: "冷暖反差和塑料椅的符号感太绝了，完全可以作为气候主题独立影展的主视觉。",
+      },
+      {
+        id: "c-ice-2",
+        author: "沈观澜",
+        createdAt: "2026-09-15 19:15",
+        content: "歪斜的贴纸和手写签名让画面有了真实的‘人造缺陷感’，高级！",
+      },
     ],
-    "3 / 4", "arcs"
-  ),
-  topic(
-    5, "前沿观察", "云帆跑分中", "2026-09-11 22:40", 3146, 388,
-    "为什么我把测评指标从准确率改成了可修正性",
-    "一个模型答错了不可怕，可怕的是你指出错误之后它越改越错。可修正性才是真实工作里的核心指标。",
-    [
-      "去年我们的评测报告以准确率为核心指标。今年我把它降级成了次要指标，换上了“可修正性”：当我们给出明确的纠错反馈后，模型能否在下一轮收敛到正确答案。",
-      "动机来自一次真实事故。某个模型初稿错得离谱，但反馈两轮后就完全正确；另一个模型初稿 85 分，可你怎么指正它都在原地打转。按准确率排序，前者垫底；按实际可用性排序，前者完胜。",
-      "可修正性的测法并不复杂：同一任务固定三轮反馈预算，每轮反馈由评审员按标准模板给出。指标 = 最终得分 − 初始得分，再 penalize 那些中途“忘了”之前修正内容的回退。",
-      "这套指标有个副作用：它逼着出题人认真设计反馈模板。模糊的反馈（“再想想”）测不出可修正性，只有结构化的反馈（“第三段的数据来源与附录矛盾”）才能测出真实的修正能力。",
-      "初步数据：在可修正性上排名前二的模型，准确率只排第四和第七。如果你的工作流里有人工复核环节，这两个模型才是你的正确选择。",
+  }),
+
+  casePost({
+    id: "case-girl-cat",
+    tag: "AI 生图",
+    title: "女孩与白猫 · 绘本温情对视插画",
+    summary: "让 AI 把一段温暖陪伴画成一张图。猫毛蓬松感、眼里那点蓝和脸上的雀斑由模型定下，神情默契对视。",
+    author: "徐望舒",
+    createdAt: "2026-09-14 10:20",
+    views: 2450,
+    likes: 310,
+    image: "/assets/cases/5.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0",
+    params: "--ar 3:4 --v 6.0 --stylize 200",
+    prompt:
+      "A heartwarming storybook flat illustration of an 8-year-old girl with faint freckles resting her chin next to her fluffy white cat, side by side, shared gentle eye contact with viewer, flat warm ochre yellow ground, soft nostalgic colored pencil linework, gentle gouache textures --ar 3:4 --v 6.0",
+    content: [
+      "想画一张具有治愈力量的图，难点在于让一人一猫的‘视线焦点’产生默契感，而不是各自看各自的镜头。",
+      "在提示词中强调‘shared gentle eye contact with viewer’和‘flat warm ochre yellow ground’，把背景简化为纯净的赭黄暖地，把所有注意力留给人物脸部。",
+      "反复调了几轮铅笔勾线与树胶水彩质感，最终猫毛的软与少女发丝的轻柔在暖底衬托下格外动人。",
     ],
-    [
-      { id: "ai-assess-05-c1", author: "晚舟标数据", createdAt: "2026-09-12 00:21", content: "标注团队视角补一句：反馈模板写得越结构化，评分一致性越高，这套指标对标注也友好。" },
-      { id: "ai-assess-05-c2", author: "清和观察局", createdAt: "2026-09-12 09:36", content: "提醒一个风险：可修正性可能被“先故意答差再修正”的策略性玩法污染，建议加初始质量下限。" },
-      { id: "ai-assess-05-c3", author: "屿见图表", createdAt: "2026-09-12 11:08", content: "把回退惩罚画进报告曲线里会非常直观，需要的话我来出一版图。" },
+    comments: [
+      {
+        id: "c-gc-1",
+        author: "一宁不苟",
+        createdAt: "2026-09-14 11:45",
+        content: "暖赭石色做背景太舒服了，完全是童年绘本里的夏日午后感觉。",
+      },
     ],
-    "4 / 3", "waves"
-  ),
-  topic(
-    6, "讨论场", "清和观察局", "2026-09-11 12:30", 4533, 476,
-    "AI 测评的分数，该不该写进简历？",
-    "支持方说它比自我评价客观，反对方说它测的是出题人的想象。这条不设结论，只收集三条边界建议。",
-    [
-      "上周有位成员来信：她在简历上写了 AIQUOS 的测评等级，面试官反问“这是你们自己社区打的分吧”，场面一度尴尬。所以想认真讨论：社区测评分数的边界在哪。",
-      "支持写的理由很直接：它至少证明你系统地测过，比“熟练使用 AI”这种空话强。而且等级背后有任务场景，面试官可以顺着问“L4 的流水线任务你是怎么搭的”，反而给了展示机会。",
-      "反对的理由同样硬：我们的题库是公开的，刷题就能提分；评分标准由社区制定，没有外部效度；更重要的是，测评测的是“当时”，而工具每个月都在变。",
-      "讨论之后我整理了三条边界建议：第一，写场景不写分数——“能独立搭建带复核环节的 AI 内容流水线”比“L4”信息量大十倍；第二，标注日期和题库版本；第三，简历里出现的每一项能力，都准备一个十分钟内讲完的实例。",
-      "分数是社区内的通用语，出了社区就是方言。用方言写简历，读者看不懂不是读者的问题。",
+  }),
+
+  casePost({
+    id: "case-fishbowl",
+    tag: "AI 生图",
+    title: "鱼缸里的女孩 · 水彩折射专属头像",
+    summary: "把自己想要的样子说给 AI 听，得到一张水彩头像。透明玻璃缸的折射与橙红小鱼游动，水灵而自由。",
+    author: "闻人夏",
+    createdAt: "2026-09-13 15:30",
+    views: 2880,
+    likes: 375,
+    image: "/assets/cases/2.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0",
+    params: "--ar 1:1 --v 6.0 --stylize 260",
+    prompt:
+      "Surrealist whimsical avatar: a dreamy girl whose curly hair and head form a spherical crystal fishbowl, swimming vibrant orange goldfish inside, clear turquoise water refraction, soft blush cheek tones, fluid wet watercolor blending, clean isolated white background --ar 1:1 --v 6.0",
+    content: [
+      "头像不一定是单调的照片，它可以是一张超越现实的自我表达。这个提示词把‘卷发’与‘圆球鱼缸’在拓扑形态上合二为一。",
+      "水彩折射（turquoise water refraction）的加入，让光线在脸颊和玻璃上产生波光粼粼的动态感。",
+      "生成后直接被很多人存来做即时通讯头像，真正实现了把心中构想的超现实自画像一键落地。",
     ],
-    [
-      { id: "ai-assess-06-c1", author: "一宁不苟", createdAt: "2026-09-11 13:14", content: "“分数是社区内的通用语，出了社区就是方言”——这句可以当选本月最佳。" },
-      { id: "ai-assess-06-c2", author: "陈序优化中", createdAt: "2026-09-11 15:52", content: "补一个招聘方视角：我面人的时候确实会追问等级背后的任务，写得具体的人明显更从容。" },
-      { id: "ai-assess-06-c3", author: "云帆跑分中", createdAt: "2026-09-11 19:26", content: "工具每月都在变，所以能力项也要有版本号。同意标注题库版本的建议。" },
+    comments: [
+      {
+        id: "c-fb-1",
+        author: "屿见图表",
+        createdAt: "2026-09-13 16:20",
+        content: "水光在脸上的焦散散色太通透了，金鱼的红和水底的湖蓝配比极准。",
+      },
     ],
-    "3 / 4", "rings"
-  ),
-  topic(
-    7, "测评研究", "望舒的课堂", "2026-09-10 18:08", 2104, 284,
-    "把客观题改成情境判断题之后，教室里发生了什么",
-    "同一个知识点，选择题测记忆，情境题测判断。两版成绩的相关系数只有 0.41，说明它们测的根本不是同一种能力。",
-    [
-      "我教的两平行班做了一次实验：A 班用传统选择题测验，B 班把同样的知识点改成情境判断题——给你一段真实工作场景，四个选项都有道理，问你哪个“最不坏”。",
-      "结果两班成绩相关系数只有 0.41。也就是说，选择题的高分对情境题几乎没有预测力。会背“提示词三要素”的学生，面对“老板要求用 AI 三小时出一版物料”的情境，照样束手无策。",
-      "情境题最大的阻力来自阅卷成本。我的解法是提前写好“决策要点清单”：满分答案必须命中哪三条要点、常见错误路径有哪些。有了清单，助教评分的一致性从 0.62 提到 0.88。",
-      "学生反馈最有意思的是这句：“选择题我知道自己错了，情境题我才知道自己哪里想错了。”前者的错是知识缺口，后者的错是决策习惯——后者才是可以练的。",
-      "下一轮实验想测留存：一个月后重测，情境题组的知识留存率会不会更高。我的假设是会，因为判断题在作答时调用了更多个人经验。",
+  }),
+
+  casePost({
+    id: "case-summer-bus",
+    tag: "AI 生图",
+    title: "夏日公交 · 空气感动画场景定格",
+    summary: "想要的是一个夏天，AI 给了一整张画面。樟树透光的斑驳光影、车窗玻璃反光，反复调出记忆里的温度。",
+    author: "黄小满",
+    createdAt: "2026-09-12 18:10",
+    views: 2650,
+    likes: 320,
+    image: "/assets/cases/4.webp",
+    imageRatio: "3 / 4",
+    model: "Midjourney v6.0",
+    params: "--ar 16:9 --v 6.0 --stylize 250",
+    prompt:
+      "Nostalgic anime environment background still: an empty rural blue bus parked under sun-drenched green camphor tree canopy on a quiet summer afternoon, dappled foliage shadows on windshield glass, dust motes in warm golden light, cinematic Makoto Shinkai style --ar 16:9 --v 6.0",
+    content: [
+      "文字调图调的不是某个物体，而是‘空气感’。为了表现‘夏天的温度’，提示词重点放在了树叶透光与玻璃微尘的反光上。",
+      "写‘sun-drenched camphor tree’比写普通的‘trees’有效得多——树种带来的叶片密集度与色彩层次立刻精准对应到了记忆中的江南夏日。",
+      "生成后无需后期调色，光斑与阴影的冷暖互补直接满足了一张成熟动画背景的工业要求。",
     ],
-    [
-      { id: "ai-assess-07-c1", author: "观澜出题所", createdAt: "2026-09-10 19:22", content: "“最不坏”选项的设计很有讲究，四个选项都得有道理，这个工作量比出选择题大五倍不止。" },
-      { id: "ai-assess-07-c2", author: "小满闯关中", createdAt: "2026-09-10 21:45", content: "学生那句话说得真好，建议直接印在下次教研会的封面上。" },
+    comments: [
+      {
+        id: "c-sb-1",
+        author: "李声远",
+        createdAt: "2026-09-12 19:40",
+        content: "树叶缝隙漏下来的丁达尔光束太写实了，一瞬间回到高中放学等车的下午。",
+      },
     ],
-    "16 / 9", "grid"
-  ),
-  topic(
-    8, "校园故事", "小满闯关中", "2026-09-09 20:12", 1726, 229,
-    "社团 AI 测评闯关赛办了三届，这是我们的题库方法论",
-    "从 40 道废题到稳定题库，我们总结出“一题一场景一陷阱”的配比，以及让新手不弃赛的三条规则。",
-    [
-      "第一届闯关赛我们攒了 60 道题，赛后复盘发现 40 道是废题：要么所有人都对，要么所有人都错。真正起到区分作用的只有 20 道——出题远比想象中难。",
-      "三届之后我们沉淀了一套配比：每道题必须有明确的场景、一个可发现的陷阱、三条可解释的干扰项。“可解释”很关键——选手赛后问“为什么 B 不对”，出题人必须答得上来。",
-      "让新手不弃赛的三条规则：第一题必是送分题；连续错两题自动降难度（我们叫“橡皮筋机制”）；任何时候可以看提示，但看提示的题只记一半分。",
-      "最有价值的发现来自赛后访谈：选手最喜欢的题不是最简单的，而是“我以为会做但被绊了一下，看完解析觉得心服口服”的题。这类题的赛后讨论量是普通题的四倍。",
-      "题库现在有 112 道题，全部带场景标签和难度标定，社区成员可以申请出题权限。规则只有一条：你出的题，至少要先被三个朋友做完并且骂过。",
+  }),
+
+  // ── AI 视频 (Generative Video) ──────────────────────────────────────────
+  casePost({
+    id: "case-wing-it",
+    tag: "AI 视频",
+    title: "Wing It · 分镜剪辑配音完整成片",
+    summary: "AI 把一段奇思妙想剪成了 114 秒成片。分镜结构、镜头节奏、转场与中文解说配音合成全流程生成。",
+    author: "陈序优化中",
+    createdAt: "2026-09-18 10:15",
+    views: 6420,
+    likes: 720,
+    image: "/assets/case-covers/wing-it.webp",
+    imageRatio: "16 / 9",
+    model: "Runway Gen-2 + Claude 3.5 Sonnet + CosyVoice",
+    params: "1080p H.264 / 24fps / 114s / 双音轨合成",
+    prompt:
+      "System: You are an award-winning animation director. Generate a 12-shot storyboard JSON for a comedic short 'Wing It': two eccentric Victorian engineers attempting man-powered flight from a bell tower. For each shot specify: camera motion (pan/dolly), focal length, prompt describing feather physics and brass mechanisms, pacing duration in seconds, and an audio soundstage prompt.",
+    content: [
+      "做 AI 视频最怕画面前后角色脸崩、道具形态不连贯。这篇是《Wing It》114 秒成片的完整工作流拆解。",
+      "首先用 Claude 3.5 Sonnet 先敲定 12 个关键分镜的 JSON 状态机，固定核心角色提示词前缀与道具锚点（羽毛机翼、铜齿轮、厚底皮靴）。",
+      "视频生成阶段采用 Runway Gen-2 的 Image-to-Video 控首尾帧，再把中文解说脚本输入 CosyVoice 进行自然语调合成，全片保持了统一的英式幽默节奏。",
+      "在这个过程中，人不再是辛苦补帧的工人，而是坐在监视器前掌控叙事节奏和剪辑点的大导演。",
     ],
-    [
-      { id: "ai-assess-08-c1", author: "一宁不苟", createdAt: "2026-09-09 21:03", content: "“橡皮筋机制”真的能救留存率，我们活动也验证过。" },
-      { id: "ai-assess-08-c2", author: "观澜出题所", createdAt: "2026-09-09 22:40", content: "“先被三个朋友骂过”这个出题门槛，比我见过的任何评审流程都高效。" },
-      { id: "ai-assess-08-c3", author: "望舒的课堂", createdAt: "2026-09-10 08:15", content: "想邀请你们把题库方法整理成一页纸，我想带进教研组。" },
+    comments: [
+      {
+        id: "c-wi-1",
+        author: "知遥测不准",
+        createdAt: "2026-09-18 11:20",
+        content: "分镜状态机用 JSON 固化提示词前缀是保证角色跨镜头一致性的核心解法！学到了。",
+      },
+      {
+        id: "c-wi-2",
+        author: "何云帆",
+        createdAt: "2026-09-18 14:02",
+        content: "双音轨解说的声音合成自然度很高，齿音和呼吸感调教得很细腻。",
+      },
     ],
-    "3 / 4", "dots"
-  ),
-  topic(
-    9, "效率工具", "声远脚本屋", "2026-09-09 11:36", 2943, 357,
-    "我用表格加脚本搭了一条轻量测评流水线",
-    "不写后端、不买服务：一份表格模板加三段脚本，实现出题、分发、自动批改、报告生成全流程，单人维护成本每周半小时。",
-    [
-      "很多团队的测评流程死在工具上：买平台太贵，自建系统没人维护。我的方案是承认现实——就用表格，把自动化补在表格周围。",
-      "结构是四张表：题库表（场景、陷阱、干扰项、决策要点）、答卷表（自动收集）、批改表（脚本比对决策要点）、报告表（汇成分数和雷达图数据）。彼此用题目 ID 和答卷 ID 串起来。",
-      "三段脚本分别是：分发脚本（按人生成答卷链接并去重）、批改脚本（关键词命中 + 大模型兜底判断，置信度低于阈值的人工复核）、报告脚本（生成个人雷达图和全维度分布）。",
-      "关键设计是“置信度阈值”：脚本只处理有把握的批改，没把握的自动进人工队列。上线三个月，人工复核率从最初的 34% 降到 9%，剩下的都是真正有争议的答案。",
-      "整套模板下周整理好放社区共享。友情提示：最大的坑是表格的并发编辑冲突，超过 30 人同时提交就要考虑拆表了。",
+  }),
+
+  casePost({
+    id: "case-stop-motion",
+    tag: "AI 视频",
+    title: "纸箱宇航员 · 定格动画手工触感还原",
+    summary: "瓦楞纸箱折成的小宇航员在桌面上探索未知星球。真实定格动画质感，带有迷人的轻微手工抖动。",
+    author: "沈观澜",
+    createdAt: "2026-09-16 17:50",
+    views: 3910,
+    likes: 450,
+    image: "/assets/case-covers/stop-motion.webp",
+    imageRatio: "16 / 9",
+    model: "Stable Video Diffusion + Luma Dream Machine",
+    params: "12fps 逐帧微抖 / 宏观浅景深",
+    prompt:
+      "Macro tabletop stop-motion animation: a tiny 3-inch astronaut handcrafted from corrugated cardboard walking across an alien planetary surface made of desktop pencil shavings and sandpaper. Warm incandescent desk lamp lighting, visible glue edges, thumbprints on cardboard, cinematic 12fps tactile shutter jitter --ar 16:9",
+    content: [
+      "AI 生成视频容易有一种过于丝滑平滑的‘数码塑料感’。为了打破这种刻板印象，我们特意训练了‘定格动画缺陷美学’。",
+      "通过提示词强制锁定 12fps 的快门节奏，并显式加入‘thumbprints on cardboard’（纸板上的指纹）和‘visible glue edges’（胶水印记）。",
+      "生成出来的宇航员每一步都有定格摄影特有的物理顿挫与光影闪烁，仿佛真实手工匠人在暗房里一帧一帧摆拍而成的佳作。",
     ],
-    [
-      { id: "ai-assess-09-c1", author: "陈序优化中", createdAt: "2026-09-09 12:50", content: "“低置信度进人工队列”是自动化批改的正确姿势，全信脚本迟早出事故。" },
-      { id: "ai-assess-09-c2", author: "声远脚本屋", createdAt: "2026-09-09 12:58", content: "楼上是陈序吧，你的评测脚本要不要也开源一下，别光点赞。" },
-      { id: "ai-assess-09-c3", author: "野路子开发", createdAt: "2026-09-09 14:22", content: "30 人并发那条太真实了，表格协作冲突能毁掉整个活动体验。" },
+    comments: [
+      {
+        id: "c-sm-1",
+        author: "徐望舒",
+        createdAt: "2026-09-16 19:10",
+        content: "故意保留‘手作缺陷’反而是 AI 时代最高级的真实感。绝佳的案例！",
+      },
     ],
-    "16 / 9", "waves"
-  ),
-  topic(
-    10, "测评研究", "观澜出题所", "2026-09-08 19:27", 1888, 241,
-    "出一道好题有多难：测评题目的五层结构",
-    "职业出题人的自查清单：场景层、任务层、陷阱层、干扰层、解释层。任何一层偷懒，题目就会被应试技巧钻空子。",
-    [
-      "经常有人问我：出题有什么难的？我的回答是：出一道“所有人都觉得会、其实一半人做错、错完还服气”的题，比我写十篇报告都费劲。",
-      "五层结构是我八年出题生涯的沉淀。第一层场景：要真实到让人忘记自己在考试；第二层任务：指令必须无歧义，歧义会惩罚细心的人；第三层陷阱：必须是该场景里真实高频的错误，不能是文字游戏。",
-      "第四层干扰项：每个错误选项都要对应一条真实的错误思路，让选错的人能在解析里认出自己。第五层解释层：解析要同时回答“为什么对”和“为什么其余三个不对”，缺一不可。",
-      "偷懒的典型症状：陷阱层偷懒，题目变成阅读理解；解释层偷懒，选手赛后只记住一个字母答案。我们题库的废题率曾经高达 67%，五层自查之后降到了 12%。",
-      "下周我会拿三道真实废题做逐层解剖直播，展示它们分别死在哪一层。死亡案例比成功案例更有教学价值。",
+  }),
+
+  // ── AI 代码 (Code & WebGL & Games) ──────────────────────────────────────
+  casePost({
+    id: "case-mario",
+    tag: "AI 代码",
+    title: "超级马里奥 · 原生 Canvas 实时可玩游戏",
+    summary: "AI 直接写出了一款能玩的横版游戏，而不是画了一张截图。碰撞判定、重力加速度与实时镜头跟随。",
+    author: "陈序优化中",
+    createdAt: "2026-09-18 22:30",
+    views: 7850,
+    likes: 890,
+    image: "/assets/case-covers/mario.webp",
+    imageRatio: "16 / 9",
+    model: "Claude 3.5 Sonnet + Vanilla Canvas API",
+    params: "60fps delta-time / Web Audio API 8-bit Synth",
+    prompt:
+      "Generate a single-file, zero-dependency HTML5 Canvas platformer in modular vanilla ES6. Implement: 1. Physics engine with delta-time, variable jump height, horizontal deceleration; 2. Tilemap collision with breakable question-mark blocks; 3. Goomba enemy AI with edge patrol and squash animation; 4. Web Audio API synthesized retro sound effects (jump, coin, death); 5. Smooth camera tracking with deadzone.",
+    content: [
+      "很多人以为 AI 写游戏只能产出静态代码片段。这个案例证明：给足架构边界，模型能一次性输出一整套具备工业鲁棒性的完整 60fps 原生游戏引擎。",
+      "最容易踩坑的是碰撞判定（穿墙/卡墙）和不同显示器刷新率下的物理速度漂移。因此在提示词中强制约定‘delta-time 步长’和‘AABB 轴对齐分轴检测’。",
+      "音频部分用 Web Audio API 的振荡器（OscillatorNode）合成经典的 8-bit 方波音效，连额外音频素材都不需要引入，真正做到开箱即玩。",
     ],
-    [
-      { id: "ai-assess-10-c1", author: "陈序优化中", createdAt: "2026-09-08 20:33", content: "“惩罚细心的人”这条深有同感，歧义题筛掉的反而是最认真的那批人。" },
-      { id: "ai-assess-10-c2", author: "望舒的课堂", createdAt: "2026-09-08 22:11", content: "五层结构直接转给我们教研组了，废题率 67% 到 12% 是最有说服力的数字。" },
+    comments: [
+      {
+        id: "c-m-1",
+        author: "李声远",
+        createdAt: "2026-09-18 23:15",
+        content: "Web Audio 合成方波这个思路太极客了，省去了所有外部资源依赖，加载飞快。",
+      },
+      {
+        id: "c-m-2",
+        author: "小满闯关中",
+        createdAt: "2026-09-19 08:40",
+        content: "首页立方体上的马里奥原来就是这段代码驱动的！跳跃手感出奇地扎实。",
+      },
     ],
-    "4 / 3", "arcs"
-  ),
-  topic(
-    11, "学习笔记", "夏日访谈录", "2026-09-07 21:52", 1567, 208,
-    "测评报告里的用户访谈：分数之外的证据",
-    "两位同分用户，一位把方法用进了工作，一位考完就忘。分数解释不了的差异，访谈可以。",
-    [
-      "我们跟踪了 30 位测评成绩完全相同的成员，三个月后回访，发现他们的实际表现天差地别。有人把测评里的修正流程变成了日常习惯，有人连自己参加过测评都快忘了。",
-      "访谈提纲只有五个问题，但每个问题都在挖“转译时刻”：你在哪个瞬间意识到“哦，原来我平时是这么想的”？这个瞬间才是测评起作用的证据。",
-      "高转化用户的共同点很一致：他们在测评后 48 小时内做了一次“移植”——把测评里的某个动作原样搬到自己的真实工作里。没做移植的人，一周后基本就回到原样。",
-      "还有一个反直觉的发现：分数最低的受访者里，反而出现了两位“进步最大”的人。他们的原话是“终于知道该练什么了”。低分不是判决书，是地图——前提是报告把弱项讲清楚。",
-      "给测评设计者的建议：报告里别只放分数和维度图，放一句针对性的“本周可做的一件小事”。转译是从一件小事开始的。",
+  }),
+
+  casePost({
+    id: "case-conbini",
+    tag: "AI 代码",
+    title: "日式便利店 · WebGL 3D 雨夜街角实时渲染",
+    summary: "AI 搭出了一个可以走进去的雨夜街角。霓虹招牌、积水反光与店内暖光不是视频，而是实时 WebGL 计算。",
+    author: "李声远",
+    createdAt: "2026-09-17 19:10",
+    views: 5240,
+    likes: 612,
+    image: "/assets/case-covers/conbini.webp",
+    imageRatio: "16 / 9",
+    model: "Three.js + GLSL Custom Shaders",
+    params: "PBR Materials / GPU Particles / 30fps Capped",
+    prompt:
+      "Write an interactive Three.js 3D diorama of a rainy Tokyo convenience store corner at night. Features required: 1. PBR wet asphalt road with normal-mapped planar reflections; 2. Custom GLSL neon sign shader with bloom luminance threshold; 3. GPU instanced rain streak particle system with puddle ripples; 4. Smooth orbit camera with damping and bounds.",
+    content: [
+      "不是渲染好的视频，而是在你的浏览器里实时跑的 3D 几何与光照着色器。雨夜的水泊反光、霓虹招牌漫射全都受视角实时影响。",
+      "为了在低端移动设备上也能跑满 30-60fps，让 AI 优化了着色器逻辑：用伪反射贴图替代昂贵的实时屏幕空间反射（SSR），雨丝采用 GPU 实例化粒子（InstancedMesh）。",
+      "提示词设计要懂图形学管线：明确指定 PBR 材质贴图通道与法线扰动公式，AI 就能写出极其精炼高效的 WebGL 代码。",
     ],
-    [
-      { id: "ai-assess-11-c1", author: "屿见图表", createdAt: "2026-09-07 22:35", content: "“48 小时内移植”这个时间窗太有用了，报告提醒语可以直接写上。" },
-      { id: "ai-assess-11-c2", author: "白鹿改稿中", createdAt: "2026-09-08 10:02", content: "“低分不是判决书，是地图”——报告文案直接引用了，先谢为敬。" },
+    comments: [
+      {
+        id: "c-con-1",
+        author: "屿见图表",
+        createdAt: "2026-09-17 20:30",
+        content: "雨夜便利店的孤寂感拉满了。特别是橱窗里的暖光透出来那一刻，很有氛围。",
+      },
     ],
-    "1 / 1", "dots"
-  ),
-  topic(
-    12, "实战案例", "野路子开发", "2026-09-07 15:19", 2231, 276,
-    "独立开发者视角：把 AI 测评能力接进产品的三个坑",
-    "评分接口不是接上就完事：计费口径、并发抖动、以及最容易被忽略的“评分结果可解释性”，都是我交过学费的地方。",
-    [
-      "我的小产品想加一个“AI 写作水平自测”功能，评估之后决定不自己训模型，直接接现成的评分能力。本以为是最简单的一次接入，结果踩了三个不小的坑。",
-      "第一个坑是计费口径。按次计费和按 token 计费在批改场景下差出四倍成本——批改请求的输出 token 远多于输入。上线前一定要用真实答卷跑一周账单模拟，别用官方示例估算。",
-      "第二个坑是并发抖动。免费活动瞬时 200 份答卷涌进来，评分接口开始超时重试，重试又叠加计费。后来加了本地队列 + 指数退避 + 结果缓存三件套才稳住，账单差点爆炸。",
-      "第三个坑最隐蔽：用户不信任一个裸分数。加上“这个分数怎么来的”——列出命中和未命中的评分要点，投诉率直接从 5% 降到 0.4%。可解释性不是加分项，是信任的底线。",
-      "总结成一个建议：测评功能的价值不在分数本身，而在“分数背后的那三行解释”。预算有限的话，把排期花在解释层，别花在动画上。",
+  }),
+
+  casePost({
+    id: "case-pirate",
+    tag: "AI 代码",
+    title: "暴风雨海盗船 · Gerstner 浪涌与浮力姿态",
+    summary: "AI 让一艘船在风暴里真实摇晃。浪涌高度、船体姿态与天色变化互相关联，持续演算的动态物理过程。",
+    author: "何云帆",
+    createdAt: "2026-09-16 21:05",
+    views: 4320,
+    likes: 495,
+    image: "/assets/case-covers/pirate.webp",
+    imageRatio: "16 / 9",
+    model: "Three.js + Gerstner Wave Vertex Shaders",
+    params: "4-Octave Gerstner Waves / 浮力四点采样",
+    prompt:
+      "Implement an interactive WebGL simulation of a galleon in a violent midnight storm. Technical requirements: 1. Multi-octave Gerstner wave displacement in custom vertex shader; 2. Buoyancy physics: sample 4 hull coordinates on the wave equation, calculate buoyant pitch and roll torque to tilt the ship realistically; 3. Atmospheric volumetric fog with periodic lightning flash lights.",
+    content: [
+      "海浪不是简单的正弦波，而是尖峰平谷的 Gerstner 波形。难点在于让船体‘浮’在波浪上，且船头的俯仰角（pitch）和横滚角（roll）与浪面法线严格贴合。",
+      "提示词指导 AI 在 CPU 侧同步复现 GPU 顶点着色器里的相同波形数学公式，采样船头船尾四个受力点的高程，算出四元数动态驱动船体姿态。",
+      "整个项目没有任何第三方物理引擎包，几百行纯数学驱动，在浏览器里以极低的 CPU 占用平稳运行。",
     ],
-    [
-      { id: "ai-assess-12-c1", author: "陈序优化中", createdAt: "2026-09-07 16:44", content: "计费那条用真实数据模拟再上线，是被账单教育过的人才懂的教训。" },
-      { id: "ai-assess-12-c2", author: "声远脚本屋", createdAt: "2026-09-07 18:09", content: "队列 + 退避 + 缓存三件套 +1，我这边的经验是缓存还能顺带降低评分漂移。" },
-      { id: "ai-assess-12-c3", author: "晚舟标数据", createdAt: "2026-09-07 20:31", content: "“可解释性是信任的底线”，标注侧完全同意，看不见依据的分数一定会被申诉。" },
+    comments: [
+      {
+        id: "c-pir-1",
+        author: "陈序优化中",
+        createdAt: "2026-09-16 22:40",
+        content: "CPU/GPU 双向同步波形高程公式很规范，完全没有漂移感。",
+      },
     ],
-    "3 / 4", "grid"
-  ),
-  topic(
-    13, "作品分享", "白鹿改稿中", "2026-09-06 20:41", 1975, 262,
-    "给测评报告写人话：一份改写前后对照",
-    "“维度均衡，得分 72”——这句话什么也没说。同一个人、同一份报告，改写后完读率从 31% 涨到 87%。",
-    [
-      "我拿到一份典型测评报告的原文，第一句是：“本次测评综合得分 72，各维度发展较为均衡，建议继续保持。”这句话的信息量约等于零，但它是行业标配开场。",
-      "改写的第一步是把抽象维度换成具体行为。“提问能力待提升”改成“你倾向一次把所有要求说完，而你的目标受众（产品评审会）通常只有 90 秒耐心”。",
-      "第二步是给每条建议配一个“周一早上就能做”的动作。不是“加强结构化思维”，而是“下次提需求前，先用三行字写下：谁看、什么时候看、看完整走什么”。",
-      "第三步最难也最重要：把语气从裁判改成教练。原文通篇是“未能达到”“存在不足”，改写后全部换成“下一步可以”。内容没变，读的人却从防御变成了行动。",
-      "改写前后的对照全文贴在下面，欢迎直接抄走这个句式。唯一的要求是：别把教练语气写成油腻的夸夸群，具体的下一步永远比形容词有诚意。",
+  }),
+
+  casePost({
+    id: "case-penguin",
+    tag: "AI 代码",
+    title: "企鹅叠叠乐 · 结构化 3D 资产生成",
+    summary: "一句话生成完整的 3D 网格、贴图与法线：顶着红茶、奶盅与小黄鸭的企鹅，无需手工补面或修形。",
+    author: "周屿",
+    createdAt: "2026-09-15 11:20",
+    views: 3670,
+    likes: 410,
+    image: "/assets/case-covers/penguin.webp",
+    imageRatio: "16 / 9",
+    model: "Hyper3D Rodin / Meshy-4 + GLTF Transformer",
+    params: "Quad Topology / PBR Diffuse+Roughness+Normal",
+    prompt:
+      "A stylized low-poly emperor penguin standing proudly, balancing a vintage porcelain teacup, a tiny stainless steel milk jug, and a cheerful yellow rubber duck on its head. Clean manifold quad-topology mesh, centered origin, baked diffuse, roughness, and normal maps, optimized for real-time web rendering.",
+    content: [
+      "过去在 3D 资产制作中，从白模、倒角、拓扑重构到烘焙法线贴图需要耗费数天工时。如今模型理解能力足以一次完成多物体的空间受力叠放。",
+      "提示词特别强调了‘balanced manifold topology’（闭合流形网格）和‘centered origin’（原点居中），确保导入 Three.js 时坐标无需繁琐的手工纠偏。",
+      "导出的 GLTF 文件体积仅数百 KB，材质通道完备，直接成为 AIQUOS 案例库中最受欢迎的可交互模型之一。",
     ],
-    [
-      { id: "ai-assess-13-c1", author: "夏日访谈录", createdAt: "2026-09-06 21:36", content: "完读率 31% 到 87%，这个对照应该发给所有写报告的平台方。" },
-      { id: "ai-assess-13-c2", author: "知遥测不准", createdAt: "2026-09-06 22:58", content: "“谁看、什么时候看、看完整走什么”三行字，已经写进我们团队的模板了。" },
-      { id: "ai-assess-13-c3", author: "温叙精选志", createdAt: "2026-09-07 09:14", content: "本期每周精选预定，请作者补充一份可直接复用的句式卡片。" },
+    comments: [
+      {
+        id: "c-pen-1",
+        author: "知遥测不准",
+        createdAt: "2026-09-15 12:45",
+        content: "企鹅头顶叠放茶杯和小黄鸭的物理合理度很高，贴图接缝完全看不出来。",
+      },
     ],
-    "16 / 9", "arcs"
-  ),
-  topic(
-    14, "讨论场", "晚舟标数据", "2026-09-06 14:55", 2604, 307,
-    "标注员的水平，决定了 AI 测评的天花板",
-    "同一份答卷，五个标注员给出五个分数，标准差 11.6 分。先解决人的一致性，再谈模型评分的准确性。",
-    [
-      "上个月我们做了次内部实验：把同一批答卷分给五位标注员独立评分，结果分数标准差达到 11.6。也就是说，一个“72 分”的测评结果，取决于它落在谁的手里。",
-      "问题不在人不认真，而在“认真”的方向不同。有人死磕格式，有人在意内容，有人对“创意”宽容、对“事实”严苛。每一条都合理，加在一起就是灾难。",
-      "我们的解法分三层。第一层是评分细则的场景化：每类任务单独一份 rubric，不搞通用版。第二层是“锚题”制度：每批任务混入 5% 的已标定样本，标注员不知道是哪些，偏移超阈值就回炉培训。",
-      "第三层是争议仲裁的透明化：两人分差超过 8 分自动进仲裁池，仲裁结论必须写明依据，并回流进评分细则。细则因此每两周迭代一版——它不是宪法，是活文档。",
-      "三个月后重测，标准差从 11.6 降到 3.2。这个数字比任何模型升级带来的提升都大。所以下次看到“AI 评分准确率 95%”的宣传，先问一句：和谁比？",
+  }),
+
+  casePost({
+    id: "case-security-audit",
+    tag: "AI 代码",
+    title: "红客挑战赛 · 网络安全自动化审计溯源",
+    summary: "AI 审查多微服务鉴权架构，定位双重 URL 编码绕过与原型链污染漏洞链，并生成修复补丁。",
+    author: "陈序优化中",
+    createdAt: "2026-09-14 20:30",
+    views: 4560,
+    likes: 520,
+    image: "/assets/case-covers/security-audit.webp",
+    imageRatio: "16 / 9",
+    model: "Claude 3.5 Sonnet Security Sandbox",
+    params: "OWASP Top 10 / AST 污点追踪 / 补丁差异输出",
+    prompt:
+      "Act as an elite application security auditor. Analyze the following Node.js authentication gateway routing code. Trace untrusted request input through URL parsing and proxy forwarding. Identify the double-decode SSRF vulnerability and prototype pollution vector, generate a curl payload reproducing the bypass, and output a production-ready git diff remediation.",
+    content: [
+      "安全审计不是简单的关键词扫描，而是‘污点追踪’（Taint Analysis）：必须看懂用户输入是如何在多层服务转发中被解码、转义和篡改的。",
+      "向 AI 提供架构拓扑与关键中间件代码，要求其以攻击者视角推演 bypass 链路，并以防守方视角编写防御性类型断言。",
+      "这套提示词框架在攻防演练中帮团队在 15 分钟内排查出 2 处高危逻辑盲区，证明了 AI 在安全工程化落地的深度潜力。",
     ],
-    [
-      { id: "ai-assess-14-c1", author: "云帆跑分中", createdAt: "2026-09-06 16:20", content: "锚题制度在学术评测里叫 anchoring，你们把工程落地做得很扎实。" },
-      { id: "ai-assess-14-c2", author: "清和观察局", createdAt: "2026-09-06 17:48", content: "“细则不是宪法，是活文档”——所有评审制度都该抄这句。" },
-      { id: "ai-assess-14-c3", author: "观澜出题所", createdAt: "2026-09-06 21:33", content: "出题侧和标注侧终于对上话了，建议下次联席把两边的标准差放一起看。" },
+    comments: [
+      {
+        id: "c-sec-1",
+        author: "顾清和",
+        createdAt: "2026-09-14 21:50",
+        content: "双重解码导致路径遍历是很经典的陷阱，AI 能给出规范的 git diff 补丁非常实用。",
+      },
     ],
-    "3 / 4", "waves"
-  ),
-  topic(
-    15, "每周精选", "温叙精选志", "2026-09-06 08:30", 3389, 395,
-    "本周精选：五条关于 AI 测评最值得反复读的讨论",
-    "从出题陷阱到报告人话，从评分一致性到分数的边界。五条高赞讨论的共同点：都在追问“分数之后呢”。",
-    [
-      "本周社区关于 AI 测评的讨论密度创了纪录。挑出五条被反复引用的回复，它们的共同点很清晰：不满足于“测出分数”，都在追问分数之后发生什么。",
-      "第一条来自出题侧：一道好题的五层结构，以及“解析必须回答为什么其他三个不对”的铁律。出题的诚意都藏在解析里。",
-      "第二条来自标注侧：评分一致性从 11.6 降到 3.2 的全过程。它提醒我们，在抱怨模型不准之前，先确认人类自己是否一致。",
-      "第三条来自报告侧：把“维度均衡，得分 72”翻译成人类语言的对照实验。完读率 31% 到 87% 的差距，就是“写了”和“沟通了”的差距。",
-      "第四条来自边界侧：分数该不该写进简历的讨论。结论倾向写场景不写分数——能力描述要能通过面试官的十分钟追问。第五条来自产品侧：接入测评能力时，把预算花在可解释性而不是动画上。",
-      "下周继续。推荐话题请 @ 我，入选标准只有一条：三个月后读它，仍然有用。",
+  }),
+
+  // ── AI 办公 (Office & PPT & Productivity) ─────────────────────────────
+  casePost({
+    id: "case-moon-route",
+    tag: "AI 办公",
+    title: "人类登上月球 · 史料信息图 PPT 提炼",
+    summary: "把上万字阿波罗 11 号飞行任务日志提炼为一张 16:9 信息图幻灯片，地月轨道航线与节点一目了然。",
+    author: "林知遥",
+    createdAt: "2026-09-17 09:40",
+    views: 5120,
+    likes: 630,
+    image: "/assets/case-covers/moon-route.webp",
+    imageRatio: "16 / 9",
+    model: "DeepSeek R1 + Vector Infographic Pipeline",
+    params: "16:9 宽幅 / 史料时序解析 / SVG 轨道描边",
+    prompt:
+      "Ingest the complete Apollo 11 mission transcript and flight timeline. Synthesize into an executive 16:9 presentation infographic: 1. Plot the lunar trajectory curve from launch, translunar injection, lunar orbit insertion, descent, to splashdown; 2. Call out 10 crucial decision timestamps; 3. Minimal dark space design, crisp typographic hierarchy.",
+    content: [
+      "做演示汇报最头疼的是海量专业技术史料的降噪与视觉转化。上百页枯燥的任务报告，人脑梳理容易迷失在术语里。",
+      "利用推理模型提炼出关键飞行拓扑节点（地月转移轨道、登月舱分离、月面着陆、再入大气层），并指定 16:9 极简太空暗色美学。",
+      "最终生成的信息图既具备严谨的工程坐标时序，又具备高层汇报所需的高级审美感，直接拿去汇报完全不需要二次调整。",
     ],
-    [
-      { id: "ai-assess-15-c1", author: "一宁不苟", createdAt: "2026-09-06 09:21", content: "“三个月后读它仍然有用”——这个入选标准建议置顶在版规里。" },
-      { id: "ai-assess-15-c2", author: "白鹿改稿中", createdAt: "2026-09-06 10:44", content: "报告侧那条入选实至名归，感谢引用！" },
+    comments: [
+      {
+        id: "c-mr-1",
+        author: "屿见图表",
+        createdAt: "2026-09-17 10:55",
+        content: "信息降噪做得极其漂亮！地月轨道抛物线的弧度与注释对齐非常干净。",
+      },
     ],
-    "4 / 3", "grid"
-  ),
+  }),
+
+  casePost({
+    id: "case-onboarding-schedule",
+    tag: "AI 办公",
+    title: "迎新志愿排班表 · 需求变多约束排班算法",
+    summary: "48 名志愿者、7 天活动期，输入复杂的人员时间与组长配比约束，AI 自动输出均衡美观的排班表格。",
+    author: "苏一宁",
+    createdAt: "2026-09-16 14:15",
+    views: 3340,
+    likes: 380,
+    image: "/assets/case-covers/onboarding-schedule.webp",
+    imageRatio: "16 / 9",
+    model: "Python OR-Tools Constraint Solver + AI 表格",
+    params: "48 人 x 7 天 / 约束求解 / 零冲突排班",
+    prompt:
+      "Solve a volunteer scheduling problem with Python OR-Tools: 48 students, 7 consecutive days, 2 shifts per day. Hard constraints: max 20 hours/student, min 2 experienced leads per shift, honor student conflict requests. Soft constraints: balance weekend shifts evenly. Format output as a color-coded clean tabular calendar.",
+    content: [
+      "人工排班是最耗精力又容易得罪人的事：请假偏好冲突、男女搭配、老带新、每个人总工时还要绝对公平。",
+      "把口语化的诉求转化成约束满足问题（CSP），让 AI 编写并执行求解器，在数秒内找到了最优可行解。",
+      "输出的结果不仅零冲突，还自带清晰的色块标识与工时统计，彻底把运营同学从 Excel 连线加班里解救出来。",
+    ],
+    comments: [
+      {
+        id: "c-os-1",
+        author: "小满闯关中",
+        createdAt: "2026-09-16 15:30",
+        content: "每年迎新我们社团都要因为排班吵架，这套算法提示词真是及时雨！",
+      },
+    ],
+  }),
+
+  casePost({
+    id: "case-browser-ops",
+    tag: "AI 办公",
+    title: "电脑控制 · 浏览器无人值守多步 Agent",
+    summary: "让 AI 自主操作浏览器完成供应商采购系统核验：跨 14 张动态发票提取明细，核对偏差，自动归档。",
+    author: "李声远",
+    createdAt: "2026-09-15 18:20",
+    views: 4980,
+    likes: 580,
+    image: "/assets/case-covers/browser-ops.webp",
+    imageRatio: "16 / 9",
+    model: "Browser-Use Agent + Playwright Python",
+    params: "DOM Snapshot 驱动 / 异常自愈 / 完整审计日志",
+    prompt:
+      "Autonomous browser-use agent: 1. Log in to supplier invoice dashboard; 2. Enumerate 14 pending invoice line items; 3. Extract tax IDs, amounts, and item categories; 4. Cross-reference against enterprise budget sheet; 5. Flag discrepancies > 3% and take screenshots; 6. Compile verified audit report PDF.",
+    content: [
+      "传统 RPA 最脆弱的地方在于网页 DOM 稍一改动脚本就崩。而基于视觉与大模型的自主 Agent 具备极强的容错与语义理解能力。",
+      "给 Agent 下达清晰的验收条件与异常处理准则，它能像一个熟练的会计助理一样自己点击翻页、处理弹出层、记录核查明细。",
+      "这展示了 AI 正在从‘文字生成器’走向‘真实生产力执行者’的关键蜕变。",
+    ],
+    comments: [
+      {
+        id: "c-bo-1",
+        author: "陈序优化中",
+        createdAt: "2026-09-15 19:40",
+        content: "语义级定位比传统 Xpath 稳定太多了，未来企业的日常后台运维基本都是这个形态。",
+      },
+    ],
+  }),
 ];
