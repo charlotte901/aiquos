@@ -233,8 +233,8 @@
    the form's main stub and the keepsake stub. The whole ticket slams down. */
 .login-screen .login-composition {
   display: grid;
-  grid-template-columns: minmax(300px, 402px) 176px;
-  width: min(596px, 100%);
+  grid-template-columns: minmax(330px, 486px) 196px;
+  width: min(706px, 100%);
   background: #fffdfb;
   border-radius: 20px;
   transform: rotate(-1.6deg);
@@ -252,7 +252,7 @@
 .login-screen .login-composition::after {
   content: "";
   position: absolute;
-  right: calc(176px - 13px);
+  right: calc(196px - 13px);
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -274,7 +274,21 @@
   overflow: visible;
 }
 .login-screen .login-form {
-  padding: 42px 40px 36px;
+  padding: 50px 52px 42px;
+  gap: 18px;
+}
+.login-screen .login-title {
+  font-size: 34px;
+}
+.login-screen .login-heading p {
+  font-size: 14.5px;
+}
+.login-screen .login-field {
+  height: 50px;
+}
+.login-screen .login-submit {
+  min-height: 50px;
+  font-size: 16px;
 }
 
 /* One ink ring lifts off right after the slam, like the stamp's imprint. */
