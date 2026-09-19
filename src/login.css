@@ -177,22 +177,19 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Login art-direction exploration: five switchable variants driven by
-   `data-login-variant` on `.login-screen` (temporary switcher UI included).
-   Everything here is scoped to the standalone page — the cube-face copy of
-   `.login-surface` on Home is untouched.
+   The login page: a postage stamp slammed onto the brand-pink wall.
+   The word behind is the stamp's subject, blurred like out-of-focus print;
+   the card carries real perforated teeth (a two-layer mask keeps the inner
+   area solid while circles punch the edges) and lands with a stamp-slam
+   settle followed by one ink ring. Scoped to the standalone page — the
+   cube-face copy of `.login-surface` on Home is untouched.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Shared: the composition wrapper keeps decorations registered to the card. */
-.login-composition {
-  position: relative;
-  z-index: 2;
-}
-.login-word,
-.login-cube,
-.login-poster,
-.login-stub {
-  display: none;
+.login-screen {
+  background:
+    radial-gradient(90% 62% at 50% -4%, rgba(255, 255, 255, 0.16), transparent 62%),
+    radial-gradient(60% 40% at 88% 108%, rgba(23, 21, 15, 0.14), transparent 64%),
+    #f568a3;
 }
 .login-screen::after {
   content: "";
@@ -206,478 +203,95 @@
   mix-blend-mode: overlay;
 }
 
-/* Temporary variant switcher */
-.login-variant-switcher {
-  position: fixed;
-  left: 50%;
-  bottom: max(18px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  z-index: 40;
-  display: flex;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 999px;
-  background: rgba(20, 18, 26, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-.login-variant-switcher button {
-  height: 32px;
-  padding: 0 13px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.74);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 160ms ease;
-  white-space: nowrap;
-}
-.login-variant-switcher button[aria-pressed="true"] {
-  background: #f568a3;
-  color: #ffffff;
+.login-composition {
+  position: relative;
+  z-index: 2;
 }
 
-/* ── V1 · 粉世界接管 ─────────────────────────────────────────────────────── */
-.login-screen[data-login-variant="v1"] {
-  background:
-    radial-gradient(90% 62% at 50% -4%, rgba(255, 255, 255, 0.16), transparent 62%),
-    radial-gradient(60% 40% at 88% 108%, rgba(23, 21, 15, 0.14), transparent 64%),
-    #f568a3;
-}
-.login-screen[data-login-variant="v1"] .login-word {
+/* The blurred display word: the out-of-focus print behind the stamp. */
+.login-screen .login-word {
   display: block;
   position: absolute;
-  top: clamp(30px, 6vh, 64px);
+  top: clamp(26px, 5.5vh, 60px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 0;
   font-family: "DM Sans", "Noto Sans SC", sans-serif;
-  font-size: clamp(56px, 10.5vw, 148px);
+  font-size: clamp(64px, 12vw, 168px);
   font-weight: 900;
   line-height: 0.8;
   letter-spacing: -0.045em;
   text-transform: uppercase;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.5);
+  filter: blur(14px);
   user-select: none;
-}
-.login-screen[data-login-variant="v1"] .login-surface {
-  width: min(444px, 100%);
-  aspect-ratio: auto;
-  border-radius: 24px;
-  background: #fffdfb;
-  box-shadow:
-    0 30px 70px rgba(76, 26, 56, 0.32),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
-  container-type: normal;
-  overflow: hidden;
-}
-.login-screen[data-login-variant="v1"] .login-form {
-  height: auto;
-  max-height: none;
-  padding: 44px 46px 38px;
-  gap: 18px;
-}
-.login-screen[data-login-variant="v1"] .login-back,
-.login-screen[data-login-variant="v4"] .login-back {
-  background: #ffffff;
-  color: #17150f;
-  border: 1px solid #ffffff;
-  box-shadow: 0 6px 18px rgba(76, 26, 56, 0.22);
-}
-.login-screen[data-login-variant="v1"] .login-back:hover {
-  background: #fffdfb;
+  pointer-events: none;
 }
 
-/* ── V2 · 立方体转场 ─────────────────────────────────────────────────────── */
-.login-screen[data-login-variant="v2"] {
-  background:
-    radial-gradient(90% 62% at 50% -4%, rgba(255, 255, 255, 0.16), transparent 62%),
-    #f568a3;
-}
-.login-screen[data-login-variant="v2"] .login-composition {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: nowrap;
-  gap: clamp(36px, 5vw, 76px);
-}
-@media (max-width: 1099px) {
-  .login-screen[data-login-variant="v2"] .login-composition {
-    flex-wrap: wrap;
-  }
-}
-.login-screen[data-login-variant="v2"] .login-cube {
-  display: block;
-  position: relative;
-  width: clamp(150px, 16vw, 196px);
-  aspect-ratio: 1;
-  perspective: 900px;
-  flex: 0 0 auto;
-}
-.login-cube-core {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  animation: login-cube-sway 7s ease-in-out infinite alternate;
-}
-@keyframes login-cube-sway {
-  from { transform: rotateX(-26deg) rotateY(26deg); }
-  to { transform: rotateX(-18deg) rotateY(54deg); }
-}
-.login-cube-face {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  font-style: normal;
-}
-.login-cube-face.is-front {
-  background: linear-gradient(150deg, #ff8abf 0%, #f568a3 58%, #e0478f 100%);
-  color: #ffffff;
-  font-family: "DM Sans", sans-serif;
-  font-size: clamp(52px, 5.6vw, 68px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
-  transform: translateZ(calc(clamp(150px, 16vw, 196px) / 2));
-}
-.login-cube-face.is-top {
-  background: #fffdfb;
-  box-shadow: inset 0 0 0 1px #f0c6da;
-  transform: rotateX(90deg) translateZ(calc(clamp(150px, 16vw, 196px) / 2));
-}
-.login-cube-face.is-side {
-  background: linear-gradient(160deg, #26231d, #17150f);
-  transform: rotateY(90deg) translateZ(calc(clamp(150px, 16vw, 196px) / 2));
-}
-.login-cube-shadow {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  bottom: -44px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(76, 26, 56, 0.4);
-  filter: blur(16px);
-}
-@media (prefers-reduced-motion: reduce) {
-  .login-cube-core { animation: none; }
-}
-.login-screen[data-login-variant="v2"] .login-surface {
-  flex: 0 0 auto;
-  width: min(420px, calc(100vw - 140px));
+/* The stamp: perforated teeth on every edge. The mask keeps the content box
+   solid and adds a field of circles aligned to the border — only the circles
+   that cross an edge show as bites. */
+.login-screen .login-surface {
+  --tooth: 7px;
+  width: min(452px, 100%);
   aspect-ratio: auto;
-  border-radius: 24px;
+  padding: calc(var(--tooth) * 2.3);
+  border-radius: 2px;
   background: #fffdfb;
-  box-shadow:
-    0 30px 70px rgba(76, 26, 56, 0.32),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
-  container-type: normal;
-  overflow: hidden;
-}
-.login-screen[data-login-variant="v2"] .login-form {
-  height: auto;
-  max-height: none;
-  padding: 42px 44px 36px;
-  gap: 18px;
-}
-.login-screen[data-login-variant="v2"] .login-back {
-  background: #ffffff;
-  color: #17150f;
-  border: 1px solid #ffffff;
-  box-shadow: 0 6px 18px rgba(76, 26, 56, 0.22);
-}
-
-/* ── V3 · 门票检票口 ─────────────────────────────────────────────────────── */
-.login-screen[data-login-variant="v3"] {
-  background:
-    radial-gradient(90% 62% at 50% -4%, rgba(255, 255, 255, 0.14), transparent 62%),
-    #f568a3;
-}
-.login-screen[data-login-variant="v3"] .login-composition {
-  display: grid;
-  grid-template-columns: minmax(300px, 402px) 176px;
-  width: min(596px, 100%);
-  background: #fffdfb;
-  border-radius: 20px;
-  transform: rotate(-1.6deg);
-  box-shadow: 0 36px 80px rgba(76, 26, 56, 0.34);
-}
-.login-screen[data-login-variant="v3"] .login-surface {
-  grid-column: 1;
-  grid-row: 1;
-  width: auto;
-  aspect-ratio: auto;
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
   container-type: normal;
   overflow: visible;
+  mask:
+    radial-gradient(circle var(--tooth) at 0 0, #0000 96%, #000)
+      0 0 / calc(var(--tooth) * 4.6) calc(var(--tooth) * 4.6) round,
+    linear-gradient(#000 0 0) content-box;
+  mask-composite: add;
+  transform: rotate(-2.4deg);
+  box-shadow: 0 30px 70px rgba(76, 26, 56, 0.34);
+  animation: login-stamp-slam 700ms cubic-bezier(0.22, 0.9, 0.32, 1.18) both;
 }
-.login-screen[data-login-variant="v3"] .login-form {
+@keyframes login-stamp-slam {
+  0% { opacity: 0; transform: scale(2.3) rotate(-9deg); }
+  55% { opacity: 1; transform: scale(0.94) rotate(-1.8deg); }
+  78% { transform: scale(1.03) rotate(-2.8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-2.4deg); }
+}
+
+/* One ink ring lifts off right after the slam, like the stamp's imprint. */
+.login-ink-ring {
+  position: absolute;
+  inset: -4px;
+  z-index: 3;
+  border-radius: 26px;
+  border: 3px solid rgba(245, 104, 163, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  animation: login-ink-ring 1000ms cubic-bezier(0.16, 1, 0.3, 1) 500ms both;
+}
+@keyframes login-ink-ring {
+  0% { opacity: 0.75; transform: scale(0.92); }
+  100% { opacity: 0; transform: scale(1.22); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-surface { animation: none; }
+  .login-ink-ring { animation: none; }
+}
+
+/* The inner panel sits in the stamp's paper margin like the picture area. */
+.login-screen .login-form {
   height: auto;
   max-height: none;
-  padding: 42px 40px 36px;
-  gap: 17px;
+  background: linear-gradient(168deg, #fff6fa 0%, #fde7f1 100%);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px #f6d7e6;
+  padding: 36px 38px 30px;
+  gap: 16px;
 }
-.login-screen[data-login-variant="v3"] .login-stub {
-  grid-column: 2;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 28px 18px;
-  background: linear-gradient(180deg, #fff5f9 0%, #fde7f1 100%);
-  border-left: 2px dashed #e3bccf;
-  text-align: center;
-}
-.login-stub-brand {
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  color: #c04a80;
-}
-.login-stub-no {
-  font-family: "DM Sans", sans-serif;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  color: #332030;
-}
-.login-stub-barcode {
-  width: 100%;
-  height: 46px;
-  border-radius: 3px;
-  background: repeating-linear-gradient(
-    90deg,
-    #17150f 0 2px,
-    transparent 2px 5px,
-    #17150f 5px 6px,
-    transparent 6px 11px
-  );
-  opacity: 0.88;
-}
-.login-stub-stamp {
-  display: grid;
-  place-items: center;
-  width: 76px;
-  height: 76px;
-  border: 2.5px solid rgba(224, 71, 143, 0.72);
-  border-radius: 50%;
-  color: #e0478f;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  transform: rotate(-13deg);
-}
-/* Punch-hole notches on the perforation, painted with the ground pink. */
-.login-screen[data-login-variant="v3"] .login-composition::before,
-.login-screen[data-login-variant="v3"] .login-composition::after {
-  content: "";
-  position: absolute;
-  right: calc(176px - 13px);
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #f568a3;
-  box-shadow: inset 0 2px 4px rgba(76, 26, 56, 0.18);
-}
-.login-screen[data-login-variant="v3"] .login-composition::before { top: -13px; }
-.login-screen[data-login-variant="v3"] .login-composition::after { bottom: -13px; }
-.login-screen[data-login-variant="v3"] .login-back {
+
+/* White chrome pill for the way back. */
+.login-screen .login-back {
   background: #ffffff;
   color: #17150f;
   border: 1px solid #ffffff;
   box-shadow: 0 6px 18px rgba(76, 26, 56, 0.22);
-}
-@media (max-width: 760px) {
-  .login-screen[data-login-variant="v3"] .login-composition {
-    grid-template-columns: 1fr;
-    transform: none;
-  }
-  .login-screen[data-login-variant="v3"] .login-stub {
-    border-left: 0;
-    border-top: 2px dashed #e3bccf;
-    flex-direction: row;
-    padding: 18px 24px;
-  }
-  .login-screen[data-login-variant="v3"] .login-composition::before,
-  .login-screen[data-login-variant="v3"] .login-composition::after {
-    display: none;
-  }
-}
-
-/* ── V4 · 对开海报 ───────────────────────────────────────────────────────── */
-.login-screen[data-login-variant="v4"] {
-  background:
-    radial-gradient(80% 60% at 18% 0%, rgba(255, 255, 255, 0.1), transparent 60%),
-    #f568a3;
-}
-.login-screen[data-login-variant="v4"] .login-poster {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 26px;
-  position: relative;
-  overflow: hidden;
-  padding: clamp(30px, 4vw, 48px) clamp(26px, 3vw, 42px);
-  background: linear-gradient(162deg, #ff8abf 0%, #f568a3 52%, #d94987 100%);
-  color: #ffffff;
-}
-.login-poster strong {
-  font-family: "DM Sans", sans-serif;
-  font-size: clamp(44px, 4.4vw, 64px);
-  font-weight: 900;
-  line-height: 0.88;
-  letter-spacing: -0.05em;
-}
-.login-poster p {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.75;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.88);
-}
-.login-poster-stamp {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  border: 2px dashed rgba(255, 255, 255, 0.55);
-  border-radius: 50%;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-align: center;
-  transform: rotate(-14deg);
-}
-.login-poster-stamp { top: 22px; right: 20px; }
-.login-poster-stamp.is-alt {
-  top: 18px;
-  right: auto;
-  bottom: auto;
-  left: 20px;
-  width: 66px;
-  height: 66px;
-  transform: rotate(10deg);
-  color: rgba(255, 255, 255, 0.7);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-.login-screen[data-login-variant="v4"] .login-composition {
-  display: grid;
-  grid-template-columns: minmax(280px, 396px) minmax(320px, 424px);
-  border-radius: 26px;
-  overflow: hidden;
-  box-shadow: 0 36px 84px rgba(76, 26, 56, 0.34);
-}
-.login-screen[data-login-variant="v4"] .login-surface {
-  grid-column: 2;
-  grid-row: 1;
-  width: auto;
-  aspect-ratio: auto;
-  background: #fffdfb;
-  border-radius: 0;
-  box-shadow: none;
-  container-type: normal;
-  overflow: hidden;
-}
-.login-screen[data-login-variant="v4"] .login-form {
-  height: auto;
-  max-height: none;
-  padding: 44px 44px 38px;
-  gap: 18px;
-}
-@media (max-width: 980px) {
-  .login-screen[data-login-variant="v4"] .login-composition {
-    grid-template-columns: 1fr;
-    width: min(480px, 100%);
-  }
-  .login-poster { min-height: 148px; justify-content: center; }
-  .login-poster strong { font-size: 44px; }
-  .login-poster-stamp.is-alt { display: none; }
-}
-
-/* ── V5 · 暗场影院 ───────────────────────────────────────────────────────── */
-.login-screen[data-login-variant="v5"] {
-  background:
-    radial-gradient(72% 46% at 50% -6%, rgba(245, 104, 163, 0.34), transparent 62%),
-    radial-gradient(46% 30% at 84% 112%, rgba(245, 104, 163, 0.14), transparent 60%),
-    #0a0a10;
-}
-.login-screen[data-login-variant="v5"]::after { opacity: 0.16; mix-blend-mode: screen; }
-.login-screen[data-login-variant="v5"] .login-word {
-  display: block;
-  position: absolute;
-  top: clamp(30px, 6vh, 64px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 0;
-  font-family: "DM Sans", "Noto Sans SC", sans-serif;
-  font-size: clamp(56px, 10.5vw, 148px);
-  font-weight: 900;
-  line-height: 0.8;
-  letter-spacing: -0.045em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: rgba(245, 104, 163, 0.14);
-  text-shadow: 0 0 46px rgba(245, 104, 163, 0.5);
-  user-select: none;
-}
-.login-screen[data-login-variant="v5"] .login-surface {
-  width: min(444px, 100%);
-  aspect-ratio: auto;
-  border-radius: 24px;
-  background: rgba(24, 21, 33, 0.86);
-  border: 1px solid rgba(245, 104, 163, 0.42);
-  box-shadow:
-    0 34px 90px rgba(0, 0, 0, 0.62),
-    0 0 64px rgba(245, 104, 163, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(16px);
-  container-type: normal;
-  overflow: hidden;
-}
-.login-screen[data-login-variant="v5"] .login-form {
-  height: auto;
-  max-height: none;
-  padding: 44px 46px 38px;
-  gap: 18px;
-}
-.login-screen[data-login-variant="v5"] .login-title { color: #ffffff; }
-.login-screen[data-login-variant="v5"] .login-heading p { color: rgba(255, 255, 255, 0.6); }
-.login-screen[data-login-variant="v5"] .login-field {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: none;
-  color: rgba(255, 255, 255, 0.62);
-}
-.login-screen[data-login-variant="v5"] .login-field input { color: #ffffff; }
-.login-screen[data-login-variant="v5"] .login-field input::placeholder { color: rgba(255, 255, 255, 0.38); }
-.login-screen[data-login-variant="v5"] .login-field:focus-within {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(245, 104, 163, 0.85);
-  box-shadow: 0 0 0 3px rgba(245, 104, 163, 0.28);
-}
-.login-screen[data-login-variant="v5"] .login-password-toggle { color: rgba(255, 255, 255, 0.6); }
-.login-screen[data-login-variant="v5"] .login-password-toggle:hover {
-  background: rgba(245, 104, 163, 0.16);
-  color: #ff9cc6;
-}
-.login-screen[data-login-variant="v5"] .login-note { color: rgba(255, 255, 255, 0.44); }
-.login-screen[data-login-variant="v5"] .login-back {
-  background: rgba(24, 21, 33, 0.72);
-  color: #ffffff;
-  border: 1px solid rgba(245, 104, 163, 0.45);
-  backdrop-filter: blur(10px);
 }
