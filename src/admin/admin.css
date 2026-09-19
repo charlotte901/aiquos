@@ -71,47 +71,52 @@ h1, h2, h3 { margin: 0; }
 .gate-back { justify-self: center; color: #97a0b2; font-size: 12.5px; }
 
 /* ---- Shell ---- */
-.admin-shell { display: grid; grid-template-columns: 228px 1fr; min-height: 100dvh; }
+.admin-shell { display: grid; grid-template-columns: 200px 1fr; min-height: 100dvh; }
 .admin-side {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 22px 16px;
+  gap: 14px;
+  padding: 20px 12px;
   background: #fff;
   border-right: 1px solid var(--admin-line);
 }
-.admin-brand { display: grid; gap: 2px; padding: 4px 10px 14px; border-bottom: 1px solid var(--admin-line); }
-.admin-brand span { color: var(--admin-pink); font-weight: 900; letter-spacing: .05em; font-size: 16px; }
-.admin-brand em { color: var(--admin-muted); font-style: normal; font-size: 12px; font-weight: 700; }
-.admin-side nav { display: grid; gap: 6px; flex: 1; }
+.admin-brand { display: grid; gap: 1px; padding: 2px 8px 12px; border-bottom: 1px solid var(--admin-line); }
+.admin-brand span { color: var(--admin-pink); font-weight: 900; letter-spacing: .06em; font-size: 14.5px; }
+.admin-brand em { color: var(--admin-muted); font-style: normal; font-size: 11px; font-weight: 700; }
+.admin-side nav { display: grid; align-content: start; gap: 3px; flex: 1; }
 .admin-side nav button {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 11px 14px;
+  gap: 10px;
+  padding: 8px 12px;
   border: 0;
-  border-radius: 13px;
+  border-radius: 10px;
   background: transparent;
-  color: #4a5568;
-  font-weight: 700;
+  color: #55607a;
+  font-size: 13px;
+  font-weight: 500;
   text-align: left;
+  transition: background .15s ease, color .15s ease;
 }
-.admin-side nav button:hover { background: #f4f5f9; }
-.admin-side nav button.is-active { color: var(--admin-pink); background: var(--admin-pink-soft); }
-.admin-side-foot { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--admin-line); }
+.admin-side nav button svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.admin-side nav button:hover { background: #f4f5f9; color: #333e56; }
+.admin-side nav button.is-active { color: #c2407a; background: var(--admin-pink-soft); font-weight: 700; }
+.admin-side-foot { display: grid; gap: 3px; padding-top: 12px; border-top: 1px solid var(--admin-line); }
 .admin-side-foot button {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 12px;
+  padding: 7px 10px;
   border: 0;
-  border-radius: 11px;
+  border-radius: 9px;
   background: transparent;
-  color: #4a5568;
+  color: #6a7588;
+  font-size: 12.5px;
   font-weight: 700;
 }
+.admin-side-foot button svg { width: 14px; height: 14px; }
 .admin-side-foot button:hover { background: #f4f5f9; }
-.admin-side-foot a { padding: 2px 12px; color: #97a0b2; font-size: 12.5px; }
+.admin-side-foot a { padding: 2px 10px; color: #97a0b2; font-size: 11.5px; }
 
 .admin-main { display: flex; flex-direction: column; min-width: 0; padding: 26px clamp(18px, 3vw, 36px) 44px; }
 .admin-top {
