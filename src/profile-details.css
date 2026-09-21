@@ -1487,9 +1487,13 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   min-height: 0;
+  /* 表单比卡片矮时居中好看，但内容一旦超出（矮视口 / 字体放大）就会向上溢出，
+   * 被卡片的 overflow: hidden 从顶部裁掉标题。safe 让溢出方向只朝下，标题始终
+   * 贴着上边缘可见。 */
+  justify-content: safe center;
   padding: clamp(18px, calc(2.5 * var(--dvh, 1dvh)), 64px) clamp(36px, calc(4 * var(--vw, 1vw)), 64px);
+  overflow-y: auto;
   background: #fff;
 }
 

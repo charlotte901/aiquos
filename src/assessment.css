@@ -13,9 +13,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: calc(122px * var(--assessment-unit));
-  padding-bottom: 60px;
+  /* 与 CENTER 同款处理：上下 auto 边距吸收多余高度实现垂直居中，短视口下先
+   * 让出边距而不是把卡片挤出屏幕。此前固定 padding + 顶部对齐，1920x1080
+   * 会在底部留下 270px 空白。 */
+  min-height: calc(100 * var(--dvh, 1dvh));
+  padding-top: calc(96px * var(--assessment-unit));
+  padding-bottom: calc(96px * var(--assessment-unit));
+  box-sizing: border-box;
 }
+.assessment-layout > *:first-child { margin-top: auto; }
+.assessment-layout > *:last-child { margin-bottom: auto; }
 .assessment-wordmark {
   margin: 0;
   width: calc(633.344px * var(--assessment-unit));
@@ -155,14 +162,25 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 8px;
-  font-size: 12px;
-  color: #ffffff7a;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  /* 唯一的返回出口，原为 12px/400/48% 白，在 #08080a 上偏弱。提到 72% 白并补
+   * 一层 hover 底，保证可读性同时不抢标题。 */
+  color: #ffffffb8;
   background: transparent;
+  transition: color .2s ease, background .2s ease;
   z-index: 2;
 }
 .assessment-back:hover {
-  color: white;
+  color: #fff;
+  background: #ffffff14;
+}
+.assessment-back:focus-visible {
+  color: #fff;
+  outline: 2px solid #ffffff6b;
+  outline-offset: 2px;
 }
 .assessment-screen[data-compact="true"] .assessment-layout {
   padding: 106px 24px 36px;

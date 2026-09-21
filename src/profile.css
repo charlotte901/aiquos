@@ -12,9 +12,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: calc(122px * var(--profile-unit));
-  padding-bottom: 60px;
+  /* 用 auto 上下边距吸收多余高度：内容在视口里垂直居中，短视口下又会先让出
+   * 边距而不是把卡片挤出屏幕（justify-content: center 在溢出时会把顶部裁掉）。
+   * 上下留同一个小边距，居中的对称性交给 auto 边距，避免固定 padding 把内容压低。 */
+  min-height: calc(100 * var(--dvh, 1dvh));
+  padding-top: calc(96px * var(--profile-unit));
+  padding-bottom: calc(96px * var(--profile-unit));
+  box-sizing: border-box;
 }
+.profile-layout > *:first-child { margin-top: auto; }
+.profile-layout > *:last-child { margin-bottom: auto; }
 /* Center the lettering like TEST!: height 188 at y=122, aspect kept from
  * the source crop, no optical offset. */
 .profile-wordmark {

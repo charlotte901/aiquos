@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { CASE_PROJECTS } from "../src/case-projects.js";
 import { getCaseLayers } from "../src/case-buffer.js";
 import {
   isStaleGroupedJourney,
@@ -227,8 +228,8 @@ test("the default journey weaves the archive covers through the live scenes", as
   const { JOURNEY_MAX } = await import("../src/case-library.js");
   const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
   const liveIds = CASES.map((item) => item.id);
-  const coverCount = (archive.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0]
-    .match(/\n    title: "/g) ?? []).length;
+  // 案例清单已抽到 case-projects.js，直接读数据而不是从 JSX 源码里正则抠。
+  const coverCount = CASE_PROJECTS.length;
 
   assert.match(archive, /const ARCHIVE_JOURNEY_KEYS = \[/);
   assert.match(archive, /const LIVE_JOURNEY_KEYS = LIVE_CASES\.map\(\(item\) => `live:\$\{item\.id\}`\)/);
@@ -514,19 +515,16 @@ test("the opened case sits on a blurred copy of its own artwork, never a crop", 
 });
 
 test("the last ice ships as a case with its own poster and copy", async () => {
-  const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
-  assert.match(src, /title: "The Last Ice"/);
-  assert.match(src, /tags: "AI 海报"/);
   // The artwork is the one the case declares, not the one its position would
   // imply. Deriving it from the case count was correct only while the case was
   // appended last with no `image` of its own; the moment the archive was
   // reordered or the case named its artwork, this checked an unrelated file.
-  const block = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
-  const entry = block.slice(block.indexOf('title: "The Last Ice"'));
-  const declared = entry.match(/\n    image: (\d+),/);
-  assert.ok(declared, "The Last Ice must declare its artwork");
+  const entry = CASE_PROJECTS.find((item) => item.title === "The Last Ice");
+  assert.ok(entry, "The Last Ice ships in the archive");
+  assert.equal(entry.tags, "AI 海报");
+  assert.ok(Number.isInteger(entry.image), "The Last Ice must declare its artwork");
   const bytes = await readFile(
-    new URL(`../public/assets/cases/${declared[1]}.webp`, import.meta.url),
+    new URL(`../public/assets/cases/${entry.image}.webp`, import.meta.url),
   );
   assert.ok(bytes.length > 1000, "the case artwork should be a real image");
   // WebP magic: RIFF....WEBP.
@@ -582,9 +580,7 @@ test("an opened case is centred, with the copy split either side of it", async (
 
   // Every shipped description really does split, so no case silently puts its
   // whole text on one side.
-  const block = jsx.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
-  const descriptions = [...block.matchAll(/description:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g)]
-    .map((m) => JSON.parse(`"${m[1]}"`));
+  const descriptions = CASE_PROJECTS.map((item) => item.description);
   for (const [i, text] of descriptions.entries()) {
     const parts = splitDescription(text);
     assert.ok(parts.lead, `case ${i + 1} has no standfirst to show on the left`);
@@ -594,14 +590,12 @@ test("an opened case is centred, with the copy split either side of it", async (
 
 test("every case has Chinese copy that is actually distinct", async () => {
   const src = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
-  const block = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
-  const descriptions = [...block.matchAll(/description:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g)]
-    .map((m) => JSON.parse(`"${m[1]}"`));
+  const descriptions = CASE_PROJECTS.map((item) => item.description);
 
   // Count the entries rather than pinning a literal total: the pool is content,
   // and a hard-coded number is what made this test fail when cases were removed
   // even though every remaining case was still correct.
-  const caseCount = [...block.matchAll(/title: "/g)].length;
+  const caseCount = CASE_PROJECTS.length;
   assert.equal(descriptions.length, caseCount, "every case needs a description");
   assert.ok(caseCount > 0, "the pool should not be empty");
   for (const [i, text] of descriptions.entries()) {
@@ -814,15 +808,14 @@ test("every featured stamp cover is a local lightweight image", async () => {
   // 1..N in list order; the moment entries were reordered or held their `image`
   // out of sequence, this checked files no case points at and missed the ones
   // that are. `image` is the contract the runtime uses too (see `projectImage`).
-  const archive = await readFile(new URL("../src/CaseArchive.jsx", import.meta.url), "utf8");
-  const block = archive.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
-  const numbers = [...block.matchAll(/\n    image: (\d+),/g)].map(([, n]) => Number(n));
+  const numbers = CASE_PROJECTS.map((item) => item.image);
   assert.ok(numbers.length > 0, "the archive should not be empty");
   assert.equal(
     numbers.length,
-    (block.match(/\n    title: "/g) ?? []).length,
+    CASE_PROJECTS.length,
     "every archive case must declare the artwork it is",
   );
+  assert.ok(numbers.every((n) => Number.isInteger(n)), "every case declares an image number");
   assert.equal(
     new Set(numbers).size,
     numbers.length,
@@ -928,14 +921,13 @@ test("every live case has its own detail copy and artwork", async () => {
     "a case's `image` is already the file number",
   );
   // Every named file must exist, and every archive case must name one.
-  const numbers = [...src.matchAll(/\n    image: (\d+),/g)].map(([, n]) => n);
+  const numbers = CASE_PROJECTS.map((item) => item.image);
   for (const number of numbers) {
     await access(new URL(`../public/assets/cases/${number}.webp`, import.meta.url));
   }
-  const archiveBlock = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
   assert.equal(
     numbers.length,
-    (archiveBlock.match(/\n    title:/g) ?? []).length,
+    CASE_PROJECTS.length,
     "every archive case must name the artwork it actually is",
   );
 });
@@ -1022,8 +1014,7 @@ test("case copy states the AI capability, not just the medium", async () => {
   // The archive entries share the same wheel, so they carry the same obligation.
   // They are concept pieces, so they state the AI role rather than claiming the
   // whole artefact was generated.
-  const archive = src.match(/const CASE_PROJECTS = \[[\s\S]*?\n\];/)[0];
-  const archiveDescriptions = [...archive.matchAll(/description:\s*\n?\s*"([^"]*)"/g)];
+  const archiveDescriptions = CASE_PROJECTS.map((item) => [item.title, item.description]);
   assert.ok(archiveDescriptions.length > 0, "the archive should not be empty");
   for (const [, text] of archiveDescriptions) {
     const standfirst = text.match(/^([\s\S]*?[。！？])/)[1];
