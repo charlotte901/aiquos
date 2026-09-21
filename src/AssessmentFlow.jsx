@@ -28,6 +28,7 @@ import {
 } from "./assessment-flow";
 import { generateArkImage, streamDeepSeek } from "./deepseek";
 import { MarkdownLite } from "./markdown-lite";
+import { Task3DCharacter } from "./Task3DCharacter";
 import { DIMENSIONS as SCORING_DIMENSIONS } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
 const GUIDES = "/assets/crops/assessment-guides-crop.png";
@@ -199,7 +200,7 @@ function TaskStoryDialogue({ level, phase, lines, lineIndex, onAdvance, onSkip }
   );
 }
 
-function ObjectiveTask({ stage, onComplete }) {
+function ObjectiveTask({ stage, onComplete, onCharacterFeedback }) {
   const taskRef = useRef(null);
   const level = getComprehensiveLevel(stage);
   const [questions, setQuestions] = useState([]);
@@ -213,6 +214,17 @@ function ObjectiveTask({ stage, onComplete }) {
   const levelId = getComprehensiveLevel(stage).id;
   const question = questions[questionIndex];
   const storyLines = phase === "ending" ? level.ending : level.opening;
+
+  useEffect(() => {
+    onCharacterFeedback?.({
+      phase,
+      result,
+      reaction: result
+        ? (result.correct ? "判断准确！回答非常到位。" : "仔细阅读题目与解析，再接再厉！")
+        : (phase === "opening" || phase === "ending" ? storyLines[lineIndex]?.text : null),
+      speakerName: level.guardian,
+    });
+  }, [phase, result, lineIndex, storyLines, level, onCharacterFeedback]);
 
   const advanceStory = () => {
     if (lineIndex < storyLines.length - 1) {
@@ -367,7 +379,7 @@ function ObjectiveTask({ stage, onComplete }) {
   );
 }
 
-function ConversationTask({ stage, onComplete }) {
+function ConversationTask({ stage, onComplete, onCharacterFeedback }) {
   const [draft, setDraft] = useState("");
   const threadNode = useRef(null);
   // Only auto-follow while the reader is already at the bottom, so looking
@@ -381,6 +393,19 @@ function ConversationTask({ stage, onComplete }) {
   const [isSending, setIsSending] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    onCharacterFeedback?.({
+      phase: isReady ? "ending" : "quiz",
+      result: isReady ? { correct: true } : null,
+      reaction: isSending
+        ? "小源正在深入思考并为你梳理改进建议…"
+        : isReady
+          ? "本轮建议已梳理完毕，点击「完成本关」继续！"
+          : "写下你的协作需求，让我们一起厘清目标与关键执行步骤。",
+      speakerName: "AI 导师 · 小源",
+    });
+  }, [isSending, isReady, onCharacterFeedback]);
   // Reasoning models think in silence before the first content token; label
   // that gap so the wait never reads as a stuck request.
   const [isThinking, setIsThinking] = useState(false);
@@ -454,7 +479,7 @@ function ConversationTask({ stage, onComplete }) {
   </div>;
 }
 
-function PracticalTask({ stage, onComplete }) {
+function PracticalTask({ stage, onComplete, onCharacterFeedback }) {
   const level = getComprehensiveLevel(stage);
   const [tasks, setTasks] = useState([]);
   const [taskStatus, setTaskStatus] = useState("loading");
@@ -470,6 +495,19 @@ function PracticalTask({ stage, onComplete }) {
   const levelId = getComprehensiveLevel(stage).id;
   const task = tasks[0];
   const storyLines = phase === "ending" ? level.ending : level.opening;
+
+  useEffect(() => {
+    onCharacterFeedback?.({
+      phase,
+      result: isRunning ? null : (output || imageUrl ? { correct: true } : null),
+      reaction: isRunning
+        ? "Agent 正在执行实操生成任务，请稍候…"
+        : (output || imageUrl)
+          ? "实操任务已完成，生成的作品已在右侧画布呈现！"
+          : (phase === "opening" || phase === "ending" ? storyLines[lineIndex]?.text : "在下方撰写提示词并点击发送，驱动 Agent 完成任务。"),
+      speakerName: level.guardian,
+    });
+  }, [phase, isRunning, output, imageUrl, lineIndex, storyLines, level, onCharacterFeedback]);
 
   const advanceStory = () => {
     if (lineIndex < storyLines.length - 1) {
@@ -640,6 +678,7 @@ function ComprehensiveTask({
   onAnswerComprehensive,
   comprehensiveResult,
   adaptiveTelemetry = null,
+  onCharacterFeedback,
 }) {
   const level = getComprehensiveLevel(stage);
   const [question, setQuestion] = useState(null);
@@ -663,6 +702,21 @@ function ComprehensiveTask({
     }))
     : level.opening;
   const storyLine = storyLines[lineIndex];
+
+  const speakerName = (who) => {
+    if (who === "guardian") return level.guardian;
+    if (who === "xiao") return "AI 导师 · 小源";
+    return "你";
+  };
+
+  useEffect(() => {
+    onCharacterFeedback?.({
+      phase,
+      result,
+      reaction: reaction || (phase === "opening" || phase === "ending" ? storyLine?.text : null),
+      speakerName: phase === "opening" || phase === "ending" ? speakerName(storyLine?.who) : null,
+    });
+  }, [phase, result, reaction, storyLine, onCharacterFeedback]);
 
   const advanceStory = () => {
     if (lineIndex < storyLines.length - 1) {
@@ -715,7 +769,6 @@ function ComprehensiveTask({
     }
   };
 
-  const speakerName = (who) => (who === "guardian" ? level.guardian : who === "xiao" ? "AI 导师 · 小源" : "你");
   const isMulti = question?.type === "multi";
   const canSubmit = isMulti && selected.length > 0 && !result;
 
@@ -945,29 +998,76 @@ export function AssessmentTask({
   adaptiveTelemetry = null,
   busy,
 }) {
+  const [characterState, setCharacterState] = useState({
+    phase: "quiz",
+    result: null,
+    reaction: null,
+    speakerName: null,
+  });
+
   const theme = ASSESSMENT_THEMES[id];
   const mode = getStageMode(id, stage);
   const taskKey = `${id}-${stage}-${mode}`;
-  const props = { stage, onComplete: () => onComplete(stage) };
+  const props = {
+    stage,
+    onComplete: () => onComplete(stage),
+    onCharacterFeedback: setCharacterState,
+  };
   const comprehensive = id === "comprehensive";
   const displayMode = comprehensive ? "comprehensive" : mode;
-  return <main className="assessment-flow task-flow" data-mode={displayMode} style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
-    <button className="flow-back" type="button" onClick={onBack} disabled={busy}><ArrowLeft weight="bold" /> 返回关卡地图</button>
-    <h1 className="flow-wordmark" aria-label="TEST! 测评关卡"><TestWordmark /></h1>
-    <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} />
-    <section className="task-panel" aria-label={`${theme.title}第 ${stage} 关`}>
-      <Guides />
-      <TaskHeader id={id} stage={stage} />
-      {comprehensive
-        ? <ComprehensiveTask
-          key={`${taskKey}-comprehensive`}
-          {...props}
-          onFetchComprehensiveQuestion={onFetchComprehensiveQuestion}
-          onAnswerComprehensive={onAnswerComprehensive}
-          comprehensiveResult={comprehensiveResult}
-          adaptiveTelemetry={adaptiveTelemetry}
-        />
-        : mode === "objective" ? <ObjectiveTask key={taskKey} {...props} /> : mode === "conversation" ? <ConversationTask key={taskKey} {...props} /> : <PracticalTask key={taskKey} {...props} />}
-    </section>
-  </main>;
+  return (
+    <main
+      className="assessment-flow task-flow"
+      data-mode={displayMode}
+      style={{
+        "--assessment-color": theme.color,
+        "--assessment-soft": theme.soft,
+        "--assessment-glow": theme.glow,
+        "--assessment-deep": theme.deep,
+      }}
+    >
+      <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
+        <ArrowLeft weight="bold" /> 返回关卡地图
+      </button>
+      <h1 className="flow-wordmark" aria-label="TEST! 测评关卡">
+        <TestWordmark />
+      </h1>
+      <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} />
+
+      <div className="task-stage-layout">
+        <section className="task-panel is-enlarged" aria-label={`${theme.title}第 ${stage} 关`}>
+          <Guides />
+          <TaskHeader id={id} stage={stage} />
+          {comprehensive ? (
+            <ComprehensiveTask
+              key={`${taskKey}-comprehensive`}
+              {...props}
+              onFetchComprehensiveQuestion={onFetchComprehensiveQuestion}
+              onAnswerComprehensive={onAnswerComprehensive}
+              comprehensiveResult={comprehensiveResult}
+              adaptiveTelemetry={adaptiveTelemetry}
+            />
+          ) : mode === "objective" ? (
+            <ObjectiveTask key={taskKey} {...props} />
+          ) : mode === "conversation" ? (
+            <ConversationTask key={taskKey} {...props} />
+          ) : (
+            <PracticalTask key={taskKey} {...props} />
+          )}
+        </section>
+
+        <aside className="task-character-stage" aria-label="3D 伴学导师与守门人舞台">
+          <Task3DCharacter
+            id={id}
+            stage={stage}
+            mode={displayMode}
+            phase={characterState.phase}
+            result={characterState.result}
+            reaction={characterState.reaction}
+            speakerName={characterState.speakerName}
+          />
+        </aside>
+      </div>
+    </main>
+  );
 }

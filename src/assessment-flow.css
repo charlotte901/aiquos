@@ -155,6 +155,44 @@
   user-select: none;
 }
 .level-map .assessment-guides { right: 4.5%; bottom: 3%; filter: invert(17%) sepia(13%) saturate(1210%) hue-rotate(176deg) brightness(95%) contrast(93%); opacity: .92; }
+/* ── Task Stage Layout (Split Answering Card & 3D Character) ───────────────── */
+
+.task-stage-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, min(70vw, 1150px)) minmax(0, 1fr);
+  gap: clamp(20px, 2.4vw, 48px);
+  width: min(calc(96 * var(--vw, 1vw)), 1700px);
+  height: calc(82 * var(--dvh, 1dvh));
+  margin: clamp(86px, calc(11 * var(--vh, 1vh)), 128px) auto 0;
+  align-items: stretch;
+  z-index: 2;
+}
+
+.task-flow .task-stage-layout {
+  animation: flow-panel-in 520ms cubic-bezier(.16,1,.3,1) both;
+}
+
+.task-stage-layout .task-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: clamp(34px, calc(3.4 * var(--vw, 1vw)), 50px) clamp(36px, calc(3.5 * var(--vw, 1vw)), 56px) clamp(24px, calc(2.4 * var(--vw, 1vw)), 36px);
+  border-radius: clamp(34px, calc(3.2 * var(--vw, 1vw)), 48px);
+  color: #263243;
+  background: #fff;
+  box-shadow: 0 24px 0 #0000000d, 0 24px 56px rgba(0, 0, 0, 0.14);
+  transform: none;
+}
+
+.task-stage-layout .task-panel .assessment-guides {
+  display: none;
+}
+
 .task-panel {
   position: relative;
   display: flex;
@@ -176,12 +214,13 @@
 .task-heading strong { margin-left: auto; font-size: 12px; }
 .task-body { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, calc(2.1 * var(--vh, 1vh)), 25px); }
 .task-body { animation: task-content-in 380ms 110ms cubic-bezier(.16,1,.3,1) both; }
-.task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(22px, calc(2.1 * var(--vw, 1vw)), 29px); line-height: 1.2; letter-spacing: -.045em; }
-.answer-options { display: grid; gap: 8px; width: 100%; margin-top: clamp(15px, calc(2 * var(--vh, 1vh)), 21px); }
-.answer-options button { display: flex; align-items: center; gap: 15px; min-height: 56px; padding: 0 21px; border: 0; border-radius: 20px; color: #425162; background: color-mix(in srgb, var(--assessment-soft) 58%, #fff); text-align: left; font-size: 15px; font-weight: 600; }
-.answer-options button > span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; color: var(--assessment-color); background: var(--assessment-soft); font-size: 12px; flex: 0 0 auto; }
+.task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(22px, calc(2.2 * var(--vw, 1vw)), 31px); line-height: 1.25; letter-spacing: -.045em; }
+.answer-options { display: grid; gap: 10px; width: 100%; margin-top: clamp(16px, calc(2.2 * var(--vh, 1vh)), 24px); }
+.answer-options button { display: flex; align-items: center; gap: 16px; min-height: 58px; padding: 0 22px; border: 2px solid transparent; border-radius: 20px; color: #334155; background: color-mix(in srgb, var(--assessment-soft) 58%, #fff); text-align: left; font-size: 15.5px; font-weight: 600; transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+.answer-options button:hover:not(:disabled) { background: color-mix(in srgb, var(--assessment-soft) 82%, #fff); transform: translateX(3px); }
+.answer-options button > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--assessment-color); background: var(--assessment-soft); font-size: 13px; font-weight: 700; flex: 0 0 auto; transition: all 180ms ease; }
 .answer-options button > svg { margin-left: auto; color: var(--assessment-color); }
-.answer-options button.is-selected { outline: 3px solid var(--assessment-color); outline-offset: -3px; background: color-mix(in srgb, var(--assessment-soft) 80%, #fff); }
+.answer-options button.is-selected { outline: 3px solid var(--assessment-color); outline-offset: -3px; background: color-mix(in srgb, var(--assessment-soft) 82%, #fff); }
 .answer-options button.is-selected > span { color: #fff; background: var(--assessment-color); }
 .comprehensive-task {
   overflow-y: auto;
@@ -524,21 +563,54 @@
 .conversation-task .task-composer input::placeholder { color: #687489; opacity: 1; }
 .conversation-task .task-composer button { width: 52px; height: 52px; }
 @media (min-width: 841px) {
-  .task-flow .task-panel {
+  .task-flow .task-stage-layout {
     position: absolute;
-    top: calc(16 * var(--dvh, 1dvh));
+    top: calc(13 * var(--dvh, 1dvh));
     bottom: auto;
-    left: 0;
-    right: 0;
-    width: min(calc(66.8 * var(--vw, 1vw)), 1120px);
-    height: calc(80 * var(--dvh, 1dvh));
+    left: clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px);
+    right: clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px);
+    width: auto;
+    max-width: 1700px;
+    height: calc(81 * var(--dvh, 1dvh));
     margin: 0 auto;
     transform: none;
-    animation: none;
+  }
+  .task-flow .task-stage-layout .task-panel {
+    width: 100%;
+    height: 100%;
+    transform: none;
   }
   .task-flow .task-body {
     animation: none;
     transform: none;
+  }
+}
+@media (max-width: 960px) {
+  .task-stage-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(82 * var(--dvh, 1dvh));
+    margin-top: 78px;
+    gap: 20px;
+  }
+  /* 移动端答题卡回到文档流：抵消 840px 块中为旧居中布局写的绝对定位 */
+  .task-flow .task-stage-layout .task-panel {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    transform: none;
+  }
+  .task-stage-layout .task-character-stage {
+    order: -1;
+    height: 280px;
+    min-height: 280px;
   }
 }
 .reply-spinner { animation: reply-spin 800ms linear infinite; }
