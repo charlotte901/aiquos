@@ -14,10 +14,15 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error) {
-    // Best-effort diagnostics ring buffer (kept small, local only).
+    // Best-effort diagnostics ring buffer (kept small, local only). The stack
+    // matters more than the message when triaging a broken panel.
     try {
       const buffer = JSON.parse(localStorage.getItem("aiquos.error-ring.v1") ?? "[]");
-      buffer.push({ message: String(error?.message ?? error), at: new Date().toISOString() });
+      buffer.push({
+        message: String(error?.message ?? error),
+        stack: String(error?.stack ?? "").slice(0, 1200),
+        at: new Date().toISOString(),
+      });
       localStorage.setItem("aiquos.error-ring.v1", JSON.stringify(buffer.slice(-50)));
     } catch {
       // Storage unavailable: the visible fallback still works.

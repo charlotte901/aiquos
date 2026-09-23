@@ -82,10 +82,11 @@ test("serves objective questions from both marked banks without source metadata"
 });
 
 test("serves practical tasks from both marked banks without source metadata", async () => {
-  assert.equal(createPracticalTasks("academy", "human", () => .2).length, 2);
-  assert.equal(createPracticalTasks("academy", "ai", () => .2).length, 3);
+  assert.equal(createPracticalTasks({ levelId: "academy", origin: "human", rng: () => .2 }).length, 2);
+  assert.equal(createPracticalTasks({ levelId: "academy", origin: "ai", rng: () => .2 }).length, 3);
+  assert.equal(createPracticalTasks({ levelId: "all", origin: "human", count: 13, rng: () => .2 }).length, 13);
 
-  const tasks = createPracticalTasks("academy", "all", () => .2);
+  const tasks = createPracticalTasks({ levelId: "academy", origin: "all", rng: () => .2 });
   assert.equal(tasks.length, 5);
   assert.ok(tasks.every((task) => task.requirements.length > 0 && task.source.length > 0));
   assert.ok(tasks.every((task) => !["ai", "human"].includes(task.source)));
