@@ -14,16 +14,15 @@ import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
 import { siteViewForHash } from "./routes";
 import { loadExposureStore, saveExposureStore } from "./comprehensive-adaptive";
-import {
-  COMPREHENSIVE_LEVELS,
-  COMPREHENSIVE_QUESTION_COUNT,
-} from "./comprehensive-quiz";
+import { COMPREHENSIVE_PHASES, phaseCount } from "./assessment-timing";
 import {
   answerCredit,
+  appendExternalEvidence,
   appendHistorySnapshot,
   clearAttemptDraft,
   createAttempt,
   currentResult,
+  finalizeAttempt,
   isAttemptComplete,
   loadAttemptDraft,
   readCurrentBankVersion,
@@ -47,12 +46,19 @@ import { animateScrollPage } from "./transitions";
 import { pushPages } from "./slide-transition";
 import { skipCaseIntro } from "./CaseArchive";
 import { getStageSize } from "./stage";
+import { LoginTransitionOverlay, getStoredScheme } from "./transitions/LoginTransitionOverlay";
+import { SchemeSwitcher } from "./transitions/SchemeSwitcher";
 
 // A move with no cards to cut around takes the whole frame as one band.
 const defaultBands = () => {
   const height = getStageSize()[1];
   return [0, 0, height, height];
 };
+
+// Upper bound on evidence a whole timed run can collect (objective ≤14,
+// conversation ≤5 ladder slots, practical 1) — finalised down to the real
+// count when the run completes.
+const EVIDENCE_BUDGET = 40;
 
 // Single source of truth for hash → view; see src/routes.js.
 const route = () => siteViewForHash();
@@ -159,10 +165,10 @@ export function SiteExperience() {
       practical: 1,
     };
     // A reloaded draft also restores how far the map was unlocked, so 继续测评
-    // lands on the right stage instead of redoing answered ones.
+    // lands on the right phase instead of redoing completed ones.
     const draft = loadAttemptDraft();
-    if (draft && draft.assessmentId === "comprehensive" && draft.evidence.length > 0) {
-      base.comprehensive = Math.min(5, Math.floor(draft.evidence.length / 5) + 1);
+    if (draft && draft.assessmentId === "comprehensive" && Array.isArray(draft.phasesDone)) {
+      base.comprehensive = Math.min(phaseCount("comprehensive"), draft.phasesDone.length + 1);
     }
     return base;
   });
@@ -179,6 +185,7 @@ export function SiteExperience() {
     bootstrap.current = {
       state: draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null },
       routing: draft?.routing ?? null,
+      phasesDone: Array.isArray(draft?.phasesDone) ? draft.phasesDone : [],
       pendingOutcome: draft?.evidence?.length
         ? outcomeFromEvidence(draft.evidence[draft.evidence.length - 1])
         : null,
@@ -189,8 +196,15 @@ export function SiteExperience() {
   // between requests. Selection lives in worker/comprehensive-quiz.js.
   const routingRef = useRef(bootstrap.current.routing);
   const pendingOutcomeRef = useRef(bootstrap.current.pendingOutcome);
+  // Which timed phases (conversation/objective/practical) a resumed draft has
+  // already finished — persists with the draft so the map unlocks correctly.
+  const phasesDoneRef = useRef(Array.isArray(bootstrap.current.phasesDone) ? bootstrap.current.phasesDone : []);
   // Routing telemetry for the optional aiquos.debug overlay; off by default.
   const [adaptiveTelemetry, setAdaptiveTelemetry] = useState(null);
+  // 每次进入任务页递增，作为 AssessmentTask 的 key。
+  // 没有它时，从 TEST 页再次进入同一关卡会复用上一次的组件实例，
+  // 上一轮的对话记录、计时归零与「已结束」状态会残留（学员看到无法作答的死页面）。
+  const [taskEntryId, setTaskEntryId] = useState(0);
   const [moving, setMoving] = useState(false);
   // Narrower than `moving`: true only while a page push is in flight. The two
   // pages are siblings and only one of them is the current tab, so switching
@@ -208,9 +222,43 @@ export function SiteExperience() {
     () => ["home", "login", "cases", "forum"].includes(route()),
   );
   const [homeShellFlat, setHomeShellFlat] = useState(() => route() === "choose");
+  const [transitionScheme, setTransitionScheme] = useState(() => getStoredScheme());
+  const [webglTransition, setWebglTransition] = useState({
+    active: false,
+    reverse: false,
+    entered: false,
+  });
   const panels = useRef({});
   const stage = useRef(null);
   const busy = useRef(false);
+
+  // Kept in a ref so the completion callback identity never changes mid-flight:
+  // the overlay's animation effect depends on it, and a new identity would
+  // tear down and restart an in-air ticket.
+  const webglTransitionRef = useRef(webglTransition);
+  useEffect(() => {
+    webglTransitionRef.current = webglTransition;
+  }, [webglTransition]);
+  const handleTransitionComplete = useCallback(() => {
+    const { active, reverse } = webglTransitionRef.current;
+    if (!active) return;
+    if (!reverse) {
+      flushSync(() => {
+        setView("login");
+        setWebglTransition({ active: false, reverse: false, entered: true });
+      });
+      history.pushState(null, "", "#login");
+    } else {
+      flushSync(() => {
+        setView("home");
+        setWebglTransition({ active: false, reverse: false, entered: false });
+      });
+      history.pushState(null, "", "#home");
+    }
+    window.scrollTo(0, 0);
+    busy.current = false;
+    setMoving(false);
+  }, []);
   useEffect(() => {
     const pop = () => {
       const nextAssessment = getAssessmentRoute();
@@ -317,9 +365,29 @@ export function SiteExperience() {
       history.pushState(null, "", hash);
       return;
     }
+
+    // High-End 3D WebGL Transitions for Home <-> Login
+    if (move === "home>login" || move === "cases>login" || move === "forum>login") {
       busy.current = true;
       setMoving(true);
-      const scrollPage = SCROLL_MOVES.has(move);
+      setWebglTransition({ active: true, reverse: false, entered: false });
+      return;
+    }
+    if (move === "login>home") {
+      busy.current = true;
+      setMoving(true);
+      flushSync(() => {
+        setView("home");
+        setWebglTransition({ active: true, reverse: true, entered: false });
+      });
+      history.pushState(null, "", "#home");
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    busy.current = true;
+    setMoving(true);
+    const scrollPage = SCROLL_MOVES.has(move);
       try {
         if (scrollPage && document.startViewTransition) {
           const reverse = move === "login>home";
@@ -454,6 +522,21 @@ export function SiteExperience() {
     }
   }
 
+  // Visual-acceptance hook: `?flight-freeze=<0..1>` auto-launches the login
+  // flight once and holds it at that progress inside the overlay, so key
+  // frames can be screenshot deterministically for review. StrictMode's
+  // setup→cleanup→setup is safe: cleanup clears the first timer, the second
+  // setup schedules the one that fires.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("flight-freeze") === null) return;
+    if (route() !== "home") return;
+    const timer = setTimeout(() => {
+      if (!busy.current) go("login");
+    }, 900);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function openAssessmentMap(id) {
     const previousProgress = progress[id] ?? 1;
     const stage = Math.min(5, previousProgress);
@@ -465,16 +548,27 @@ export function SiteExperience() {
     if (id === "comprehensive") {
       // Card click always starts a clean run: fresh routing session, fresh
       // attempt, draft cleared so no earlier unfinished run can bleed in.
-      const attempt = createAttempt({
-        totalQuestions: COMPREHENSIVE_LEVELS.length * COMPREHENSIVE_QUESTION_COUNT,
-      });
+      // The budget is an upper bound — a time-based run finalises to the
+      // evidence actually collected (see finalizeComprehensive).
+      const attempt = createAttempt({ totalQuestions: EVIDENCE_BUDGET });
       clearAttemptDraft();
       routingRef.current = null;
       pendingOutcomeRef.current = null;
+      phasesDoneRef.current = [];
       setAdaptiveTelemetry(null);
       setAttemptState({ attempt, result: null });
+      // A fresh card click starts from phase 1: without this reset a previous
+      // finished run would leave every node unlocked and let a student skip
+      // straight into the practical phase.
+      setProgress((current) => ({ ...current, comprehensive: 1 }));
+      openAssessmentMap(id);
+      return;
     }
-    openAssessmentMap(id);
+    // Standalone channels run one timed phase straight away — no stage map.
+    setProgress((current) => ({ ...current, [id]: 1 }));
+    setAssessmentRoute({ id, stage: 1, mode: "task" });
+    setTaskEntryId((current) => current + 1);
+    go("assessment-task", assessmentHash(id, 1));
   }
 
   function leaveAssessmentMap() {
@@ -486,7 +580,7 @@ export function SiteExperience() {
   // Ask the backend for the next adaptive question. The routing session is
   // opaque to this client: send it back untouched, plus the outcome of the
   // question just answered (if any) and the persisted exposure counters.
-  const fetchComprehensiveQuestion = useCallback(async (levelId, stage) => {
+  const fetchComprehensiveQuestion = useCallback(async (levelId, stage, options = {}) => {
     const outcome = pendingOutcomeRef.current;
     pendingOutcomeRef.current = null;
     try {
@@ -494,8 +588,10 @@ export function SiteExperience() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          levelId,
+          ...(levelId === null ? {} : { levelId }),
           stage,
+          ...(options.scope ? { scope: options.scope } : {}),
+          ...(options.coverageCritical ? { coverageCritical: true } : {}),
           session: routingRef.current,
           exposure: loadExposureStore(),
           ...(outcome ? { outcome } : {}),
@@ -535,7 +631,19 @@ export function SiteExperience() {
     setAttemptState((current) => {
       if (!current.attempt) return current;
       const next = recordAnswer(current.attempt, question, selectedKeys);
-      saveAttemptDraft({ ...next.attempt, routing: routingRef.current });
+      saveAttemptDraft({ ...next.attempt, routing: routingRef.current, phasesDone: phasesDoneRef.current });
+      return next;
+    });
+  }
+
+  // Rubric evidence from the conversation interview and the practical
+  // workbench: LLM-judged (offline heuristic fallback) credits on chosen
+  // dimensions, scored by the same vendored posterior as question evidence.
+  function submitExternalEvidence(evidence) {
+    setAttemptState((current) => {
+      if (!current.attempt) return current;
+      const next = appendExternalEvidence(current.attempt, evidence);
+      saveAttemptDraft({ ...next.attempt, routing: routingRef.current, phasesDone: phasesDoneRef.current });
       return next;
     });
   }
@@ -544,34 +652,60 @@ export function SiteExperience() {
     const complete = progress[assessmentRoute.id] ?? 1;
     if (stage > complete) return;
     setAssessmentRoute((current) => ({ ...current, stage, mode: "task" }));
+    setTaskEntryId((current) => current + 1);
     go("assessment-task", assessmentHash(assessmentRoute.id, stage));
   }
 
   function restartComprehensiveAttempt() {
-    const attempt = createAttempt({
-      totalQuestions: COMPREHENSIVE_LEVELS.length * COMPREHENSIVE_QUESTION_COUNT,
-    });
+    const attempt = createAttempt({ totalQuestions: EVIDENCE_BUDGET });
     clearAttemptDraft();
     routingRef.current = null;
     pendingOutcomeRef.current = null;
+    phasesDoneRef.current = [];
     setAdaptiveTelemetry(null);
     setAttemptState({ attempt, result: null });
+    setProgress((current) => ({ ...current, comprehensive: 1 }));
   }
 
   function completeAssessmentStage(stage) {
     const id = assessmentRoute.id;
-    const nextStage = Math.min(5, stage + 1);
-    setProgress((current) => ({ ...current, [id]: Math.max(current[id] ?? 1, nextStage) }));
-    // The final stage closes the Attempt: store the completed result as an
-    // immutable snapshot exactly once, drop the draft, and open the awakening
-    // report instead of returning to the map.
-    if (id === "comprehensive" && stage === COMPREHENSIVE_LEVELS.length && isAttemptComplete(attemptState.result)) {
-      appendHistorySnapshot(snapshotAttempt(attemptState.attempt, attemptState.result));
-      clearAttemptDraft();
-      setAttemptState({ attempt: null, result: null });
-      setAssessmentRoute({ id, stage: COMPREHENSIVE_LEVELS.length, mode: "map" });
-      go("reports");
+    const total = phaseCount(id);
+    // Standalone channels have exactly one timed phase — completion returns
+    // to the TEST hub for another session.
+    if (id !== "comprehensive") {
+      setProgress((current) => ({ ...current, [id]: 1 }));
+      setAssessmentRoute({ id, stage: 1, mode: "map" });
+      go("assessments");
       return;
+    }
+    const phaseDef = COMPREHENSIVE_PHASES[Math.max(0, Math.min(COMPREHENSIVE_PHASES.length - 1, stage - 1))];
+    if (phaseDef) {
+      phasesDoneRef.current = [...new Set([...phasesDoneRef.current, phaseDef.mode])];
+    }
+    const nextStage = Math.min(total, stage + 1);
+    setProgress((current) => ({ ...current, [id]: Math.max(current[id] ?? 1, nextStage) }));
+    // The final phase closes the Attempt: a time-based run finalises its
+    // question budget to the evidence actually collected, then stores the
+    // completed result as an immutable snapshot exactly once, drops the
+    // draft, and opens the awakening report instead of the map.
+    if (stage === total) {
+      const finalized = finalizeAttempt(attemptState.attempt ?? createAttempt({ totalQuestions: 1 }));
+      if (isAttemptComplete(finalized.result)) {
+        appendHistorySnapshot(snapshotAttempt(finalized.attempt, finalized.result));
+        clearAttemptDraft();
+        setAttemptState({ attempt: null, result: null });
+        phasesDoneRef.current = [];
+        setAssessmentRoute({ id, stage: total, mode: "map" });
+        go("reports");
+        return;
+      }
+    }
+    if (attemptState.attempt) {
+      saveAttemptDraft({
+        ...attemptState.attempt,
+        routing: routingRef.current,
+        phasesDone: phasesDoneRef.current,
+      });
     }
     setAssessmentRoute({ id, stage: nextStage, mode: "map" });
     go("assessment-map", assessmentHash(id));
@@ -625,7 +759,7 @@ export function SiteExperience() {
         hidden={view !== "login"}
       >
         <ErrorBoundary>
-          <section className="login-screen" aria-label="登录">
+          <section className="login-screen" aria-label="登录" data-webgl={webglTransition.entered ? "true" : undefined}>
             <div className="login-stage">
               <div className="login-composition">
                 <div className="login-word" aria-hidden="true">PLAYGROUND</div>
@@ -740,7 +874,9 @@ export function SiteExperience() {
               resume={assessmentRoute.id === "comprehensive" && attemptState.result?.status === "in_progress"
                 ? {
                   answered: attemptState.result.answeredCount,
-                  total: attemptState.result.totalQuestions,
+                  phasesDone: phasesDoneRef.current.length,
+                  currentStage: progress.comprehensive ?? 1,
+                  currentStageLabel: (COMPREHENSIVE_PHASES[(progress.comprehensive ?? 1) - 1] ?? {}).short ?? "对话",
                   startedAt: attemptState.attempt?.startedAt ?? null,
                   onRestart: restartComprehensiveAttempt,
                 }
@@ -748,12 +884,14 @@ export function SiteExperience() {
             />
           ) : (
             <AssessmentTask
+              key={`task-${taskEntryId}-${assessmentRoute.id}-${assessmentRoute.stage}`}
               id={assessmentRoute.id}
               stage={assessmentRoute.stage}
               complete={progress[assessmentRoute.id] ?? 1}
-              onBack={() => openAssessmentMap(assessmentRoute.id)}
+              onBack={() => (assessmentRoute.id === "comprehensive" ? openAssessmentMap(assessmentRoute.id) : go("assessments"))}
               onPick={openAssessmentStage}
               onComplete={completeAssessmentStage}
+              onExternalEvidence={submitExternalEvidence}
               onFetchComprehensiveQuestion={fetchComprehensiveQuestion}
               onAnswerComprehensive={submitComprehensiveAnswer}
               comprehensiveResult={attemptState.result}
@@ -764,6 +902,24 @@ export function SiteExperience() {
         </ErrorBoundary>
             </div>
       <div className="split-transition" ref={stage} aria-hidden="true" />
+
+      {["home", "login"].includes(view) && new URLSearchParams(window.location.search).has("schemes") && (
+        <SchemeSwitcher
+          currentScheme={transitionScheme}
+          onSelectScheme={setTransitionScheme}
+          onTriggerDemo={() => {
+            if (view === "home") go("login");
+            else if (view === "login") go("home");
+          }}
+        />
+      )}
+
+      <LoginTransitionOverlay
+        active={webglTransition.active}
+        reverse={webglTransition.reverse}
+        scheme={transitionScheme}
+        onComplete={handleTransitionComplete}
+      />
     </div>
   );
 }
