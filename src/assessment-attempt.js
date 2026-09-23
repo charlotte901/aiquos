@@ -103,6 +103,44 @@ export function currentResult(attempt) {
   return scoreAssessment(attempt.evidence, { totalQuestions: attempt.totalQuestions });
 }
 
+// Non-question evidence from the conversation/practical phases: an LLM (or
+// offline heuristic) judge maps a rubric score to a 0..1 credit on chosen
+// dimensions. Shaped exactly like question evidence so the vendored core
+// scores it through the same posterior — difficulty "medium" keeps it neutral.
+export function appendExternalEvidence(attempt, { id, dimKeys, credit, difficulty = "medium", label = null }) {
+  if (!id || !Array.isArray(dimKeys) || dimKeys.length === 0 || typeof credit !== "number") {
+    return { attempt, result: currentResult(attempt) };
+  }
+  const entry = {
+    questionId: String(id),
+    type: "single",
+    difficulty,
+    dimKeys: [...new Set(dimKeys)],
+    selectedKeys: [],
+    credit: Math.max(0, Math.min(1, credit)),
+    answeredAt: new Date().toISOString(),
+    ...(label ? { external: label } : {}),
+  };
+  const evidence = attempt.evidence.some((item) => item.questionId === entry.questionId)
+    ? attempt.evidence.map((item) => (item.questionId === entry.questionId ? entry : item))
+    : [...attempt.evidence, entry];
+  if (evidence.length > attempt.totalQuestions) {
+    // Same FIFO contract as recordAnswer: never exceed the budget.
+    evidence.splice(0, evidence.length - attempt.totalQuestions);
+  }
+  const next = { ...attempt, questionIds: evidence.map((item) => item.questionId), evidence };
+  return { attempt: next, result: scoreAssessment(next.evidence, { totalQuestions: next.totalQuestions }) };
+}
+
+// Time-based runs do not know their question count up front: the objective
+// phase stops by clock/precision, so the budget is finalised to exactly the
+// evidence collected once the run ends.
+export function finalizeAttempt(attempt) {
+  const totalQuestions = Math.max(1, attempt.evidence.length);
+  const next = { ...attempt, totalQuestions };
+  return { attempt: next, result: scoreAssessment(next.evidence, { totalQuestions }) };
+}
+
 // Pure per-answer credit for callers (e.g. adaptive routing) that need the
 // number before the attempt state update commits.
 export function answerCredit(question, selectedKeys) {

@@ -263,6 +263,7 @@ export function Task3DCharacter({
   speakerName = null,
 }) {
   const containerRef = useRef(null);
+  const [webglFailed, setWebglFailed] = useState(false);
   const stateRef = useRef({
     result,
     phase,
@@ -335,12 +336,20 @@ export function Task3DCharacter({
     const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
     camera.position.set(0, 0.2, 4.4);
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: "high-performance",
-    });
+    // Renderer — some embedded webviews and GPU-blocked browsers cannot
+    // create a WebGL context at all; degrade to the static stage instead of
+    // taking the whole assessment panel down with it.
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance",
+      });
+    } catch {
+      setWebglFailed(true);
+      return undefined;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -550,9 +559,11 @@ export function Task3DCharacter({
   }, [id, modelUrl]);
 
   return (
-    <div className={`task-character-container is-${feedbackKind}`}>
-      {/* Dynamic 3D WebGL Canvas */}
-      <div className="task-character-canvas" ref={containerRef} />
+    <div className={`task-character-container is-${feedbackKind}${webglFailed ? " is-static" : ""}`}>
+      {/* Dynamic 3D WebGL Canvas (static glyph when WebGL is unavailable) */}
+      {webglFailed
+        ? <div className="task-character-canvas task-character-static" aria-hidden="true"><span>智</span></div>
+        : <div className="task-character-canvas" ref={containerRef} />}
 
       {/* Floating Interactive Speech Bubble */}
       <div className="task-character-bubble" role="status" aria-live="polite">

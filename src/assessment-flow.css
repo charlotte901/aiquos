@@ -173,6 +173,11 @@
   animation: flow-panel-in 520ms cubic-bezier(.16,1,.3,1) both;
 }
 
+/* 动画结束后把 animation 名摘掉：fill:both 会持续应用结束态的 transform，
+   使该元素成为后代 fixed 定位的 containing block（面板底部的
+   「开始作答」因此脱离视口）。JS 在 animationend 时加 .is-settled。 */
+.task-flow .task-stage-layout.is-settled { animation: none; }
+
 .task-stage-layout .task-panel {
   position: relative;
   display: flex;
@@ -214,19 +219,20 @@
 .task-heading strong { margin-left: auto; font-size: 12px; }
 .task-body { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, calc(2.1 * var(--vh, 1vh)), 25px); }
 .task-body { animation: task-content-in 380ms 110ms cubic-bezier(.16,1,.3,1) both; }
-.task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(22px, calc(2.2 * var(--vw, 1vw)), 31px); line-height: 1.25; letter-spacing: -.045em; }
+.task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(25px, calc(2.45 * var(--vw, 1vw)), 35px); line-height: 1.28; letter-spacing: -.04em; }
 .answer-options { display: grid; gap: 10px; width: 100%; margin-top: clamp(16px, calc(2.2 * var(--vh, 1vh)), 24px); }
-.answer-options button { display: flex; align-items: center; gap: 16px; min-height: 58px; padding: 0 22px; border: 2px solid transparent; border-radius: 20px; color: #334155; background: color-mix(in srgb, var(--assessment-soft) 58%, #fff); text-align: left; font-size: 15.5px; font-weight: 600; transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+.answer-options button { display: flex; align-items: center; gap: 17px; min-height: 68px; padding: 12px 24px; border: 2px solid transparent; border-radius: 20px; color: #2b3a50; background: color-mix(in srgb, var(--assessment-soft) 58%, #fff); text-align: left; font-size: 18px; line-height: 1.45; font-weight: 650; transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1); }
 .answer-options button:hover:not(:disabled) { background: color-mix(in srgb, var(--assessment-soft) 82%, #fff); transform: translateX(3px); }
-.answer-options button > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--assessment-color); background: var(--assessment-soft); font-size: 13px; font-weight: 700; flex: 0 0 auto; transition: all 180ms ease; }
+.answer-options button > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--assessment-color); background: var(--assessment-soft); font-size: 15px; font-weight: 800; flex: 0 0 auto; transition: all 180ms ease; }
 .answer-options button > svg { margin-left: auto; color: var(--assessment-color); }
 .answer-options button.is-selected { outline: 3px solid var(--assessment-color); outline-offset: -3px; background: color-mix(in srgb, var(--assessment-soft) 82%, #fff); }
 .answer-options button.is-selected > span { color: #fff; background: var(--assessment-color); }
 .comprehensive-task {
   overflow-y: auto;
   padding-right: 8px;
-  scrollbar-width: none;
+  scrollbar-width: thin;
 }
+
 .comprehensive-task::-webkit-scrollbar { display: none; }
 .comprehensive-task h2 { max-width: 900px; }
 .quiz-brief {
@@ -237,72 +243,6 @@
   line-height: 1.4;
 }
 .quiz-brief i { margin: 0 7px; font-style: normal; opacity: .45; }
-.live-dimension-strip {
-  margin: 0 0 14px;
-  padding: 12px 14px 13px;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--assessment-soft) 42%, #fff);
-}
-.live-dimension-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-.live-dimension-head span {
-  color: #5c6779;
-  font-size: 12px;
-  font-weight: 800;
-}
-.live-dimension-head strong {
-  color: var(--assessment-color);
-  font-size: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.live-dimension-strip ul {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.live-dimension-strip li {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-  transition: opacity .25s ease;
-}
-.live-dimension-strip li > span {
-  overflow: hidden;
-  color: #425162;
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.live-dimension-track {
-  height: 6px;
-  overflow: hidden;
-  border-radius: 3px;
-  background: color-mix(in srgb, #fff 55%, var(--assessment-soft));
-}
-.live-dimension-track i {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: var(--assessment-color);
-  transition: width .5s cubic-bezier(.16, 1, .3, 1);
-}
-.live-dimension-strip li > b {
-  color: #182235;
-  font-size: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.live-dimension-strip li.is-pending { opacity: .48; }
-.live-dimension-strip li.is-pending > b { color: #9aa4b2; }
 .comprehensive-option.is-correct,
 .comprehensive-option.is-wrong {
   color: #fff;
@@ -427,22 +367,56 @@
   padding-top: 16px;
   min-height: 62px;
 }
+/* 剧情模式：把对话框变成面板的正内容并垂直居中。
+   旧实现用 position:fixed 贴在视口底部，面板本体因此只剩一大片空白——
+   学员看到的是一个空白框加一行小字。现在剧情框占据面板的可用高度，
+   文字居中、面板不再留空。 */
 .comprehensive-dialogue-screen {
   --assessment-color: #247cf1;
   --assessment-soft: #e9f2ff;
   --assessment-deep: #155cca;
-  position: fixed;
-  left: 50%;
-  bottom: clamp(32px, calc(6 * var(--dvh, 1dvh)), 52px);
-  width: min(calc(66.8 * var(--vw, 1vw)), 1120px);
-  transform: translateX(-50%);
+  flex: 1;
+  min-height: 0;
+  width: 100%;
   z-index: 7;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding: 0 clamp(40px, calc(3.4 * var(--vw, 1vw)), 56px) clamp(24px, calc(3 * var(--vh, 1vh)), 34px);
+  padding: clamp(18px, calc(2 * var(--vh, 1vh)), 30px) clamp(24px, calc(2.4 * var(--vw, 1vw)), 40px);
   background: transparent;
-  pointer-events: none;
+  cursor: pointer;
+}
+
+.comprehensive-dialogue-screen .story-line {
+  width: min(100%, 860px);
+  margin-top: 0;
+  padding: clamp(20px, calc(2.2 * var(--vh, 1vh)), 30px) clamp(22px, calc(2 * var(--vw, 1vw)), 34px);
+}
+
+/* 剧情态：说话人给一个头像位，长台词读起来像对话而不是弹窗文案。 */
+.comprehensive-dialogue-screen .story-eyebrow { gap: 10px; }
+.comprehensive-dialogue-screen .story-eyebrow > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.comprehensive-dialogue-screen .story-eyebrow > span:first-child::before {
+  content: "苏";
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--assessment-color), var(--assessment-deep));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.comprehensive-dialogue-screen .story-line p {
+  margin-top: 12px;
+  font-size: clamp(18px, calc(1.32 * var(--vw, 1vw)), 22px);
+  line-height: 1.7;
 }
 .comprehensive-dialogue-screen .story-line {
   background: #fff;
@@ -489,17 +463,20 @@
  * text grows downward, the avatar must never slide with it. */
 .chat-bubble { display: flex; align-items: flex-start; gap: 10px; }
 .chat-bubble.is-user { justify-content: flex-end; }
-.chat-bubble span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; background: var(--assessment-color); font-size: 11px; font-weight: 800; flex-shrink: 0; }
-.chat-bubble p { max-width: 61%; margin: 0; padding: 15px 18px; border-radius: 22px 22px 22px 5px; color: #475363; background: color-mix(in srgb, var(--assessment-soft) 76%, #fff); line-height: 1.5; font-size: 15px; }
-.chat-bubble.is-user p { order: -1; border-radius: 18px 18px 4px 18px; color: #1f2a3c; background: color-mix(in srgb, var(--assessment-color) 13%, #fff); border: 1px solid color-mix(in srgb, var(--assessment-color) 24%, #fff); }
+/* 头像 = 气泡的直接子 span。以前写成 `.chat-bubble span`（后代选择器），
+   把气泡内的打字指示点、思考提示等所有 span 都套成了 38px 蓝圆白字，
+   渲染出「蓝色大圆盖着白字」的破图。必须限定为直接子元素。 */
+.chat-bubble > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; background: var(--assessment-color); font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.chat-bubble > p, .chat-bubble .chat-text { max-width: 61%; margin: 0; padding: 15px 18px; border-radius: 22px 22px 22px 5px; color: #475363; background: color-mix(in srgb, var(--assessment-soft) 76%, #fff); line-height: 1.5; font-size: 15px; }
+.chat-bubble.is-user > p, .chat-bubble.is-user .chat-text { order: -1; border-radius: 18px 18px 4px 18px; color: #1f2a3c; background: color-mix(in srgb, var(--assessment-color) 13%, #fff); border: 1px solid color-mix(in srgb, var(--assessment-color) 24%, #fff); }
 /* Markdown surfaces for streamed AI content. */
-.chat-bubble p strong { font-weight: 700; color: inherit; }
-.chat-bubble p em { font-style: italic; }
-.chat-bubble p code { padding: 1px 6px; border-radius: 6px; background: #ffffffb3; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.chat-bubble p .md-heading { margin: 0; font-weight: 700; font-size: 1.04em; }
-.chat-bubble p .md-quote { margin: 0; color: #5d6a7d; }
-.chat-bubble p ul, .chat-bubble p ol, .agent-output ul, .agent-output ol { margin: 6px 0 2px; padding-left: 20px; display: grid; gap: 3px; }
-.chat-bubble.is-streaming p > :last-child::after { content: "▍"; margin-left: 1px; color: var(--assessment-color); animation: md-caret 900ms steps(1) infinite; }
+.chat-bubble strong { font-weight: 700; color: inherit; }
+.chat-bubble em { font-style: italic; }
+.chat-bubble code { padding: 1px 6px; border-radius: 6px; background: #ffffffb3; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.chat-bubble .md-heading { margin: 0; font-weight: 700; font-size: 1.04em; }
+.chat-bubble .md-quote { margin: 0; color: #5d6a7d; }
+.chat-bubble .chat-text ul, .chat-bubble .chat-text ol, .agent-output ul, .agent-output ol { margin: 6px 0 2px; padding-left: 20px; display: grid; gap: 3px; }
+.chat-bubble.is-streaming .chat-text > :last-child::after { content: "▍"; margin-left: 1px; color: var(--assessment-color); animation: md-caret 900ms steps(1) infinite; }
 @keyframes md-caret { 50% { opacity: 0; } }
 .conversation-task { min-height: 0; }
 .conversation-task h2 { font-size: clamp(27px, calc(2.45 * var(--vw, 1vw)), 34px); letter-spacing: -.05em; }
@@ -520,8 +497,9 @@
 .conversation-task .chat-thread::-webkit-scrollbar { width: 7px; }
 .conversation-task .chat-thread::-webkit-scrollbar-thumb { border-radius: 999px; background: color-mix(in srgb, var(--assessment-color) 38%, #fff); }
 .conversation-task .chat-bubble { flex: 0 0 auto; gap: 12px; }
-.conversation-task .chat-bubble span { width: 38px; height: 38px; font-size: 12px; }
-.conversation-task .chat-bubble p {
+.conversation-task .chat-bubble > span { width: 38px; height: 38px; font-size: 12px; }
+.conversation-task .chat-bubble > p,
+.conversation-task .chat-bubble .chat-text {
   max-width: 70%;
   padding: 15px 20px;
   border-radius: 20px 20px 20px 6px;
@@ -533,14 +511,18 @@
 }
 .conversation-task .chat-bubble.is-user p { border-radius: 20px 20px 6px 20px; color: #1f2a3c; background: color-mix(in srgb, var(--assessment-color) 13%, #fff); border: 1px solid color-mix(in srgb, var(--assessment-color) 24%, #fff); }
 .conversation-task .chat-bubble.is-feedback { margin-top: 2px; }
-.conversation-task .chat-bubble.is-feedback p {
+/* 反馈气泡只调「外层容器」的留白与色调，绝不碰内层 <p>：MarkdownLite 的
+ * 段落是气泡的正文，不是第二个气泡。以前把 padding/border/background/
+ * box-shadow 加在 `.is-feedback p` 上，等于在气泡里又画了一层气泡——既出现
+ * 「气泡套小气泡」，又让这一条比同列其他气泡高出一倍（实测 141px vs 66px）。 */
+.conversation-task .chat-bubble.is-feedback .chat-text {
   max-width: min(78%, 760px);
-  padding: 19px 22px;
+  padding: 20px 24px;
   border: 1px solid color-mix(in srgb, var(--assessment-color) 15%, #fff);
   color: #202b3e;
   background: color-mix(in srgb, var(--assessment-soft) 64%, #fff);
   box-shadow: 0 8px 18px color-mix(in srgb, var(--assessment-color) 10%, transparent);
-  line-height: 1.75;
+  line-height: 1.68;
 }
 .conversation-task .task-composer { height: 64px; margin-top: 14px; padding-left: 23px; }
 .conversation-done {
@@ -646,9 +628,13 @@
 .agent-send:disabled { color: #fff; background: #dfe4e7; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 @keyframes active-level { 50% { transform: translateY(-4px) scale(1.045); } }
-@keyframes flow-panel-in { from { opacity: 0; transform: translateY(28px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes level-in { from { opacity: 0; transform: translateY(16px) scale(.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes task-content-in { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+/* 结束态必须是 transform: none：`translateY(0) scale(1)` 虽然视觉上是单位矩阵，
+   但它是一个非 none 的 transform，会让该元素成为 fixed 定位的 containing block
+   ——固定在视口底部的「开始作答」因此被钉在文档流末端。 */
+@keyframes flow-panel-in { from { opacity: 0; transform: translateY(28px) scale(.985); } to { opacity: 1; transform: none; } }
+/* 同 flow-panel-in：结束态用 none，避免残留 transform 改变后代 fixed 定位的基准。 */
+@keyframes level-in { from { opacity: 0; transform: translateY(16px) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes task-content-in { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: none; } }
 @keyframes reply-spin { to { transform: rotate(360deg); } }
 @keyframes comprehensive-feedback-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes quiz-feedback-shake {
@@ -671,11 +657,9 @@
 @keyframes comprehensive-hint { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .map-stage.is-active .map-stage-number, .map-flow .level-map, .task-flow .task-panel, .map-stage, .task-body, .quiz-feedback, .story-hint { animation: none; }
-  .live-dimension-track i { transition: none; }
 }
 @media (max-width: 840px) {
   .assessment-flow { padding: 27px 22px 76px; overflow: auto; }
-  .live-dimension-strip ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px 12px; }
   .flow-wordmark { width: 158px; }
   .level-progress { top: 36px; right: 22px; font-size: 13px; }
   .level-node { width: 20px; height: 20px; border-width: 1px; }
@@ -712,8 +696,8 @@
   .task-heading strong { display: none; }
   .task-body h2 { font-size: 27px; }
   .conversation-task .chat-thread { max-height: 310px; }
-  .conversation-task .chat-bubble p { max-width: 82%; padding: 13px 16px; font-size: 15px; line-height: 1.6; }
-  .conversation-task .chat-bubble.is-feedback p { max-width: 84%; padding: 16px 18px; line-height: 1.66; }
+  .conversation-task .chat-bubble > p, .conversation-task .chat-bubble .chat-text { max-width: 82%; padding: 13px 16px; font-size: 15px; line-height: 1.6; }
+  .conversation-task .chat-bubble.is-feedback .chat-text { max-width: 84%; padding: 17px 19px; line-height: 1.66; }
   .answer-options button { min-height: 51px; padding: 0 13px; font-size: 13px; }
   .agent-workspace { grid-template-columns: 1fr; min-height: 430px; }
   .flow-back { left: 22px; bottom: 17px; font-size: 12px; }
@@ -721,9 +705,19 @@
 @media (max-width: 450px) {
   .level-progress { top: 92px; right: 20px; }
   .level-map, .task-panel { margin-top: 74px; }
-  .live-dimension-strip ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.thinking-hint { display: inline-flex; align-items: center; gap: 9px; color: #687382; font-size: .94em; font-weight: 600; }
+.thinking-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: #687382;
+  font-size: .94em;
+  font-weight: 600;
+}
 .thinking-hint .reply-spinner { width: 17px; height: 17px; color: var(--assessment-color); }
 
 /* === 对话进行时：只有对话框保持清晰，其余全部虚化为背景 === */
@@ -746,8 +740,12 @@
 .assessment-flow:has(.task-body[data-phase="ending"]) .task-heading,
 .assessment-flow:has(.task-body[data-phase="opening"]) .task-body > :not(.comprehensive-dialogue-screen),
 .assessment-flow:has(.task-body[data-phase="ending"]) .task-body > :not(.comprehensive-dialogue-screen) {
-  filter: blur(7px) saturate(.85);
-  opacity: .75;
+  /* Focus the story beat without destroying readability: at blur(7px)/.75 the
+     background text was unreadable, which reads as a rendering fault rather
+     than as depth. A trace of softness keeps the spotlight while the student
+     can still read what sits behind the dialogue box. */
+  filter: blur(2.5px) saturate(.94);
+  opacity: .92;
   pointer-events: none;
   user-select: none;
 }
@@ -776,22 +774,19 @@
   box-shadow: 0 18px 44px color-mix(in srgb, var(--assessment-color) 16%, #00000018);
 }
 
-/* === 对话框字体放大 === */
-.conversation-task .chat-bubble p { font-size: clamp(19px, calc(1.45 * var(--vw, 1vw)), 23px); line-height: 1.7; }
-.conversation-task .chat-bubble.is-feedback p { font-size: clamp(19px, calc(1.45 * var(--vw, 1vw)), 23px); }
-.conversation-task .chat-bubble span { font-size: 14px; }
+/* === 对话框字体放大 ===
+ * 只作用于气泡正文（.chat-text 的直接子元素），不再命中头像 <span> 内部的
+ * 元素；字号上限收在 21px，避免超宽窗口下正文被 vw 推到不可读的尺寸。 */
+.conversation-task .chat-bubble .chat-text :is(p, li, .md-heading, .md-quote) {
+  font-size: clamp(17px, calc(1.25 * var(--vw, 1vw)), 21px);
+  line-height: 1.68;
+}
+.conversation-task .chat-bubble.is-feedback .chat-text :is(p, li) { font-size: clamp(17px, calc(1.25 * var(--vw, 1vw)), 21px); }
+.conversation-task .chat-bubble > span { font-size: 14px; }
 .conversation-task .task-composer input { font-size: 20px; }
 .story-line p { font-size: 19px; line-height: 1.75; }
 .story-eyebrow { font-size: 14px; }
 .story-hint { font-size: 14px; }
-.live-dimension-note {
-  margin: 9px 0 0;
-  color: #7a8494;
-  font-size: 11.5px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-.live-dimension-note:first-letter { letter-spacing: 0; }
 .adaptive-telemetry {
   margin: 0 0 8px;
   color: #9369d8;
@@ -874,5 +869,1232 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .quiz-feedback.is-correct::after { animation: none; box-shadow: none; }
-  .live-dimension-note, .map-resume, .adaptive-telemetry { animation: none; }
+  .map-resume, .adaptive-telemetry { animation: none; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   时间制测评 v3：计时牌 · 拟人采访 · Agent 工作台
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── 阶段计时牌 ── */
+.phase-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 38%, #fff);
+  background: #fff;
+  color: var(--assessment-deep);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.phase-timer svg { width: 17px; height: 17px; }
+
+.phase-timer.is-low {
+  border-color: #f0a017;
+  color: #b06e00;
+  background: #fff8ea;
+}
+
+.phase-timer.is-critical {
+  border-color: #ee5c4a;
+  color: #c23724;
+  background: #fff0ed;
+  animation: phase-timer-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes phase-timer-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.045); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase-timer.is-critical { animation: none; }
+}
+
+.offline-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #fff4d6;
+  border: 2px solid #eec96a;
+  color: #8a6410;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* ── 拟人采访（对话式测评） ── */
+.interview-task { display: flex; flex-direction: column; min-height: 0; }
+
+.interview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.interview-who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.interview-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--assessment-color), var(--assessment-deep));
+  color: #fff;
+  font-size: 21px;
+  font-weight: 800;
+  flex: 0 0 auto;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--assessment-color) 34%, transparent);
+}
+
+.interview-who strong { display: block; color: #22293a; font-size: 17px; font-weight: 800; }
+
+.interview-who span:not(.interview-avatar) { display: block; margin-top: 2px; color: #687382; font-size: 13.5px; font-weight: 600; }
+
+.interview-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; justify-content: flex-end; }
+
+.interview-thread .chat-bubble .chat-text { font-size: 15.5px; line-height: 1.62; }
+
+.interview-thread .chat-bubble.is-guide .chat-text { font-weight: 600; }
+
+/* 采访贴纸（🤔 👀 ✍️ 😅）。
+ * 贴纸有时是那一条消息的唯一内容；此时若让它自己撑成一个块级元素，
+ * 气泡里就会浮出一个孤立小方块，看着像「气泡套小气泡」。这里统一按
+ * 行内元素处理并与正文同基线，独占一条时也只是气泡内的一行文字。 */
+.bubble-sticker {
+  display: inline;
+  margin: 0;
+  font-style: normal;
+  font-size: 1.15em;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+/* 贴纸与正文同段时留一个字的间隙，不靠 margin 撑高行盒。 */
+.chat-text > p + .bubble-sticker::before,
+.chat-text > .bubble-sticker + p::before { content: " "; }
+
+/* 打字指示：三个 7px 小点。显式声明尺寸/背景/圆角，不依赖"没被别的
+   规则命中"，避免气泡里的 span 通用样式再次把它们变成头像圆。 */
+.typing-dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 6px;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+}
+
+.typing-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--assessment-color) 62%, #fff);
+  animation: typing-dot 1.15s ease-in-out infinite;
+}
+
+.typing-dots i:nth-child(2) { animation-delay: .18s; }
+.typing-dots i:nth-child(3) { animation-delay: .36s; }
+
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: .45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots i { animation: none; opacity: .7; }
+}
+
+.chat-bubble.is-typing { opacity: .92; }
+
+/* Summary bar: the count, the band chips and the action all live on one
+   wrapping row; every part keeps its own line box so nothing breaks mid-word. */
+.interview-summary { align-items: center; row-gap: 10px; }
+
+.interview-summary > span { white-space: nowrap; flex: 0 0 auto; }
+
+.interview-credits { flex: 1 1 auto; min-width: 0; margin: 0; }
+
+.interview-credits { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; }
+
+.interview-credits span {
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  border: 2px solid transparent;
+}
+
+/* 采访小结的话题标签：统一的中性样式。
+ * 原来按档位分成绿/黄/红三色，等于把每一轮的得分提前告诉学员；现在只表示
+ * "这个话题聊过了"，颜色不携带任何评价含义。 */
+.interview-credits span.is-recorded {
+  background: #ffffffb8;
+  border-color: color-mix(in srgb, var(--assessment-color) 24%, #fff);
+  color: #2b3a4f;
+}
+.interview-credits span.is-recorded i { color: #687382; }
+.interview-credits span i { font-style: normal; font-weight: 700; }
+
+/* ── CAT 小结 ── */
+.cat-summary {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 26px 28px;
+  border-radius: 24px;
+  background: var(--assessment-soft);
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 20%, #fff);
+  flex-wrap: wrap;
+}
+
+.cat-summary-figure {
+  display: grid;
+  place-items: center;
+  min-width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--assessment-color);
+  color: var(--assessment-deep);
+  font-size: 38px;
+  font-weight: 800;
+}
+
+.cat-summary-body { flex: 1; min-width: 220px; }
+
+.cat-summary-body strong { display: block; color: #22293a; font-size: 18px; font-weight: 800; }
+
+.cat-summary-body p { margin: 6px 0 0; color: #4d5a6c; font-size: 15px; line-height: 1.5; font-weight: 600; }
+
+.cat-summary-note { color: #687382 !important; font-size: 13.5px !important; }
+
+/* ── Agent 工作台（豆包式） ── */
+.workbench { display: flex; flex-direction: column; min-height: 0; }
+
+.workbench-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.workbench-head h2 { margin: 0; font-size: 21px; line-height: 1.3; }
+
+.workbench-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; justify-content: flex-end; }
+
+.wb-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 32%, #fff);
+  color: var(--assessment-deep);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wb-chip.is-active { background: var(--assessment-soft); }
+
+.workbench .agent-brief { font-size: 16px; }
+
+/* The workbench is a bounded column: header + brief/canvas + composer must all
+   fit inside the panel. The grid flexes, the two columns scroll internally, and
+   the composer/action row is pinned so nothing is clipped off-screen. */
+.workbench {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The practical phase is content-heavy (requirements + generated answer). Its
+   panel takes the space left under the wordmark rather than a fixed viewport
+   share, so top margin + height can never add up past the viewport bottom. */
+/* The practical panel keeps the standard 80dvh height it shares with every
+   other task; the workbench inside it scrolls. Enlarging the panel made it
+   overflow the stage on 900px-tall windows and clipped the completion row,
+   so the extra room comes from the internal layout instead. */
+.assessment-flow.task-flow:has(.task-body.practical-task) .task-panel {
+  padding-top: clamp(28px, calc(3 * var(--vw, 1vw)), 40px);
+  padding-bottom: clamp(20px, calc(2.4 * var(--vw, 1vw)), 30px);
+}
+
+.task-body.practical-task h2 { font-size: clamp(21px, calc(2.05 * var(--vw, 1vw)), 28px); }
+.task-body.practical-task .agent-brief {
+  font-size: 15px;
+  line-height: 1.5;
+  /* No clamp: the task goal is what the student must satisfy, so it reads in
+     full — the brief column below it is the part that scrolls. */
+}
+
+.workbench-grid {
+  grid-template-columns: minmax(260px, .78fr) minmax(0, 1.35fr);
+  gap: 16px;
+  margin-top: 12px;
+  flex: 1 1 auto;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.workbench-grid > .wb-brief,
+.workbench-grid > .wb-canvas {
+  /* Columns take whatever the grid gives them and scroll internally; no
+     min-height, or they push the composer out of the panel. */
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+/* Both columns scroll; give them a visible thin scrollbar so the student can
+   tell there is more content instead of reading a clipped list as broken. */
+.workbench-grid > .wb-brief::-webkit-scrollbar,
+.workbench-grid > .wb-canvas::-webkit-scrollbar,
+.wb-output::-webkit-scrollbar,
+.wb-history::-webkit-scrollbar { width: 8px; }
+
+.workbench-grid > .wb-brief::-webkit-scrollbar-thumb,
+.workbench-grid > .wb-canvas::-webkit-scrollbar-thumb,
+.wb-output::-webkit-scrollbar-thumb,
+.wb-history::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
+}
+
+.workbench-grid > .wb-brief::-webkit-scrollbar-track,
+.workbench-grid > .wb-canvas::-webkit-scrollbar-track { background: transparent; }
+
+.workbench-actions {
+  flex: 0 0 auto;
+  margin-top: 10px;
+}
+
+.wb-brief { gap: 13px; }
+
+.wb-brief .agent-section-heading { font-size: 15px; }
+
+.wb-requirements {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: wb-req;
+  display: grid;
+  gap: 10px;
+}
+
+.wb-requirements li {
+  counter-increment: wb-req;
+  position: relative;
+  padding: 9px 12px 9px 46px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--assessment-color) 5%, #fff);
+  color: #36445a;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.wb-requirements li::before {
+  content: counter(wb-req);
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--assessment-color);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.wb-reference { margin: 0; display: grid; gap: 10px; }
+
+.wb-reference-item {
+  margin: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.wb-reference-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The canvas column has the room, so previews can be generous here; the
+     brief column keeps the full criteria list instead. */
+  max-height: 210px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 18%, #fff);
+  background: #fff;
+}
+
+/* Multiple reference assets sit side by side so one column shows them all. */
+.wb-reference {
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  align-items: start;
+  padding: 10px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--assessment-color) 4%, #fff);
+}
+
+.wb-reference-item figcaption { font-size: 12px; }
+
+.wb-reference-item figcaption { color: #687382; font-size: 12.5px; font-weight: 700; }
+
+/* The brief column scrolls on its own when content outgrows the panel —
+   visible thin scrollbar so the extra material is discoverable. */
+.wb-brief { scrollbar-width: thin; }
+
+.wb-brief::-webkit-scrollbar { width: 8px; }
+
+.wb-brief::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
+}
+
+.wb-material { font-size: 14.5px; line-height: 1.62; color: #4d5a6c; }
+
+.wb-canvas { gap: 13px; }
+
+.wb-canvas-tabs { display: flex; gap: 8px; }
+
+.wb-canvas-tabs button {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 2px solid #e4e9f0;
+  background: #fff;
+  color: #687382;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.wb-canvas-tabs button.is-active {
+  border-color: var(--assessment-color);
+  color: var(--assessment-deep);
+  background: var(--assessment-soft);
+}
+
+.wb-output { font-size: 15.5px; min-height: 0; overflow: auto; }
+
+.wb-canvas .wb-output { flex: 1; }
+
+.wb-image-wrap { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
+
+.wb-image-wrap figcaption { color: #a08349; font-size: 13px; font-weight: 700; text-align: center; }
+
+.wb-image { border-radius: 16px; border: 2px solid #eef1f5; background: repeating-conic-gradient(#f2f4f7 0 25%, #fff 0 50%) 0 0 / 22px 22px; padding: 8px; }
+
+.wb-history { display: grid; gap: 11px; align-content: start; overflow: auto; }
+
+.wb-history-item {
+  padding: 12px 15px;
+  border-radius: 14px;
+  background: #f7f9fc;
+  border: 2px solid #e8edf3;
+}
+
+.wb-history-item strong { display: block; color: var(--assessment-deep); font-size: 13.5px; margin-bottom: 4px; }
+
+.wb-history-item p { margin: 0; color: #36445a; font-size: 14.5px; line-height: 1.55; white-space: pre-wrap; }
+
+.workbench-actions { display: grid; gap: 11px; margin-top: 14px; }
+
+.wb-composer { min-height: 108px; align-items: stretch; padding: 12px 12px 12px 20px; border-radius: 22px; }
+
+.wb-composer textarea {
+  height: auto;
+  min-height: 78px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  color: #263243;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1.55;
+  padding-top: 0;
+}
+
+.wb-composer .agent-send { align-self: flex-end; }
+
+.wb-complete-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+
+.wb-hint { color: #687382; font-size: 14px; font-weight: 650; }
+
+@media (max-width: 900px) {
+  .workbench-grid { grid-template-columns: 1fr; min-height: 470px; }
+  .workbench-meta { justify-content: flex-start; }
+}
+
+/* 围栏代码块（MarkdownLite md-code） */
+.md-code {
+  margin: 4px 0;
+  padding: 13px 16px;
+  border-radius: 13px;
+  background: #1f2733;
+  color: #e8edf4;
+  overflow: auto;
+  max-height: 340px;
+}
+
+.md-code code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .92em;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.source-copy .md-code { max-height: 260px; }
+
+/* ── 气泡正文（.chat-text）内的 MarkdownLite 块级元素重置 ──
+ * 气泡外观完全由 .chat-text 承担：MarkdownLite 生成的 <p>/<ul>/<ol> 若再继承
+ * 一次气泡的 max-width 与 padding，在 flex 收缩语境下会形成循环约束——
+ * 内层可用宽度塌成约一个汉字，“哈哈”会被逼成竖排。这里一律清零。 */
+.chat-text { display: block; }
+
+.chat-text > p,
+.chat-text > ul,
+.chat-text > ol,
+.chat-text > .md-heading,
+.chat-text > .md-quote,
+.chat-text > .md-code {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.chat-text > p + p,
+.chat-text > ul + p,
+.chat-text > ol + p,
+.chat-text > p + ul,
+.chat-text > p + ol,
+.chat-text > * + .md-code { margin-top: 8px; }
+
+.chat-text > ul,
+.chat-text > ol { margin: 6px 0 2px; padding-left: 20px; display: grid; gap: 3px; }
+
+.chat-text > .md-code { margin: 6px 0 2px; }
+
+/* 单行短消息不换行，气泡按内容收窄而不是被百分比约束切碎。 */
+.chat-text { min-width: 0; word-break: break-word; }
+
+.chat-bubble.is-user .chat-text { text-align: left; }
+
+/* 采访小结：档位标签（无/提及/具体/可操作/专业） */
+.interview-credits span i {
+  margin-left: 7px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #ffffffb8;
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+/* Markdown 表格（AI 输出里的基准用例/对比表） */
+.md-table-wrap {
+  overflow-x: auto;
+  margin: 8px 0;
+  border: 2px solid #e7ecf3;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.md-table th,
+.md-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eef1f6;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.md-table th {
+  background: #f6f8fc;
+  color: #33405a;
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+.md-table tr:last-child td { border-bottom: 0; }
+
+.md-table code { white-space: nowrap; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   信息密度修订：一屏之内不放这么多东西
+   ────────────────────────────────────────────────────────────────────────
+   成因：为了"一屏展示完整"，页面上并列了返回按钮 + 双标题行 + 计时 + 目标 +
+   交付标准 + 参考图 + 画布 + 输入框 + 导师气泡 + 导师徽章，字号只能被压到
+   12–15px。修订方向是减信息与分级字号，而不是继续压缩：
+   1. 一级信息（题干、选项、AI 输出、输入框）≥ 18px；
+   2. 二级信息（计时、交付标准、按钮文字）≥ 16px；
+   3. 三级信息（页面类型标签、徽章、说明性脚注）≥ 14px，并允许在窄屏隐藏；
+   4. 与作答无关的装饰性信息（重复的页面名、导师徽章）直接移除。
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── 二级：≥16px ── */
+.phase-timer { font-size: 16px; }
+.phase-timer svg { width: 18px; height: 18px; }
+.wb-chip { font-size: 15.5px; }
+.wb-canvas-tabs button { font-size: 16px; }
+.source-toggle { font-size: 15px; }
+.wb-requirements li { font-size: 16px; }
+.wb-brief .agent-section-heading { font-size: 16px; }
+.agent-section-heading { font-size: 15.5px; }
+.flow-back { font-size: 15px; }
+
+/* ── 三级：≥14px（原来 12–13px 的标签） ── */
+.task-heading { font-size: 15px; }
+.task-heading strong { font-size: 15px; }
+.quiz-brief { font-size: 15px; color: #5c6878; }
+.interview-who span:not(.interview-avatar) { font-size: 15px; }
+.wb-reference-item figcaption { font-size: 14px; }
+.wb-history-item strong { font-size: 15px; }
+.wb-history-item p { font-size: 16px; }
+.wb-hint { font-size: 15px; }
+.offline-chip { font-size: 14px; }
+.wb-material { font-size: 16px; }
+
+/* ── 任务目标与画布正文：一级内容，放大 ── */
+.task-body.practical-task .agent-brief { font-size: 16.5px; line-height: 1.6; }
+.wb-output { font-size: 16.5px; }
+.wb-output code { font-size: .94em; }
+.md-table { font-size: 15px; }
+.md-table th { font-size: 14.5px; }
+
+/* ── 移除装饰性重复信息：标题行里的页面名与 3D 舞台小徽章 ──
+   任务标题已经说明了这是什么测评，再重复一遍"实操任务测评/对话式测评"只会
+   占掉一行的空间，把真正的内容挤小。 */
+/* 任务类型标签：这一行在作答页是必要上下文（"对话 · 信息迷城 · 约 5 分钟"
+   + 模式名），保留；但实操简报态已经用 kicker 说明了任务类型，重复。 */
+.wb-brief-screen ~ .task-heading,
+.task-flow:has(.task-body[data-phase="brief"]) .task-heading { display: none; }
+.task-character-container .task-character-badge { display: none; }
+
+/* 3D 舞台的气泡是伴学提示，属于二级信息；加宽并放大，别让它挤成三行。 */
+.task-character-bubble { max-width: 300px; }
+.task-character-bubble .bubble-text { font-size: 15.5px; line-height: 1.55; }
+.task-character-bubble .bubble-speaker { font-size: 15px; }
+
+/* ── 实操简报态：一次只读一件事 ──
+   单列、大字、留白充足；确认后才进入双栏作答界面。这是解决"一屏信息过载、
+   字太小"的主要手段：把阅读与操作分到两个屏。 */
+/* 简报态由"可滚动内容 + 固定主按钮"两部分组成：内容再长也不会把
+   「开始作答」推出屏幕——那是这一屏唯一的下一步。 */
+.wb-brief-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wb-brief-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* 底部留出主按钮的高度：它是 flex 兄弟节点，但滚动到底时最后一条标准
+     会停在按钮后面，看起来像被遮住。这段 padding 让最后一条能滚到按钮上方。 */
+  padding-right: 6px;
+  /* 底部净空：主按钮是滚动区的兄弟节点，空间不足时最后一条标准会停在按钮
+     下方被遮住。24px 保证「整体规范」这类末条能完整滚到按钮上方。 */
+  padding-bottom: 24px;
+  scrollbar-width: thin;
+}
+
+.wb-brief-scroll::-webkit-scrollbar { width: 8px; }
+
+.wb-brief-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
+}
+
+.wb-brief-start {
+  flex: 0 0 auto;
+  align-self: stretch;
+  justify-content: center;
+  /* 与滚动内容之间留白，并加一层背景，滚动内容从按钮下方通过时不会互相干扰。 */
+  margin-top: 14px;
+}
+
+.wb-brief-criteria { padding-bottom: 4px; }
+
+.wb-brief-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.wb-brief-kicker {
+  color: var(--assessment-deep);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.wb-brief-screen h2 {
+  margin: 0;
+  font-size: clamp(26px, calc(2.6 * var(--vw, 1vw)), 38px);
+  line-height: 1.26;
+  letter-spacing: -.035em;
+}
+
+.wb-brief-goal {
+  margin: 0;
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--assessment-soft) 60%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 16%, #fff);
+  color: #2b3a50;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* 简报态的参考图比作答态大，但仍要留出交付标准与按钮的位置：
+   102px 的图片高度是实测能在 900px 视口内同时露出标准首条与主按钮的上限。 */
+.wb-brief-refs { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.wb-brief-refs .wb-reference-item img { max-height: 168px; }
+
+.wb-brief-criteria { display: grid; gap: 12px; }
+
+.wb-brief-criteria .wb-requirements { gap: 11px; }
+
+.wb-brief-criteria .wb-requirements li {
+  padding: 13px 16px 13px 52px;
+  font-size: 17px;
+  line-height: 1.55;
+  border-radius: 15px;
+}
+
+.wb-brief-criteria .wb-requirements li::before {
+  left: 14px;
+  top: 13px;
+  width: 27px;
+  height: 27px;
+  font-size: 14px;
+}
+
+.wb-brief-source {
+  border: 1.5px solid #e7ecf3;
+  border-radius: 15px;
+  background: #fbfcfe;
+}
+
+.wb-brief-source > summary {
+  padding: 14px 18px;
+  color: #4d5a6c;
+  font-size: 16px;
+  font-weight: 750;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wb-brief-source > summary::-webkit-details-marker { display: none; }
+
+.wb-brief-source > summary::after { content: " ▾"; color: var(--assessment-color); }
+
+.wb-brief-source[open] > summary::after { content: " ▴"; }
+
+.wb-brief-source .wb-material {
+  padding: 0 18px 16px;
+  max-height: 320px;
+  overflow: auto;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* 明确的下一步：这一屏唯一的主按钮。 */
+.wb-brief-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 17px 34px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--assessment-color);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--assessment-color) 32%, transparent);
+  transition: transform 180ms cubic-bezier(.16, 1, .3, 1), box-shadow 180ms ease;
+}
+
+.wb-brief-start:hover { transform: translateY(-2px); box-shadow: 0 14px 30px color-mix(in srgb, var(--assessment-color) 38%, transparent); }
+
+.wb-brief-start svg { width: 20px; height: 20px; }
+
+/* 客观题小结：把"一个大数字"换成可读的三项统计，并给出结束原因。 */
+.cat-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cat-summary-stats li {
+  display: grid;
+  gap: 3px;
+  padding: 12px 15px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #e7ecf3;
+}
+
+.cat-summary-stats span { color: #687382; font-size: 14.5px; font-weight: 700; }
+
+.cat-summary-stats b { color: #1f2a3c; font-size: 18px; font-weight: 800; }
+
+.cat-summary-body strong { font-size: 21px; }
+
+.cat-summary-body p { font-size: 16px; }
+
+.cat-summary-note { font-size: 15px !important; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   信息密度修订：一屏之内不放这么多东西
+   ────────────────────────────────────────────────────────────────────────
+   成因：为了"一屏展示完整"，页面上并列了返回按钮 + 双标题行 + 计时 + 目标 +
+   交付标准 + 参考图 + 画布 + 输入框 + 导师气泡 + 导师徽章，字号只能被压到
+   12–15px。修订方向是减信息与分级字号，而不是继续压缩：
+   1. 一级信息（题干、选项、AI 输出、输入框）≥ 18px；
+   2. 二级信息（计时、交付标准、按钮文字）≥ 16px；
+   3. 三级信息（页面类型标签、徽章、说明性脚注）≥ 14px，并允许在窄屏隐藏；
+   4. 与作答无关的装饰性信息（重复的页面名、导师徽章）直接移除。
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── 二级：≥16px ── */
+.phase-timer { font-size: 16px; }
+.phase-timer svg { width: 18px; height: 18px; }
+.wb-chip { font-size: 15.5px; }
+.wb-canvas-tabs button { font-size: 16px; }
+.source-toggle { font-size: 15px; }
+.wb-requirements li { font-size: 16px; }
+.wb-brief .agent-section-heading { font-size: 16px; }
+.agent-section-heading { font-size: 15.5px; }
+.flow-back { font-size: 15px; }
+
+/* ── 三级：≥14px（原来 12–13px 的标签） ── */
+.task-heading { font-size: 15px; }
+.task-heading strong { font-size: 15px; }
+.quiz-brief { font-size: 15px; color: #5c6878; }
+.interview-who span:not(.interview-avatar) { font-size: 15px; }
+.wb-reference-item figcaption { font-size: 14px; }
+.wb-history-item strong { font-size: 15px; }
+.wb-history-item p { font-size: 16px; }
+.wb-hint { font-size: 15px; }
+.offline-chip { font-size: 14px; }
+.wb-material { font-size: 16px; }
+
+/* ── 任务目标与画布正文：一级内容，放大 ── */
+.task-body.practical-task .agent-brief { font-size: 16.5px; line-height: 1.6; }
+.wb-output { font-size: 16.5px; }
+.wb-output code { font-size: .94em; }
+.md-table { font-size: 15px; }
+.md-table th { font-size: 14.5px; }
+
+/* ── 移除装饰性重复信息：标题行里的页面名与 3D 舞台小徽章 ──
+   任务标题已经说明了这是什么测评，再重复一遍"实操任务测评/对话式测评"只会
+   占掉一行的空间，把真正的内容挤小。 */
+/* 任务类型标签：这一行在作答页是必要上下文（"对话 · 信息迷城 · 约 5 分钟"
+   + 模式名），保留；但实操简报态已经用 kicker 说明了任务类型，重复。 */
+.wb-brief-screen ~ .task-heading,
+.task-flow:has(.task-body[data-phase="brief"]) .task-heading { display: none; }
+.task-character-container .task-character-badge { display: none; }
+
+/* 3D 舞台的气泡是伴学提示，属于二级信息；加宽并放大，别让它挤成三行。 */
+.task-character-bubble { max-width: 300px; }
+.task-character-bubble .bubble-text { font-size: 15.5px; line-height: 1.55; }
+.task-character-bubble .bubble-speaker { font-size: 15px; }
+
+/* ── 实操简报态：一次只读一件事 ──
+   单列、大字、留白充足；确认后才进入双栏作答界面。这是解决"一屏信息过载、
+   字太小"的主要手段：把阅读与操作分到两个屏。 */
+/* 简报态由"可滚动内容 + 固定主按钮"两部分组成：内容再长也不会把
+   「开始作答」推出屏幕——那是这一屏唯一的下一步。 */
+.wb-brief-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wb-brief-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* 底部留出主按钮的高度：它是 flex 兄弟节点，但滚动到底时最后一条标准
+     会停在按钮后面，看起来像被遮住。这段 padding 让最后一条能滚到按钮上方。 */
+  padding-right: 6px;
+  /* 底部净空：主按钮是滚动区的兄弟节点，空间不足时最后一条标准会停在按钮
+     下方被遮住。24px 保证「整体规范」这类末条能完整滚到按钮上方。 */
+  padding-bottom: 24px;
+  scrollbar-width: thin;
+}
+
+.wb-brief-scroll::-webkit-scrollbar { width: 8px; }
+
+.wb-brief-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
+}
+
+.wb-brief-start {
+  flex: 0 0 auto;
+  align-self: stretch;
+  justify-content: center;
+  /* 与滚动内容之间留白，并加一层背景，滚动内容从按钮下方通过时不会互相干扰。 */
+  margin-top: 14px;
+}
+
+.wb-brief-criteria { padding-bottom: 4px; }
+
+.wb-brief-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.wb-brief-kicker {
+  color: var(--assessment-deep);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.wb-brief-screen h2 {
+  margin: 0;
+  font-size: clamp(26px, calc(2.6 * var(--vw, 1vw)), 38px);
+  line-height: 1.26;
+  letter-spacing: -.035em;
+}
+
+.wb-brief-goal {
+  margin: 0;
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--assessment-soft) 60%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 16%, #fff);
+  color: #2b3a50;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* 简报态的参考图比作答态大，但仍要留出交付标准与按钮的位置：
+   102px 的图片高度是实测能在 900px 视口内同时露出标准首条与主按钮的上限。 */
+.wb-brief-refs { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.wb-brief-refs .wb-reference-item img { max-height: 168px; }
+
+.wb-brief-criteria { display: grid; gap: 12px; }
+
+.wb-brief-criteria .wb-requirements { gap: 11px; }
+
+.wb-brief-criteria .wb-requirements li {
+  padding: 13px 16px 13px 52px;
+  font-size: 17px;
+  line-height: 1.55;
+  border-radius: 15px;
+}
+
+.wb-brief-criteria .wb-requirements li::before {
+  left: 14px;
+  top: 13px;
+  width: 27px;
+  height: 27px;
+  font-size: 14px;
+}
+
+.wb-brief-source {
+  border: 1.5px solid #e7ecf3;
+  border-radius: 15px;
+  background: #fbfcfe;
+}
+
+.wb-brief-source > summary {
+  padding: 14px 18px;
+  color: #4d5a6c;
+  font-size: 16px;
+  font-weight: 750;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wb-brief-source > summary::-webkit-details-marker { display: none; }
+
+.wb-brief-source > summary::after { content: " ▾"; color: var(--assessment-color); }
+
+.wb-brief-source[open] > summary::after { content: " ▴"; }
+
+.wb-brief-source .wb-material {
+  padding: 0 18px 16px;
+  max-height: 320px;
+  overflow: auto;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* 明确的下一步：这一屏唯一的主按钮。 */
+.wb-brief-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 17px 34px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--assessment-color);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--assessment-color) 32%, transparent);
+  transition: transform 180ms cubic-bezier(.16, 1, .3, 1), box-shadow 180ms ease;
+}
+
+.wb-brief-start:hover { transform: translateY(-2px); box-shadow: 0 14px 30px color-mix(in srgb, var(--assessment-color) 38%, transparent); }
+
+.wb-brief-start svg { width: 20px; height: 20px; }
+
+/* 客观题小结：把"一个大数字"换成可读的三项统计，并给出结束原因。 */
+.cat-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cat-summary-stats li {
+  display: grid;
+  gap: 3px;
+  padding: 12px 15px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #e7ecf3;
+}
+
+.cat-summary-stats span { color: #687382; font-size: 14.5px; font-weight: 700; }
+
+.cat-summary-stats b { color: #1f2a3c; font-size: 18px; font-weight: 800; }
+
+.cat-summary-body strong { font-size: 21px; }
+
+.cat-summary-body p { font-size: 16px; }
+
+.cat-summary-note { font-size: 15px !important; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   空间利用率重构
+   ────────────────────────────────────────────────────────────────────────
+   实测问题（1440×900）：
+   · 第一栏被 min(70vw, 1150px) 硬限制在 70%，297px（21% 宽、全高）留给
+     纯装饰的 3D 导师舞台；正文只剩 70% 宽度，被迫用 15–16.5px 排四行。
+   · 3D 舞台与导师气泡占半屏高度，信息量只有一句话。
+   改法：把 3D 舞台从"并列一栏"降级为"面板右上角的浮层小卡"，
+   文字获得整幅宽度；字号随宽度自然上调，不用再为省空间而缩小。
+   ════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 900px) {
+  /* 单列文字版心：面板吃满可用宽度（右侧只留 300px 给浮层，不参与排版）。 */
+  .task-stage-layout {
+    display: block;
+    width: min(calc(94 * var(--vw, 1vw)), 1560px);
+    height: calc(84 * var(--dvh, 1dvh));
+    margin: clamp(80px, calc(10 * var(--vh, 1vh)), 120px) auto 0;
+  }
+
+  .task-stage-layout .task-panel {
+    width: 100%;
+    height: 100%;
+    padding-right: clamp(28px, calc(2.6 * var(--vw, 1vw)), 42px);
+  }
+
+  /* 导师不再占据一整列，改为面板内的窄右栏：1440px 下正文只需要约 1050px，
+     多出来的空间给导师，面板总宽因此可以吃满到 1340px。
+     关键：3D 形象与气泡纵向排列在窄栏里，不覆盖任何正文。 */
+  .task-stage-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(220px, calc(19 * var(--vw, 1vw)), 280px);
+    gap: clamp(18px, calc(1.6 * var(--vw, 1vw)), 28px);
+    width: min(calc(94 * var(--vw, 1vw)), 1520px);
+    height: calc(84 * var(--dvh, 1dvh));
+    margin: clamp(80px, calc(10 * var(--vh, 1vh)), 120px) auto 0;
+  }
+
+  /* 导师列：形象在上、气泡在下，整体垂直居中。
+     形象需要接近正方形的空间，窄栏里要按栏宽等比收，否则会被压扁成球。 */
+  .task-stage-layout .task-character-stage {
+    position: static;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .task-stage-layout .task-character-stage .task-character-canvas {
+    flex: 0 1 auto;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    max-height: 44vh;
+    min-height: 0;
+    margin: 0 auto;
+  }
+
+  .task-stage-layout .task-character-stage .task-character-bubble {
+    position: static;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 13px 15px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px #00000014;
+  }
+
+  .task-stage-layout .task-character-stage .task-character-bubble .bubble-text {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  /* 表单类内容不再需要为窄栏折行，用更舒展的行高与字号。 */
+  .workbench-grid { grid-template-columns: minmax(300px, .82fr) minmax(0, 1.3fr); gap: 20px; }
+
+  /* 正文与列表整体上调一档：宽度释放后这些字号才站得住。 */
+  .wb-requirements li { font-size: 17px; line-height: 1.55; }
+  .wb-brief-criteria .wb-requirements li { font-size: 17.5px; }
+  .task-body.practical-task .agent-brief { font-size: 17px; }
+  .wb-output { font-size: 17px; }
+  .wb-history-item p { font-size: 17px; }
+  .wb-material { font-size: 16.5px; }
+  .source-toggle { font-size: 16px; }
+  .wb-canvas-tabs button { font-size: 16.5px; }
+  .agent-section-heading { font-size: 16.5px; }
+  .phase-timer { font-size: 17px; }
+  .wb-chip { font-size: 16px; }
+  .quiz-brief { font-size: 16px; }
+
+  /* 客观题是这一屏的主体。基础样式里选项已是 18px / 68px 高，删掉六维条后
+     下方空出约 200px——这里把答题区上调一档。
+     选项**不吸收剩余高度**：判断题只有 2 个选项，用 1fr 平分会把它们拉成
+     176px 的巨型色块，比原来的空白更难看。行高改为内容驱动，空间留给
+     题干的呼吸与反馈区。 */
+  .task-heading { font-size: 16px; }
+  .task-heading > svg { width: 23px; height: 23px; }
+  .task-heading strong { font-size: 14px; }
+  .comprehensive-task h2 { font-size: clamp(30px, calc(2.35 * var(--vw, 1vw)), 38px); }
+  .comprehensive-task .answer-options {
+    align-content: start;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .answer-options button {
+    min-height: 82px;
+    padding: 16px 28px;
+    gap: 20px;
+    font-size: 19.5px;
+  }
+  .answer-options button > span { width: 36px; height: 36px; font-size: 16px; }
+  .quiz-brief { font-size: 16.5px; }
+  .quiz-feedback { margin-top: 20px; padding: 20px 24px; }
+  .quiz-feedback strong { font-size: 20px; }
+  .quiz-feedback-answer,
+  .quiz-feedback-analysis { font-size: 17px; line-height: 1.62; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   对话可读性：气泡是这一屏唯一的正文
+   ────────────────────────────────────────────────────────────────────────
+   版心加宽后气泡仍停在 max-width: 70% 与 15.5px，右侧大片空着、每行只有
+   十几个字。这里把气泡放宽到 82% 并放大字号——聊天是长阅读，字号优先级
+   应与题干相同（≥18px）。用户头像与气泡间距同步收紧。
+   ════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  .conversation-task .chat-bubble .chat-text {
+    max-width: 82%;
+    padding: 17px 22px;
+    font-size: 18px;
+    line-height: 1.68;
+    border-radius: 22px 22px 22px 7px;
+  }
+
+  .conversation-task .chat-bubble.is-user .chat-text {
+    border-radius: 22px 22px 7px 22px;
+  }
+
+  .interview-thread .chat-bubble .chat-text { font-size: 18px; line-height: 1.68; }
+
+  .conversation-task .chat-bubble .chat-text > p + p,
+  .conversation-task .chat-bubble .chat-text > * + * { margin-top: 9px; }
+
+  /* 输入框同步放大：作答区与正文同档，避免"读大写字、打小字"。 */
+  .conversation-task .task-composer input { font-size: 18px; }
+  .conversation-task .task-composer { height: 76px; border-radius: 30px; }
+
+  /* 采访页头（人名与进度）也上调，形成三级层次而不是一片小字。 */
+  .interview-who strong { font-size: 19px; }
+  .interview-who span:not(.interview-avatar) { font-size: 15.5px; }
+  .interview-avatar { width: 52px; height: 52px; font-size: 22px; }
+}
+

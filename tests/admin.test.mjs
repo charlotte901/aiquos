@@ -196,7 +196,7 @@ test("stats aggregate correctly on the demo roster", () => {
   assert.equal(dims.length, 6);
   for (const dim of dims) assert.ok(dim.average > 0 && dim.average <= 100);
 
-  const trend = weeklyTrend(roster, new Date("2026-09-19T12:00:00"));
+  const trend = weeklyTrend(roster, new Date());
   assert.equal(trend.length, 8);
   assert.equal(trend.reduce((sum, bucket) => sum + bucket.count, 0), runs.length);
 });

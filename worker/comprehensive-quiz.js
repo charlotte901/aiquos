@@ -82,10 +82,26 @@ export function applyOutcomeToSession(session, { outcome, credit = null, questio
   return next;
 }
 
-export function selectComprehensive({ levelId, stage, session, exposure, rng = Math.random }) {
+export function selectComprehensive({
+  levelId,
+  stage,
+  session,
+  exposure,
+  rng = Math.random,
+  coverageCritical = false,
+}) {
   const bank = currentBank();
   const staged = startAdaptiveStage(session, stage);
-  return selectAdaptiveQuestion({ questions: bank.questions, levelId, session: staged, rng, exposure });
+  return selectAdaptiveQuestion({
+    questions: bank.questions,
+    // scope:"bank" arrives as levelId:null — the timed CAT ranges over the
+    // whole bank so the router can climb the full difficulty ladder.
+    levelId,
+    session: staged,
+    rng,
+    exposure,
+    coverageCritical,
+  });
 }
 
 // Same shape the old client-side controller exposed for the aiquos.debug chip.
@@ -108,9 +124,9 @@ export async function handleComprehensiveQuestion(request) {
   } catch {
     return json({ error: "invalid json body" }, 400);
   }
-  const levelId = payload?.levelId;
+  const levelId = payload?.scope === "bank" ? null : payload?.levelId;
   const bank = currentBank();
-  if (typeof levelId !== "string" || !bank.levelIds.has(levelId)) {
+  if (payload?.scope !== "bank" && (typeof levelId !== "string" || !bank.levelIds.has(levelId))) {
     return json({ error: "unknown levelId" }, 400);
   }
   const stage = Math.max(1, Math.min(5, Number(payload.stage ?? 1) || 1));
@@ -121,7 +137,13 @@ export async function handleComprehensiveQuestion(request) {
   const exposure = payload.exposure && typeof payload.exposure === "object" && !Array.isArray(payload.exposure)
     ? payload.exposure
     : {};
-  const picked = selectComprehensive({ levelId, stage, session, exposure });
+  const picked = selectComprehensive({
+    levelId,
+    stage,
+    session,
+    exposure,
+    coverageCritical: payload?.coverageCritical === true,
+  });
   if (!picked.question) return json({ error: "no question available for this level" }, 409);
   return json({
     question: picked.question,
