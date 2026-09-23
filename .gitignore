@@ -11,3 +11,8 @@ dist/
 # Editor autosave leftovers (copies of CaseArchive.jsx) — not source.
 src/XX*
 worker/bank-overrides.json
+
+# QA screenshots and review captures produced while iterating on the UI.
+# Regenerated on demand by scripts/shots.mjs and the qa-*.mjs harnesses;
+# 100 MB+ of PNGs should not enter history.
+work/
