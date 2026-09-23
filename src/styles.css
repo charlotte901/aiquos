@@ -253,22 +253,39 @@ button:hover {
   padding: 0 22px;
   width: 185px;
 }
+/* 头部账号：主流网站的圆形头像。
+ * 以前是一枚写着「账号」两个字的白色药丸，占宽且不表明身份；现在收成固定
+ * 直径的圆，有头像显示头像，没有则显示昵称首字，昵称移到 aria-label/title
+ * （悬停可见）。圆只需要一个直径，所以尺寸不随 --ui-scale 改宽度。 */
 .home-account {
   position: static;
-  width: auto;
+  width: calc(44px * var(--ui-scale, 1));
+  height: calc(44px * var(--ui-scale, 1));
   min-width: 0;
-  height: calc(51px * var(--ui-scale, 1));
-  padding: 0 calc(25px * var(--ui-scale, 1));
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
   background: #fff;
   color: #030303;
-  font-size: calc(18px * var(--ui-scale, 1));
-  /* The account pill belongs to the homepage tab but stays mounted, so that
+  font-size: calc(17px * var(--ui-scale, 1));
+  font-weight: 800;
+  letter-spacing: 0;
+  /* The account control belongs to the homepage tab but stays mounted, so that
    * leaving the tab fades it out rather than deleting it (the hide rules for
    * the cases and forum tabs were written to hide it, not to remove it).
    * `visibility` has to be in the list: without it the pill switches off on the
    * first frame and the opacity fade is never seen. */
   transition: background 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s,
     visibility 0.2s;
+}
+.home-account > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .home-account:hover {
   background: #fff6f9;

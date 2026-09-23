@@ -6,6 +6,7 @@ import {
   Play,
 } from "@phosphor-icons/react";
 import { Brand } from "./Brand";
+import { accountInitial, useAccount } from "./account-store";
 import { CubeDisplay } from "./CubeDisplay";
 import { HomeAgent } from "./HomeAgent";
 import { LibraryHub } from "./LibraryHub";
@@ -132,6 +133,7 @@ export function App({
   // mode, the window in compact. Not the window in both, which is what let the
   // composition track the monitor (see stage.js).
   const size = useStageSize();
+  const account = useAccount();
   const [faces, setFaces] = useState(() => getCaseFaces(0));
   const [preset, setPreset] = useState(0);
   const initialCaseIds = useRef(new Set(Object.values(getCaseFaces(0)).map((item) => item.id)));
@@ -243,17 +245,22 @@ export function App({
         </a>
       </nav>
       {/* Mounted on every tab and hidden by the cases/forum rules rather than
-          unmounted: the header holds still through a push, so the account pill
-          should fade with the tab change instead of blinking out of a header
-          that is not moving. Hidden means `visibility: hidden`, so it leaves
-          the tab order and the accessibility tree either way. */}
+          unmounted: the header holds still through a push, so the account
+          control should fade with the tab change instead of blinking out of a
+          header that is not moving. Hidden means `visibility: hidden`, so it
+          leaves the tab order and the accessibility tree either way.
+          Rendered as the circular avatar pattern the rest of the web uses:
+          the account name is demoted to the accessible label. */}
       <button
-        className="pill-button home-account"
+        className={`pill-button home-account${account.avatar ? " has-image" : ""}`}
         onClick={onAccountSettings}
         disabled={transitionBusy}
-        aria-label="账号"
+        aria-label={`账号 · ${account.nickname}`}
+        title={account.nickname}
       >
-        账号
+        {account.avatar
+          ? <img src={account.avatar} alt="" />
+          : <span aria-hidden="true">{accountInitial(account.nickname)}</span>}
       </button>
     </header>
   );

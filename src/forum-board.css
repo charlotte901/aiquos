@@ -70,12 +70,16 @@
   display: block;
   max-width: 100%;
   font-family: "DM Sans", "Noto Sans SC", sans-serif;
+  /* 这条曾用 0.35 的系数，在 1440 宽的面板里只渲染到 63px，读起来像被缩小的
+   * 附属文字。系数改为 0.62：实测该宽度下约 112px，比原来大近一倍，同时
+   * 标题块与上方导航、下方筛选行各留出 ~40px 呼吸，不会顶到版心边缘。
+   * 两道 min() 约束（每字宽度 × 字数、视口高度）继续兜底窄屏与矮屏。 */
   font-size: calc(
     min(
         calc(138 * var(--vw, 1vw) / var(--letters, 7)),
         calc(20 * var(--vh, 1vh)),
         210px
-      ) * 0.35
+      ) * 0.62
   );
   font-weight: 900;
   line-height: 0.82;
@@ -85,7 +89,9 @@
   white-space: nowrap;
   pointer-events: none;
   color: #ffffff;
-  margin: 4px 0 12px;
+  /* 字号放大近一倍后，原来 4px 的上边距让标题紧贴导航栏（实测只剩 15px）。
+   * 上边距按 em 跟随字号，标题与导航、筛选行之间都留出约 0.4em 的呼吸。 */
+  margin: 0.35em 0 0.28em;
 }
 
 .forum-word > span {
@@ -241,22 +247,24 @@
   transform: scaleX(1);
 }
 
-/* Search: a round white button at rest; it expands into a pill while focused
-   or while it carries a query (CSS-only — `:placeholder-shown` reads the
-   input's value), so the resting row stays just labels and dots. */
+/* Search: a real, always-visible input.
+   It used to rest as a 36px round button that only expanded on focus, which
+   hid the affordance entirely — nothing on screen said the board could be
+   searched. It now keeps its pill shape at rest and only grows a little on
+   focus, so the placeholder stays readable. */
 .gallery-search-box {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  width: 36px;
+  gap: 8px;
+  width: 232px;
   height: 36px;
-  padding: 0;
+  padding: 0 12px;
   border-radius: 999px;
   background: #ffffff;
   border: 1px solid #ffffff;
   color: #17150f;
-  cursor: pointer;
+  cursor: text;
   overflow: hidden;
   box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
   transition: width 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
@@ -268,47 +276,36 @@
 
 .gallery-search-box:focus-within,
 .gallery-search-box:has(input:not(:placeholder-shown)) {
-  width: 224px;
-  gap: 8px;
-  padding: 0 12px;
-  cursor: text;
+  width: 268px;
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.14);
 }
 
 .gallery-search-box > svg {
   flex: 0 0 auto;
+  opacity: 0.55;
 }
 
 .gallery-search-box input {
-  width: 0;
-  opacity: 0;
+  width: 100%;
+  min-width: 0;
+  opacity: 1;
   border: 0;
   outline: 0;
   background: transparent;
   color: #17150f;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  transition: opacity 160ms ease 80ms;
-}
-
-.gallery-search-box:focus-within input,
-.gallery-search-box:has(input:not(:placeholder-shown)) input {
-  width: 150px;
-  opacity: 1;
 }
 
 .gallery-search-box input::placeholder {
   color: rgb(23 21 15 / 0.42);
 }
 
-.gallery-search-box input::placeholder {
-  color: color-mix(in srgb, #ffffff 58%, transparent);
-}
-
 .gallery-search-clear {
   display: grid;
   place-items: center;
+  flex: 0 0 auto;
   padding: 0;
   border: 0;
   background: transparent;

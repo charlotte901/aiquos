@@ -14,6 +14,15 @@
   transform: translateY(14px) scale(0.92);
   pointer-events: none;
 }
+/* 面板打开时小Q本体退场：它已经"变成"了中央那块主面板，留在角落会与
+ * 对话框重复，也会在虚化背板下露出半张脸。 */
+.home-agent.is-open .home-agent-figure,
+.home-agent.is-open .home-agent-teaser {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.94);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
 
 /* ── The doll ────────────────────────────────────────────────────────────── */
 
@@ -155,42 +164,68 @@
 
 /* ── Chat panel ──────────────────────────────────────────────────────────── */
 
+/* 打开后小Q升为屏幕中央的主界面：面板居中、放大到接近满高，底下的首页
+ * 用一层带高斯模糊的背板虚化掉。关闭时点背板或右上角按钮都可以。
+ * 面板尺寸用 min(px, vw/vh) 双重约束，小屏自动收窄而不是溢出。 */
+.home-agent-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: rgba(30, 12, 22, 0.28);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
+  animation: agent-scrim-in 280ms ease-out both;
+  cursor: pointer;
+}
+@keyframes agent-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .home-agent-panel {
-  position: absolute;
-  left: 0;
-  bottom: 118px;
-  width: min(344px, calc(100vw - 40px));
-  height: min(468px, calc(100dvh - 190px));
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, calc(100vw - 48px));
+  height: min(680px, calc(100dvh - 96px));
   display: flex;
   flex-direction: column;
-  border-radius: 22px;
+  border-radius: 26px;
   background: #fffdfb;
   box-shadow:
-    0 30px 70px rgba(76, 26, 56, 0.34),
+    0 40px 90px rgba(76, 26, 56, 0.42),
     inset 0 0 0 1px rgba(255, 255, 255, 0.9);
-  transform-origin: 24px bottom;
-  animation: agent-panel-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* 从撑起它的那只小Q位置生长出来，落点在屏幕中央。 */
+  transform-origin: 50% 100%;
+  animation: agent-panel-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
   overflow: hidden;
+  z-index: 1;
 }
 @keyframes agent-panel-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translate(-50%, -50%) translateY(20px) scale(0.94); }
+  to { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-agent-scrim { animation: none; }
+  .home-agent-panel { animation: none; }
 }
 
 .home-agent-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 14px 11px 16px;
+  gap: 12px;
+  padding: 16px 18px 14px 20px;
   border-bottom: 1px solid #f6dbe9;
   background: linear-gradient(180deg, #fff6fa, #fffdfb);
 }
 .home-agent-head-doll {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   background: linear-gradient(165deg, #241f31, #17150f);
 }
 .home-agent-head-doll .agent-visor {
@@ -205,22 +240,22 @@
   height: 8px;
   border-radius: 3px;
 }
-.home-agent-head-meta { display: grid; gap: 1px; flex: 1; }
+.home-agent-head-meta { display: grid; gap: 2px; flex: 1; }
 .home-agent-head-meta strong {
-  font-size: 13.5px;
+  font-size: 16px;
   font-weight: 800;
   color: #332030;
 }
 .home-agent-head-meta span {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #c2407a;
 }
 .home-agent-close {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border: 0;
   border-radius: 50%;
   background: #f9e3ee;
@@ -234,19 +269,19 @@
   flex: 1;
   overflow-y: auto;
   scrollbar-width: none;
-  padding: 14px 14px 10px;
+  padding: 22px 22px 16px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 13px;
   background: linear-gradient(180deg, #fff6fa 0%, #fdeef5 100%);
 }
 .home-agent-log::-webkit-scrollbar { display: none; }
 
 .home-agent-msg {
-  max-width: 84%;
-  padding: 9px 12px;
-  font-size: 13px;
-  line-height: 1.55;
+  max-width: 78%;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.62;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -288,16 +323,16 @@
 .home-agent-quicks {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   padding: 2px 0 4px;
 }
 .home-agent-quicks button {
-  padding: 6px 11px;
+  padding: 9px 15px;
   border: 1px solid #f0bcd3;
   border-radius: 999px;
   background: #ffffff;
   color: #b04a7d;
-  font-size: 11.5px;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 160ms ease;
@@ -361,21 +396,21 @@
 .home-agent-composer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px 12px;
+  gap: 10px;
+  padding: 14px 18px 16px;
   border-top: 1px solid #f6dbe9;
   background: #fffdfb;
 }
 .home-agent-composer input {
   flex: 1;
-  height: 40px;
-  padding: 0 16px;
+  height: 48px;
+  padding: 0 20px;
   border: 1px solid #f0bcd3;
   border-radius: 999px;
   outline: none;
   background: #ffffff;
   color: #332030;
-  font-size: 13px;
+  font-size: 15px;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 .home-agent-composer input::placeholder { color: #c99bb4; }
@@ -386,8 +421,8 @@
 .home-agent-composer button {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   border: 0;
   border-radius: 50%;
@@ -401,10 +436,15 @@
 .home-agent-composer button:disabled { opacity: 0.45; cursor: default; }
 
 @media (max-width: 640px) {
+  /* 面板本来就是 fixed + translate(-50%,-50%) 居中，这里只收窄宽度；
+     旧规则里的 `left: 0` 会把面板推到左边缘，与居中定位冲突。 */
   .home-agent-panel {
-    width: calc(100vw - 32px);
-    left: 0;
+    width: calc(100vw - 28px);
+    height: calc(100dvh - 72px);
+    border-radius: 22px;
   }
+  .home-agent-log { padding: 16px 14px 12px; }
+  .home-agent-msg { max-width: 88%; font-size: 14px; }
   .agent-doll { width: 72px; height: 90px; }
 }
 @media (prefers-reduced-motion: reduce) {
