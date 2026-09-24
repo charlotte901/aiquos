@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Check } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
 import { useStageSize } from "./DesignStage";
+import { EDITIONS, readEdition, writeEdition } from "./bank-editions";
 import {
   ASSESSMENTS,
   ASSESSMENT_ART,
@@ -33,7 +34,13 @@ export function SourceCrop({ crop, className = "", source = ASSESSMENT_ART, widt
 export function AssessmentHub({ onBack, onStart, busy }) {
   const size = useStageSize();
   const [selected, setSelected] = useState(null);
+  // 题库版本：切换后立刻生效，三个通道（客观/对话/实操）与综合测评都跟随。
+  const [edition, setEdition] = useState(() => readEdition());
   const layout = getAssessmentLayout(size.width, size.height);
+  const chooseEdition = (id) => {
+    setEdition(id);
+    writeEdition(id);
+  };
   return (
     <main
       className="assessment-screen"
@@ -52,6 +59,26 @@ export function AssessmentHub({ onBack, onStart, busy }) {
         >
           <TestWordmark />
         </h1>
+
+        {/* 题库版本切换：放在卡片上方，学员先决定题池再进测评。 */}
+        <div className="assessment-editions" role="group" aria-label="题库版本">
+          {Object.values(EDITIONS).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="assessment-edition"
+              aria-pressed={edition === item.id}
+              disabled={busy}
+              onClick={() => chooseEdition(item.id)}
+            >
+              <strong>{item.label}</strong>
+              <span>
+                客观 {item.counts.objective} · 实操 {item.counts.practical}
+              </span>
+            </button>
+          ))}
+        </div>
+
         <div className="assessment-grid" role="group" aria-label="测评类型">
           {ASSESSMENTS.map((item) => (
             <button
@@ -83,8 +110,8 @@ export function AssessmentHub({ onBack, onStart, busy }) {
         </div>
         <p className="assessment-selection" role="status">
           {selected
-            ? `已选择 · ${ASSESSMENTS.find((item) => item.id === selected).title}`
-            : ""}
+            ? `已选择 · ${ASSESSMENTS.find((item) => item.id === selected).title} · ${EDITIONS[edition].label}`
+            : `${EDITIONS[edition].label}题库 · 选择一种测评方式开始`}
         </p>
       </div>
     </main>

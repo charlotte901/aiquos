@@ -16,24 +16,28 @@ import {
   startAdaptiveStage,
 } from "../src/comprehensive-adaptive.js";
 import { getBankState } from "./bank-store.js";
+import { DEFAULT_EDITION, normalizeEdition } from "../src/bank-editions.js";
 
 export const COMPREHENSIVE_QUESTION_PATH = "/api/comprehensive-question";
 
 // The bank is read through the override-aware store so admin edits reach
-// serving immediately; derived maps are cached per bankVersion.
-let bankCache = null;
+// serving immediately; derived maps are cached per bankVersion, and now per
+// edition too — the two editions are separate pools with separate versions.
+const bankCaches = new Map();
 
-function currentBank() {
-  const state = getBankState();
-  if (!bankCache || bankCache.bankVersion !== state.bankVersion) {
-    validateQuestionBank(state.questions);
-    bankCache = {
-      ...state,
-      byId: new Map(state.questions.map((question) => [question.id, question])),
-      levelIds: new Set(state.questions.map((question) => question.levelId)),
-    };
-  }
-  return bankCache;
+function currentBank(editionInput) {
+  const edition = normalizeEdition(editionInput ?? DEFAULT_EDITION);
+  const state = getBankState(edition);
+  const cached = bankCaches.get(edition);
+  if (cached && cached.bankVersion === state.bankVersion) return cached;
+  validateQuestionBank(state.questions);
+  const next = {
+    ...state,
+    byId: new Map(state.questions.map((question) => [question.id, question])),
+    levelIds: new Set(state.questions.map((question) => question.levelId)),
+  };
+  bankCaches.set(edition, next);
+  return next;
 }
 
 function json(payload, status = 200) {
@@ -68,10 +72,10 @@ function normalizeSession(raw) {
 // client reports a credit) light evidence for the ability estimate. Difficulty
 // and dimKeys are looked up server-side by question id, never trusted from the
 // wire.
-export function applyOutcomeToSession(session, { outcome, credit = null, questionId }) {
+export function applyOutcomeToSession(session, { outcome, credit = null, questionId }, edition) {
   let next = applyAdaptiveOutcome(session, outcome);
   if (typeof credit === "number" && questionId) {
-    const question = currentBank().byId.get(questionId);
+    const question = currentBank(edition).byId.get(questionId);
     if (question) {
       next = {
         ...next,
@@ -89,8 +93,9 @@ export function selectComprehensive({
   exposure,
   rng = Math.random,
   coverageCritical = false,
+  edition,
 }) {
-  const bank = currentBank();
+  const bank = currentBank(edition);
   const staged = startAdaptiveStage(session, stage);
   return selectAdaptiveQuestion({
     questions: bank.questions,
@@ -124,15 +129,17 @@ export async function handleComprehensiveQuestion(request) {
   } catch {
     return json({ error: "invalid json body" }, 400);
   }
+  // 版本（edition）：决定用哪一套综合题池。缺省走精选版，老客户端不受影响。
+  const edition = normalizeEdition(payload?.edition ?? DEFAULT_EDITION);
   const levelId = payload?.scope === "bank" ? null : payload?.levelId;
-  const bank = currentBank();
+  const bank = currentBank(edition);
   if (payload?.scope !== "bank" && (typeof levelId !== "string" || !bank.levelIds.has(levelId))) {
     return json({ error: "unknown levelId" }, 400);
   }
   const stage = Math.max(1, Math.min(5, Number(payload.stage ?? 1) || 1));
   let session = normalizeSession(payload.session);
   if (payload.outcome && typeof payload.outcome === "object" && payload.outcome.questionId) {
-    session = applyOutcomeToSession(session, payload.outcome);
+    session = applyOutcomeToSession(session, payload.outcome, edition);
   }
   const exposure = payload.exposure && typeof payload.exposure === "object" && !Array.isArray(payload.exposure)
     ? payload.exposure
@@ -143,6 +150,7 @@ export async function handleComprehensiveQuestion(request) {
     session,
     exposure,
     coverageCritical: payload?.coverageCritical === true,
+    edition,
   });
   if (!picked.question) return json({ error: "no question available for this level" }, 409);
   return json({
@@ -150,6 +158,7 @@ export async function handleComprehensiveQuestion(request) {
     session: picked.session,
     exposure: picked.exposure ?? exposure,
     bankVersion: bank.bankVersion,
+    edition,
     ...(payload.debug ? { debug: debugSnapshot(picked.session) } : {}),
   });
 }

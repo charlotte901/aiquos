@@ -34,6 +34,7 @@ import {
 } from "./assessment-timing";
 import { abilityStandardError, shouldStopCat } from "./comprehensive-adaptive";
 import { answerCredit } from "./assessment-attempt";
+import { readEdition } from "./bank-editions";
 import { generateArkImage, streamDeepSeek } from "./deepseek";
 import {
   INTERVIEW_LADDER,
@@ -1206,6 +1207,7 @@ function PracticalWorkbenchPhase({
     if (taskId) params.set("taskId", taskId);
     else params.set("levelId", levelId);
     params.set("count", "1");
+    params.set("edition", readEdition());
     fetch(`/api/practical-tasks?${params.toString()}`)
       .then(async (response) => {
         if (!response.ok) throw new Error("任务加载失败。");

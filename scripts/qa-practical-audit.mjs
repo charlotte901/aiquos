@@ -15,7 +15,7 @@ import { readFile } from "node:fs/promises";
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const BASE = process.argv[2] || "http://127.0.0.1:4287";
 
-const bank = JSON.parse(await readFile(new URL("../worker/practical-tasks.json", import.meta.url), "utf8"));
+const bank = JSON.parse(await readFile(new URL("../src/banks/practical-80.json", import.meta.url), "utf8"));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const profile = mkdtempSync(join(tmpdir(), "aiquos-audit-"));
 const child = spawn(CHROME, [

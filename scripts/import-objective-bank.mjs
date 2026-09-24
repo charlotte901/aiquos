@@ -118,6 +118,15 @@ const byDifficulty = tally(repaired, (item) => item.difficulty);
 const byLevel = tally(repaired, (item) => item.levelId);
 writeFileSync(BANK_PATH, `${JSON.stringify({ questions }, null, 2)}\n`);
 
+// 全量版的综合题池：同样的 880 题，去掉 origin（综合测评不区分来源），
+// 供 bank-store 在 A 版下作为综合测评的题池。B 版继续用
+// src/comprehensive-questions.json 里的 120 道人工精选题。
+const comprehensive880 = repaired.map(({ origin, ...rest }) => rest);
+validateQuestionBank(comprehensive880);
+const FULL_PATH = join(here, "..", "src", "banks", "comprehensive-880.json");
+writeFileSync(FULL_PATH, `${JSON.stringify({ questions: comprehensive880 }, null, 2)}\n`);
+console.log(`已写出全量版综合题池：src/banks/comprehensive-880.json（${comprehensive880.length} 题）`);
+
 console.log(`导入完成：${human.length} 精选 + ${repaired.length} 修复 = ${questions.length} 题`);
 console.log("修复题答案分布（应近似均衡）:", skew);
 console.log("修复题难度分布:", byDifficulty);

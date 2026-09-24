@@ -17,7 +17,7 @@ const BASE = process.argv[2] || "http://127.0.0.1:4287";
 const OUT = "work/task-shots";
 const SIZE = { width: 1600, height: 1000 };
 
-const bank = JSON.parse(await readFile(new URL("../worker/practical-tasks.json", import.meta.url), "utf8"));
+const bank = JSON.parse(await readFile(new URL("../src/banks/practical-80.json", import.meta.url), "utf8"));
 mkdirSync(OUT, { recursive: true });
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -155,6 +155,53 @@
   font-size: 13px;
   color: #ffffffa6;
 }
+
+/* 题库版本切换：两张并排的胶囊，放在字标与卡片之间。
+   #assessments 是深色底，所以这里用半透明白描边而不是实心块——它是筛选器，
+   不该比下面四张测评卡片更抢眼。
+   上边距显式给出：.assessment-layout 用上下 auto 边距做垂直居中，相邻元素
+   的 margin 会折叠，只写下边距会让胶囊贴到字标上（实测重叠）。 */
+.assessment-editions {
+  display: flex;
+  gap: 10px;
+  margin-top: calc(26px * var(--assessment-unit));
+  margin-bottom: calc(4px * var(--assessment-unit));
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.assessment-edition {
+  display: grid;
+  gap: 3px;
+  min-width: 148px;
+  padding: 10px 18px;
+  /* 未选中态要在 #08080a 上读得清：底色提到 10% 白、字用近纯白，
+     边框 30% 白勾勒轮廓。此前 6%/77%/18% 在截图里几乎糊成一团。 */
+  border: 1.5px solid #ffffff4d;
+  border-radius: 999px;
+  background: #ffffff1a;
+  color: #fffffff0;
+  text-align: left;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.assessment-edition strong { font-size: 14.5px; font-weight: 800; }
+.assessment-edition span { font-size: 12px; opacity: .88; }
+.assessment-edition:disabled { opacity: .5; }
+/* 选中态与 hover 的顺序不是排版偏好，是特异性问题：
+   `:hover:not(:disabled)` 的特异性 (0,3,0) 高于 `[aria-pressed="true"]` (0,2,0)，
+   所以选中项在鼠标悬停时会被 hover 底色盖掉、看起来像没选中。
+   hover 规则用 :not([aria-pressed="true"]) 排除选中项，并把选中态写在最后。 */
+.assessment-edition:hover:not(:disabled):not([aria-pressed="true"]) {
+  background: #ffffff2b;
+  border-color: #ffffff7a;
+}
+.assessment-edition[aria-pressed="true"],
+.assessment-edition[aria-pressed="true"]:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #14121a;
+}
+.assessment-edition[aria-pressed="true"] span { opacity: .7; }
+
 .assessment-back {
   position: absolute;
   top: 28px;

@@ -13,6 +13,7 @@ import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
 import { siteViewForHash } from "./routes";
+import { readEdition, writeEdition } from "./bank-editions";
 import { loadExposureStore, saveExposureStore } from "./comprehensive-adaptive";
 import { COMPREHENSIVE_PHASES, phaseCount } from "./assessment-timing";
 import {
@@ -594,6 +595,7 @@ export function SiteExperience() {
           ...(options.coverageCritical ? { coverageCritical: true } : {}),
           session: routingRef.current,
           exposure: loadExposureStore(),
+          edition: readEdition(),
           ...(outcome ? { outcome } : {}),
           debug: isAdaptiveDebugOn(),
         }),

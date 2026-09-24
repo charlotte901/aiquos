@@ -10,20 +10,22 @@ import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./work
 import { ADMIN_BANK_PATH, handleAdminBank } from "./worker/admin.js";
 import { setBankPersistence } from "./worker/bank-store.js";
 
-// Admin bank edits persist to a gitignored overrides file next to the worker.
-const bankOverridesPath = fileURLToPath(new URL("./worker/bank-overrides.json", import.meta.url));
+// Admin bank edits persist to a gitignored overrides file next to the worker —
+// one file per edition, so publishing to the 全量版 cannot disturb the 精选版.
+const bankOverridesPath = (edition) =>
+  fileURLToPath(new URL(`./worker/bank-overrides${edition === "A" ? "-full" : ""}.json`, import.meta.url));
 setBankPersistence({
-  load: () => {
+  load: (edition) => {
     try {
-      return readFileSync(bankOverridesPath, "utf8");
+      return readFileSync(bankOverridesPath(edition), "utf8");
     } catch {
       return null;
     }
   },
-  save: (raw) => writeFileSync(bankOverridesPath, raw),
-  clear: () => {
+  save: (raw, edition) => writeFileSync(bankOverridesPath(edition), raw),
+  clear: (edition) => {
     try {
-      unlinkSync(bankOverridesPath);
+      unlinkSync(bankOverridesPath(edition));
     } catch {
       // Nothing persisted: resetting to bundled is already complete.
     }
