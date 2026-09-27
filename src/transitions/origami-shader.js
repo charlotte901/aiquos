@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { createCardShadowTexture } from "./stamp-texture.js";
 
 /**
  * Scheme C: 3D Origami Accordion Unfold & Press.
@@ -17,7 +18,7 @@ function createSubPanelGeometry(w, h, uMin, uMax) {
   return geo;
 }
 
-export function createOrigamiTicket(frontTex, backTex, width = 706, height = 460) {
+export function createOrigamiTicket(frontTex, backTex, width = 706, height = 383) {
   const root = new THREE.Group();
   root.name = "origami-ticket-root";
 
@@ -34,6 +35,7 @@ export function createOrigamiTicket(frontTex, backTex, width = 706, height = 460
     metalness: 0.05,
     clearcoat: 0.6,
     side: THREE.DoubleSide,
+    toneMapped: false,
   };
 
   const frontMat = new THREE.MeshPhysicalMaterial({
@@ -84,6 +86,20 @@ export function createOrigamiTicket(frontTex, backTex, width = 706, height = 460
   shadowRight.position.set(0, 0, 0.005);
   rightHinge.add(shadowRight);
 
+  // Resting drop shadow under the whole ticket (the DOM card's grounding),
+  // fading in as the fold flattens.
+  const groundShadowMat = new THREE.MeshBasicMaterial({
+    map: createCardShadowTexture(),
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const groundShadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), groundShadowMat);
+  groundShadow.scale.set(totalW * 1.52, h * 1.73, 1);
+  groundShadow.position.z = -0.02;
+  root.add(groundShadow);
+
   return {
     root,
     frontMat,
@@ -122,6 +138,9 @@ export function createOrigamiTicket(frontTex, backTex, width = 706, height = 460
 
       const s = fromTransform.scale + (toTransform.scale - fromTransform.scale) * p;
       root.scale.set(s, s, s);
+
+      const settle = Math.min(1, Math.max(0, (p - 0.55) / 0.45));
+      groundShadowMat.opacity = settle * settle * 0.55;
     },
   };
 }

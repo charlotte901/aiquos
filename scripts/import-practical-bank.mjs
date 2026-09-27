@@ -99,34 +99,60 @@ function requirementsFor(fields, rubricProduct) {
 }
 
 /**
- * 任务参考图绑定。
+ * 任务参考图绑定 —— **只用于 10 题精选文档**。
  *
- * 键是**源文档题号**。用题号而不是关键词匹配：扩图题与海报题的题干里都有
- * "16:9"，按关键词匹配会把海报误判成扩图（实测确实发生了）。题号是文档里
- * 唯一稳定的锚点。
+ * 为什么必须限定文档：这三张图分别属于「秋季运动会海报」「竖屏转 16:9」
+ * 「水墨风格迁移」，它们**只存在于 10 题测试文档**里。80 题主文档的第 1/4/8
+ * 题是完全不同的内容（调 API、解析 JSON、算 Token），按题号硬套会把竖屏壁纸
+ * 挂到「JSON 解析」这种代码题上 —— 实测就是这个 bug，页面上出现了毫不相干的图。
+ *
+ * 匹配方式：用**题干特征词**而非题号。题号在两份文档里含义不同，不可移植；
+ * 题干特征（"竖屏"、"水墨"、"田径运动会"）才是这道题本身。
  *
  * role 决定前端展示位置与说明：
  *   reference  做题输入（原图 / 风格参考图）
  *   secondary  第二张输入（待处理的新照片）
  *   product    参考答案（供评分对照，不作为输入）
  */
-const IMAGE_BINDINGS = {
-  // 第 1 题：秋季运动会国潮海报 —— 只有成品参考
-  1: [
-    { role: "product", src: "/tasks/poster-example.png", label: "海报范例" },
-  ],
-  // 第 4 题：竖屏原图扩为 16:9 壁纸 —— 需要原图作为输入
-  4: [
-    { role: "reference", src: "/tasks/outpaint-source.jpg", label: "参考原图（竖屏）" },
-    { role: "product", src: "/tasks/outpaint-result.jpg", label: "扩图结果范例" },
-  ],
-  // 第 8 题：摄影原图转水墨插画 —— 风格图 + 待处理照片
-  8: [
-    { role: "reference", src: "/tasks/ink-style-reference.jpg", label: "参考风格图" },
-    { role: "secondary", src: "/tasks/ink-new-photo.jpg", label: "待处理的新照片" },
-    { role: "product", src: "/tasks/ink-example.jpg", label: "风格迁移结果范例" },
-  ],
-};
+const LITE_IMAGE_BINDINGS = [
+  {
+    // 秋季运动会国潮海报 —— 只有成品参考
+    match: /田径运动会.*海报|秋季田径运动会/,
+    assets: [{ role: "product", src: "/tasks/poster-example.png", label: "海报范例" }],
+  },
+  {
+    // 竖屏原图扩为 16:9 壁纸 —— 需要原图作为输入
+    match: /竖屏.*(壁纸|16:9)|16:9.*竖屏/,
+    assets: [
+      { role: "reference", src: "/tasks/outpaint-source.jpg", label: "参考原图（竖屏）" },
+      { role: "product", src: "/tasks/outpaint-result.jpg", label: "扩图结果范例" },
+    ],
+  },
+  {
+    // 摄影原图转水墨插画 —— 风格图 + 待处理照片
+    match: /水墨|扁平插画/,
+    assets: [
+      { role: "reference", src: "/tasks/ink-style-reference.jpg", label: "参考风格图" },
+      { role: "secondary", src: "/tasks/ink-new-photo.jpg", label: "待处理的新照片" },
+      { role: "product", src: "/tasks/ink-example.jpg", label: "风格迁移结果范例" },
+    ],
+  },
+];
+
+/**
+ * 找出这道题该挂哪些参考图。
+ *
+ * @param {object} task 解析出的任务
+ * @param {string} origin "full"（80 题主文档）或 "lite"（10 题测试文档）
+ * @returns {Array|undefined} 素材列表；主文档一律返回 undefined（它没有配图）
+ */
+function assetsFor(task, origin) {
+  // 80 题主文档不含这三道配图题：误挂会在页面上出现与题面无关的图片。
+  if (origin !== "lite") return undefined;
+  const haystack = [task.title, ...(task.paragraphs ?? []).map((p) => (typeof p === "string" ? p : p?.text ?? ""))].join("\n");
+  const hit = LITE_IMAGE_BINDINGS.find((entry) => entry.match.test(haystack));
+  return hit?.assets;
+}
 
 function convert(task, origin, index) {
   const fields = extractFields(task.paragraphs);
@@ -151,7 +177,7 @@ function convert(task, origin, index) {
     minutes: task.minutes,
     outputType,
   };
-  const assets = IMAGE_BINDINGS[task.number];
+  const assets = assetsFor(task, origin);
   if (assets) record.assets = assets;
   return record;
 }

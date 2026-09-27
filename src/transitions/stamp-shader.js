@@ -44,13 +44,14 @@ export const STAMP_FRAGMENT_SHADER = /* glsl */ `
   uniform vec2 uResolution;
   uniform float uPerforationRadius;
   uniform float uPerforationSpacing;
+  uniform float uTearRadius;
 
   varying vec2 vUv;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
 
   // Signed distance to edge perforation circles
-  float stampPerforation(vec2 uv) {
+  float stampPerforation(vec2 uv, float edgeFade) {
     vec2 pixelPos = uv * uResolution;
 
     // Edges
@@ -59,7 +60,7 @@ export const STAMP_FRAGMENT_SHADER = /* glsl */ `
     float dTop = pixelPos.y;
     float dBottom = uResolution.y - pixelPos.y;
 
-    float r = uPerforationRadius;
+    float r = uPerforationRadius * edgeFade;
     float spacing = uPerforationSpacing;
 
     // Horizontal edges
@@ -72,16 +73,24 @@ export const STAMP_FRAGMENT_SHADER = /* glsl */ `
     float holeLeft = length(vec2(dLeft, modY)) - r;
     float holeRight = length(vec2(dRight, modY)) - r;
 
-    // Tear line punch notches at split line (uv.x = 0.72)
+    // Tear line punch holes at the split line (uv.x = 0.72): 26px DOM discs
+    // centred ON the top/bottom edges, so r = 13 and they never fade — the
+    // real card keeps them at rest.
     float splitX = uResolution.x * 0.72;
-    float tearNotchTop = length(vec2(pixelPos.x - splitX, dTop)) - r * 1.4;
-    float tearNotchBottom = length(vec2(pixelPos.x - splitX, dBottom)) - r * 1.4;
+    float tearNotchTop = length(vec2(pixelPos.x - splitX, dTop)) - uTearRadius;
+    float tearNotchBottom = length(vec2(pixelPos.x - splitX, dBottom)) - uTearRadius;
 
     return min(min(min(holeTop, holeBottom), min(holeLeft, holeRight)), min(tearNotchTop, tearNotchBottom));
   }
 
   void main() {
     vec4 texColor = texture2D(uMap, vUv);
+
+    // The stamp is a POSTAGE stamp mid-air (edge teeth + foil sheen) but the
+    // DOM ticket it lands as has neither: both retire before the freeze so
+    // the final frame is the real card.
+    float edgeFade = 1.0 - smoothstep(0.72, 0.95, uProgress);
+    float holoFade = 1.0 - smoothstep(0.55, 0.85, uProgress);
 
     // Fresnel view angle for iridescent foil sheen
     vec3 viewDir = normalize(vViewPosition);
@@ -91,11 +100,11 @@ export const STAMP_FRAGMENT_SHADER = /* glsl */ `
     // Sweeping holographic rainbow band
     float sweep = vUv.x * 3.5 + vUv.y * 1.8 - uProgress * 5.0;
     vec3 rainbow = 0.5 + 0.5 * cos(sweep + vec3(0.0, 2.0, 4.0));
-    vec3 holo = rainbow * fresnel * uHoloIntensity;
+    vec3 holo = rainbow * fresnel * uHoloIntensity * holoFade;
 
     // Perforation holes are anti-aliased alpha cutouts (no hard discard):
     // a 3px smoothstep rim keeps the punched edges as soft as the card art.
-    float dist = stampPerforation(vUv);
+    float dist = stampPerforation(vUv, edgeFade);
     float hole = 1.0 - smoothstep(-1.5, 1.5, dist);
 
     // Canvas edge pixels carry partial alpha with black RGB (premultiplied
@@ -109,7 +118,7 @@ export const STAMP_FRAGMENT_SHADER = /* glsl */ `
   }
 `;
 
-export function createStampMaterial(texture, width = 706, height = 460) {
+export function createStampMaterial(texture, width = 706, height = 383) {
   return new THREE.ShaderMaterial({
     uniforms: {
       uMap: { value: texture },
@@ -121,6 +130,7 @@ export function createStampMaterial(texture, width = 706, height = 460) {
       uResolution: { value: new THREE.Vector2(width, height) },
       uPerforationRadius: { value: 4.0 },
       uPerforationSpacing: { value: 19.0 },
+      uTearRadius: { value: 13.0 },
     },
     vertexShader: STAMP_VERTEX_SHADER,
     fragmentShader: STAMP_FRAGMENT_SHADER,

@@ -5,10 +5,12 @@ import {
   createTicketBackTexture,
   createLoginBackdropBaseTexture,
   createLoginBackdropDecoTexture,
+  createCardShadowTexture,
 } from "./stamp-texture.js";
 import { createStampMaterial } from "./stamp-shader.js";
 import { createEjectCard } from "./cube-eject-shader.js";
 import { createOrigamiTicket } from "./origami-shader.js";
+import { measureLoginScene } from "./measure-login.js";
 import "./login-transition.css";
 
 const STORAGE_SCHEME_KEY = "aiquos.login-scheme";
@@ -44,30 +46,39 @@ function flightCurve(t) {
  *
  * 1. The ticket departs from the REAL cube on stage (its live rect is
  *    measured each run), so the flight reads as "the cube issued a pass".
- * 2. A full-cover backdrop veil — a replica of the login page's pink field,
- *    sheen, blurred PLAYGROUND word and grain — fades up beneath the flying
- *    ticket and fully covers home before the views swap, so there is never a
- *    hard background cut in either direction.
- * 3. On arrival the veil is pixel-indistinguishable from the mounted login
- *    screen and the ticket texture is a 1:1 replica of the DOM composition,
- *    so the WebGL → DOM handoff is masked down to the impact shudder.
+ * 2. A full-cover backdrop veil — a 1:1 screen-scale replica of the login
+ *    page's pink field, sheen, blurred PLAYGROUND word and grain — fades up
+ *    beneath the flying ticket and fully covers home before the views swap.
+ * 3. The ticket's front face is painted from LIVE MEASUREMENTS of the real
+ *    `.login-composition` (the DOM card is content-height ≈706×383, not the
+ *    706×480 the flight used to assume), and the shader retires its
+ *    mid-air extras (edge perforations, foil sheen) before landing.
+ * 4. On arrival the flight FREEZES on its final frame — which is now the
+ *    spitting image of the mounted page — the real DOM fades in beneath the
+ *    held frame, and only then does the overlay release. No hard cut either
+ *    direction.
  */
 export function LoginTransitionOverlay({
   active = false,
   reverse = false,
   scheme = "A",
   onComplete,
+  onRelease,
 }) {
   const containerRef = useRef(null);
   const [stampImpact, setStampImpact] = useState(false);
+  const [releasing, setReleasing] = useState(false);
+  const [blastRect, setBlastRect] = useState(null);
 
   useEffect(() => {
     if (!active) {
       setStampImpact(false);
+      setReleasing(false);
+      setBlastRect(null);
       return undefined;
     }
-    const container = containerRef.current;
-    if (!container) return undefined;
+    const viewport = containerRef.current;
+    if (!viewport) return undefined;
 
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -88,7 +99,7 @@ export function LoginTransitionOverlay({
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.22;
-    container.appendChild(renderer.domElement);
+    viewport.appendChild(renderer.domElement);
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.35));
     const key = new THREE.DirectionalLight(0xffffff, 2.0);
@@ -111,31 +122,54 @@ export function LoginTransitionOverlay({
     };
     const pxLenToWorldAt = (len, z) => len * (visibleAt(camDist - z) / height);
 
+    // ── Live measurement of the real login composition ─────────────────────
+    // The panel is always mounted but hidden; one synchronous unhide/measure/
+    // rehide gives pixel-true geometry for whatever viewport is in effect.
+    const m = measureLoginScene() ?? {
+      width: Math.min(706, width * 0.94),
+      height: Math.min(706, width * 0.94) * (383 / 706),
+      splitX: Math.min(706, width * 0.94) - 196,
+      stubHorizontal: false,
+      center: { x: width / 2, y: height / 2 },
+      fields: [],
+      texts: {},
+    };
+
     // ── Backdrop veil: the login field, faded over home ────────────────────
-    // Two staggered layers: the pink field covers home before the view swap,
-    // while the PLAYGROUND word + grain only emerge once home has dissolved,
-    // so the two heroes never fight mid-flight.
+    // Textures are drawn at 1:1 screen scale and the planes are sized to the
+    // exact frustum at their depth, so texture px = screen px and the DOM
+    // swap underneath is truly seamless. Two staggered layers: the pink
+    // field covers home before the view swap, while the PLAYGROUND word only
+    // emerges once home has dissolved.
     const bgZ = -2.4;
-    const bgVisH = visibleAt(camDist - bgZ);
-    const bgVisW = bgVisH * (width / height);
+    // m.word is measured relative to the card; the veil canvas is the whole
+    // screen, so re-anchor it to the card's on-screen centre.
+    const wordScreen = m.word
+      ? {
+          ...m.word,
+          cx: m.center.x + (m.word.cx - m.width / 2),
+          cy: m.center.y + (m.word.cy - m.height / 2),
+        }
+      : null;
     const makeVeil = (tex, z) => {
-      const aspect = tex.image.width / tex.image.height;
-      const cover = Math.max(bgVisW / aspect, bgVisH); // CSS cover fit
+      const visH = visibleAt(camDist - z);
+      const visW = visH * (width / height);
       const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(cover * aspect, cover),
+        new THREE.PlaneGeometry(visW, visH),
         new THREE.MeshBasicMaterial({
           map: tex,
           transparent: true,
           opacity: reverse ? 1 : 0,
           depthWrite: false,
+          toneMapped: false, // the veil must equal the DOM wall, not ACES of it
         }),
       );
       mesh.position.z = z;
       scene.add(mesh);
       return mesh;
     };
-    const bgBase = makeVeil(createLoginBackdropBaseTexture(), bgZ);
-    const bgDeco = makeVeil(createLoginBackdropDecoTexture(), bgZ + 0.02);
+    const bgBase = makeVeil(createLoginBackdropBaseTexture(width, height), bgZ);
+    const bgDeco = makeVeil(createLoginBackdropDecoTexture(width, height, wordScreen), bgZ + 0.02);
 
     // ── Anchor: the ticket departs from / returns into the live cube ───────
     let anchorRect = null;
@@ -150,10 +184,10 @@ export function LoginTransitionOverlay({
       };
     }
 
-    // ── Target: the centred DOM login composition ───────────────────────────
-    const targetW = Math.min(706, width * 0.94);
-    const targetH = targetW * (480 / 706);
-    const toPos = pxToWorldAt(width / 2, height / 2, 0);
+    // ── Target: the measured DOM login composition ─────────────────────────
+    const targetW = m.width;
+    const targetH = m.height;
+    const toPos = pxToWorldAt(m.center.x, m.center.y, 0);
     const toTransform = {
       x: toPos.x,
       y: toPos.y,
@@ -181,16 +215,36 @@ export function LoginTransitionOverlay({
     };
 
     // ── Scheme object ──────────────────────────────────────────────────────
-    const frontTex = createTicketFrontTexture();
+    // Scheme A's hand-written shader samples raw (no three.js decode/encode),
+    // so its texture must be un-tagged or the card renders washed out.
+    const frontTex = createTicketFrontTexture(m, { rawColor: scheme === "A" });
     const backTex = createTicketBackTexture();
     let animObject = null;
 
+    const makeGroundShadow = () => {
+      const mat = new THREE.MeshBasicMaterial({
+        map: createCardShadowTexture(),
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        toneMapped: false,
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+      mesh.scale.set(2.4 * 1.52, 2.4 * (targetH / targetW) * 1.73, 1);
+      return { mesh, mat };
+    };
+
     if (scheme === "A") {
-      const baseH = 2.4 * (480 / 706);
+      const baseH = 2.4 * (targetH / targetW);
       const geo = new THREE.PlaneGeometry(2.4, baseH, 36, 24);
       const mat = createStampMaterial(frontTex, targetW, targetH);
       const mesh = new THREE.Mesh(geo, mat);
-      scene.add(mesh);
+      const ground = makeGroundShadow();
+      ground.mesh.position.z = -0.015;
+      const group = new THREE.Group();
+      group.add(ground.mesh);
+      group.add(mesh);
+      scene.add(group);
 
       animObject = {
         update(p, speed, dirX) {
@@ -199,23 +253,28 @@ export function LoginTransitionOverlay({
           mat.uniforms.uDirection.value.set(dirX, 0);
 
           const arcZ = Math.sin(Math.min(1, p) * Math.PI) * 1.5;
-          mesh.position.set(
+          group.position.set(
             fromTransform.x + (toTransform.x - fromTransform.x) * p,
             fromTransform.y + (toTransform.y - fromTransform.y) * p,
             fromTransform.z + (toTransform.z - fromTransform.z) * p + arcZ,
           );
-          mesh.rotation.set(
+          group.rotation.set(
             fromTransform.rotX + (toTransform.rotX - fromTransform.rotX) * p,
             fromTransform.rotY + (toTransform.rotY - fromTransform.rotY) * p,
             fromTransform.rotZ + (toTransform.rotZ - fromTransform.rotZ) * p,
           );
           // Velocity stretch: the paper elongates a hair along travel.
           const s = fromTransform.scale + (toTransform.scale - fromTransform.scale) * p;
-          mesh.scale.set(s * (1 + speed * 0.0022), s, s);
+          group.scale.set(s * (1 + speed * 0.0022), s, s);
+
+          const settle = Math.min(1, Math.max(0, (p - 0.55) / 0.45));
+          ground.mat.opacity = settle * settle * 0.55;
         },
         dispose() {
           geo.dispose();
           mat.dispose();
+          ground.mat.map?.dispose();
+          ground.mat.dispose();
         },
       };
     } else if (scheme === "B") {
@@ -240,6 +299,22 @@ export function LoginTransitionOverlay({
       };
     }
 
+    // The impact blast is anchored to the real card rect, and its ADMIT ONE
+    // seal stamps down exactly onto the seal PRINTED on the ticket.
+    const stampScreen = m.stubChildren?.stamp
+      ? {
+          x: m.center.x + (m.stubChildren.stamp.cx - m.width / 2),
+          y: m.center.y + (m.stubChildren.stamp.cy - m.height / 2),
+        }
+      : null;
+    setBlastRect({
+      x: m.center.x,
+      y: m.center.y,
+      w: targetW,
+      h: targetH,
+      seal: stampScreen,
+    });
+
     // ── Flight loop ────────────────────────────────────────────────────────
     const duration = 820;
     const freezeParam = new URLSearchParams(location.search).get("flight-freeze");
@@ -248,6 +323,7 @@ export function LoginTransitionOverlay({
 
     const startTime = performance.now();
     let animId = 0;
+    let releaseTimer = 0;
     let prevP = reverse ? 1 : 0;
     let completed = false;
 
@@ -269,9 +345,8 @@ export function LoginTransitionOverlay({
         : flightCurve(Math.min(1, rawT));
 
       // Veils: the pink field covers home early and fully before the view
-      // swap; the deco layer (PLAYGROUND word + grain) only emerges in the
-      // flight's back half, so the homepage hero and login hero never
-      // overlap mid-dissolve.
+      // swap; the PLAYGROUND word only emerges in the flight's back half, so
+      // the homepage hero and login hero never overlap mid-dissolve.
       const baseT = reverse
         ? Math.min(1, Math.max(0, rawT / 0.62))
         : Math.min(1, rawT / 0.45);
@@ -295,15 +370,25 @@ export function LoginTransitionOverlay({
         animId = requestAnimationFrame(step);
       } else if (!completed) {
         completed = true;
+        // The DOM page mounts beneath the held final frame (the parent swaps
+        // the view synchronously in onComplete); then the frozen flight
+        // dissolves into it and the overlay releases. A short timeout (not
+        // rAF — throttled to zero in hidden tabs) lets the swapped frame
+        // present before the fade starts.
         onComplete?.();
+        releaseTimer = window.setTimeout(() => {
+          setReleasing(true);
+          releaseTimer = window.setTimeout(() => onRelease?.(), 480);
+        }, 60);
       }
     };
     animId = requestAnimationFrame(step);
 
     return () => {
       cancelAnimationFrame(animId);
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
+      window.clearTimeout(releaseTimer);
+      if (viewport.contains(renderer.domElement)) {
+        viewport.removeChild(renderer.domElement);
       }
       animObject?.dispose?.();
       for (const mesh of [bgBase, bgDeco]) {
@@ -316,17 +401,32 @@ export function LoginTransitionOverlay({
       renderer.dispose();
       scene.clear();
     };
-  }, [active, reverse, scheme, onComplete]);
+  }, [active, reverse, scheme, onComplete, onRelease]);
 
   if (!active) return null;
 
   return (
-    <div className={`login-transition-viewport${stampImpact ? " has-impact" : ""}`}>
-      <div className="login-transition-canvas" ref={containerRef} />
-      {stampImpact && (
-        <div className="transition-stamp-blast" aria-hidden="true">
+    <div
+      className={`login-transition-viewport${stampImpact ? " has-impact" : ""}${releasing ? " is-releasing" : ""}`}
+      ref={containerRef}
+    >
+      {blastRect && stampImpact && (
+        <div
+          className="transition-stamp-blast"
+          aria-hidden="true"
+          style={{ left: blastRect.x, top: blastRect.y, width: blastRect.w, height: blastRect.h }}
+        >
           <div className="stamp-blast-ring" />
-          <div className="stamp-blast-seal">ADMIT ONE</div>
+          <div
+            className="stamp-blast-seal"
+            style={
+              blastRect.seal
+                ? { left: blastRect.seal.x - 44, top: blastRect.seal.y - 44, right: "auto", bottom: "auto" }
+                : undefined
+            }
+          >
+            ADMIT ONE
+          </div>
         </div>
       )}
     </div>

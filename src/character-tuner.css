@@ -1,0 +1,108 @@
+/* 角色微调面板（开发期辅助，?tune=1 时出现） */
+
+.ctune-dock {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 4000;
+  width: 262px;
+  padding: 12px 13px 11px;
+  border-radius: 15px;
+  background: rgba(18, 20, 28, 0.93);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  color: #eef1f6;
+  font: 500 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  user-select: none;
+}
+
+.ctune-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+.ctune-head strong { font-size: 13px; letter-spacing: .02em; }
+.ctune-head span { font-size: 10.5px; color: #98a2b3; }
+
+.ctune-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.ctune-tabs button {
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #c7cfdb;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+.ctune-tabs button:hover { background: rgba(255, 255, 255, 0.11); }
+.ctune-tabs button.is-active {
+  background: #f568a3;
+  border-color: #f568a3;
+  color: #fff;
+  font-weight: 700;
+}
+
+.ctune-row {
+  display: grid;
+  grid-template-columns: 34px 1fr 42px;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+.ctune-row > span { font-size: 11.5px; color: #aeb8c6; }
+.ctune-row output {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  text-align: right;
+  color: #fff;
+}
+.ctune-row input[type="range"] {
+  width: 100%;
+  height: 3px;
+  accent-color: #f568a3;
+  cursor: pointer;
+}
+
+.ctune-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px;
+  margin-top: 10px;
+}
+.ctune-actions button {
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: #f568a3;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ctune-actions button.is-ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #c7cfdb;
+  font-weight: 500;
+}
+
+.ctune-out {
+  max-height: 108px;
+  margin: 9px 0 0;
+  padding: 8px 9px;
+  overflow: auto;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.42);
+  color: #b9d4c6;
+  font: 500 10px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  user-select: text;
+}

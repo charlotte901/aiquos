@@ -6,15 +6,19 @@ import {
   ChatCircleDots,
   ClipboardText,
   CircleNotch,
+  ImageSquare,
   ListChecks,
   PaperPlaneTilt,
   Sparkle,
   Target,
   Timer,
+  X,
 } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
 import {
+  COMPREHENSIVE_LEVELS,
   COMPREHENSIVE_TYPE_LABELS,
+  getComprehensiveLevel,
   getReaction,
   judgeComprehensiveAnswer,
 } from "./comprehensive-quiz";
@@ -39,55 +43,104 @@ import { generateArkImage, streamDeepSeek } from "./deepseek";
 import {
   INTERVIEW_LADDER,
   INTERVIEWER,
+  interviewChatMessages,
   interviewClosing,
-  interviewMessages,
   interviewOpening,
+  interviewScoreMessages,
   parseInterviewerJson,
   planDelivery,
 } from "./interviewer";
 import { heuristicSlotCredit } from "./interview-scoring";
+import { scoreInterview } from "./interview-scoring-model";
+import { parseScoreJson } from "./interview-score-parse";
 import { onEnterSubmit } from "./ime";
 import { MarkdownLite } from "./markdown-lite";
+import { deliveryRequirements, scoringSchemeRows } from "./practical-scoring";
 import { Task3DCharacter } from "./Task3DCharacter";
+import { CharacterTuner } from "./character-tuner";
+import TUNING_DEFAULTS from "./character-tuning.json";
+import { useStageConfetti } from "./use-stage-confetti";
 import { DIMENSIONS as SCORING_DIMENSIONS } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
 const GUIDES = "/assets/crops/assessment-guides-crop.png";
-// 对话线程的本地存档：刷新后恢复完整采访记录并跳过开场白，否则线程随内存
-// 丢失，学员面对的是一片空白且进度显示与实际不符。
-const INTERVIEW_KEY = "aiquos.interview-thread.v1";
 
-function readInterviewState() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(INTERVIEW_KEY) ?? "null");
-    if (!raw || !Array.isArray(raw.thread)) return null;
-    // 空记录不是可恢复的会话：丢弃它，让学员从干净的开场开始，
-    // 而不是恢复出一个「已结束但没有内容」的界面。
-    if (raw.thread.length === 0) {
-      localStorage.removeItem(INTERVIEW_KEY);
-      return null;
-    }
-    return raw;
-  } catch {
-    return null;
-  }
+/**
+ * 任务素材里，哪些是**学员该看到的输入**。
+ *
+ * 题库的 assets 有两种角色：
+ *   reference / source / secondary —— 完成任务的输入材料（原图、风格参考）
+ *   product                       —— 标准答案的产出范例（如「扩图结果范例」）
+ *
+ * product 是评分对标用的，绝不能给学员看：那等于把答案摊开，照着抄即可。
+ * 之前两处渲染都无差别遍历所有 assets，把范例图与参考图并排显示了出来。
+ */
+function inputAssets(task) {
+  const list = Array.isArray(task?.assets) ? task.assets : [];
+  return list.filter((asset) => asset && asset.src && asset.role !== "product");
 }
 
-function writeInterviewState(state) {
+/** 素材的图注与无障碍名称（label 优先，其次按角色推断）。 */
+function assetLabel(asset) {
+  if (asset?.label) return asset.label;
+  if (asset?.note) return asset.note;
+  if (asset?.role === "reference") return "参考图";
+  if (asset?.role === "source") return "待处理原图";
+  if (asset?.role === "secondary") return "补充素材";
+  return "任务素材图";
+}
+
+// 对话线程不做本地存档。
+//
+// 之前每次进入都会恢复上一次的对话线程，并补一句「我们接着刚才的聊——继续吧。」
+// ——学员一进来面对的是满屏历史气泡，而且反复进入会不断追加这句衔接语，同一
+// 句话叠出七八条（实测截图就是这样）。现在每次进入都是全新采访：开场两句，
+// 然后直接进入第一题。
+//
+// 代价是中途刷新会重来，这是刻意的：面试类对话本身是一次完整的 5 分钟过程，
+// 刷新后续上一段断裂的历史，比重新开始更让人困惑。
+const INTERVIEW_KEY = "aiquos.interview-thread.v1";
+
+/** 清掉历史版本可能留下的存档，避免旧数据在新逻辑下被误读。 */
+function clearInterviewState() {
   try {
-    if (state === null) localStorage.removeItem(INTERVIEW_KEY);
-    else localStorage.setItem(INTERVIEW_KEY, JSON.stringify(state));
+    localStorage.removeItem(INTERVIEW_KEY);
   } catch {
-    // 存储不可用时退化为单次会话，不影响作答。
+    /* 存储不可用时无从清理 */
   }
 }
 const DIMENSION_KEYS = SCORING_DIMENSIONS.map((dimension) => dimension.key);
 const MAX_GENERATIONS = 3;
 
-async function chatOnce({ messages }) {
+// 双轨采样温度：聊天轨要活（措辞多变、口癖、接话自然），打分轨要稳
+// （同一段回答两次评分不该抖动）。worker 端会按请求钳制到 0–2。
+//
+// 打分温度取 0：由 30 份对话 × 10 个温度点的实测（每点 5–10 次重复）确定。
+// 非思考模式下温度真实生效，T=0 的 ICC=0.998、完全一致率 73%、MDC95=1.39 分；
+// 温度升到 1.0 时 ICC 掉到 0.953、一致率 3%、MDC95 涨到 6.21 分。
+// 0–0.08 是平台区（ICC ≥ 0.9965），超过 0.1 明显恶化。
+const CHAT_TEMPERATURE = 0.85;
+const GRADING_TEMPERATURE = 0;
+
+/**
+ * 打分轨必须**关闭思考模式**。
+ *
+ * 官方文档：「Thinking mode does not support the temperature ... setting
+ * these parameters will not trigger an error but will also have no effect.」
+ * 即思考模式下温度被静默忽略 —— 不关的话，上面设的 GRADING_TEMPERATURE
+ * 完全不起作用，打分退回服务端默认随机性。
+ */
+const GRADING_OPTIONS = { temperature: GRADING_TEMPERATURE, thinking: { type: "disabled" } };
+
+async function chatOnce({ messages, temperature, thinking }) {
   const response = await fetch("/api/deepseek/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ messages, stream: false }),
+    body: JSON.stringify({
+      messages,
+      stream: false,
+      ...(temperature != null ? { temperature } : {}),
+      ...(thinking ? { thinking } : {}),
+    }),
   });
   if (!response.ok) {
     const detail = await response.json().catch(() => null);
@@ -318,9 +371,134 @@ function TaskAction({ disabled, onClick, label, variant = "" }) {
   return <button type="button" className={`task-action ${variant}`.trim()} disabled={disabled} onClick={onClick}>{label}<ArrowRight weight="bold" /></button>;
 }
 
+/** 数字滚动：让"答了 N 题"这件事有到达感，而不是静态数字。 */
+function CountUp({ value, duration = 720 }) {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(value);
+      return undefined;
+    }
+    let frame = 0;
+    const start = performance.now();
+    // easeOutExpo：起手快、落点稳，适合"计数到某一值"这种收束型动画。
+    const ease = (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      setShown(Math.round(value * ease(t)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, duration]);
+  return <>{shown}</>;
+}
+
+/**
+ * 关卡完成页。
+ *
+ * 讲三件事：这一关走完了（环形勾 + 计数 + 彩带）、刚刚采到什么（六维覆盖）、
+ * 下一步去哪（下一关名字写在按钮左边）。
+ *
+ * 不报正确率与答对数——这是阶段性小结，提前摊开成绩会让学员据此推断最终
+ * 结果（本项目"进行中不给分"的一贯做法），总分与等级留到觉醒报告。
+ */
+function StageComplete({
+  stage,
+  answered,
+  coveredCount,
+  dimCounts,
+  seconds,
+  remainingMs,
+  stopReason,
+  thisLevel,
+  nextLevel,
+  isFinalStage,
+  onContinue,
+}) {
+  // 完成标记固定用绿，不跟随关卡主题色：「完成」是全局语义，用关卡色会让
+  // 每一关的完成页看起来像不同状态。彩带同色系，与环形勾一致。
+  useStageConfetti(true, "#34c759");
+  return (
+    <div className="task-body objective-task comprehensive-task" data-phase="summary">
+      <div className="stage-complete">
+        <div className="stage-complete-badge">
+          <svg viewBox="0 0 120 120" className="stage-complete-ring" aria-hidden="true">
+            <circle className="ring-track" cx="60" cy="60" r="52" />
+            <circle className="ring-fill" cx="60" cy="60" r="52" />
+          </svg>
+          <div className="stage-complete-figure">
+            <span className="stage-complete-check" aria-hidden="true"><Check size={26} weight="bold" /></span>
+            <b><CountUp value={answered} /></b>
+            <i>题</i>
+          </div>
+        </div>
+
+        <div className="stage-complete-copy">
+          <p className="stage-complete-kicker">第 {stage} 关 · {thisLevel.short}</p>
+          <h2>本关已完成</h2>
+          <p className="stage-complete-lead">
+            {STOP_REASON_TEXT[stopReason] ?? "本阶段作答完成"}。
+            {isFinalStage ? "五关全部走完，成绩单已经准备好了。" : `接下来进入第 ${stage + 1} 关。`}
+          </p>
+        </div>
+
+        <section className="stage-complete-dims" aria-label="本关维度覆盖">
+          <p className="stage-complete-section">本关覆盖的维度</p>
+          <ul>
+            {SCORING_DIMENSIONS.map((dimension, index) => {
+              const count = dimCounts[dimension.key] ?? 0;
+              return (
+                <li
+                  key={dimension.key}
+                  className={count > 0 ? "is-covered" : "is-open"}
+                  style={{ "--i": index }}
+                >
+                  <span>{dimension.short}</span>
+                  <b>{count > 0 ? `${count} 题` : "待补"}</b>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <dl className="stage-complete-stats">
+          <div>
+            <dt>本关用时</dt>
+            <dd>{formatClock(seconds * 1000 - remainingMs)}</dd>
+          </div>
+          <div>
+            <dt>覆盖维度</dt>
+            <dd>{coveredCount} / {SCORING_DIMENSIONS.length}</dd>
+          </div>
+          <div>
+            <dt>题目难度</dt>
+            <dd>随表现实时调整</dd>
+          </div>
+        </dl>
+
+        <footer className="stage-complete-next">
+          <div className="stage-complete-next-copy">
+            <span>{isFinalStage ? "全部关卡完成" : "下一关"}</span>
+            <strong>
+              {isFinalStage ? "查看智核觉醒报告" : `${nextLevel?.name ?? ""} · ${nextLevel?.guardian ?? ""}`}
+            </strong>
+          </div>
+          <button type="button" className="duo-key is-green" onClick={onContinue}>
+            {isFinalStage ? "查看报告" : "完成本关"}
+            <ArrowRight weight="bold" />
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 // ── 对话式测评：拟人化采访 ────────────────────────────────────────────────
 // 采访者「苏记者」按题梯提问，回复经投递引擎分段连发、模拟打字节奏；
 // 每轮回答由 LLM 按评分标准打分（离线时降级为启发式），低分追问一次。
+// 分数由 src/interview-scoring-model.js 折算成六维能力分（60–100），
+// 通过 onInterviewScore 上抛；对话通道不再向客观题的 IRT 模型塞证据。
 function InterviewPhase({
   hasStory,
   story,
@@ -328,29 +506,25 @@ function InterviewPhase({
   seconds = PHASE_SECONDS,
   onComplete,
   onCharacterFeedback,
-  onExchangeEvidence = null,
+  onInterviewScore = null,
 }) {
-  const restored = useRef(readInterviewState());
-  const resumed = Boolean(restored.current && restored.current.thread.length > 0);
-  const [phase, setPhase] = useState(hasStory && !resumed ? "opening" : "starting");
-  const [thread, setThread] = useState(() => restored.current?.thread ?? []);
+  // 每次进入都是全新采访：不读存档、不恢复线程、不补衔接语。
+  // 进组件时顺手清掉旧版本可能留下的存档。
+  useEffect(() => { clearInterviewState(); }, []);
+  const [phase, setPhase] = useState(hasStory ? "opening" : "starting");
+  const [thread, setThread] = useState([]);
   const [draft, setDraft] = useState("");
-  const [slotIndex, setSlotIndex] = useState(() => restored.current?.slotIndex ?? 0);
-  const [followUsed, setFollowUsed] = useState(() => restored.current?.followUsed ?? 0);
-  // 已答轮数直接从会话记录派生（user 消息条数）。之前独立维护一个计数器，
-  // 刷新恢复后会出现「共 0 轮回答」与实际对话条数不符的情况。
+  const [slotIndex, setSlotIndex] = useState(0);
+  const [followUsed, setFollowUsed] = useState(0);
+  // 已答轮数从会话记录派生（user 消息条数），不另设计数器——
+  // 两个来源会在恢复/清空时不一致。
   const derivedExchanges = thread.filter((item) => item.role === "user").length;
   const [exchangeCount, setExchangeCount] = useState(() => derivedExchanges);
   const [judging, setIsJudging] = useState(false);
   const [interviewerBusy, setInterviewerBusy] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [credits, setCredits] = useState(() => restored.current?.credits ?? []);
-  // 只有会话记录确实存在时才恢复"已结束"状态。
-  // 否则一个空会话（存档残留但对话已被清空）会直接显示"采访已结束"，
-  // 学员看到的是一个没有内容、也无法作答的死页面。
-  const [summaryReady, setSummaryReady] = useState(
-    () => Boolean(restored.current?.summaryReady) && (restored.current?.thread?.length ?? 0) > 0,
-  );
+  const [credits, setCredits] = useState([]);
+  const [summaryReady, setSummaryReady] = useState(false);
   const [error, setError] = useState("");
   const threadNode = useRef(null);
   const follow = useRef(true);
@@ -386,6 +560,15 @@ function InterviewPhase({
     return () => window.clearTimeout(guard);
   }, [interviewerBusy]);
 
+  // 同样的兜底给 judging：send() 管道（模型调用 + 打字投递）若因任何原因
+  // 悬挂（弱网、隐藏标签页定时器节流、上游挂起），「正在斟酌」不能永久
+  // 占住输入框。25s 覆盖最慢的正常往返仍留有余量。
+  useEffect(() => {
+    if (!judging) return undefined;
+    const guard = window.setTimeout(() => setIsJudging(false), 25000);
+    return () => window.clearTimeout(guard);
+  }, [judging]);
+
   useEffect(() => () => {
     timersRef.current.forEach((clear) => clear());
     timersRef.current = [];
@@ -394,21 +577,8 @@ function InterviewPhase({
   // 会话记录变化后同步已答轮数，确保小结里的数字与实际对话一致。
   useEffect(() => {
     setExchangeCount(derivedExchanges);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [derivedExchanges]);
-
-  // 采访状态存档：thread/slot/credits 变化即写盘，供刷新与掉落恢复。
-  useEffect(() => {
-    if (thread.length === 0 && !summaryReady) return;
-    writeInterviewState({
-      thread,
-      slotIndex,
-      followUsed,
-      exchangeCount,
-      credits,
-      summaryReady,
-    });
-  }, [thread, slotIndex, followUsed, exchangeCount, credits, summaryReady]);
 
   useEffect(() => {
     const node = threadNode.current;
@@ -438,9 +608,14 @@ function InterviewPhase({
   }
 
   // 逐字投递一段消息：气泡先以「正在输入」出现，再按人设速度逐字浮现。
+  // 更新按气泡自身的 uid 定位而不是「数组最后一项」：打分轨、角色反馈等
+  // 并发 setState 都可能往线程里追加条目，按位置更新会把打字内容写进
+  // 别人的气泡（实测出现过开场白写进学员气泡的串台）。
+  const bubbleSeqRef = useRef(0);
   function typeSegment(segment) {
     return new Promise((resolve) => {
-      setThread((items) => [...items, { role: "assistant", content: "", typing: true, sticker: segment.sticker }]);
+      const uid = `b${(bubbleSeqRef.current += 1)}`;
+      setThread((items) => [...items, { uid, role: "assistant", content: "", typing: true }]);
       const chars = [...segment.text];
       const budget = Math.min(segment.typingMs, 1500);
       const step = Math.max(2, Math.ceil(chars.length / Math.max(1, Math.round(budget / 45))));
@@ -448,10 +623,10 @@ function InterviewPhase({
       const interval = window.setInterval(() => {
         index = Math.min(chars.length, index + step);
         const slice = chars.slice(0, index).join("");
-        setThread((items) => items.map((item, position) => (position === items.length - 1 ? { ...item, content: slice } : item)));
+        setThread((items) => items.map((item) => (item.uid === uid ? { ...item, content: slice } : item)));
         if (index >= chars.length) {
           window.clearInterval(interval);
-          setThread((items) => items.map((item, position) => (position === items.length - 1 ? { ...item, typing: false } : item)));
+          setThread((items) => items.map((item) => (item.uid === uid ? { ...item, typing: false } : item)));
           resolve();
         }
       }, 45);
@@ -477,21 +652,70 @@ function InterviewPhase({
     setInterviewerBusy(false);
   }
 
+  // ── 双轨采访引擎 ────────────────────────────────────────────────────────
+  // 聊天轨：学员等待的唯一调用。只生成苏记者的话（纯文本、高温度、拟人化
+  // 提示词），不产出分数——分数逼着模型在同一口采样里既演又判，两头都
+  // 不稳。追问是否触发改用本地启发式判定：瞬时、确定、免费。
+  // 打分轨：fire-and-forget。回答投递完就后台低温度评一次该话题的问答
+  // 对，回来后原位覆盖证据（appendExternalEvidence 同 id 是替换语义）。
+  // 学员读题打字的几秒钟正好是打分窗口，全程无感。
+  const transcriptRef = useRef([]); // {role, content} 逐轮存档，打分轨的数据源
+  const lastQuestionRef = useRef(""); // 学员最近回答的那句提问，喂给打分轨
+  const gradedRef = useRef(new Map()); // slotId -> 权威分（两次评分取高者）
+
+  function appendTranscript(role, content) {
+    transcriptRef.current = [...transcriptRef.current, { role, content }];
+  }
+
+  function recordCredit(slotObj, credit, evidence = "") {
+    // 追问后再评不能把已记录的分拉低（与旧同步流程同一条规则）。
+    const prev = gradedRef.current.get(slotObj.id);
+    const best = prev == null ? credit : Math.max(prev, credit);
+    gradedRef.current.set(slotObj.id, best);
+    setCredits((items) => [...items.filter((item) => item.id !== slotObj.id), { id: slotObj.id, label: slotObj.id, credit: best, evidence }]);
+
+    // 对话通道走自己的评分模型（src/interview-scoring-model.js），
+    // 不再把档位分当作「外部证据」塞进客观题的 IRT 后验 —— 那条链路
+    // 证据太少时会把维度分压到 60 分（见该模块顶部注释）。
+    // 每次记录后重算六维，把最新画像上抛给报告层。
+    const slotCredits = Object.fromEntries(
+      [...gradedRef.current.entries()].map(([slotId, value]) => [slotId, value]),
+    );
+    const interview = scoreInterview(slotCredits);
+    onInterviewScore?.({
+      slotCredits,
+      dimensions: interview.dimensions,
+      overallScore: interview.overallScore,
+      grade: interview.grade,
+      completed: interview.completed,
+      answeredSlots: interview.answeredSlots,
+      totalSlots: interview.totalSlots,
+      coveredDimensions: interview.coveredDimensions,
+    });
+  }
+
   async function requestInterviewer({ followUp = false, lastNote = "", threadOverride = null } = {}) {
     const currentSlot = INTERVIEW_LADDER[Math.min(slotIndex, INTERVIEW_LADDER.length - 1)];
     if (!ladderDone) {
       try {
         const raw = await chatOnce({
-          messages: interviewMessages({
+          messages: interviewChatMessages({
             thread: threadOverride ?? thread,
-            slot: { ...currentSlot, index: slotIndex },
+            slot: { ...currentSlot, index: slotIndex, intent: currentSlot.rubric },
             followUp,
             lastNote,
           }),
+          temperature: CHAT_TEMPERATURE,
         });
+        // 聊天轨要求纯文本，但模型偶尔仍会包一层 JSON——容错取 reply。
         const parsed = parseInterviewerJson(raw);
-        if (parsed) return { reply: parsed.reply, note: parsed.note };
-        throw new Error("unparseable");
+        const reply = parsed ? parsed.reply : String(raw ?? "").trim();
+        // 空回复等同于失败：如果直接返回空串，speak() 会因为没有分段而
+        // 静默什么都不说，学员看到的是"记者不答复了"。走兜底话术，
+        // 保证每一轮提问都有下文。
+        if (!reply) throw new Error("empty-reply");
+        setOffline(false);
+        return { reply, note: "" };
       } catch {
         setOffline(true);
         return { reply: pick(followUp ? currentSlot.followUps : currentSlot.asks), note: "" };
@@ -500,107 +724,101 @@ function InterviewPhase({
     return { reply: "", note: "" };
   }
 
+  // 打分轨：不阻塞 UI、不设 loading、失败静默（启发式临时分已垫底）。
+  //
+  // 解析用 parseScoreJson 而不是 parseInterviewerJson：后者是聊天轨的解析器，
+  // 要求返回对象含非空 reply，而打分轨只返回 {score, evidence, note} ——
+  // 用错解析器会让每一次打分都判为 unparseable，recordCredit 永不触发，
+  // 学员的对话分数就此消失（实测踩过）。
+  function gradeAnswerInBackground({ slot: slotObj, userAnswer, priorAnswer = "" }) {
+    const questionAsked = lastQuestionRef.current || slotObj.asks[0];
+    chatOnce({
+      messages: interviewScoreMessages({ slot: slotObj, questionAsked, userAnswer, priorAnswer }),
+      ...GRADING_OPTIONS,
+    })
+      .then((raw) => {
+        const parsed = parseScoreJson(raw);
+        if (parsed) recordCredit(slotObj, parsed.score, parsed.evidence);
+      })
+      .catch(() => { /* 临时启发式分保留，不打扰学员 */ });
+  }
+
   async function startInterview() {
     setPhase("quiz");
-    await speak(planDelivery(interviewOpening().join("\n")));
-    const first = await requestInterviewer();
-    await speak(planDelivery(first.reply));
+    // 开场就是第一题：interviewOpening() 的第二句已经在问第一槽的问题。
+    const opening = interviewOpening().join("\n");
+    appendTranscript("assistant", opening);
+    await speak(planDelivery(opening));
+    lastQuestionRef.current = opening;
   }
 
   useEffect(() => {
     if (phase !== "starting") return;
-    // 续答（有存档）只补一句衔接语；新会话才走完整开场。
-    if (resumed) {
-      speak(planDelivery("我们接着刚才的聊——继续吧。"));
-      return;
-    }
+    // 只剩一条路径：完整开场（两句），然后第一题。续答分支已移除。
     startInterview();
     // The phase transition drives the whole scripted opening exactly once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  async function judgeAnswer(content) {
-    const currentSlot = INTERVIEW_LADDER[Math.min(slotIndex, INTERVIEW_LADDER.length - 1)];
-    let score = null;
-    let note = "";
-    let evidence = "";
-    let llmReply = null;
-    try {
-      const raw = await chatOnce({
-        messages: interviewMessages({
-          thread: [...thread, { role: "user", content }],
-          slot: { ...currentSlot, index: slotIndex },
-          followUp: false,
-        }),
-      });
-      const parsed = parseInterviewerJson(raw);
-      if (parsed) {
-        score = parsed.score;
-        note = parsed.note;
-        evidence = parsed.evidence ?? "";
-        llmReply = parsed.reply;
-      }
-    } catch {
-      setOffline(true);
-    }
-    // Offline or unparseable: fall back to the same slot rubric, heuristically.
-    if (score === null) {
-      score = heuristicSlotCredit(currentSlot.id, content);
-      evidence = "";
-      note = note || "离线启发式判定";
-    }
-    return { score, note, evidence, llmReply };
-  }
-
   const send = async () => {
     if (phase !== "quiz" || judging || interviewerBusy || summaryReady) return;
     const content = draft.trim();
     if (!content) return;
-    setThread((items) => [...items, { role: "user", content }]);
+    setThread((items) => [...items, { uid: `u${(bubbleSeqRef.current += 1)}`, role: "user", content }]);
+    appendTranscript("user", content);
     setDraft("");
     setError("");
     setIsJudging(true);
     try {
-      const judged = await judgeAnswer(content);
+      const currentSlot = INTERVIEW_LADDER[Math.min(slotIndex, INTERVIEW_LADDER.length - 1)];
       const probing = followSlotRef.current;
-      // A follow-up answer re-judges the same slot: keep the better of the two
-      // so asking a student to elaborate can never lower their recorded credit.
-      const score = probing && probing.id === slot.id ? Math.max(probing.credit, judged.score) : judged.score;
-      const note = judged.note;
-      const evidence = judged.evidence;
-      const llmReply = judged.llmReply;
-      followSlotRef.current = null;
+      // 本地启发式分（瞬时、确定）：驱动「是否追问」的流程决策，并先垫底
+      // 记进证据；权威分由打分轨在后台低温度评出后原位覆盖。
+      const provisional = heuristicSlotCredit(currentSlot.id, content);
+      setCredits((items) => [
+        ...items.filter((item) => item.id !== currentSlot.id),
+        { id: currentSlot.id, label: currentSlot.id, credit: provisional, evidence: "" },
+      ]);
+      // 临时分不上抛：它只是流程决策用的本地估计，等打分轨给出权威分后
+      // 由 recordCredit 统一折算六维并上报，避免报告页看到抖动的中间值。
+
       const nextCount = exchangeCount + 1;
       setExchangeCount(nextCount);
-      setCredits((items) => [...items.filter((item) => item.id !== slot.id), { id: slot.id, label: slot.id, credit: score, evidence }]);
-      // Low-confidence answers may be probed once more; the re-judged score
-      // replaces this evidence in place, so the higher of the two sticks.
-      onExchangeEvidence?.({ id: `conv-${slot.id}`, dimKeys: slot.dims, credit: score, label: "对话式测评" });
       const threadWithAnswer = [...thread, { role: "user", content }];
       const timeLeft = clock.remainingMs;
       // The last slot never probes: asking a student to elaborate after the
       // final question would require a sixth answer before the interview can
       // close, which reads as a stuck conversation.
       const isLastSlot = slotIndex + 1 >= INTERVIEW_LADDER.length;
-      if (!isLastSlot && score < 0.55 && followUsed < 1 && timeLeft > 50_000) {
+      const wantsProbe = !isLastSlot && provisional < 0.55 && followUsed < 1 && timeLeft > 50_000;
+
+      // 学员等待的唯一模型调用：下一问（或追问）的记者话术。
+      // 兜底话术可能为空（题梯数据缺失），此时至少保住追问文案，避免整轮哑火。
+      let asked;
+      if (wantsProbe) {
         setFollowUsed((current) => current + 1);
-        followSlotRef.current = { id: slot.id, credit: score };
-        const asked = await requestInterviewer({ followUp: true, lastNote: note, threadOverride: threadWithAnswer });
-        await speak(planDelivery(asked.reply));
+        followSlotRef.current = { id: currentSlot.id, answer: content };
+        asked = await requestInterviewer({ followUp: true, lastNote: "有点笼统", threadOverride: threadWithAnswer });
       } else {
+        followSlotRef.current = null;
         setSlotIndex((current) => current + 1);
         setFollowUsed(0);
         if (isLastSlot) {
           await beginClosing(nextCount);
-        } else if (llmReply && score >= 0.55) {
-          // The judge call already phrased the next question — reuse it and
-          // save a round trip.
-          await speak(planDelivery(llmReply));
-        } else {
-          const asked = await requestInterviewer({ threadOverride: threadWithAnswer });
-          await speak(planDelivery(asked.reply));
+          gradeAnswerInBackground({ slot: currentSlot, userAnswer: content, priorAnswer: probing?.answer ?? "" });
+          return;
         }
+        asked = await requestInterviewer({ threadOverride: threadWithAnswer });
       }
+      if (!String(asked?.reply ?? "").trim()) {
+        asked = { reply: pick(currentSlot.asks) || currentSlot.rubric, note: "" };
+      }
+      await speak(planDelivery(asked.reply));
+      appendTranscript("assistant", asked.reply);
+      lastQuestionRef.current = asked.reply;
+      // 聊天已交付，打分轨启动：学员读题、打字的几秒钟就是评分窗口，
+      // 全程无 loading、无感知，回来后原位覆盖临时分。
+      gradeAnswerInBackground({ slot: currentSlot, userAnswer: content, priorAnswer: probing?.answer ?? "" });
     } catch (requestError) {
       setError(requestError.message || "发送失败，请重试。");
     } finally {
@@ -617,7 +835,7 @@ function InterviewPhase({
 
   const finishSummary = () => {
     // 本关交卷后清掉对话存档，下一次进入是全新采访。
-    writeInterviewState(null);
+    clearInterviewState();
     if (hasStory) {
       setPhase("ending");
       return;
@@ -665,7 +883,7 @@ function InterviewPhase({
     >
       {thread.map((item, index) => (
         <div
-          key={`${item.role}-${index}`}
+          key={item.uid ?? `${item.role}-${index}`}
           className={`chat-bubble ${item.role === "user" ? "is-user" : "is-guide"}${item.typing ? " is-typing" : ""}${summaryReady && item.role === "assistant" && index === thread.length - 1 ? " is-feedback" : ""}`}
         >
           <span>{item.role === "user" ? "我" : "苏"}</span>
@@ -673,7 +891,7 @@ function InterviewPhase({
             {item.typing && !item.content
               ? <span className="thinking-hint"><span className="typing-dots" aria-hidden="true"><i /><i /><i /></span> 正在输入…</span>
               : <MarkdownLite text={item.content} />}
-            {item.sticker && !item.typing ? <em className="bubble-sticker">{item.sticker}</em> : null}
+          
           </div>
         </div>
       ))}
@@ -951,25 +1169,26 @@ function AdaptiveObjectivePhase({
   }
 
   if (phase === "summary") {
-    // 小结只报"答了多少题、用了多久"，不报正确率与答对数：这是阶段性小结，
-    // 把成绩提前摊开会让学员据此推断最终结果（这也是本项目"进行中不给分"
-    // 的一贯做法）。总分与等级在全部阶段结束后由觉醒报告给出。
-    return <div className="task-body objective-task comprehensive-task" data-phase="summary">
-      <div className="cat-summary">
-        <div className="cat-summary-figure">{answered}</div>
-        <div className="cat-summary-body">
-          <strong>本轮作答 {answered} 题</strong>
-          <p>{STOP_REASON_TEXT[stopInfo?.reason] ?? "本阶段完成"}</p>
-          <ul className="cat-summary-stats">
-            <li><span>本阶段用时</span><b>{formatClock(seconds * 1000 - clock.remainingMs)}</b></li>
-            <li><span>题目难度</span><b>随表现实时调整</b></li>
-            <li><span>成绩</span><b>全部阶段结束后给出</b></li>
-          </ul>
-          <p className="cat-summary-note">答对则下一题加难、答错则回落，直到能力估计收敛——所以题数不固定。</p>
-        </div>
-        <TaskAction onClick={() => (hasStory ? setPhase("ending") : onComplete())} label="完成本关" variant="comprehensive" />
-      </div>
-    </div>;
+    // 关卡完成页。只报「答了多少题、覆盖了哪些维度、下一步去哪」——
+    // 不报正确率与答对数：这是阶段性小结，提前摊开成绩会让学员据此推断
+    // 最终结果（本项目"进行中不给分"的一贯做法），总分与等级留到觉醒报告。
+    const covered = DIMENSION_KEYS.filter((key) => (dimCounts[key] ?? 0) > 0);
+    const nextLevel = getComprehensiveLevel(stage + 1);
+    const thisLevel = getComprehensiveLevel(stage);
+    const isFinalStage = stage >= COMPREHENSIVE_LEVELS.length;
+    return <StageComplete
+      stage={stage}
+      answered={answered}
+      coveredCount={covered.length}
+      dimCounts={dimCounts}
+      seconds={seconds}
+      remainingMs={clock.remainingMs}
+      stopReason={stopInfo?.reason}
+      thisLevel={thisLevel}
+      nextLevel={nextLevel}
+      isFinalStage={isFinalStage}
+      onContinue={() => (hasStory ? setPhase("ending") : onComplete())}
+    />;
   }
 
   if (questionStatus !== "ready" || !question) {
@@ -1033,12 +1252,34 @@ function AdaptiveObjectivePhase({
       </div>
 
       {result && (
-        <div className={`quiz-feedback is-${result.correct ? "correct" : "wrong"}`} role="status">
-          <strong>{result.correct ? "回答正确" : result.partialCorrect ? "部分正确" : "回答不正确"}</strong>
-          <p className="quiz-feedback-answer"><b>正确答案：</b>{result.answerText}</p>
-          <p className="quiz-feedback-analysis"><b>解析：</b>{question.analysis}</p>
-          <div>{question.dims.map((dim) => <span key={dim}>{dim}</span>)}</div>
-          {result.correct && <span className="star-pop" aria-hidden="true">★</span>}
+        <div className={`quiz-feedback is-${result.correct ? "correct" : result.partialCorrect ? "partial" : "wrong"}`} role="status">
+          {/* 反馈条按多邻国的做法：浅色底 + 深色字 + 一枚实心圆形图标。
+              之前是饱和绿/红底配白字，整块很扎眼、解析读起来也累；
+              浅底深字把"对/错"的判定交给图标与标题色，正文恢复可读对比。 */}
+          <header className="quiz-feedback-head">
+            <span className="quiz-feedback-mark" aria-hidden="true">
+              {result.correct
+                ? <Check size={22} weight="bold" />
+                : <X size={22} weight="bold" />}
+            </span>
+            <div className="quiz-feedback-heads">
+              <strong>
+                {result.correct ? "回答正确" : result.partialCorrect ? "部分正确" : "回答不正确"}
+              </strong>
+              <span className="quiz-feedback-sub">
+                {result.correct
+                  ? "判断准确，这一维度的能力已记录"
+                  : result.partialCorrect
+                    ? "方向对了，但漏选了一部分"
+                    : "别急，看解析把这个考点补上"}
+              </span>
+            </div>
+          </header>
+          <p className="quiz-feedback-answer"><b>正确答案</b>{result.answerText}</p>
+          <p className="quiz-feedback-analysis"><b>解析</b>{question.analysis}</p>
+          <div className="quiz-feedback-dims">
+            {question.dims.map((dim) => <span key={dim}>{dim}</span>)}
+          </div>
         </div>
       )}
 
@@ -1085,29 +1326,58 @@ function offlineAgentOutput(task, prompt) {
   return `> **离线演示输出** —— 当前未连接 AI 服务，以下为按交付标准整理的产出框架。\n\n**任务**：${task.title}\n\n**你的提示词**：${prompt}\n\n---\n\n${steps}\n\n---\n\n以上框架在接入 AI 服务后会由 Agent 依据原始素材实际生成完整交付内容。`;
 }
 
-function agentMessages(task, prompt) {
+function agentMessages(task, prompt, uploads = []) {
+  const brief = `任务：${task.title}\n目标：${task.goal}\n要求：\n${task.requirements.map((item, index) => `${index + 1}. ${item}`).join("\n")}\n\n原始素材：\n${task.source}\n\n用户提示词：\n${prompt}`;
+  // 学员上传了参考图 → 用多模态 content，让 Agent 真的"看见"这张图。
+  // deepseek-flash 支持 image 输入；没有上传时保持纯字符串，省带宽也省 token。
+  if (!Array.isArray(uploads) || uploads.length === 0) {
+    return [
+      { role: "system", content: "你是 AIQUOS 实操测评的执行 Agent。请严格根据用户提示词和原始素材完成任务；保留关键数据，不补充素材中没有的信息。输出仅包含最终交付内容，不解释你的推理。" },
+      { role: "user", content: brief },
+    ];
+  }
   return [
-    { role: "system", content: "你是 AIQUOS 实操测评的执行 Agent。请严格根据用户提示词和原始素材完成任务；保留关键数据，不补充素材中没有的信息。输出仅包含最终交付内容，不解释你的推理。" },
+    {
+      role: "system",
+      content: "你是 AIQUOS 实操测评的执行 Agent。请严格根据用户提示词和原始素材完成任务；保留关键数据，不补充素材中没有的信息。用户可能附上参考图，请按图片内容行事。输出仅包含最终交付内容，不解释你的推理。",
+    },
     {
       role: "user",
-      content: `任务：${task.title}\n目标：${task.goal}\n要求：\n${task.requirements.map((item, index) => `${index + 1}. ${item}`).join("\n")}\n\n原始素材：\n${task.source}\n\n用户提示词：\n${prompt}`,
+      content: [
+        { type: "text", text: `${brief}\n\n（学员附上了 ${uploads.length} 张参考图）` },
+        ...uploads.map((item) => ({ type: "image_url", image_url: { url: item.src } })),
+      ],
     },
   ];
 }
 
-function judgeMessages(task, generation) {
-  const product = generation.imageUrl
-    ? "（本任务为图片生成，产出为一张按用户提示词生成的图片）"
-    : String(generation.output ?? "").slice(0, 4000);
-  return [
-    { role: "system", content: '你是 AIQUOS 实操任务的验收评委。只输出一个 JSON 对象（不要 markdown 代码块）：{"score":0到1的小数,"note":"一句话评语"}。评分依据：最终产出满足每条交付标准的程度，以及用户提示词的具体性与可用性。' },
-    {
-      role: "user",
-      content: `任务：${task.title}\n目标：${task.goal}\n交付标准：\n${task.requirements.map((item, index) => `${index + 1}. ${item}`).join("\n")}\n\n用户提示词：\n${generation.prompt}\n\n最终产出：\n${product}\n\n共经历 ${generation.iterationText ?? "1"} 次生成迭代。`,
-    },
-  ];
+// 评分走服务端 /api/practical-score：题库的评分标准与参考答案只存在
+// 服务端（publicTask 不下发），学员交卷后由服务端对照 rubric 逐维评分，
+// 回传每一维的档位、得分与评语。
+async function requestPracticalScore({ task, generations, finalGeneration, isImageTask }) {
+  const response = await fetch("/api/practical-score", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      taskId: task.id,
+      edition: readEdition(),
+      prompt: finalGeneration.prompt,
+      prompts: generations.map((entry) => entry.prompt),
+      product: finalGeneration.output ?? "",
+      isImage: isImageTask,
+      iterations: generations.length,
+    }),
+  });
+  if (!response.ok) throw new Error("评分服务暂时不可用。");
+  const payload = await response.json();
+  if (!payload || !Number.isFinite(Number(payload.credit)) || !payload.prompt || !payload.product) {
+    throw new Error("评分结果不完整。");
+  }
+  return payload;
 }
 
+// 评分路由本身不可达（断网/旧部署）时的最后兜底：沿用关键词覆盖启发式
+// 只给一个总档位分，不带逐维明细——界面会明示这是离线估算。
 function practicalHeuristic(task, generation) {
   const output = `${generation.output ?? ""} ${generation.prompt}`;
   const hits = task.requirements.filter((requirement) => {
@@ -1119,19 +1389,28 @@ function practicalHeuristic(task, generation) {
   return Math.round(Math.min(1, 0.65 * coverage + 0.35 * promptDepth) * 100) / 100;
 }
 
-function parseJudgeJson(raw) {
-  const text = String(raw ?? "").trim().replace(/^```(?:json)?|```$/g, "").trim();
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start < 0 || end <= start) return null;
-  try {
-    const parsed = JSON.parse(text.slice(start, end + 1));
-    const score = Number(parsed.score);
-    if (!Number.isFinite(score)) return null;
-    return { score: Math.max(0, Math.min(1, score)), note: typeof parsed.note === "string" ? parsed.note : "" };
-  } catch {
-    return null;
-  }
+/** 评分报告里的单套评分标准卡片：逐维度档位 + 得分 + 评语。 */
+function PracticalScoreCard({ title, part }) {
+  return (
+    <section className="wb-score-card" aria-label={title}>
+      <header className="wb-score-card-head">
+        <strong>{title}</strong>
+        <b>{part.awarded} / {part.max} 分</b>
+      </header>
+      <ol className="wb-score-rows">
+        {part.rows.map((row) => (
+          <li key={row.dimension} className={`is-${row.level}`}>
+            <div className="wb-score-row-top">
+              <span className="wb-score-dim">{row.dimension}</span>
+              <span className="wb-score-level">{row.levelLabel}</span>
+              <b className="wb-score-pts">{row.awarded} / {row.max}</b>
+            </div>
+            {row.comment ? <p className="wb-score-comment">{row.comment}</p> : null}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 }
 
 function PracticalWorkbenchPhase({
@@ -1145,7 +1424,7 @@ function PracticalWorkbenchPhase({
   onCharacterFeedback,
   onTaskEvidence = null,
 }) {
-  // phase: opening → brief（读任务）→ work（作答）
+  // phase: opening → brief（读任务）→ work（作答）→ score（评分报告）
   const [phase, setPhase] = useState(hasStory ? "opening" : "brief");
   const [task, setTask] = useState(null);
   const [taskStatus, setTaskStatus] = useState("loading");
@@ -1159,6 +1438,12 @@ function PracticalWorkbenchPhase({
   const [offline, setOffline] = useState(false);
   const [showMaterial, setShowMaterial] = useState(false);
   const [canvasTab, setCanvasTab] = useState("output");
+  // 学员上传的参考图（data URI）。实操任务里常需要"我有一张图，请按它来"，
+  // 没有上传就只能靠文字描述，很多任务没法做。
+  const [uploads, setUploads] = useState([]);
+  const uploadInputRef = useRef(null);
+  // 评分报告（/api/practical-score 的返回；离线兜底时只有总档位分）。
+  const [scoreReport, setScoreReport] = useState(null);
   // 两步态：先只呈现任务与交付标准（大字、留白充足），确认后再进入作答界面。
   // 一屏同时塞下标准+素材+画布+输入框，只能把字号压到 12–15px，反而看不清。
   const [briefAcknowledged, setBriefAcknowledged] = useState(false);
@@ -1175,7 +1460,7 @@ function PracticalWorkbenchPhase({
   });
 
   // 计时钟覆盖简报态与作答态：读任务同样消耗这 5 分钟，
-  // 否则学员可以先读完简报再开始计时。
+  // 否则学员可以先读完简报再开始计时。评分报告阶段不再计时。
   const clock = usePhaseClock({
     seconds,
     running: phase === "work" || phase === "brief",
@@ -1193,9 +1478,11 @@ function PracticalWorkbenchPhase({
       result: running ? null : (generations.length ? { correct: true } : null),
       reaction: running
         ? "Agent 正在执行实操生成任务，请稍候…"
-        : generations.length
-          ? "生成完成！可以优化提示词再生成，也可以完成本关。"
-          : (storyPhase === "opening" || storyPhase === "ending" ? lines[lineIndex]?.text : "在下方撰写提示词并点击发送，驱动 Agent 完成任务。"),
+        : phase === "score"
+          ? "评分出炉：每个维度都有档位、得分和评语，对照看看还能从哪里加分。"
+          : generations.length
+            ? "生成完成！可以优化提示词再生成，也可以完成本关。"
+            : (storyPhase === "opening" || storyPhase === "ending" ? lines[lineIndex]?.text : "在下方撰写提示词并点击发送，驱动 Agent 完成任务。"),
       speakerName: guardian,
     });
   }, [phase, storyPhase, running, generations.length, lineIndex, lines, guardian, onCharacterFeedback]);
@@ -1216,8 +1503,15 @@ function PracticalWorkbenchPhase({
           throw new Error("任务数据不完整。");
         }
         if (!active) return;
-        setTask(payload.tasks[0]);
+        const loaded = payload.tasks[0];
+        setTask(loaded);
         setTaskStatus("ready");
+        // 任务自带的输入素材默认就处于"已上传"状态：图片类任务的前提是
+        // "我有一张图"，素材本就是任务的组成部分，让学员手动再传一次既多余
+        // 又容易漏。异步压缩，不阻塞界面呈现。
+        toUploadList(seedTaskAssets(loaded)).then((items) => {
+          if (active && items.length) setUploads((current) => (current.length ? current : items));
+        }).catch(() => { /* 素材压缩失败不影响作答，学员仍可手动上传 */ });
         // 单通道（无开场剧情）同样先停在简报态：学员必须先读任务与交付标准，
         // 再由「开始作答」进入作答界面。这里曾经直接跳到 work，
         // 使简报态形同虚设、主按钮永不出现。
@@ -1264,6 +1558,118 @@ function PracticalWorkbenchPhase({
   }
 
   const isImageTask = task.outputType === "image";
+
+  /**
+   * 把任意图片源（File 或 URL/data URI）压缩成统一规格的上传项。
+   *
+   * 为什么必须压缩：原图动辄 3–5 MB，转成 base64 后体积再涨 33%，
+   * 既可能超过请求体限制，也让每轮生成都多传几 MB。这里统一缩到长边 1024px、
+   * 以 JPEG 0.82 重编码，通常压到 100–300 KB，对"参考构图/风格"足够。
+   *
+   * 任务自带的素材（/tasks/*.jpg）也走这条路径 —— 它们同样是几 MB 的图，
+   * 直接原样内联进请求会显著拖慢每轮生成。
+   */
+  async function toUploadItem(source, fallbackName = "参考图") {
+    let dataUrl;
+    let name = fallbackName;
+    if (typeof source === "string") {
+      dataUrl = source;
+      name = source.split("/").pop() || fallbackName;
+    } else {
+      if (!source.type?.startsWith("image/")) throw new Error("只支持图片文件。");
+      name = source.name || fallbackName;
+      dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("读取图片失败。"));
+        reader.readAsDataURL(source);
+      });
+    }
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("图片格式无法识别。"));
+      img.src = dataUrl;
+    });
+    const MAX_EDGE = 1024;
+    const scale = Math.min(1, MAX_EDGE / Math.max(image.width, image.height));
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+    return { src: canvas.toDataURL("image/jpeg", 0.82), name, width, height };
+  }
+
+  /**
+   * 任务自带的输入素材默认就处于"已上传"状态。
+   *
+   * 图片类任务的前提是"我有一张图"，素材本来就是任务的组成部分；让学员
+   * 再手动上传一次既多余又容易漏（文件在服务器上，学员手上未必有）。
+   * 检测到任务带 reference/secondary 素材时自动预置，并标注为"任务素材"
+   * 以便与学员自己传的图区分；学员可以移除或追加自己的图。
+   */
+  function seedTaskAssets(taskDef) {
+    const list = inputAssets(taskDef);
+    if (!list.length) return [];
+    return list.map((asset) => ({
+      src: asset.src,
+      name: asset.label || assetLabel(asset),
+      fromTask: true,
+    }));
+  }
+
+  /** 批量压缩任务素材，保留 fromTask 标记（供 UI 区分来源）。 */
+  async function toUploadList(seeds) {
+    const items = [];
+    for (const seed of seeds) {
+      try {
+        const item = await toUploadItem(seed.src, seed.name);
+        items.push({ ...item, name: seed.name, fromTask: true });
+      } catch { /* 单张失败跳过 */ }
+    }
+    return items;
+  }
+
+  async function handleUpload(event) {
+    const files = [...(event.target.files ?? [])].slice(0, 4);
+    event.target.value = ""; // 允许重复选同一个文件
+    if (!files.length) return;
+    try {
+      const items = [];
+      for (const file of files) items.push(await toUploadItem(file, "上传的图"));
+      setUploads((current) => [...current, ...items].slice(0, 4));
+      setError("");
+    } catch (uploadError) {
+      setError(uploadError.message || "图片上传失败。");
+    }
+  }
+
+  /**
+   * 粘贴图片：从剪贴板取图。
+   *
+   * 截图后直接粘贴是最自然的操作（比"先另存为文件再选文件"短得多），
+   * 而浏览器默认只会把图片粘进 contenteditable 里 —— textarea 拿不到。
+   * 这里监听 paste 事件，从 clipboardData 取图片文件。
+   */
+  async function handlePaste(event) {
+    const items = [...(event.clipboardData?.items ?? [])];
+    const files = items
+      .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+      .map((item) => item.getAsFile())
+      .filter(Boolean);
+    if (!files.length) return; // 粘贴文字时不拦截
+    event.preventDefault();
+    try {
+      const converted = [];
+      for (const file of files) converted.push(await toUploadItem(file, "粘贴的图"));
+      setUploads((current) => [...current, ...converted].slice(0, 4));
+      setError("");
+    } catch (pasteError) {
+      setError(pasteError.message || "粘贴的图片无法读取。");
+    }
+  }
   const atGenerationCap = generations.length >= MAX_GENERATIONS;
   const expired = clock.remainingMs <= 0;
 
@@ -1293,7 +1699,7 @@ function PracticalWorkbenchPhase({
         let failed = false;
         try {
           output = await streamDeepSeek({
-            messages: agentMessages(task, prompt),
+            messages: agentMessages(task, prompt, uploads),
             onDelta: (message) => {
               output = message;
               setLiveOutput(message);
@@ -1323,34 +1729,38 @@ function PracticalWorkbenchPhase({
   const finish = async () => {
     if (finishing || !finalGeneration) return;
     setFinishing(true);
+    let report = null;
     try {
-      let credit = null;
-      try {
-        const raw = await chatOnce({
-          messages: judgeMessages(task, {
-            ...finalGeneration,
-            iterationText: `${generations.length}`,
-          }),
-        });
-        credit = parseJudgeJson(raw)?.score ?? null;
-      } catch {
-        setOffline(true);
-      }
-      if (credit === null) credit = practicalHeuristic(task, finalGeneration);
-      onTaskEvidence?.({
-        id: `prac-${task.id}`,
-        dimKeys: Array.isArray(task.dimKeys) && task.dimKeys.length ? task.dimKeys : ["D3", "D4"],
-        credit,
-        label: "实操任务",
-      });
-      if (hasStory) setPhase("ending");
-      else onComplete();
-    } finally {
-      setFinishing(false);
+      report = await requestPracticalScore({ task, generations, finalGeneration, isImageTask });
+    } catch {
+      setOffline(true);
     }
+    if (!report) {
+      // 评分路由不可达：只剩本地启发式总档位分，无逐维明细。
+      report = {
+        judged: "offline",
+        taskId: task.id,
+        prompt: null,
+        product: null,
+        totalScore: null,
+        maxScore: null,
+        credit: practicalHeuristic(task, finalGeneration),
+      };
+    }
+    setScoreReport(report);
+    onTaskEvidence?.({
+      id: `prac-${task.id}`,
+      dimKeys: Array.isArray(task.dimKeys) && task.dimKeys.length ? task.dimKeys : ["D3", "D4"],
+      credit: report.credit,
+      label: "实操任务",
+    });
+    setFinishing(false);
+    // 先看评分报告；报告页的「完成本关」才推进到结尾/下一阶段。
+    setPhase("score");
   };
 
   if (phase === "brief" || (!briefAcknowledged && phase !== "work")) {
+    const scheme = scoringSchemeRows(task);
     return (
       <div className="task-body practical-task workbench" data-phase="brief">
         <div className="wb-brief-screen">
@@ -1362,15 +1772,12 @@ function PracticalWorkbenchPhase({
           <h2>{task.title}</h2>
           <p className="wb-brief-goal">{task.goal}</p>
 
-          {Array.isArray(task.assets) && task.assets.length > 0 && (
+          {inputAssets(task).length > 0 && (
             <figure className="wb-reference wb-brief-refs" aria-label="任务参考素材">
-              {task.assets.map((asset) => (
+              {inputAssets(task).map((asset) => (
                 <figure className="wb-reference-item" key={asset.src}>
-                  <img
-                    src={asset.src}
-                    alt={asset.note || (asset.role === "reference" ? "风格参考图" : asset.role === "source" ? "待处理原图" : "任务素材图")}
-                  />
-                  {asset.note && <figcaption>{asset.note}</figcaption>}
+                  <img src={asset.src} alt={assetLabel(asset)} />
+                  <figcaption>{assetLabel(asset)}</figcaption>
                 </figure>
               ))}
             </figure>
@@ -1379,8 +1786,9 @@ function PracticalWorkbenchPhase({
           <div className="wb-brief-criteria">
             <div className="agent-section-heading"><ClipboardText weight="fill" /><span>交付标准</span></div>
             <ol className="wb-requirements">
-              {task.requirements.map((item) => <li key={item}>{item}</li>)}
+              {deliveryRequirements(task).map((item) => <li key={item}>{item}</li>)}
             </ol>
+            {scheme.length > 0 && <p className="wb-scheme-note">交卷后逐维评分：{scheme.join("；")}，共 20 分。</p>}
           </div>
 
           {task.source && (
@@ -1407,6 +1815,65 @@ function PracticalWorkbenchPhase({
     );
   }
 
+  if (phase === "score") {
+    const report = scoreReport ?? {
+      judged: "offline", prompt: null, product: null, totalScore: null, maxScore: null, credit: 0,
+    };
+    const hasDetail = Boolean(report.prompt || report.product);
+    return (
+      <div className="task-body practical-task workbench" data-phase="score">
+        <div className="wb-score-screen">
+          <div className="wb-score-scroll">
+            <div className="wb-score-head">
+              <span className="wb-score-kicker">实操任务 · 评分报告</span>
+              <span className={`wb-judge-chip is-${report.judged}`}>
+                {report.judged === "llm" ? "AI 评委逐维评分" : report.judged === "heuristic" ? "离线规则评审" : "离线估算"}
+              </span>
+            </div>
+            <div className="wb-score-hero">
+              <div className="wb-score-total">
+                <strong>
+                  {Number.isFinite(Number(report.totalScore)) ? report.totalScore : Math.round(report.credit * 100)}
+                  <em>{Number.isFinite(Number(report.totalScore)) ? ` / ${report.maxScore} 分` : " / 100"}</em>
+                </strong>
+                <span>{Number.isFinite(Number(report.totalScore)) ? `按 20 分制折算 ${Math.round(report.credit * 100)}%` : "任务综合档位分"}</span>
+              </div>
+              <ul className="wb-score-parts">
+                {report.prompt && (
+                  <li><span>提示词评分</span><b>{report.prompt.awarded} / {report.prompt.max} 分</b></li>
+                )}
+                {report.product && (
+                  <li><span>最终产物评分</span><b>{report.product.awarded} / {report.product.max} 分</b></li>
+                )}
+                <li><span>生成迭代</span><b>{generations.length} 次</b></li>
+              </ul>
+            </div>
+            {hasDetail && (
+              <div className="wb-score-tables">
+                {report.prompt && <PracticalScoreCard title="评分标准一 · 提示词" part={report.prompt} />}
+                {report.product && <PracticalScoreCard title="评分标准二 · 最终产物" part={report.product} />}
+              </div>
+            )}
+            {!hasDetail && (
+              <p className="wb-score-note">离线模式下按关键词覆盖估算总档位分；接入评分服务后将展示逐维得分与评语。</p>
+            )}
+            {report.judged === "heuristic" && (
+              <p className="wb-score-note">当前为离线规则评审（逐维档位按要素覆盖估算）；接入 DeepSeek 后由 AI 评委对照评分标准判档。</p>
+            )}
+          </div>
+          <button
+            type="button"
+            className="wb-brief-start"
+            onClick={() => (hasStory ? setPhase("ending") : onComplete())}
+          >
+            完成本关
+            <ArrowRight weight="bold" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="task-body practical-task workbench" data-phase="work">
     <div className="workbench-head">
       <h2>{task.title}</h2>
@@ -1417,26 +1884,23 @@ function PracticalWorkbenchPhase({
         <PhaseTimer remainingMs={clock.remainingMs} />
       </div>
     </div>
-    <p className="agent-brief">{task.goal}</p>
     <div className="agent-workspace workbench-grid">
       <section className="agent-checklist wb-brief" aria-label="任务简报">
+        <p className="wb-goal">{task.goal}</p>
         <div className="agent-section-heading"><ClipboardText weight="fill" /><span>交付标准</span></div>
         <ol className="wb-requirements">
-          {task.requirements.map((item) => <li key={item}>{item}</li>)}
+          {deliveryRequirements(task).map((item) => <li key={item}>{item}</li>)}
         </ol>
         <button className="source-toggle" type="button" onClick={() => setShowMaterial((value) => !value)}>{showMaterial ? "收起原始素材" : "查看原始素材"}</button>
         {showMaterial && <div className="source-copy wb-material"><MarkdownLite text={task.source} /></div>}
       </section>
       <section className="agent-canvas wb-canvas" aria-live="polite" aria-label="Agent 工作区域">
-        {Array.isArray(task.assets) && task.assets.length > 0 && (
+        {inputAssets(task).length > 0 && (
           <figure className="wb-reference" aria-label="任务参考素材">
-            {task.assets.map((asset) => (
+            {inputAssets(task).map((asset) => (
               <figure className="wb-reference-item" key={asset.src}>
-                <img
-                  src={asset.src}
-                  alt={asset.note || (asset.role === "reference" ? "风格参考图" : asset.role === "source" ? "待处理原图" : "任务素材图")}
-                />
-                {asset.note && <figcaption>{asset.note}</figcaption>}
+                <img src={asset.src} alt={assetLabel(asset)} />
+                <figcaption>{assetLabel(asset)}</figcaption>
               </figure>
             ))}
           </figure>
@@ -1474,15 +1938,58 @@ function PracticalWorkbenchPhase({
     </div>
     {error && <p className="agent-error" role="alert">{error}</p>}
     <div className="workbench-actions">
+      {uploads.length > 0 && (
+        <div className="wb-uploads" aria-label="已上传的参考图">
+          {uploads.map((item, index) => (
+            <figure
+              className={`wb-upload${item.fromTask ? " is-task-asset" : ""}`}
+              key={`${item.name}-${index}`}
+              title={item.fromTask ? `任务素材：${item.name}` : `我上传的：${item.name}`}
+            >
+              <img src={item.src} alt={item.name} />
+              <button
+                type="button"
+                className="wb-upload-remove"
+                aria-label={`移除 ${item.name}`}
+                disabled={running}
+                onClick={() => setUploads((current) => current.filter((_, i) => i !== index))}
+              >
+                <X weight="bold" size={12} />
+              </button>
+              {item.fromTask && <figcaption className="wb-upload-tag">任务素材</figcaption>}
+            </figure>
+          ))}
+          <span className="wb-uploads-note">Agent 会参考这些图 · 也可直接粘贴截图</span>
+        </div>
+      )}
       <label className="agent-composer wb-composer">
         <span className="sr-only">给 Agent 的提示词</span>
+        <button
+          type="button"
+          className="wb-upload-trigger"
+          aria-label="上传参考图"
+          title="上传参考图（最多 4 张）"
+          disabled={running || uploads.length >= 4}
+          onClick={() => uploadInputRef.current?.click()}
+        >
+          <ImageSquare weight="bold" size={20} />
+        </button>
+        <input
+          ref={uploadInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="sr-only"
+          onChange={handleUpload}
+        />
         <textarea
           disabled={running || (expired && generations.length > 0) || atGenerationCap}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
+          onPaste={handlePaste}
           onKeyDown={onEnterSubmit(run, { withMeta: true, when: () => !running })}
-          placeholder={atGenerationCap ? `已达 ${MAX_GENERATIONS} 次生成上限，请完成本关` : expired ? "时间到——可直接提交你已写好的提示词，或点击「完成本关」" : generations.length ? "优化你的提示词，让 Agent 重新生成…" : isImageTask ? "写下画面提示词（主体/场景/风格/构图/文字），⌘+Enter 生成…" : "写下你的提示词（角色/任务/约束/格式），⌘+Enter 运行…"}
-          rows={3}
+          placeholder={atGenerationCap ? `已达 ${MAX_GENERATIONS} 次生成上限，请完成本关` : expired ? "时间到——可直接提交你已写好的提示词，或点击「完成本关」" : generations.length ? "优化你的提示词，让 Agent 重新生成…" : isImageTask ? "写下画面提示词（主体/场景/风格/构图/文字），可粘贴参考图，⌘+Enter 生成…" : "写下你的提示词（角色/任务/约束/格式），可粘贴图片，⌘+Enter 运行…"}
+          rows={2}
         />
         <button
           type="button"
@@ -1497,7 +2004,7 @@ function PracticalWorkbenchPhase({
       {generations.length > 0 && (
         <div className="wb-complete-row">
           <span className="wb-hint">{generations.length > 1 ? `已迭代 ${generations.length} 次——会评估、会优化，正是高分信号` : "也可以优化提示词再生成一次"}</span>
-          <TaskAction disabled={finishing || running} onClick={finish} label={finishing ? "导师评审中…" : "完成本关"} variant="comprehensive" />
+          <TaskAction disabled={finishing || running} onClick={finish} label={finishing ? "AI 评委评分中…" : "交卷评分"} variant="comprehensive" />
         </div>
       )}
     </div>
@@ -1526,14 +2033,9 @@ export function AssessmentTask({
   comprehensiveResult,
   adaptiveTelemetry = null,
   onExternalEvidence = null,
+  onInterviewScore = null,
   busy,
 }) {
-  const [characterState, setCharacterState] = useState({
-    phase: "quiz",
-    result: null,
-    reaction: null,
-    speakerName: null,
-  });
   const layoutSettled = useSettledAfterAnimation();
 
   const theme = ASSESSMENT_THEMES[id];
@@ -1551,14 +2053,12 @@ export function AssessmentTask({
     story,
     guardian,
     onComplete: () => onComplete(stage),
-    onCharacterFeedback: setCharacterState,
   };
   const displayMode = comprehensive ? mode : mode;
   return (
     <main
       className="assessment-flow task-flow"
-      data-mode={displayMode}
-      style={{
+      data-mode={displayMode}      style={{
         "--assessment-color": theme.color,
         "--assessment-soft": theme.soft,
         "--assessment-glow": theme.glow,
@@ -1591,7 +2091,7 @@ export function AssessmentTask({
             <InterviewPhase
               key={`${taskKey}-interview`}
               {...props}
-              onExchangeEvidence={comprehensive ? onExternalEvidence : null}
+              onInterviewScore={comprehensive ? onInterviewScore : null}
             />
           ) : (
             <PracticalWorkbenchPhase
@@ -1604,18 +2104,15 @@ export function AssessmentTask({
           )}
         </section>
 
-        <aside className="task-character-stage" aria-label="3D 伴学导师与守门人舞台">
-          <Task3DCharacter
-            id={id}
-            stage={stage}
-            mode={displayMode}
-            phase={characterState.phase}
-            result={characterState.result}
-            reaction={characterState.reaction}
-            speakerName={characterState.speakerName}
-          />
+        <aside className="task-character-stage" aria-label="AI 伴学导师舞台">
+          <Task3DCharacter id={id} />
         </aside>
       </div>
+
+      {/* 角色微调面板：仅在 ?tune=1 时挂载，生产页面完全不加载 */}
+      {new URLSearchParams(window.location.search).has("tune") && (
+        <CharacterTuner defaults={TUNING_DEFAULTS} />
+      )}
     </main>
   );
 }

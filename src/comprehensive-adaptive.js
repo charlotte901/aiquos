@@ -18,10 +18,16 @@ const EXPOSURE_CAP = 6;
 // it early — the clock, the precision target (standard error of the ability
 // estimate), or the item cap for speed demons. A dimension-coverage veto keeps
 // any rule from stranding the six-dimension score without evidence.
+//
+// maxQuestions 是实测校准值，不是拍脑袋定的：用真实引擎 + 真题库跑满三种
+// 能力水平（强/中/弱）× 两种作答速度（15s/22s 每题），**每一次都是撞上限
+// 才停，没有一次因精度收敛提前结束**——也就是说在 5 分钟预算内，上限就是
+// 实际题量。20 题给六维各留出约 3 题的证据量，同时让"能力估计收敛"这条
+// 规则真正有机会发挥作用；更少的划线会让它永远不触发。
 export const CAT_STOP = {
   minQuestions: 6,   // never stop before: scoring needs a usable evidence base
   precisionFloor: 8, // SE-based early stop only applies from this many answers
-  maxQuestions: 14,  // hard cap per run (time budget makes more pointless)
+  maxQuestions: 20,  // hard cap per run
   seTarget: 0.42,    // ability SE (logit scale) at which theta is "settled"
 };
 

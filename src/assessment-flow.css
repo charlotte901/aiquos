@@ -18,21 +18,28 @@
 .flow-wordmark canvas { display: block; width: 100%; height: 100%; }
 .flow-back {
   position: absolute;
-  left: clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px);
+  left: clamp(20px, calc(2.6 * var(--vw, 1vw)), 46px);
   bottom: clamp(24px, calc(3.3 * var(--vh, 1vh)), 38px);
   z-index: 4;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
+  padding: 8px 14px;
+  /* 白框左移后，这枚按钮会有一半压在白色面板上（面板 z-index 2、按钮 4，
+     所以按钮在上），纯白文字压白底就读不出来了。给它一层半透明深色底：
+     压在主题色背景上时几乎不可见，压在白框上时提供足够对比，两种落位都清晰。 */
+  border-radius: 999px;
   color: #fff;
-  background: transparent;
+  background: #17121f6b;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   font-size: 13px;
   font-weight: 600;
-  opacity: .88;
+  opacity: .94;
+  transition: background .18s ease, opacity .18s ease;
 }
 .flow-back svg { width: 17px; height: 17px; }
-.flow-back:hover { opacity: 1; transform: translateX(-3px); }
+.flow-back:hover { opacity: 1; background: #17121f8f; transform: translateX(-3px); }
 .level-progress {
   position: absolute;
   top: clamp(38px, calc(5.2 * var(--vh, 1vh)), 50px);
@@ -157,10 +164,13 @@
 .level-map .assessment-guides { right: 4.5%; bottom: 3%; filter: invert(17%) sepia(13%) saturate(1210%) hue-rotate(176deg) brightness(95%) contrast(93%); opacity: .92; }
 /* ── Task Stage Layout (Split Answering Card & 3D Character) ───────────────── */
 
+/* 左：作答面板；右：伴学角色舞台。
+   角色舞台需要足够宽度才撑得起全身像，所以面板列不再吃掉 70vw——
+   让出约 6vw 给右侧，舞台从 ~240px 增到 ~380px，人物显著变大。 */
 .task-stage-layout {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, min(70vw, 1150px)) minmax(0, 1fr);
+  grid-template-columns: minmax(0, min(64vw, 1080px)) minmax(300px, 1fr);
   gap: clamp(20px, 2.4vw, 48px);
   width: min(calc(96 * var(--vw, 1vw)), 1700px);
   height: calc(82 * var(--dvh, 1dvh));
@@ -220,12 +230,45 @@
 .task-body { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: clamp(18px, calc(2.1 * var(--vh, 1vh)), 25px); }
 .task-body { animation: task-content-in 380ms 110ms cubic-bezier(.16,1,.3,1) both; }
 .task-body h2 { max-width: 100%; margin: 0; color: #182235; font-size: clamp(25px, calc(2.45 * var(--vw, 1vw)), 35px); line-height: 1.28; letter-spacing: -.04em; }
-.answer-options { display: grid; gap: 10px; width: 100%; margin-top: clamp(16px, calc(2.2 * var(--vh, 1vh)), 24px); }
-.answer-options button { display: flex; align-items: center; gap: 17px; min-height: 68px; padding: 12px 24px; border: 2px solid transparent; border-radius: 20px; color: #2b3a50; background: color-mix(in srgb, var(--assessment-soft) 58%, #fff); text-align: left; font-size: 18px; line-height: 1.45; font-weight: 650; transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1); }
-.answer-options button:hover:not(:disabled) { background: color-mix(in srgb, var(--assessment-soft) 82%, #fff); transform: translateX(3px); }
+.answer-options { display: grid; gap: 12px; width: 100%; margin-top: clamp(16px, calc(2.2 * var(--vh, 1vh)), 24px); }
+/* 选项卡用"厚实按钮"的做法（见 duo-key.css 的说明）：底边留出一条实心厚度，
+   按下时面部下沉、厚度归零。项目里原本是 hover 右移 3px 的线性效果，缺少
+   "可按"的物理暗示；这里的厚度让每一行都像一枚实体按键。
+   注意：厚度用 inset 阴影而不是 border-bottom，避免改变盒模型高度。 */
+.answer-options button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-height: 68px;
+  padding: 12px 24px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  color: #2b3a50;
+  background: color-mix(in srgb, var(--assessment-soft) 58%, #fff);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--assessment-color) 18%, #dfe4ea);
+  text-align: left;
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 650;
+  transition: transform 120ms var(--duo-ease), box-shadow 120ms var(--duo-ease),
+    background 160ms ease;
+}
+.answer-options button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--assessment-soft) 82%, #fff);
+}
+/* 按下：下沉一个厚度，厚度收起。 */
+.answer-options button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 transparent;
+}
 .answer-options button > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--assessment-color); background: var(--assessment-soft); font-size: 15px; font-weight: 800; flex: 0 0 auto; transition: all 180ms ease; }
 .answer-options button > svg { margin-left: auto; color: var(--assessment-color); }
-.answer-options button.is-selected { outline: 3px solid var(--assessment-color); outline-offset: -3px; background: color-mix(in srgb, var(--assessment-soft) 82%, #fff); }
+.answer-options button.is-selected {
+  border-color: var(--assessment-color);
+  background: color-mix(in srgb, var(--assessment-soft) 86%, #fff);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--assessment-color) 42%, #cdd6e0);
+}
 .answer-options button.is-selected > span { color: #fff; background: var(--assessment-color); }
 .comprehensive-task {
   overflow-y: auto;
@@ -243,82 +286,136 @@
   line-height: 1.4;
 }
 .quiz-brief i { margin: 0 7px; font-style: normal; opacity: .45; }
+/* 对错反馈：改用本文档自建的绿/红（见 duo-key.css）。
+   原先的对/错是 var(--duo-green) 绿与 rgb(254,92,67) 橙红，两色明度接近、色相偏黄，
+   在白底上并排看容易混淆；而且厚度用了纯黑硬阴影，观感偏"重"。
+   现在改成一对明度拉开、彩度更高的绿/红，厚度用同色系深色调（与按钮的
+   立体语言一致），对错一眼可辨。 */
 .comprehensive-option.is-correct,
 .comprehensive-option.is-wrong {
   color: #fff;
 }
-.comprehensive-option.is-correct > span {
-  color: #fff;
-  background: #0c3d24;
-}
 .comprehensive-option.is-correct {
-  border-color: #000;
+  border-color: var(--duo-green-lip);
   color: #fff;
-  background: #2fb673;
-  box-shadow: 5px 5px 0 #000;
+  background: var(--duo-green);
+  box-shadow: 0 4px 0 var(--duo-green-lip);
 }
+.comprehensive-option.is-correct > span { color: #fff; background: var(--duo-green-lip); }
 .comprehensive-option.is-wrong {
+  border-color: var(--duo-red-lip);
   color: #fff;
-  background: rgb(254, 92, 67);
-  border-color: #000;
-  box-shadow: 5px 5px 0 #000;
+  background: var(--duo-red);
+  box-shadow: 0 4px 0 var(--duo-red-lip);
 }
-.comprehensive-option.is-wrong > span { color: #fff; background: #7a1f12; }
+.comprehensive-option.is-wrong > span { color: #fff; background: var(--duo-red-lip); }
+/* 反馈出现时把对/错的行轻轻弹一下——反馈的落点因此更明确。 */
+.comprehensive-option.is-correct { animation: duo-pop 380ms var(--duo-ease-spring) both; }
+.comprehensive-option.is-wrong { animation: duo-shake 520ms cubic-bezier(.36, .07, .19, .97) both; }
+/* 反馈条：多邻国的做法是**浅色底 + 深色字 + 一枚实心圆图标**。
+   之前的版本是饱和绿/红底配白字，整块面积大、对比过强，解析段落读起来
+   发累；而且"对/错"这个判定被摊在整块底色上，没有焦点。
+   现在把判定收敛到图标与标题色两处，正文恢复成深字浅底的可读对比。 */
 .quiz-feedback {
   position: relative;
-  margin-top: 14px;
-  padding: 14px 16px;
-  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 24%, #fff);
-  border-radius: 22px;
-  background: color-mix(in srgb, var(--assessment-soft) 56%, #fff);
-  box-shadow: 0 16px 34px color-mix(in srgb, var(--assessment-color) 9%, transparent);
+  margin-top: 16px;
+  padding: 16px 18px 18px;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--assessment-soft) 52%, #fff);
   animation: comprehensive-feedback-in .3s ease both;
 }
+.quiz-feedback.is-correct {
+  border-color: color-mix(in srgb, var(--duo-green) 34%, #fff);
+  background: color-mix(in srgb, var(--duo-green-wash) 78%, #fff);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--duo-green) 26%, #fff);
+}
 .quiz-feedback.is-wrong {
+  border-color: color-mix(in srgb, var(--duo-red) 32%, #fff);
+  background: color-mix(in srgb, var(--duo-red-wash) 78%, #fff);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--duo-red) 24%, #fff);
   animation: quiz-feedback-shake .45s ease both;
 }
-.quiz-feedback strong {
-  display: block;
-  color: var(--assessment-deep);
-  font-size: 16px;
-  font-weight: 800;
+.quiz-feedback.is-partial {
+  border-color: color-mix(in srgb, #f0a000 34%, #fff);
+  background: color-mix(in srgb, #fff6e3 78%, #fff);
+  box-shadow: 0 3px 0 color-mix(in srgb, #f0a000 24%, #fff);
 }
+
+/* 头部：实心圆图标 + 标题 + 一句人话解释。 */
+.quiz-feedback-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quiz-feedback-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--duo-green);
+  box-shadow: 0 3px 0 var(--duo-green-lip);
+  animation: duo-pop 420ms var(--duo-ease-spring) both;
+}
+.quiz-feedback.is-wrong .quiz-feedback-mark {
+  background: var(--duo-red);
+  box-shadow: 0 3px 0 var(--duo-red-lip);
+}
+.quiz-feedback.is-partial .quiz-feedback-mark {
+  background: #f0a000;
+  box-shadow: 0 3px 0 #c07f00;
+}
+.quiz-feedback-heads { display: grid; gap: 2px; min-width: 0; }
+.quiz-feedback-heads strong {
+  color: var(--duo-green-lip);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.quiz-feedback.is-wrong .quiz-feedback-heads strong { color: var(--duo-red-lip); }
+.quiz-feedback.is-partial .quiz-feedback-heads strong { color: #b06f00; }
+.quiz-feedback-sub {
+  color: #6f7a72;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .quiz-feedback p {
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   color: #3f4b59;
-  font-size: 13.5px;
-  line-height: 1.75;
+  font-size: 14px;
+  line-height: 1.72;
 }
 .quiz-feedback-answer {
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: #ffffffc4;
   color: #263243;
   font-weight: 700;
 }
-.quiz-feedback-answer b {
-  color: var(--assessment-deep);
-}
+/* 标签式前缀，比"正确答案："这种行内文字更清楚。 */
+.quiz-feedback-answer b,
 .quiz-feedback-analysis b {
-  color: var(--assessment-deep);
-}
-.quiz-feedback p:last-of-type { margin-bottom: 0; }
-.quiz-feedback div { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
-.quiz-feedback div span {
-  padding: 2px 7px;
-  border-radius: 999px;
-  color: var(--assessment-deep);
-  background: #fff;
+  display: block;
+  margin-bottom: 3px;
+  color: #7a8494;
   font-size: 11.5px;
   font-weight: 800;
+  letter-spacing: .06em;
 }
-.quiz-feedback .star-pop {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  color: #2fb673;
-  font-size: 34px;
-  line-height: 1;
-  text-shadow: 0 0 10px #2fb673, 2px 2px 0 #000;
-  animation: star-pop .6s cubic-bezier(.22, .61, .36, 1) both, star-glow 1.15s ease-in-out .6s infinite;
-  pointer-events: none;
+.quiz-feedback p:last-of-type { margin-bottom: 0; }
+.quiz-feedback-dims { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.quiz-feedback-dims span {
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #5c6779;
+  background: #ffffffc9;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c6779 16%, #fff);
+  font-size: 11.5px;
+  font-weight: 800;
 }
 .story-line {
   width: min(100%, 860px);
@@ -545,11 +642,17 @@
 .conversation-task .task-composer input::placeholder { color: #687489; opacity: 1; }
 .conversation-task .task-composer button { width: 52px; height: 52px; }
 @media (min-width: 841px) {
+  /* 整块（白卡 + 导师列）整体左移：left 减去偏移量、right 不变，两边同时减
+     才会整块平移且宽度不变（只改 right 只会把面板压窄、左边缘不动，那不像
+     "左移"）。
+     偏移量取 clamp(28px, 2.6vw, 56px)：导师列换成竖长画幅的人物视频后
+     变宽了，右侧视觉重量增加，整块需要比原来再多让出一些左侧空间，
+     白卡才不会显得被挤到右边。左下角的「返回测评选择」与字标仍留有余量。 */
   .task-flow .task-stage-layout {
     position: absolute;
     top: calc(13 * var(--dvh, 1dvh));
     bottom: auto;
-    left: clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px);
+    left: calc(clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px) - clamp(28px, calc(2.6 * var(--vw, 1vw)), 56px));
     right: clamp(28px, calc(3.5 * var(--vw, 1vw)), 60px);
     width: auto;
     max-width: 1700px;
@@ -621,7 +724,7 @@
 .agent-output .md-heading { margin: 0; font-weight: 800; font-size: 1.05em; }
 .agent-output .md-quote { margin: 0; color: #687382; }
 .agent-image { width: 100%; min-height: 0; flex: 1; object-fit: cover; border-radius: 14px; background: var(--assessment-soft); }
-.agent-error { margin: 7px 0 -2px; color: #d7462e; font-size: 13px; font-weight: 700; }
+.agent-error { margin: 7px 0 -2px; color: var(--duo-red-lip); font-size: 13px; font-weight: 700; }
 .agent-composer { width: 100%; min-height: 62px; margin-top: 14px; padding-left: 20px; background: #fff; }
 .agent-composer textarea { width: 100%; height: 38px; min-height: 38px; resize: none; border: 0; outline: 0; color: #263243; background: transparent; font-size: 15px; line-height: 1.5; padding-top: 9px; }
 .agent-send { flex: 0 0 auto; border: 0; }
@@ -644,15 +747,6 @@
   45% { transform: translateX(-7px); }
   60% { transform: translateX(7px); }
   80% { transform: translateX(-4px); }
-}
-@keyframes star-pop {
-  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-  60% { transform: scale(1.45) rotate(12deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0); opacity: 1; }
-}
-@keyframes star-glow {
-  0%, 100% { filter: drop-shadow(0 0 5px #2fb673) drop-shadow(0 0 10px #2fb673); transform: scale(1); }
-  50% { filter: drop-shadow(0 0 13px #2fb673) drop-shadow(0 0 24px #2fb673); transform: scale(1.12); }
 }
 @keyframes comprehensive-hint { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
@@ -859,13 +953,13 @@
   position: absolute;
   inset: -4px;
   border-radius: inherit;
-  box-shadow: 0 0 0 0 color-mix(in srgb, #19b877 46%, transparent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--duo-green) 46%, transparent);
   animation: feedback-halo 620ms cubic-bezier(.16, 1, .3, 1) both;
   pointer-events: none;
 }
 @keyframes feedback-halo {
-  from { box-shadow: 0 0 0 0 color-mix(in srgb, #19b877 52%, transparent); }
-  to { box-shadow: 0 0 0 14px color-mix(in srgb, #19b877 0%, transparent); }
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--duo-green) 52%, transparent); }
+  to { box-shadow: 0 0 0 14px color-mix(in srgb, var(--duo-green) 0%, transparent); }
 }
 @media (prefers-reduced-motion: reduce) {
   .quiz-feedback.is-correct::after { animation: none; box-shadow: none; }
@@ -968,23 +1062,6 @@
 
 .interview-thread .chat-bubble.is-guide .chat-text { font-weight: 600; }
 
-/* 采访贴纸（🤔 👀 ✍️ 😅）。
- * 贴纸有时是那一条消息的唯一内容；此时若让它自己撑成一个块级元素，
- * 气泡里就会浮出一个孤立小方块，看着像「气泡套小气泡」。这里统一按
- * 行内元素处理并与正文同基线，独占一条时也只是气泡内的一行文字。 */
-.bubble-sticker {
-  display: inline;
-  margin: 0;
-  font-style: normal;
-  font-size: 1.15em;
-  line-height: inherit;
-  vertical-align: baseline;
-}
-
-/* 贴纸与正文同段时留一个字的间隙，不靠 margin 撑高行盒。 */
-.chat-text > p + .bubble-sticker::before,
-.chat-text > .bubble-sticker + p::before { content: " "; }
-
 /* 打字指示：三个 7px 小点。显式声明尺寸/背景/圆角，不依赖"没被别的
    规则命中"，避免气泡里的 span 通用样式再次把它们变成头像圆。 */
 .typing-dots {
@@ -1050,7 +1127,228 @@
 .interview-credits span.is-recorded i { color: #687382; }
 .interview-credits span i { font-style: normal; font-weight: 700; }
 
-/* ── CAT 小结 ── */
+/* ── 关卡完成页 ─────────────────────────────────────────────────────────────
+ * 回答三件事：这一关走完了（环形勾 + 计数 + 彩带）、刚刚采到什么（六维覆盖）、
+ * 下一步去哪（下一关名字 + 厚实按钮）。
+ * 完成标记固定用绿（--duo-green），不跟随关卡主题色——"完成"是全局语义，
+ * 用关卡色会让每一关的完成页看起来像不同状态；主题色只用在维度卡上。 */
+.stage-complete {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(16px, 2.2vh, 28px);
+  padding: 8px 0;
+  text-align: center;
+}
+
+/* 环形完成标记：外圈阴影托出立体感，描边动画画满一圈，中心是对勾与计数。 */
+.stage-complete-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(116px, 14vh, 156px);
+  aspect-ratio: 1;
+}
+/* 完成环背后的一圈柔光：把"完成"这件事从白底上抬起来。 */
+.stage-complete-badge::after {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--duo-green) 22%, #fff) 0%, transparent 70%);
+  animation: duo-pop 620ms var(--duo-ease-spring) both;
+}
+.stage-complete-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.stage-complete-ring .ring-track {
+  fill: none;
+  stroke: #e8e8e8;
+  stroke-width: 8;
+}
+.stage-complete-ring .ring-fill {
+  fill: none;
+  stroke: var(--duo-green);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 327;
+  stroke-dashoffset: 327;
+  animation: stage-complete-draw 900ms cubic-bezier(.16,1,.3,1) 120ms forwards;
+}
+@keyframes stage-complete-draw {
+  to { stroke-dashoffset: 0; }
+}
+.stage-complete-figure {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+.stage-complete-check {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: var(--assessment-color);
+  color: #fff;
+  animation: stage-complete-pop 460ms cubic-bezier(.34,1.56,.64,1) 620ms both;
+}
+@keyframes stage-complete-pop {
+  from { transform: scale(.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.stage-complete-figure b {
+  color: #182235;
+  font-size: clamp(30px, 4.4vh, 42px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.stage-complete-figure i {
+  color: #7a8494;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* 标题区：关卡名 + 完成宣告 + 一句去向。三段依次浮入。 */
+.stage-complete-copy { display: grid; justify-items: center; gap: 6px; }
+.stage-complete-kicker {
+  margin: 0;
+  color: var(--duo-green-lip);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  animation: duo-rise 420ms var(--duo-ease) 180ms both;
+}
+.stage-complete-copy h2 {
+  margin: 0;
+  color: #182235;
+  font-size: clamp(28px, 3.8vh, 38px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  animation: duo-rise 460ms var(--duo-ease-spring) 240ms both;
+}
+.stage-complete-lead {
+  max-width: 42em;
+  margin: 0;
+  color: #5c6779;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 600;
+  animation: duo-rise 460ms var(--duo-ease) 300ms both;
+}
+
+/* 维度覆盖：六格小卡，逐格错峰浮入——比整块出现更有"逐项落定"的节奏。 */
+.stage-complete-dims { display: grid; justify-items: center; gap: 9px; }
+.stage-complete-section {
+  margin: 0;
+  color: #7a8494;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+.stage-complete-dims ul {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: min(100%, 560px);
+}
+.stage-complete-dims li {
+  display: grid;
+  gap: 3px;
+  padding: 10px 6px;
+  border-radius: 14px;
+  border: 2px solid color-mix(in srgb, var(--duo-green) 26%, #fff);
+  background: color-mix(in srgb, var(--duo-green-wash) 70%, #fff);
+  animation: duo-rise 420ms var(--duo-ease-spring) both;
+  /* 逐格错峰：每格延迟 50ms，形成从左到右落定的节奏。 */
+  animation-delay: calc(360ms + var(--i, 0) * 50ms);
+}
+.stage-complete-dims li > span {
+  color: #3c4a42;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.stage-complete-dims li > b {
+  color: var(--duo-green-lip);
+  font-size: 11.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.stage-complete-dims li.is-open {
+  border-color: #e8e8e8;
+  background: #f7f7f7;
+  opacity: .7;
+}
+.stage-complete-dims li.is-open > b { color: #9aa4b2; }
+
+/* 统计条：三格等分，数字用深色，标签灰。淡绿底把这一段与上下的白区分开。 */
+.stage-complete-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  width: min(100%, 560px);
+  margin: 0;
+  padding: 15px 0;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--duo-green-wash) 55%, #fff);
+  animation: duo-rise 440ms var(--duo-ease) 700ms both;
+}
+.stage-complete-stats > div { display: grid; gap: 3px; padding: 0 10px; }
+.stage-complete-stats > div + div {
+  border-left: 1.5px solid color-mix(in srgb, var(--duo-green) 20%, #fff);
+}
+.stage-complete-stats dt { color: #6f7a72; font-size: 12.5px; font-weight: 700; }
+.stage-complete-stats dd {
+  margin: 0;
+  color: #1e2b22;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 去向：把"下一关是什么"写在按钮左边，而不是只给一个孤立的按钮。
+   实线厚边 + 白底，读起来像一张"下一站的票"。 */
+.stage-complete-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(100%, 560px);
+  padding: 14px 16px 14px 20px;
+  border-radius: 20px;
+  border: 2px solid #e8e8e8;
+  box-shadow: 0 3px 0 #e8e8e8;
+  background: #fff;
+  text-align: left;
+  animation: duo-rise 460ms var(--duo-ease-spring) 800ms both;
+}
+.stage-complete-next-copy { display: grid; gap: 3px; min-width: 0; }
+.stage-complete-next-copy span {
+  color: var(--duo-green-lip);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+.stage-complete-next-copy strong {
+  color: #22293a;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* CAT 小结（旧版样式，保留给时间轴小结复用） */
 .cat-summary {
   display: flex;
   align-items: center;
@@ -1082,6 +1380,22 @@
 .cat-summary-body p { margin: 6px 0 0; color: #4d5a6c; font-size: 15px; line-height: 1.5; font-weight: 600; }
 
 .cat-summary-note { color: #687382 !important; font-size: 13.5px !important; }
+
+/* 减少动态偏好：环与对勾直接给终值，不做描边/弹入。 */
+/* 减少动态偏好：完成页的所有入场动画直接给终值。逐个列出而不是用
+   `animation: none` 通配，是因为这些元素靠 animation-fill-mode 保证终态；
+   关掉动画必须同时清掉 opacity/transform 的初始值，否则会停在不可见状态。 */
+@media (prefers-reduced-motion: reduce) {
+  .stage-complete-ring .ring-fill { animation: none; stroke-dashoffset: 0; }
+  .stage-complete-check { animation: none; }
+  .stage-complete-badge::after { animation: none; }
+  .stage-complete-kicker,
+  .stage-complete-copy h2,
+  .stage-complete-lead,
+  .stage-complete-dims li,
+  .stage-complete-stats,
+  .stage-complete-next { animation: none; opacity: 1; transform: none; }
+}
 
 /* ── Agent 工作台（豆包式） ── */
 .workbench { display: flex; flex-direction: column; min-height: 0; }
@@ -1507,13 +1821,6 @@
    + 模式名），保留；但实操简报态已经用 kicker 说明了任务类型，重复。 */
 .wb-brief-screen ~ .task-heading,
 .task-flow:has(.task-body[data-phase="brief"]) .task-heading { display: none; }
-.task-character-container .task-character-badge { display: none; }
-
-/* 3D 舞台的气泡是伴学提示，属于二级信息；加宽并放大，别让它挤成三行。 */
-.task-character-bubble { max-width: 300px; }
-.task-character-bubble .bubble-text { font-size: 15.5px; line-height: 1.55; }
-.task-character-bubble .bubble-speaker { font-size: 15px; }
-
 /* ── 实操简报态：一次只读一件事 ──
    单列、大字、留白充足；确认后才进入双栏作答界面。这是解决"一屏信息过载、
    字太小"的主要手段：把阅读与操作分到两个屏。 */
@@ -1748,13 +2055,6 @@
    + 模式名），保留；但实操简报态已经用 kicker 说明了任务类型，重复。 */
 .wb-brief-screen ~ .task-heading,
 .task-flow:has(.task-body[data-phase="brief"]) .task-heading { display: none; }
-.task-character-container .task-character-badge { display: none; }
-
-/* 3D 舞台的气泡是伴学提示，属于二级信息；加宽并放大，别让它挤成三行。 */
-.task-character-bubble { max-width: 300px; }
-.task-character-bubble .bubble-text { font-size: 15.5px; line-height: 1.55; }
-.task-character-bubble .bubble-speaker { font-size: 15px; }
-
 /* ── 实操简报态：一次只读一件事 ──
    单列、大字、留白充足；确认后才进入双栏作答界面。这是解决"一屏信息过载、
    字太小"的主要手段：把阅读与操作分到两个屏。 */
@@ -1953,14 +2253,6 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 @media (min-width: 900px) {
-  /* 单列文字版心：面板吃满可用宽度（右侧只留 300px 给浮层，不参与排版）。 */
-  .task-stage-layout {
-    display: block;
-    width: min(calc(94 * var(--vw, 1vw)), 1560px);
-    height: calc(84 * var(--dvh, 1dvh));
-    margin: clamp(80px, calc(10 * var(--vh, 1vh)), 120px) auto 0;
-  }
-
   .task-stage-layout .task-panel {
     width: 100%;
     height: 100%;
@@ -1969,14 +2261,19 @@
 
   /* 导师不再占据一整列，改为面板内的窄右栏：1440px 下正文只需要约 1050px，
      多出来的空间给导师，面板总宽因此可以吃满到 1340px。
-     关键：3D 形象与气泡纵向排列在窄栏里，不覆盖任何正文。 */
+     关键：3D 形象与气泡纵向排列在窄栏里，不覆盖任何正文。
+     角色素材换成竖长画幅的人物视频后，这一列需要更宽——19vw 在 1280px
+     下只有 243px，人物会被压成一条；改成 eat 28vw 上限 420px，
+     让人物有足够的横向空间显示全身。 */
   .task-stage-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(220px, calc(19 * var(--vw, 1vw)), 280px);
+    grid-template-columns: minmax(0, 1fr) clamp(260px, calc(27 * var(--vw, 1vw)), 420px);
     gap: clamp(18px, calc(1.6 * var(--vw, 1vw)), 28px);
     width: min(calc(94 * var(--vw, 1vw)), 1520px);
     height: calc(84 * var(--dvh, 1dvh));
     margin: clamp(80px, calc(10 * var(--vh, 1vh)), 120px) auto 0;
+    /* 水平位移在 @media (min-width: 841px) 的 .task-flow .task-stage-layout 里
+       用不对称的 left/right 实现——那条选择器更具体，在这里写 left 不会生效。 */
   }
 
   /* 导师列：形象在上、气泡在下，整体垂直居中。
@@ -1990,32 +2287,6 @@
     flex-direction: column;
     justify-content: center;
     gap: 12px;
-  }
-
-  .task-stage-layout .task-character-stage .task-character-canvas {
-    flex: 0 1 auto;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    height: auto;
-    max-height: 44vh;
-    min-height: 0;
-    margin: 0 auto;
-  }
-
-  .task-stage-layout .task-character-stage .task-character-bubble {
-    position: static;
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 13px 15px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px #00000014;
-  }
-
-  .task-stage-layout .task-character-stage .task-character-bubble .bubble-text {
-    font-size: 14.5px;
-    line-height: 1.5;
   }
 
   /* 表单类内容不再需要为窄栏折行，用更舒展的行高与字号。 */
@@ -2098,3 +2369,384 @@
   .interview-avatar { width: 52px; height: 52px; font-size: 22px; }
 }
 
+
+/* ════════════════════════════════════════════════════════════════════════
+   实操 Agent 工作台：空间利用率 + 逐维评分报告（2026-09-27）
+   ────────────────────────────────────────────────────────────────────────
+   需求：字号不能小、有效空间要多、留白要少、整体简洁。
+   · 面板加宽：实操是双栏工作区，3D 导师列收窄（27vw→18vw），白卡多拿
+     约 130–250px 宽度；高度仍守 80dvh 上限（放大高度曾把「完成本关」
+     挤出屏幕，不要重蹈）。
+   · 密度收紧：padding/gap 降档，任务目标从整幅横行移进左栏，画布与
+     输入区拿回约两行高度。字号一律不降（要求 17px 仍是 17px）。
+   · 评分报告：交卷后逐维展示「档位 + 得分 + 评语」，双卡并排。
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── 面板加宽：实操任务的导师列收窄，正文列吃满剩余宽度 ── */
+@media (min-width: 961px) {
+  .assessment-flow.task-flow:has(.task-body.practical-task) .task-stage-layout {
+    grid-template-columns: minmax(0, 1fr) clamp(216px, calc(18 * var(--vw, 1vw)), 292px);
+    gap: clamp(16px, calc(1.5 * var(--vw, 1vw)), 26px);
+    /* 841px 起布局是绝对定位（left+right 拉伸），收一点右缘让白卡更宽 */
+    right: clamp(18px, calc(2 * var(--vw, 1vw)), 32px);
+  }
+  .assessment-flow.task-flow:has(.task-body.practical-task) .task-panel {
+    padding-left: clamp(26px, calc(2.4 * var(--vw, 1vw)), 40px);
+    padding-right: clamp(26px, calc(2.4 * var(--vw, 1vw)), 40px);
+  }
+}
+
+/* ── 工作台密度：padding/gap 降档，字号不降 ── */
+.workbench-head { gap: 10px; margin-bottom: 10px; }
+.workbench-head h2 { font-size: clamp(20px, calc(1.9 * var(--vw, 1vw)), 26px); }
+
+.workbench-grid { gap: 12px; margin-top: 10px; }
+
+.agent-checklist.wb-brief,
+.agent-canvas.wb-canvas { padding: 13px 14px; gap: 10px; border-radius: 18px; }
+
+.wb-goal {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--assessment-soft) 42%, #fff);
+  color: #4d5a6c;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.wb-requirements { gap: 7px; }
+
+.wb-requirements li { padding: 7px 11px 7px 38px; border-radius: 11px; }
+
+.wb-requirements li::before { left: 9px; top: 8px; width: 21px; height: 21px; font-size: 12.5px; }
+
+.wb-canvas-tabs { gap: 7px; }
+
+.wb-canvas-tabs button { padding: 5px 14px; }
+
+.wb-canvas-tabs button + button { margin-left: 0; }
+
+.workbench-actions { gap: 9px; margin-top: 10px; }
+
+.wb-composer { min-height: 88px; padding: 9px 9px 9px 17px; border-radius: 18px; }
+
+.wb-composer textarea { min-height: 54px; }
+
+.wb-complete-row { margin-top: 0; }
+
+/* 简报态：评分构成说明（元信息行从交付标准里分离出来后的去处） */
+.wb-scheme-note { margin: 2px 2px 0; color: #687382; font-size: 14.5px; font-weight: 650; }
+
+/* ── 评分报告屏（data-phase="score"）── */
+.wb-score-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wb-score-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px 8px 20px 2px;
+  scrollbar-width: thin;
+}
+
+.wb-score-scroll::-webkit-scrollbar { width: 8px; }
+
+.wb-score-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
+}
+
+.wb-score-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wb-score-kicker { color: var(--assessment-deep); font-size: 16px; font-weight: 800; letter-spacing: .01em; }
+
+.wb-judge-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 13px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 30%, #fff);
+  background: var(--assessment-soft);
+  color: var(--assessment-deep);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wb-judge-chip.is-heuristic,
+.wb-judge-chip.is-offline {
+  background: #fff6e8;
+  border-color: #eedcbb;
+  color: #8a6d3b;
+}
+
+.wb-score-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--assessment-soft) 55%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 18%, #fff);
+}
+
+.wb-score-total { display: grid; gap: 2px; }
+
+.wb-score-total strong {
+  color: var(--assessment-deep);
+  font-size: 42px;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-score-total em { margin-left: 5px; color: #5c6878; font-style: normal; font-size: 17px; font-weight: 750; }
+
+.wb-score-total span { color: #687382; font-size: 14.5px; font-weight: 700; }
+
+.wb-score-parts {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-score-parts li {
+  display: grid;
+  gap: 2px;
+  min-width: 126px;
+  padding: 9px 15px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #e7ecf3;
+}
+
+.wb-score-parts span { color: #687382; font-size: 14px; font-weight: 700; }
+
+.wb-score-parts b { color: #1f2a3c; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.wb-score-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.wb-score-card {
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 20%, #fff);
+  border-radius: 18px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.wb-score-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 16px;
+  background: color-mix(in srgb, var(--assessment-soft) 45%, #fff);
+}
+
+.wb-score-card-head strong { color: var(--assessment-deep); font-size: 16px; font-weight: 800; }
+
+.wb-score-card-head b { color: #1f2a3c; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.wb-score-rows { margin: 0; padding: 4px 14px 10px; list-style: none; display: grid; }
+
+.wb-score-rows li { padding: 9px 2px 9px 6px; border-bottom: 1px solid #eef1f6; }
+
+.wb-score-rows li:last-child { border-bottom: 0; }
+
+.wb-score-row-top { display: flex; align-items: center; gap: 9px; }
+
+.wb-score-dim { color: #263243; font-size: 15.5px; font-weight: 750; }
+
+.wb-score-level {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wb-score-rows li.is-excellent .wb-score-level { background: #e5f6ec; color: #1d7a4a; }
+
+.wb-score-rows li.is-good .wb-score-level { background: #fdf3dc; color: #9a7325; }
+
+.wb-score-rows li.is-pass .wb-score-level { background: #fdeae9; color: #b3453f; }
+
+.wb-score-pts {
+  min-width: 50px;
+  text-align: right;
+  color: #1f2a3c;
+  font-size: 15.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-score-comment { margin: 4px 0 0; color: #687382; font-size: 14px; line-height: 1.5; }
+
+.wb-score-note {
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: #fff6e8;
+  border: 1.5px solid #eedcbb;
+  color: #8a6d3b;
+  font-size: 14.5px;
+  line-height: 1.55;
+  font-weight: 650;
+}
+
+/* ── 桌面（≥900px）：画布列进一步加宽，评分卡保持双列 ── */
+@media (min-width: 900px) {
+  .workbench-grid { grid-template-columns: minmax(264px, .68fr) minmax(0, 1.42fr); gap: 14px; }
+  .wb-score-tables { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wb-score-parts li { min-width: 140px; }
+}
+
+/* ── 实操任务：参考图上传 ──────────────────────────────────────────────────
+   图片类任务常需要"我有一张图，请按它来"。上传的图会随提示词一起发给
+   Agent（多模态消息），并在输入框上方以缩略图列出，可逐张移除。 */
+.wb-uploads {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px dashed #f0bcd3;
+  border-radius: 14px;
+  background: #fff8fb;
+}
+
+.wb-upload {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  margin: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px #e7a4c233;
+}
+
+.wb-upload img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wb-upload-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(23, 21, 15, 0.68);
+  color: #fff;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.wb-upload-remove:hover { background: rgba(23, 21, 15, 0.88); }
+.wb-upload-remove:disabled { opacity: 0.4; cursor: default; }
+
+.wb-uploads-note {
+  font-size: 12px;
+  color: #a5738c;
+}
+
+/* 输入框内的上传按钮：与发送按钮同尺寸，靠左放置 */
+.wb-upload-trigger {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  margin-right: 6px;
+  padding: 0;
+  border: 1.5px dashed #f0bcd3;
+  border-radius: 50%;
+  background: #fff8fb;
+  color: #d16d9d;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.wb-upload-trigger:hover:not(:disabled) {
+  border-color: var(--assessment-color);
+  background: #fff;
+  color: var(--assessment-color);
+  transform: translateY(-1px);
+}
+
+.wb-upload-trigger:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* 任务自带素材：与学员自己上传的图区分（左下角标签 + 淡色描边） */
+.wb-upload.is-task-asset {
+  box-shadow: 0 0 0 1.5px var(--assessment-color, #f568a3), 0 2px 8px #e7a4c233;
+}
+
+.wb-upload-tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1px 0;
+  background: rgba(23, 21, 15, 0.62);
+  color: #fff;
+  font-size: 9px;
+  line-height: 1.3;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* 上传按钮的提示：悬停时说明支持粘贴 */
+.wb-upload-trigger::after {
+  content: "或粘贴截图";
+  position: absolute;
+  bottom: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(23, 21, 15, 0.82);
+  color: #fff;
+  font-size: 10.5px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.wb-upload-trigger:hover::after { opacity: 1; }

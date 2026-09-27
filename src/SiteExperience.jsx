@@ -28,6 +28,7 @@ import {
   loadAttemptDraft,
   readCurrentBankVersion,
   recordAnswer,
+  recordInterviewScore,
   saveAttemptDraft,
   snapshotAttempt,
   withBankVersion,
@@ -240,25 +241,32 @@ export function SiteExperience() {
   useEffect(() => {
     webglTransitionRef.current = webglTransition;
   }, [webglTransition]);
+  // Flight finished: the view swaps UNDER the overlay's held final frame, so
+  // the real page is already in place while the frozen flight dissolves.
+  // Releasing (the overlay's fade-out end) is what unmounts it.
   const handleTransitionComplete = useCallback(() => {
     const { active, reverse } = webglTransitionRef.current;
     if (!active) return;
     if (!reverse) {
       flushSync(() => {
         setView("login");
-        setWebglTransition({ active: false, reverse: false, entered: true });
+        setWebglTransition((prev) => ({ ...prev, entered: true }));
       });
       history.pushState(null, "", "#login");
     } else {
       flushSync(() => {
         setView("home");
-        setWebglTransition({ active: false, reverse: false, entered: false });
+        setWebglTransition((prev) => ({ ...prev, entered: false }));
       });
       history.pushState(null, "", "#home");
     }
     window.scrollTo(0, 0);
     busy.current = false;
     setMoving(false);
+  }, []);
+  const handleTransitionRelease = useCallback(() => {
+    const { reverse } = webglTransitionRef.current;
+    setWebglTransition({ active: false, reverse: false, entered: !reverse });
   }, []);
   useEffect(() => {
     const pop = () => {
@@ -638,15 +646,30 @@ export function SiteExperience() {
     });
   }
 
-  // Rubric evidence from the conversation interview and the practical
-  // workbench: LLM-judged (offline heuristic fallback) credits on chosen
-  // dimensions, scored by the same vendored posterior as question evidence.
+  // Rubric evidence from the practical workbench: LLM-judged (offline
+  // heuristic fallback) credits on chosen dimensions, scored by the vendored
+  // posterior alongside question evidence. The CONVERSATION channel does NOT
+  // come through here — it has its own scoring model (submitInterviewScore).
   function submitExternalEvidence(evidence) {
     setAttemptState((current) => {
       if (!current.attempt) return current;
       const next = appendExternalEvidence(current.attempt, evidence);
       saveAttemptDraft({ ...next.attempt, routing: routingRef.current, phasesDone: phasesDoneRef.current });
       return next;
+    });
+  }
+
+  // 对话通道的独立评分：走 src/interview-scoring-model.js，不并入证据数组。
+  //
+  // attempt 兜底：综合测评的 attempt 只在从测评卡片进入时创建（startAssessment）。
+  // 若学员通过直链（#assessment/comprehensive/level/1）或刷新进入对话关，
+  // attempt 可能还是空的 —— 此时惰性创建一个，否则对话分数会被静默丢弃。
+  function submitInterviewScore(interview) {
+    setAttemptState((current) => {
+      const base = current.attempt ?? createAttempt({ totalQuestions: EVIDENCE_BUDGET });
+      const next = recordInterviewScore(base, interview);
+      saveAttemptDraft({ ...next.attempt, routing: routingRef.current, phasesDone: phasesDoneRef.current });
+      return { ...current, attempt: next.attempt, result: next.result ?? current.result };
     });
   }
 
@@ -894,6 +917,7 @@ export function SiteExperience() {
               onPick={openAssessmentStage}
               onComplete={completeAssessmentStage}
               onExternalEvidence={submitExternalEvidence}
+              onInterviewScore={submitInterviewScore}
               onFetchComprehensiveQuestion={fetchComprehensiveQuestion}
               onAnswerComprehensive={submitComprehensiveAnswer}
               comprehensiveResult={attemptState.result}
@@ -921,6 +945,7 @@ export function SiteExperience() {
         reverse={webglTransition.reverse}
         scheme={transitionScheme}
         onComplete={handleTransitionComplete}
+        onRelease={handleTransitionRelease}
       />
     </div>
   );

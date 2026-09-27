@@ -53,11 +53,11 @@ export const INTERVIEW_LADDER = [
     anchorPrompt: true,
     asks: [
       "先不聊假设，聊真的——你最近一次用 AI 做事是什么时候？做了什么？",
-      "咱们从实际经历开始：你最近用 AI 做过什么事？随便哪件都行，越具体越好。",
+      "咱们从实际经历开始：你最近用 AI 做成过一件什么事？随便哪件都行。",
     ],
     followUps: [
-      "有点笼统了——具体是哪一件事？用的什么工具？最后拿到的东西长什么样？",
-      "展开讲讲：那一次你从哪一步开始用 AI，它给了你什么，你又做了什么？",
+      "这件事最后做成什么样了？跟我说说结果。",
+      "那一次你从哪一步开始用 AI 的？就聊这一步。",
     ],
   },
   {
@@ -69,8 +69,8 @@ export const INTERVIEW_LADDER = [
       "如果重来一次，你会怎么跟它说你要的结果？把话原样说给我听。",
     ],
     followUps: [
-      "有一点还没落地——这件事做完，你怎么判断它算做好了？补一个标准给我。",
-      "再具体一点呢？比如对象是谁、要产出什么、长什么样？",
+      "做完之后，你怎么判断它算做好了？",
+      "这个东西是做给谁用的？这一点会影响你怎么跟 AI 说吗？",
     ],
   },
   {
@@ -78,12 +78,12 @@ export const INTERVIEW_LADDER = [
     dims: ["D2", "D3"],
     rubric: "是否主动设定边界条件（篇幅/风格/格式/受众/边界之一以上）",
     asks: [
-      "还是那件事——你有没有给它设过限制？比如长度、格式、给谁看。你会加哪几个？",
-      "如果只能加两个限制条件，你加哪两个？为什么是这两个？",
+      "还是那件事——你有没有给它设过限制？比如长度、格式、给谁看。",
+      "如果只能加一个限制条件，你会加哪一个？",
     ],
     followUps: [
-      "约束里还缺一块——给谁看的？什么场合用？这会改变输出的样子。",
-      "格式和长度呢？不限定的话 AI 很容易给你一大篇套话。",
+      "有没有想过这个东西是给谁看的？场合不同，说法也不一样。",
+      "那格式和长度呢？不限的话它容易给你一大篇套话。",
     ],
   },
   {
@@ -91,12 +91,12 @@ export const INTERVIEW_LADDER = [
     dims: ["D4", "D2"],
     rubric: "面对不理想输出，能否给出可操作的修正指令（指出保留什么、修改什么）",
     asks: [
-      "AI 第一次给的东西肯定有不满意的地方吧？你当时怎么跟它说让它改的？",
-      "假设它给你的结果太泛、全是套话——你的下一句话会怎么跟它说？",
+      "AI 第一次给的东西，有不满意的时候吧？你当时怎么跟它说让它改的？",
+      "假设它给你的结果太泛、全是套话——你的下一句话会怎么说？",
     ],
     followUps: [
-      "「再改改」这种话 AI 听不懂——哪句保留、哪句删掉、往哪个方向补？",
-      "能不能把你的反馈说成一个可执行的修改指令？",
+      "「再改改」这种话它听不懂——你最先想改的是哪一处？",
+      "能不能把你的反馈说成一条它一听就能执行的指令？",
     ],
   },
   {
@@ -105,16 +105,17 @@ export const INTERVIEW_LADDER = [
     rubric: "能否把讨论收敛成一条可直接复用的提示词（角色/任务/约束/输出格式四要素齐全）",
     asks: [
       "最后一步——把咱们刚才聊的那件事，写成一条能直接丢给 AI 用的提示词，发我看看。",
-      "收个尾：把刚才说的目标、约束、改法合成一条完整提示词，我要能直接复用的。",
+      "收个尾：把刚才说的目标、约束、改法合成一条完整提示词。",
     ],
     followUps: [
-      "离「直接可用」还差一点——把角色、任务、约束、输出格式四件套补齐。",
-      "再紧一点，删掉客套，只留 AI 需要知道的。",
+      "离「直接可用」还差一点——角色、任务、约束、格式四件套，先补哪一件进话里？",
+      "再紧一点，删掉客套，只留它必须知道的。",
     ],
   },
 ];
 
-// 打字错误映射：把常见字换成同音/形近的错字，用于"记者手快打错再更正"的人设。
+// 打字错误映射：把常见字换成同音/形近的错字，用于"记者手快打错"的人设。
+// 只注入、不更正——更正气泡（"打错了，是「xxx」"）是一条打断节奏的废消息。
 const TYPO_MAP = {
   "的": "地",
   "在": "再",
@@ -123,37 +124,6 @@ const TYPO_MAP = {
   "一": "以",
   "了": "勒",
 };
-
-const isCjk = (char) => typeof char === "string" && /[\u4e00-\u9fff]/.test(char);
-
-/**
- * 为错字选一个「读起来像真人更正」的引用窗口。
- *
- * 更正内容必须是完整的词，否则会生成 `*更正：好，` 这种既不成词又带标点的
- * 残片——学员看到的就是一行乱码。所以窗口只允许由汉字组成，且至少 2 个字：
- * 先取错字左右的连续汉字，不足时再顺延到邻近汉字，仍不足就放弃这次错字
- * （宁可不打错，也不给出读不通的更正）。
- */
-function correctionWindow(chars, index) {
-  let start = index;
-  let end = index;
-  while (start - 1 >= 0 && isCjk(chars[start - 1])) start -= 1;
-  while (end + 1 < chars.length && isCjk(chars[end + 1])) end += 1;
-
-  // 已经覆盖到 2 字以上：截一个以错字为中心的短词。
-  if (end - start + 1 >= 2) {
-    if (start === index && end > index) return { start, end: index + 1 };
-    if (end === index && start < index) return { start: index - 1, end };
-    return { start: Math.max(start, index - 1), end: Math.min(end, index + 1) };
-  }
-
-  // 单字词：向两侧找最近的汉字凑成双字。
-  const left = start - 1 >= 0 && isCjk(chars[start - 1]);
-  const right = end + 1 < chars.length && isCjk(chars[end + 1]);
-  if (left) return { start: start - 1, end };
-  if (right) return { start, end: end + 1 };
-  return null;
-}
 
 function pick(rng, list) {
   return list[Math.floor(rng() * list.length) % list.length];
@@ -203,8 +173,11 @@ function stripChatMarkers(text) {
 
 /**
  * 把一段完整回复拆成 1–3 段连发消息并排好投递时间表。
- * 按句号/问号/感叹号切分；每段打字时长 = 字数 ÷ 人设打字速度（带抖动）；
- * 小概率注入一个错字段，并在下一段用一句自然的更正修复。
+ * 按句号/问号/感叹号切分；每段打字时长 = 字数 ÷ 人设打字速度（带抖动）。
+ * 小概率把某个字打成错字并保留（"打错了，是「xxx」"那种更正气泡是一条
+ * 打断节奏的废消息，已于 2026-09 移除——错字本身就能带出真人手滑的感觉）。
+ * 表情直接并进正文末尾：以前的独立 <em> 贴纸排在块级段落后面，永远
+ * 会自己另起一行，学员看到的就是孤零零一行的 👀。
  */
 export function planDelivery(text, rng = Math.random, persona = INTERVIEWER) {
   const sentences = stripChatMarkers(text)
@@ -220,51 +193,26 @@ export function planDelivery(text, rng = Math.random, persona = INTERVIEWER) {
     groups.push(sentences.slice(index, index + perGroup).join(""));
   }
 
-  const segments = [];
-  groups.forEach((body, groupIndex) => {
+  const segments = groups.map((body, groupIndex) => {
     let delivered = body;
-    let correction = null;
     if (rng() < persona.typoRate) {
-      const chars = [...body];
+      const chars = [...delivered];
       for (let i = 0; i < chars.length; i += 1) {
         const typo = TYPO_MAP[chars[i]];
         if (!typo) continue;
-        // 只改动真正的词：更正窗口必须由汉字组成（见 correctionWindow）。
-        // 以前用固定 ±1 字符的窗口，遇到标点就产出 `*更正：好，` 这类残片。
-        const window = correctionWindow(chars, i);
-        if (window && rng() < 0.6) {
-          correction = {
-            right: chars.slice(window.start, window.end + 1).join(""),
-            wrongText: chars
-              .slice(window.start, window.end + 1)
-              .map((char, offset) => (window.start + offset === i ? typo : char))
-              .join(""),
-          };
-          chars[i] = typo;
-          delivered = chars.join("");
-          break;
-        }
+        chars[i] = typo;
+        delivered = chars.join("");
+        break;
       }
     }
+    const sticker = rng() < persona.stickerRate ? pick(rng, persona.stickers) : null;
     const speed = persona.typingSpeed * (1 + (rng() * 2 - 1) * persona.typingJitter);
-    segments.push({
-      text: delivered,
+    return {
+      text: sticker ? `${delivered} ${sticker}` : delivered,
       typingMs: Math.round(([...delivered].length / Math.max(0.5, speed)) * 1000),
       gapMs: groupIndex === groups.length - 1 ? 0
         : Math.round(persona.gapMinMs + rng() * (persona.gapMaxMs - persona.gapMinMs)),
-      sticker: rng() < persona.stickerRate ? pick(rng, persona.stickers) : null,
-    });
-    if (correction) {
-      segments.push({
-        // 更正写成完整的中文句子，而不是 `*更正：xxx`：那个行首星号是从
-        // 英文聊天习惯搬来的，在中文气泡里只是个没有含义的符号，学员看到
-        // 会以为是乱码。这里直接用口语把更正说清楚。
-        text: `打错了，是「${correction.right}」。`,
-        typingMs: 700,
-        gapMs: 500,
-        sticker: null,
-      });
-    }
+    };
   });
 
   const thinkMs = Math.round(persona.thinkMinMs + rng() * (persona.thinkMaxMs - persona.thinkMinMs));
@@ -282,7 +230,7 @@ export function planDelivery(text, rng = Math.random, persona = INTERVIEWER) {
 export function interviewOpening(rng = Math.random) {
   return [
     `${pick(rng, INTERVIEWER.tics)}，占用你几分钟——我是苏芮，正在做一期「普通人和 AI 怎么打交道」的深度报道，别紧张，就是聊天。`,
-    "最近你用 AI 做过什么？挑一件具体的说说：当时在忙啥、用了哪个工具、最后弄出来的东西咋样。",
+    "最近你用 AI 做过什么？挑一件印象最深的，跟我说说就行。",
   ];
 }
 
@@ -307,11 +255,91 @@ export function heuristicCredit(answer) {
   return heuristicSlotCredit("consolidate", answer);
 }
 
-export function interviewMessages({ thread, slot, followUp, lastNote }) {
+/**
+ * 聊天轨的提示词：只负责让苏记者「像人」，完全不承担打分。
+ *
+ * 拟人化手法参考公开角色对话实践的共识（人设结构化、情绪状态、
+ * 反 AI 腔清单、few-shot 接话示例），而不依赖任何模型的专属参数：
+ *  - 人设分四块写：背景与动机 / 说话习惯 / 绝不说的话 / 此刻状态；
+ *  - 「绝不说的话」直接点名 AI 腔高频词（首先/总之/作为AI…），比
+ *    正面要求「口语化」有效得多；
+ *  - few-shot 给一组真实的接话示范，模型模仿示例比遵守规则更稳；
+ *  - 输出是纯文本（不是 JSON）：聊天轨要快、要自然，评分的稳定性
+ *    由低温度的打分轨单独保证。
+ */
+export function interviewChatMessages({ thread, slot, followUp, lastNote }) {
+  // 连发模式下记者一轮就要发 2–3 条气泡，窗口太小会让模型忘了自己
+  // 问过什么，出现"能跑起来了吗"隔两轮再问一遍的重复。
   const history = thread
     .filter((item) => !item.pending && item.content)
-    .slice(-8)
+    .slice(-16)
     .map(({ role, content }) => ({ role: role === "user" ? "user" : "assistant", content }));
+  const ask = followUp
+    ? `学员刚回答了你的问题，但还可以更具体（你的观察：${lastNote || "有点笼统"}）。先接住他说的内容给一个具体的肯定，再顺着他的话换一个更好回答的角度帮他展开；不要否定他，不要重复问过的问题。`
+    : `请说出你的第 ${slot.index + 1} 句采访话术：${
+        slot.anchorPrompt
+          ? "请学员讲一段他最近真实的 AI 使用经历。"
+          : `这一问落在「${slot.intent ?? slot.rubric}」上，可参考问法（${slot.asks.join("／")}）。`
+      }只问一件事，用你自己的话。`;
+  return [
+    {
+      role: "system",
+      content: [
+        "【你是谁】苏芮，深度调查记者，跑科技口八年。现在在做一期「普通人和 AI 怎么打交道」的报道，采访一位学员。你不是客服，不是老师，是个真的对普通人的 AI 使用经历好奇的老记者。",
+        "【说话习惯】短句，微信节奏，一次 1–3 段，每段不超过 60 字。口语词随便用：诶、嗯……、说真的、我记一下——、等等这个细节好。会打错字，不装完美。",
+        "【绝不说的话】首先/其次/最后/总之/综上所述/作为AI/我是一个AI/很高兴为您/希望能够帮助您/以下是一些。不列条目，不打标题，不用书面腔，不一次问三个问题。",
+        "【接话协议 · 每条回复的第一句】必须先接住学员上一条回答：引用他话里的具体词（他说「搭了个网站」，你就从「搭网站」接起），给一个明确的正面回应——承认难度、点出亮点、或表达好奇。然后才是你的下一问，一整条回复最多两个问号，且围绕同一个点。",
+        "【示范】学员说「我用 AI 做了个参赛网站」——好的接话：「拿去比赛的站，这可不是随手玩玩的，挺厉害的 👀 你当时是把需求一次说完，还是边做边改的？」坏的接话：「哦？能详细说说你的使用场景、工具选择和最终成果吗？」（后者三个问题、没有接话、书面腔，禁止。）",
+        "【学员答不上来时】他要是说记不清、不会、没有——大方放过，顺着自己的好奇心换个轻的问法，别追着要。",
+        "【输出】只输出你作为苏芮说的话本身。不要 JSON，不要任何前缀、标注、括号旁白。表情偶尔用一个，放在句尾。",
+      ].join("\n"),
+    },
+    ...history,
+    {
+      role: "user",
+      content: `${ask}\n（这是导演指令，不要念出来。）`,
+    },
+  ];
+}
+
+/**
+ * 打分轨的提示词：冷静的评分员，看到的是该话题的问答对与档位锚点，
+ * 不看人设、不管聊天，只输出一个可审计的 JSON。
+ *
+ * 与聊天轨分开后，这里可以用低温度（调用方传 0.15）换来评分的
+ * 可复现性——同一段回答两次评分不再抖动；模型的人设、口癖、创造性
+ * 全部留在聊天轨，互不污染。
+ */
+export function interviewScoreMessages({ slot, questionAsked, userAnswer, priorAnswer = "" }) {
+  const rubric = rubricFor(slot.id);
+  const answerBlock = [
+    priorAnswer ? `（追问前的第一次回答，供参考）${priorAnswer}` : "",
+    `学员回答：${userAnswer}`,
+  ].filter(Boolean).join("\n");
+  return [
+    {
+      role: "system",
+      content: [
+        "你是测评系统的评分模块，不是聊天角色。依据档位锚点对学员在指定话题上的回答评分，输出一个 JSON。",
+        `【话题】${slot.id}`,
+        `【唯一评分考点】${rubric?.intent ?? slot.rubric}`,
+        "【分档锚点 · 只能选其中一档】",
+        formatAnchors(slot.id),
+        judgeDiscipline(),
+        "评分只依据学员的原话；他没有说到的要素不能脑补。宁可低档，不可虚构。",
+        '输出格式：只输出一个 JSON 对象（不要 markdown 代码块）：{"score":0到1的小数,"evidence":"从学员原话摘录的证据片段","note":"一句话档位判定依据"}。',
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: [`记者的提问：${questionAsked}`, answerBlock].join("\n"),
+    },
+  ];
+}
+
+// 兼容导出：旧的合并式构造器（聊天+评分同一个提示词、同一次采样）。
+// 新代码一律用 interviewChatMessages / interviewScoreMessages。
+export function interviewMessages({ thread, slot, followUp, lastNote }) {
   const rubric = rubricFor(slot.id);
   const isAnchor = Boolean(slot.anchorPrompt);
   const ask = followUp
@@ -319,6 +347,10 @@ export function interviewMessages({ thread, slot, followUp, lastNote }) {
     : isAnchor
       ? `请提出你的第 ${slot.index + 1} 个问题：请学员讲一段最近真实的 AI 使用经历。用你自己的话问，一到两句，别照抄提示。`
       : `请提出你的第 ${slot.index + 1} 个采访问题。要求：这一问必须落在本话题考点上（${rubric?.intent ?? slot.rubric}），可参考问法（${slot.asks.join("／")}），用你自己的话问，一到两句，别照抄。`;
+  const history = thread
+    .filter((item) => !item.pending && item.content)
+    .slice(-16)
+    .map(({ role, content }) => ({ role: role === "user" ? "user" : "assistant", content }));
   return [
     {
       role: "system",
@@ -326,6 +358,9 @@ export function interviewMessages({ thread, slot, followUp, lastNote }) {
         `你是${INTERVIEWER.byline}，正在对一位学员做关于「如何与 AI 协作」的采访测评。`,
         `人设要点：口语化、爱追问细节、偶尔用「${INTERVIEWER.tics.slice(0, 3).join("」「")}」这类口头语；消息短促（每段不超过 60 字），一次说 1–3 段；绝不用书面腔、绝不列大纲。`,
         "输出的是聊天消息：不要用任何 markdown 记号（不要 ** 加粗、不要 # 标题、不要 - 或 * 开头的列表、不要 ` 反引号），就用普通中文句子。",
+        "【接话协议 · 最高优先级】每条回复的第一句必须先接住学员上一条回答：引用他话里的具体词（他说「用 AI 搭了网站」，你就从「搭网站」接起），给他一个明确的正面回应——承认难度、点出亮点、或表达好奇。不许用「哦？」「那」这类干问句开头，不许对学员的回答不置可否就直接抛下一个问题。",
+        "【一次只问一件事】一整条回复里最多一到两个问号，且必须围绕同一个点。不要把「做了什么+用了什么+结果如何」串成一句连问——学员一次只答得了一个问题，没答到的信息留给下一个话题。",
+        "【不重复、不施压】发问前先看历史：同一个信息已经问过、或学员已经说过的，不要换个说法再问。学员答「记不清了」就大方换话题；学员答得简短（「有」「没有」）也当成有效回答，顺着它展开，不要连追两次。",
         isAnchor
           ? "开场策略：先请学员讲他自己最近真实的 AI 使用经历（做了什么、用什么工具、结果如何），后续所有追问都围绕这段经历展开，不要派发虚构任务。"
           : "追问策略：承接学员前面讲过的经历与工具，用「你刚才说的那件事」这类接续语，而不是另起一个假设场景。",
@@ -333,7 +368,7 @@ export function interviewMessages({ thread, slot, followUp, lastNote }) {
         "【分档锚点 · 只能选其中一档】",
         formatAnchors(slot.id),
         judgeDiscipline(),
-        '输出格式：只输出一个 JSON 对象（不要 markdown 代码块）：{"reply":"你对学员说的话，可用\n分段","score":0到1的小数,"evidence":"从学员原话摘录的证据片段","note":"一句话档位判定依据"}。',
+        '输出格式：只输出一个 JSON 对象（不要 markdown 代码块）：{"reply":"你对学员说的话，可用\\n分段","score":0到1的小数,"evidence":"从学员原话摘录的证据片段","note":"一句话档位判定依据"}。',
         `reply 里可以有两三个自然段，每段像微信消息一样短；score 是学员上一个回答在该话题上的档位分（没有上一个回答时填 0.5，evidence 填空字符串）。`,
       ].join("\n"),
     },

@@ -15,7 +15,7 @@ import {
   finalizeAttempt,
   recordAnswer,
 } from "../src/assessment-attempt.js";
-import { heuristicCredit, parseInterviewerJson, planDelivery, snapToScale, INTERVIEW_LADDER } from "../src/interviewer.js";
+import { heuristicCredit, parseInterviewerJson, planDelivery, snapToScale, INTERVIEW_LADDER, interviewChatMessages, interviewScoreMessages } from "../src/interviewer.js";
 import {
   ANTI_GAMING_RULES,
   CREDIT_BANDS,
@@ -189,33 +189,36 @@ test("the phase clock does not inherit a burnt-out baseline", async () => {
   assert.match(source, /const signature = `\$\{seconds\}:\$\{running\}`/);
 });
 
-test("a typo correction always quotes a multi-character word, never a lone glyph", () => {
-  // 更正内容必须够长才读得通；以前是 "*更正：一" 这种单字残片，既像乱码也
-  // 没有信息。现在写成「打错了，是「xxx」。」，这里验证引号里的词至少两字。
+test("a typo never spawns a separate correction bubble", () => {
+  // 更正气泡（"打错了，是「xxx」。"）是一条打断节奏的废消息：错字保留
+  // 在原句里（真人手滑感），但绝不再多发一条消息去承认它。
   for (let attempt = 0; attempt < 60; attempt += 1) {
-    const calls = { n: 0 };
-    const rng = () => {
-      calls.n += 1;
-      // First draw (typo gate) passes, second (which char) passes, rest random-ish.
-      if (calls.n === 1) return 0.001;
-      if (calls.n === 2) return 0.1;
-      return (calls.n * 0.37) % 1;
-    };
-    const plan = planDelivery("我把三千字的纪要整理好了交给导师", rng);
+    const plan = planDelivery("我把三千字的纪要整理好了交给导师，效果号极了", Math.random);
     for (const segment of plan.segments) {
-      const match = segment.text.match(/^打错了，是「(.+)」。$/);
-      if (!match) continue;
-      assert.ok([...match[1]].length >= 2, `correction too short: ${segment.text}`);
+      assert.ok(!segment.text.includes("打错了"), `correction leaked: ${segment.text}`);
+      assert.ok(!segment.text.includes("更正"), `correction leaked: ${segment.text}`);
     }
   }
 });
 
-test("planDelivery occasionally injects a typo with a correction segment", () => {
+test("planDelivery keeps the typo inline without announcing it", () => {
   let calls = 0;
   const rng = () => { calls += 1; return calls === 1 ? 0.01 : 0.9; };
   const plan = planDelivery("我在说话的好", rng);
   const joined = plan.segments.map((segment) => segment.text).join("");
-  assert.ok(joined.includes("打错了") || joined.includes("我在说话的好"));
+  assert.ok(!joined.includes("打错了"), `correction bubble leaked: ${joined}`);
+  assert.ok(joined.includes("我再说话的好"), `typo not applied: ${joined}`);
+});
+
+test("the sticker rides at the end of the message text, never on its own line", () => {
+  // 表情以前是独立的 <em> 贴纸，排在块级段落后永远另起一行；现在直接
+  // 并进该段正文末尾，跟着文字一起换行。
+  let calls = 0;
+  const rng = () => { calls += 1; return calls === 1 ? 0.9 : 0.01; };
+  const plan = planDelivery("用的是哪个 AI，还是几个凑着用?", rng);
+  const last = plan.segments[plan.segments.length - 1].text;
+  assert.ok(/[\u{1F300}-\u{1FAFF}]/u.test(last), `sticker missing: ${last}`);
+  assert.ok(!/\n\s*[\u{1F300}-\u{1FAFF}]/u.test(last), `sticker on its own line: ${last}`);
 });
 
 test("no chat marker symbols survive into the delivered segments", () => {
@@ -236,6 +239,49 @@ test("the interview opening is exactly two lines", async () => {
   assert.equal(interviewOpening(() => 0.5).length, 2);
 });
 
+// ── 双轨引擎：聊天轨只管像人，打分轨只管稳定 ──
+test("chat track carries the persona protocol and no grading anchors", () => {
+  const slot = { ...INTERVIEW_LADDER[0], index: 0 };
+  const messages = interviewChatMessages({
+    thread: [{ role: "user", content: "我用AI做了个网站" }],
+    slot,
+    followUp: false,
+  });
+  const system = messages[0].content;
+  // 接话协议 / 反AI腔清单 / few-shot 示范是拟人化的三根支柱。
+  assert.match(system, /接话协议/);
+  assert.match(system, /绝不说的话/);
+  assert.match(system, /示范/);
+  assert.match(system, /只问一件事|最多两个问号/);
+  // 聊天轨不承载评分：锚点、判定纪律、JSON 格式要求都不该出现。
+  assert.ok(!system.includes("分档锚点"), "chat track leaked grading anchors");
+  assert.ok(!system.includes("判定纪律"), "chat track leaked judge discipline");
+  assert.ok(!system.includes('"score"'), "chat track must not request a score");
+  // 历史窗口按条数放行（16 条），最后一条用户消息必须在场。
+  assert.equal(messages[messages.length - 2].role, "user");
+});
+
+test("grading track is a cold grader: anchors in, persona out", () => {
+  const slot = INTERVIEW_LADDER[1];
+  const messages = interviewScoreMessages({
+    slot,
+    questionAsked: "你当时是怎么跟 AI 描述你要的结果的？",
+    userAnswer: "我就说帮我做个网站",
+    priorAnswer: "做了个网站",
+  });
+  const system = messages[0].content;
+  assert.match(system, /分档锚点/);
+  assert.match(system, /判定纪律/);
+  assert.match(system, /"score"/);
+  // 评分员不演戏：人设与接话规则一律不得混入。
+  assert.ok(!system.includes("接话协议"), "persona protocol leaked into grading");
+  assert.ok(!system.includes("绝不说的话"), "persona rules leaked into grading");
+  // 学员的问答对（含追问前的第一次回答）要原样进入评分上下文。
+  const userTurn = messages[messages.length - 1].content;
+  assert.match(userTurn, /帮我做个网站/);
+  assert.match(userTurn, /追问前的第一次回答/);
+});
+
 test("heuristicCredit rewards specificity over brevity", () => {
   assert.equal(heuristicCredit(""), 0);
   const vague = heuristicCredit("随便弄一下");
@@ -245,8 +291,9 @@ test("heuristicCredit rewards specificity over brevity", () => {
 });
 
 // ── 严格打分规则（see .agents/skills/aiquos-interview-scoring） ──
-test("the credit scale is exactly the five auditable bands", () => {
-  assert.deepEqual(CREDIT_SCALE, [0, 0.25, 0.5, 0.75, 1]);
+test("the credit scale is exactly the seven auditable bands", () => {
+  // 7 档非等距：低区紧凑、高区展开，让中/高水平有档位承载
+  assert.deepEqual(CREDIT_SCALE, [0, 0.2, 0.45, 0.65, 0.8, 0.92, 1]);
   assert.deepEqual(CREDIT_BANDS.map((band) => band.credit), CREDIT_SCALE);
   for (const band of CREDIT_BANDS) assert.ok(band.label.length > 0 && band.summary.length > 0);
 });
@@ -285,12 +332,12 @@ test("judge discipline carries the evidence, conservatism and anti-gaming rules"
   assert.deepEqual(numbers, numbers.map((_, index) => index + 1));
 });
 
-test("scores snap to the five-band scale", () => {
-  // 0.63 sits nearer 0.75 than 0.5 — snapping rounds to the closer band.
-  assert.equal(snapToScale(0.63), 0.75);
-  assert.equal(snapToScale(0.6), 0.5);
-  assert.equal(snapToScale(0.72), 0.75);
-  assert.equal(snapToScale(0.9), 1);
+test("scores snap to the seven-band scale", () => {
+  // 吸附到最近档位（量表非等距，所以要按实际距离判断）。
+  assert.equal(snapToScale(0.63), 0.65);   // 距 0.65 更近
+  assert.equal(snapToScale(0.6), 0.65);    // 距 0.65(0.05) < 距 0.45(0.15)
+  assert.equal(snapToScale(0.3), 0.2);     // 距 0.2(0.1) < 距 0.45(0.15)
+  assert.equal(snapToScale(0.9), 0.92);
   assert.equal(snapToScale(0.03), 0);
   assert.ok(CREDIT_SCALE.every((credit) => snapToScale(credit) === credit));
 });
@@ -326,8 +373,8 @@ test("parseInterviewerJson accepts messy wrapper text and rejects junk", () => {
   // Prose around the JSON object is tolerated (models add it sometimes).
   const messy = parseInterviewerJson('好的，如下：{"reply":"你好","score":0.7,"note":"不错"} 以上。');
   assert.equal(messy.reply, "你好");
-  // 0.7 snaps onto the five-band scale (nearest band = 0.75).
-  assert.equal(messy.score, 0.75);
+  // 0.7 snaps onto the seven-band scale (nearest band = 0.65).
+  assert.equal(messy.score, 0.65);
   assert.equal(typeof messy.evidence, "string");
   assert.equal(parseInterviewerJson("```json\n{\"reply\":\"hi\",\"score\":0.5}\n```").reply, "hi");
   assert.equal(parseInterviewerJson("not json at all"), null);

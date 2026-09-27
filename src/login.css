@@ -230,7 +230,7 @@
   /* Own layer: the 14px blur rasterises once and is reused by every
      view-transition snapshot of this page instead of being recomputed
      mid-transition, which read as a hitch at the start of the slide. */
-  transform: translateZ(0);
+  transform: translateX(-50%) translateZ(0);
   will-change: filter, transform;
 }
 

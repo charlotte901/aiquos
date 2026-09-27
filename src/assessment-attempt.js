@@ -72,7 +72,39 @@ export function createAttempt({ questions = null, totalQuestions, assessmentId =
     evidence: [],
     scoringVersion: SCORING_VERSION,
     questionBankVersion: QUESTION_BANK_VERSION,
+    // 对话式测评的独立评分结果。
+    //
+    // 为什么单独存：对话通道有自己的评分模型（src/interview-scoring-model.js），
+    // 依据是五个话题的档位分，不该混进上面的 evidence 数组 —— 那是客观题/
+    // 实操走的 IRT 链路，两套模型的证据语义与量纲不同。
+    // completed 判定仍由证据数量决定，对话分数是并行的一条结果线。
+    interview: null,
   };
+}
+
+/**
+ * 记录对话通道的评分结果（InterviewPhase 每次判分后上报）。
+ *
+ * 不产生 question evidence，只更新对话自己的分数快照。
+ */
+export function recordInterviewScore(attempt, interview) {
+  if (!attempt) return { attempt, result: null };
+  if (!interview || typeof interview !== "object") return { attempt, result: currentResult(attempt) };
+  const next = {
+    ...attempt,
+    interview: {
+      slotCredits: interview.slotCredits ?? {},
+      dimensions: Array.isArray(interview.dimensions) ? interview.dimensions : [],
+      overallScore: Number.isFinite(interview.overallScore) ? interview.overallScore : null,
+      grade: interview.grade ?? null,
+      completed: Boolean(interview.completed),
+      answeredSlots: interview.answeredSlots ?? 0,
+      totalSlots: interview.totalSlots ?? 0,
+      coveredDimensions: Array.isArray(interview.coveredDimensions) ? interview.coveredDimensions : [],
+      recordedAt: new Date().toISOString(),
+    },
+  };
+  return { attempt: next, result: currentResult(next) };
 }
 
 export function recordAnswer(attempt, question, selectedKeys, answeredAt = new Date().toISOString()) {

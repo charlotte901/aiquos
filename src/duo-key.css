@@ -1,0 +1,137 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 测评界面的「厚实按钮」设计系统
+ *
+ * 视觉语言参考多邻国（Duolingo）的公开设计语言：立体感来自按钮底部那条
+ * 实心"厚度"，按下时面部下沉、厚度消失。这套做法在测评页很合适——选项卡
+ * 需要一眼看出"可以按"，反馈色需要一眼分辨对错。
+ *
+ * 实现要点（这是整套效果的关键）：厚度**不用 box-shadow 画在按钮自身**，
+ * 而是放在 ::before 上、且只写偏移不写颜色。box-shadow 省略颜色时会取
+ * currentColor，于是把 currentColor 设成"厚色"，厚度就自动跟随变体颜色，
+ * 不必为每个配色各写一条规则。
+ *
+ * 按下时：按钮 translateY(厚度) 让面部下沉，::before 的阴影同时归零。
+ * 总高度不变，因此不会引起周围元素重排。
+ *
+ * 色值自建。这里是通用色相，不绑定某个品牌：绿=正确、红=错误、蓝=主操作。
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* 主色（正确 / 主操作） */
+  --duo-green: #34c759;
+  --duo-green-lip: #1f9d3f;
+  --duo-green-wash: #e8f9ed;
+
+  /* 错误 */
+  --duo-red: #ff5a5f;
+  --duo-red-lip: #d93a40;
+  --duo-red-wash: #ffecec;
+
+  /* 中性 */
+  --duo-ink: #2b2b2b;
+  --duo-ink-soft: #6f6f6f;
+  --duo-ink-faint: #a8a8a8;
+  --duo-line: #e6e6e6;
+  --duo-surface: #ffffff;
+
+  /* 厚度与节奏 */
+  --duo-lip: 4px;
+  --duo-lip-sm: 3px;
+  --duo-ease: cubic-bezier(.3, .7, .4, 1);
+  --duo-ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+/* ── 厚实按钮基类 ───────────────────────────────────────────────────────────── */
+
+.duo-key {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  background: none;
+  transition: transform 120ms var(--duo-ease), filter 160ms ease, box-shadow 120ms var(--duo-ease);
+}
+
+/* 面部：承载实际底色与圆角。 */
+.duo-key::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--duo-key-bg, var(--duo-green));
+  /* 不写颜色 → 取 currentColor；currentColor 设成厚色，厚度自动跟随变体。 */
+  color: var(--duo-key-lip, var(--duo-green-lip));
+  box-shadow: 0 var(--duo-lip) 0;
+  transition: box-shadow 120ms var(--duo-ease);
+}
+
+.duo-key:hover:not(:disabled) { filter: brightness(1.06); }
+
+/* 按下：面部下沉一个厚度，厚度本身归零——总高度不变，不引起重排。 */
+.duo-key:active:not(:disabled) {
+  transform: translateY(var(--duo-lip));
+}
+.duo-key:active:not(:disabled)::before { box-shadow: 0 0 0; }
+
+.duo-key:disabled {
+  cursor: default;
+  filter: saturate(.35) brightness(1.04);
+  opacity: .7;
+}
+
+/* 变体：只换两个变量，厚度颜色自动跟随。 */
+.duo-key.is-green { --duo-key-bg: var(--duo-green); --duo-key-lip: var(--duo-green-lip); }
+.duo-key.is-red { --duo-key-bg: var(--duo-red); --duo-key-lip: var(--duo-red-lip); }
+.duo-key.is-quiet {
+  --duo-key-bg: #f2f2f2;
+  --duo-key-lip: #d8d8d8;
+  color: var(--duo-ink-soft);
+}
+
+/* ── 动效原语（MIT 许可的开源 easing，值取自 open-props） ──────────────────── */
+
+/* 成功弹一下：轻微过冲后回位。 */
+@keyframes duo-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+/* 失败左右晃动：幅度用百分比，随元素宽度缩放。 */
+@keyframes duo-shake {
+  10%, 90% { transform: translateX(-2%); }
+  20%, 80% { transform: translateX(3%); }
+  30%, 50%, 70% { transform: translateX(-5%); }
+  40%, 60% { transform: translateX(5%); }
+  100% { transform: translateX(0); }
+}
+/* 涟漪：从元素中心扩散一圈淡出。 */
+@keyframes duo-burst {
+  0% { opacity: .7; transform: scale(.9); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+/* 入场：向上浮入。 */
+@keyframes duo-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.duo-pop { animation: duo-pop 380ms var(--duo-ease-spring) both; }
+.duo-shake { animation: duo-shake 520ms cubic-bezier(.36, .07, .19, .97) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .duo-pop, .duo-shake { animation: none; }
+  .duo-key { transition: none; }
+  .duo-key:active:not(:disabled) { transform: none; }
+}

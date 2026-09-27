@@ -26,6 +26,7 @@ const modules = [
   "worker/objective-quiz.js",
   "worker/objective-questions.json",
   "worker/practical-tasks.js",
+  "worker/practical-score.js",
   "worker/comprehensive-quiz.js",
   "worker/bank-store.js",
   "worker/admin.js",
@@ -35,6 +36,7 @@ const modules = [
   "src/banks/comprehensive-880.json",
   "src/banks/practical-80.json",
   "src/banks/practical-10.json",
+  "src/practical-scoring.js",
   "vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs",
 ];
 

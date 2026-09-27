@@ -1,11 +1,12 @@
 import * as THREE from "three";
+import { createCardShadowTexture } from "./stamp-texture.js";
 
 /**
  * Scheme B: 3D Cube Face Ejection & 180-Degree Card Flip.
  * Creates a thick cardstock object with front (ticket) and back (gold emblem passport).
  */
 
-export function createEjectCard(frontTex, backTex, width = 706, height = 460) {
+export function createEjectCard(frontTex, backTex, width = 706, height = 383) {
   const group = new THREE.Group();
   group.name = "eject-card-root";
 
@@ -22,6 +23,7 @@ export function createEjectCard(frontTex, backTex, width = 706, height = 460) {
     color: 0xffeef5,
     roughness: 0.3,
     metalness: 0.1,
+    toneMapped: false,
   });
 
   const frontMat = new THREE.MeshPhysicalMaterial({
@@ -30,6 +32,7 @@ export function createEjectCard(frontTex, backTex, width = 706, height = 460) {
     metalness: 0.05,
     clearcoat: 0.85,
     clearcoatRoughness: 0.12,
+    toneMapped: false, // land with the DOM card's exact colours, not ACES of them
   });
 
   const backMat = new THREE.MeshPhysicalMaterial({
@@ -38,12 +41,30 @@ export function createEjectCard(frontTex, backTex, width = 706, height = 460) {
     metalness: 0.35,
     clearcoat: 0.9,
     clearcoatRoughness: 0.08,
+    toneMapped: false,
   });
 
   const materials = [edgeMat, edgeMat, edgeMat, edgeMat, frontMat, backMat];
   const mesh = new THREE.Mesh(geo, materials);
   mesh.castShadow = true;
   group.add(mesh);
+
+  // The DOM card's resting drop shadow — fades in on approach so the frozen
+  // final frame carries the same grounding as the mounted page.
+  const shadowTex = createCardShadowTexture();
+  const shadowMat = new THREE.MeshBasicMaterial({
+    map: shadowTex,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    toneMapped: false,
+  });
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), shadowMat);
+  // The texture's opaque core is ~66% of its canvas; oversize so the core
+  // matches the card face, and ride slightly behind it.
+  shadow.scale.set(w * 1.52, h * 1.73, 1);
+  shadow.position.z = -0.03;
+  group.add(shadow);
 
   return {
     group,
@@ -63,16 +84,21 @@ export function createEjectCard(frontTex, backTex, width = 706, height = 460) {
       const z = fromTransform.z + (toTransform.z - fromTransform.z) * p + jumpZ;
       group.position.set(x, y, z);
 
-      // Rotation: 180° Flip around Y + gentle aerodynamic tilt around Z & X
-      // Start at back (or initial face angle) and flip 180° to reveal front face
+      // Rotation: 180° flip around Y. The +π offset DECAYS with progress
+      // (π·(1−p)), so the passport back shows at the cube, the flip reveals
+      // the ticket mid-air, and the card lands FRONT-facing on the target —
+      // a bare `to + π` used to land showing the back.
       const rotX = fromTransform.rotX + (toTransform.rotX - fromTransform.rotX) * p + Math.sin(p * Math.PI) * 0.22;
-      const rotY = fromTransform.rotY + (toTransform.rotY + Math.PI - fromTransform.rotY) * p;
+      const rotY = fromTransform.rotY + (toTransform.rotY - fromTransform.rotY) * p + Math.PI * (1 - p);
       const rotZ = fromTransform.rotZ + (toTransform.rotZ - fromTransform.rotZ) * p - Math.sin(p * Math.PI) * 0.15;
       group.rotation.set(rotX, rotY, rotZ);
 
       // Scale interpolation
       const s = fromTransform.scale + (toTransform.scale - fromTransform.scale) * p;
       group.scale.set(s, s, s);
+
+      const settle = Math.min(1, Math.max(0, (p - 0.55) / 0.45));
+      shadowMat.opacity = settle * settle * 0.55;
     },
   };
 }
