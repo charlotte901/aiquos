@@ -6,24 +6,27 @@ import { fileURLToPath } from "node:url";
 import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat } from "./worker/deepseek.js";
 import { OBJECTIVE_QUESTIONS_PATH, handleObjectiveQuestions } from "./worker/objective-quiz.js";
 import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./worker/practical-tasks.js";
+import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./worker/practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./worker/comprehensive-quiz.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./worker/admin.js";
 import { setBankPersistence } from "./worker/bank-store.js";
 
-// Admin bank edits persist to a gitignored overrides file next to the worker.
-const bankOverridesPath = fileURLToPath(new URL("./worker/bank-overrides.json", import.meta.url));
+// Admin bank edits persist to a gitignored overrides file next to the worker —
+// one file per edition, so publishing to the 全量版 cannot disturb the 精选版.
+const bankOverridesPath = (edition) =>
+  fileURLToPath(new URL(`./worker/bank-overrides${edition === "A" ? "-full" : ""}.json`, import.meta.url));
 setBankPersistence({
-  load: () => {
+  load: (edition) => {
     try {
-      return readFileSync(bankOverridesPath, "utf8");
+      return readFileSync(bankOverridesPath(edition), "utf8");
     } catch {
       return null;
     }
   },
-  save: (raw) => writeFileSync(bankOverridesPath, raw),
-  clear: () => {
+  save: (raw, edition) => writeFileSync(bankOverridesPath(edition), raw),
+  clear: (edition) => {
     try {
-      unlinkSync(bankOverridesPath);
+      unlinkSync(bankOverridesPath(edition));
     } catch {
       // Nothing persisted: resetting to bundled is already complete.
     }
@@ -88,6 +91,20 @@ export default defineConfig(({ mode }) => {
           server.middlewares.use(PRACTICAL_TASKS_PATH, async (req, res) => {
             const base = `http://${req.headers.host || "127.0.0.1"}`;
             const response = await handlePracticalTasks(new Request(new URL(req.url, base)));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(PRACTICAL_SCORE_PATH, async (req, res) => {
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handlePracticalScore(new Request(new URL(PRACTICAL_SCORE_PATH, base), {
+              method: req.method,
+              headers: { "content-type": req.headers["content-type"] || "application/json" },
+              body: req.method === "POST" ? Buffer.concat(chunks) : undefined,
+            }), env.DEEPSEEK_API_KEY);
             res.statusCode = response.status;
             response.headers.forEach((value, key) => res.setHeader(key, value));
             if (!response.body) return res.end();

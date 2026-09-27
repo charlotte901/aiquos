@@ -1,6 +1,7 @@
 import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat } from "./deepseek.js";
 import { OBJECTIVE_QUESTIONS_PATH, handleObjectiveQuestions } from "./objective-quiz.js";
 import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./practical-tasks.js";
+import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./comprehensive-quiz.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./admin.js";
 
@@ -14,6 +15,9 @@ export default {
     }
     if (new URL(request.url).pathname === PRACTICAL_TASKS_PATH) {
       return handlePracticalTasks(request);
+    }
+    if (new URL(request.url).pathname === PRACTICAL_SCORE_PATH) {
+      return handlePracticalScore(request, env.DEEPSEEK_API_KEY);
     }
     if (new URL(request.url).pathname === COMPREHENSIVE_QUESTION_PATH) {
       return handleComprehensiveQuestion(request);

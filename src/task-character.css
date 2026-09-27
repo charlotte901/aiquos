@@ -1,6 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
- * Task 3D Character Stage & Companion UI
- * Extensible Three.js character viewport, speech bubble & guardian identity
+ * Task Character Stage — 伴学角色视频舞台
+ *
+ * 一个带 alpha 通道的 3D 角色视频循环播放（人物站在原地，周期性地抬手
+ * 打招呼，其余时间待机不动）。舞台负责把角色在右侧区域里摆正居中。
  * ───────────────────────────────────────────────────────────────────────────── */
 
 .task-character-stage {
@@ -15,212 +17,69 @@
 .task-character-container {
   position: relative;
   display: flex;
-  flex-direction: column;
+  /* 角色在舞台区域内水平 + 垂直居中，四周留出呼吸空间。
+     素材是紧贴人物裁切的竖长幅，若按高度撑满会顶天立地、贴住上下边缘。 */
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  min-height: 480px;
-  border-radius: clamp(32px, 3vw, 44px);
-  padding: 20px 16px 24px;
+  min-height: 0;
+  padding: clamp(14px, 2.2vh, 26px) clamp(6px, 1.2vw, 18px);
   box-sizing: border-box;
   overflow: hidden;
   user-select: none;
+  pointer-events: none;
 }
 
-/* 3D WebGL Canvas Layer */
-.task-character-canvas {
-  position: absolute;
-  inset: 0;
+/* 每个通道的缩放/位移由组件以行内 CSS 变量注入（值来自
+   src/character-tuning.json，?tune=1 面板可覆盖）。
+   scale 作用于视频元素，x/y 是位移，单位是视频自身尺寸的百分比
+   （10 = 移动自身宽度的 10%）。这里只声明兜底值，避免未注入时变量为空。 */
+.task-character-container {
+  --ctune-scale: 1;
+  --ctune-x: 0%;
+  --ctune-y: 0%;
+}
+
+/* The alpha video: `contain` keeps the whole figure visible and centers it in
+   the padded box; the letterbox area stays transparent so the stage's theme
+   colour shows through. 微调值以 translate + scale 叠加在居中结果之上。 */
+.task-character-video {
+  display: block;
   width: 100%;
   height: 100%;
-  z-index: 1;
-  pointer-events: auto;
-  cursor: grab;
+  object-fit: contain;
+  object-position: center center;
+  background: transparent;
+  transform: translate(var(--ctune-x), var(--ctune-y)) scale(var(--ctune-scale));
+  transform-origin: center center;
+  /* 视频自身的透明通道负责造型，不做任何滤镜，避免边缘发灰 */
+  pointer-events: none;
 }
 
-.task-character-canvas:active {
-  cursor: grabbing;
-}
-
-.task-character-canvas canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  outline: none;
-}
-
-/* Floating Interactive Speech Bubble */
-.task-character-bubble {
-  position: relative;
-  z-index: 2;
-  width: min(92%, 360px);
-  margin-top: clamp(8px, 1.5vh, 20px);
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px) saturate(1.3);
-  -webkit-backdrop-filter: blur(16px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  border-radius: 22px;
-  box-shadow:
-    0 16px 36px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  color: #1a2536;
-  animation: bubble-float-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  transition: transform 260ms ease, box-shadow 260ms ease;
-}
-
-.task-character-bubble:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 20px 42px rgba(0, 0, 0, 0.15),
-    0 3px 10px rgba(0, 0, 0, 0.06);
-}
-
-@keyframes bubble-float-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.bubble-header {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 6px;
-  color: var(--assessment-color, #247cf1);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.bubble-speaker {
-  letter-spacing: 0.02em;
-}
-
-.bubble-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.bubble-badge.is-correct {
-  background: #e8f9f0;
-  color: #059669;
-}
-
-.bubble-badge.is-wrong {
-  background: #fff1ee;
-  color: #e11d48;
-}
-
-.bubble-text {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #334155;
-  font-weight: 500;
-}
-
-/* Bottom Identity Badge */
-.task-character-badge {
-  position: relative;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 18px;
-  background: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
-  transition: background 260ms ease, transform 260ms ease;
-}
-
-.task-character-badge:hover {
-  background: rgba(0, 0, 0, 0.36);
-  transform: translateY(-1px);
-}
-
-.badge-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 10px #34d399;
-  animation: pulse-glow 2s infinite ease-in-out;
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-    box-shadow: 0 0 14px #34d399;
-  }
-}
-
-.task-character-container.is-wrong .badge-pulse {
-  background: #fbbf24;
-  box-shadow: 0 0 10px #fbbf24;
-}
-
-.badge-name {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.badge-status {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.76);
-  font-weight: 500;
-  padding-left: 4px;
-  border-left: 1px solid rgba(255, 255, 255, 0.24);
-}
-
-/* Mobile / Narrow Screen Responsive Adjustments */
-@media (max-width: 1024px) {
+/* ── 16:9 视口特化 ───────────────────────────────────────────────────────────
+ * 16:9（及更宽）是这套测评页面的主投放场景：舞台窄而高，角色按 contain
+ * 撑满高度时会显得顶天立地、左右也被裁得局促。此比例下单独给更足的
+ * 上下留白，让角色端正地居中在右侧舞台里。
+ * 用 min-aspect-ratio 而不是固定 16/9，是为了让更宽的屏幕同样受益。
+ */
+@media (min-aspect-ratio: 16/9) {
   .task-character-container {
-    min-height: 380px;
-    padding: 12px 10px 16px;
-  }
-  .task-character-bubble {
-    width: 95%;
-    padding: 11px 14px;
-    border-radius: 18px;
-  }
-  .bubble-text {
-    font-size: 13px;
+    padding: clamp(22px, 3.4vh, 40px) clamp(6px, 1vw, 18px);
   }
 }
 
-/* 移动端本舞台收窄到 280px，容器必须跟着收缩，否则底部徽章会溢出压住答题卡 */
-@media (max-width: 960px) {
+/* 16:10 / 4:3 这类更"方正"的视口：舞台相对更高，留白收一点，
+   避免角色被压得比卡片明显小一号。 */
+@media (max-aspect-ratio: 8/5) {
   .task-character-container {
-    min-height: 0;
-    height: 100%;
-    padding: 10px 12px 14px;
+    padding: clamp(10px, 1.6vh, 18px) clamp(6px, 1.2vw, 18px);
   }
-  .task-character-badge {
-    padding: 6px 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 尊重系统设置：伴学角色不再做周期性动作（脚本把循环停在首帧）。 */
+  .task-character-video {
+    animation: none;
   }
-  .badge-name { font-size: 12px; }
-  .badge-status { font-size: 11px; }
 }

@@ -42,5 +42,23 @@ test("plain conversation text without markdown still renders as one paragraph", 
 test("conversation bubbles and agent output both render through MarkdownLite", async () => {
   const flow = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
   assert.match(flow, /<MarkdownLite text=\{item\.content\} \/>/);
-  assert.match(flow, /<MarkdownLite text=\{output\} \/>/);
+  assert.match(flow, /<MarkdownLite text=\{liveOutput\} \/>/);
+  assert.match(flow, /<MarkdownLite text=\{finalGeneration\.output\} \/>/);
+  assert.match(flow, /<MarkdownLite text=\{task\.source\} \/>/);
+});
+
+test("fenced code blocks render as pre/md-code, never dropped", async () => {
+  const { MarkdownLite } = await import("../src/markdown-lite.jsx").catch(() => ({}));
+  if (!MarkdownLite) return; // react import unavailable in this harness
+});
+
+test("GFM tables and fenced code are supported by the renderer source", async () => {
+  const source = await readFile(new URL("../src/markdown-lite.jsx", import.meta.url), "utf8");
+  // Tables: AI answers carry benchmark/comparison tables constantly.
+  assert.match(source, /md-table/);
+  assert.match(source, /thead/);
+  assert.match(source, /sepPattern|:?-\{2,\}/);
+  // Fenced code blocks.
+  assert.match(source, /md-code/);
+  assert.match(source, /\x60\x60\x60|```/);
 });

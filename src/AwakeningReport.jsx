@@ -80,7 +80,9 @@ function formatCompletedAt(iso) {
 }
 
 function reportModel(snapshot) {
-  if (!snapshot) {
+  // A snapshot without a usable result (corrupt or hand-edited storage) falls
+  // back to the labelled demo view instead of crashing the reports panel.
+  if (!snapshot || !snapshot.result || !Array.isArray(snapshot.result.dimensions)) {
     const average = Math.round(DEMO_DIMENSIONS.reduce((sum, item) => sum + item.score, 0) / DEMO_DIMENSIONS.length);
     return {
       dimensions: DEMO_DIMENSIONS,

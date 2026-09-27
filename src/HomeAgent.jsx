@@ -110,6 +110,15 @@ export function HomeAgent({ leaving = false }) {
 
   return (
     <div className={`home-agent${open ? " is-open" : ""}${leaving ? " is-leaving" : ""}`}>
+      {/* 打开时给页面盖一层高斯模糊背板：面板升为主界面，底下的首页内容
+          退成虚化的背景。点背板即可关闭，符合浮层的常规预期。 */}
+      {open && (
+        <div
+          className="home-agent-scrim"
+          aria-hidden="true"
+          onClick={() => toggle()}
+        />
+      )}
       {open && (
         <section className="home-agent-panel" role="dialog" aria-label={`和${AGENT_NAME}对话`}>
           <header className="home-agent-head">

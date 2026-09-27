@@ -28,6 +28,7 @@ import {
   readFileAsDataUrl,
 } from "./forum-board";
 import { GalleryBoard } from "./forum-gallery";
+import { onEnterSubmit } from "./ime";
 
 const FORUM_TAG_COLORS = {
   "AI 生图": { color: "#f568a3", ink: "#ffffff", accent: "#ffd7ec" },
@@ -260,12 +261,7 @@ function ForumComposer({ onBack, onPublish }) {
                 maxLength={16}
                 placeholder="输入主题名称"
                 onChange={(event) => setNewTag(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addTag();
-                  }
-                }}
+                onKeyDown={onEnterSubmit(addTag, { when: () => Boolean(newTag.trim()) })}
               />
               <button type="button" onClick={addTag} disabled={!newTag.trim()}>
                 <Plus size={16} weight="bold" />
@@ -476,7 +472,9 @@ export function ForumDetail({
   const bodyRef = useRef(null);
   const [copied, setCopied] = useState(false);
   const comments = activity.comments;
-  const saved = useFavoriteSaved(post.id);
+  // 收藏状态按作品身份判定（见 favorites-store 的 favoriteIdentity）：同一件
+  // 作品从案例库收藏过，这里也要显示"已收藏"，否则两个入口会各存一条。
+  const saved = useFavoriteSaved(post);
   const member = resolveMember(post.author);
 
   const copyPrompt = () => {

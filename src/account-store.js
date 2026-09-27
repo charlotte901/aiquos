@@ -51,13 +51,26 @@ function loadAccount() {
         const accountId = ID_PATTERN.test(parsed.accountId.trim())
           ? parsed.accountId.trim()
           : generateAccountId();
-        return { nickname: parsed.nickname, accountId };
+        return {
+          nickname: parsed.nickname,
+          accountId,
+          // 头像以 data URL 持久化：object URL 刷新后即失效，而头部的圆形
+          // 头像要跨会话稳定显示，所以只接受 data: 开头的地址。
+          avatar: typeof parsed.avatar === "string" && parsed.avatar.startsWith("data:")
+            ? parsed.avatar
+            : "",
+        };
       }
     }
   } catch {
     /* 损坏的本地数据按新账号处理 */
   }
-  return { nickname: "智核学员", accountId: generateAccountId() };
+  return { nickname: "智核学员", accountId: generateAccountId(), avatar: "" };
+}
+
+/** 没有头像时用昵称首字做圆形占位。 */
+export function accountInitial(nickname) {
+  return String(nickname ?? "").trim().charAt(0) || "智";
 }
 
 let account = loadAccount();

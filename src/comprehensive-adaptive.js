@@ -5,13 +5,31 @@ import {
 
 const DIMENSION_KEYS = DIMENSIONS.map((dimension) => dimension.key);
 const TYPES = ["single", "judge", "multi"];
-const DIFFICULTY_INDEX = { low: 0, medium: 1, high: 2 };
 const ANCHOR = { low: -1, medium: 0, high: 1 };
 
 // Cross-run question exposure counters, best-effort persisted so repeat runs
 // spread over the bank instead of re-serving the same favourites forever.
 export const ADAPTIVE_EXPOSURE_KEY = "aiquos.adaptive-exposure.v1";
 const EXPOSURE_CAP = 6;
+
+// ── CAT v3 stopping configuration ─────────────────────────────────────────
+// The objective phase is time-budgeted (~5min), not count-budgeted. Within the
+// budget selection runs a classic item-information loop; three rules can end
+// it early — the clock, the precision target (standard error of the ability
+// estimate), or the item cap for speed demons. A dimension-coverage veto keeps
+// any rule from stranding the six-dimension score without evidence.
+//
+// maxQuestions 是实测校准值，不是拍脑袋定的：用真实引擎 + 真题库跑满三种
+// 能力水平（强/中/弱）× 两种作答速度（15s/22s 每题），**每一次都是撞上限
+// 才停，没有一次因精度收敛提前结束**——也就是说在 5 分钟预算内，上限就是
+// 实际题量。20 题给六维各留出约 3 题的证据量，同时让"能力估计收敛"这条
+// 规则真正有机会发挥作用；更少的划线会让它永远不触发。
+export const CAT_STOP = {
+  minQuestions: 6,   // never stop before: scoring needs a usable evidence base
+  precisionFloor: 8, // SE-based early stop only applies from this many answers
+  maxQuestions: 20,  // hard cap per run
+  seTarget: 0.42,    // ability SE (logit scale) at which theta is "settled"
+};
 
 function loadExposure() {
   try {
@@ -109,6 +127,64 @@ export function nextTargetDifficulty(session) {
   return 0.65 * Math.max(-1.8, Math.min(1.8, ability)) + 0.35 * walk;
 }
 
+// ── CAT v3: item information & test precision ──────────────────────────────
+// Under the 1PL model the Fisher information of an item at ability θ is
+// p(1-p) — maximised when item difficulty matches θ. Ranking candidates by
+// information IS maximum-information selection; dimension need and exposure
+// multiply in as content-balance constraints (classic constrained-CAT).
+export function itemInformation(theta, difficulty) {
+  const p = 1 / (1 + Math.exp(-(theta - ANCHOR[difficulty])));
+  return p * (1 - p);
+}
+
+// Standard error of the ability estimate: the inverse square root of test
+// information (sum of item information over credited evidence). Drives the
+// precision stopping rule — stop when theta is measured tightly enough.
+export function abilityStandardError(session) {
+  const evidence = session.evidence.filter((item) => typeof item.credit === "number");
+  if (evidence.length === 0) return null;
+  const theta = estimateRunAbility(session);
+  let information = 0;
+  for (const item of evidence) information += itemInformation(theta, item.difficulty);
+  return information > 0 ? 1 / Math.sqrt(information) : null;
+}
+
+export function uncoveredDimensionKeys(session, evidenceDimCounts = null) {
+  const counts = evidenceDimCounts ?? session.dimensionCounts;
+  return DIMENSION_KEYS.filter((key) => (counts[key] ?? 0) === 0);
+}
+
+// Stopping decision for the timed objective phase. `bankCanCover` says whether
+// the remaining unseen pool still holds items for every uncovered dimension —
+// when it does not, the coverage veto steps aside rather than deadlocking.
+export function shouldStopCat({
+  answered,
+  elapsedMs,
+  budgetMs,
+  standardError,
+  uncoveredCount,
+  candidatesCanCoverUncovered = true,
+}) {
+  const timeUp = elapsedMs >= budgetMs;
+  if (uncoveredCount > 0 && candidatesCanCoverUncovered) {
+    return { stop: false, reason: null };
+  }
+  if (answered < CAT_STOP.minQuestions) {
+    return timeUp && !candidatesCanCoverUncovered
+      ? { stop: true, reason: "time" }
+      : { stop: false, reason: null };
+  }
+  if (answered >= CAT_STOP.maxQuestions) return { stop: true, reason: "cap" };
+  if (timeUp) return { stop: true, reason: "time" };
+  if (
+    standardError !== null && standardError <= CAT_STOP.seTarget
+    && answered >= CAT_STOP.precisionFloor
+  ) {
+    return { stop: true, reason: "precision" };
+  }
+  return { stop: false, reason: null };
+}
+
 function dimensionInfoWeights(session) {
   // Dimensions with fewer answered items carry more unknown information.
   return Object.fromEntries(
@@ -116,14 +192,31 @@ function dimensionInfoWeights(session) {
   );
 }
 
-export function selectAdaptiveQuestion({ questions, levelId, session, rng = Math.random, exposure = null }) {
+// Selects the next item. `levelId: null` means the whole bank (timed flow),
+// which gives the router the full difficulty ladder and dimension spread to
+// climb. `coverageCritical` hard-restricts candidates to items touching an
+// uncovered dimension — the guarantee behind "the run can always finish".
+export function selectAdaptiveQuestion({
+  questions,
+  levelId = null,
+  session,
+  rng = Math.random,
+  exposure = null,
+  coverageCritical = false,
+}) {
   const used = new Set(session.usedQuestionIds);
-  let candidates = questions
-    .filter((question) => question.levelId === levelId && !used.has(question.id));
+  let candidates = questions.filter((question) =>
+    (levelId === null || question.levelId === levelId) && !used.has(question.id));
   if (candidates.length === 0) return { question: null, session };
 
+  const uncovered = new Set(uncoveredDimensionKeys(session));
+  if (coverageCritical && uncovered.size > 0) {
+    const covering = candidates.filter((question) => question.dimKeys.some((key) => uncovered.has(key)));
+    if (covering.length > 0) candidates = covering;
+  }
+
   // Hard variety guard: never serve a third consecutive question of one type
-  // while any unused candidate of another type exists in this level.
+  // while any unused candidate of another type exists.
   if (session.typeStreak >= 2 && session.lastType) {
     const varied = candidates.filter((question) => question.type !== session.lastType);
     if (varied.length > 0) candidates = varied;
@@ -136,8 +229,8 @@ export function selectAdaptiveQuestion({ questions, levelId, session, rng = Math
 
   const ranked = candidates
     .map((question, order) => {
+      const information = itemInformation(target, question.difficulty);
       const difficultyDistance = Math.abs(ANCHOR[question.difficulty] - target);
-      const difficultyFit = 1 - difficultyDistance / 2;
       const dimensionInfo = question.dimKeys.reduce((total, key) => total + (infoWeights[key] ?? 0), 0);
       const dimensionLoad = question.dimKeys.reduce(
         (total, key) => total + (session.dimensionCounts[key] ?? 0),
@@ -146,11 +239,11 @@ export function selectAdaptiveQuestion({ questions, levelId, session, rng = Math
       const repeatsType = question.type === session.lastType ? 1 : 0;
       const typeVariety = repeatsType === 0 ? 1 : session.typeStreak >= 2 ? 0 : 0.4;
       const exposurePenalty = 0.12 * Math.min(EXPOSURE_CAP, usage[question.id] ?? 0);
-      // Without credited evidence the composite collapses to the v1 ordering:
-      // difficulty distance, then under-covered dimensions, then type change,
-      // then bank order. Exposure balancing applies in both branches.
+      // With credited evidence ranking is maximum-Fisher-information selection
+      // under content-balance constraints; without it the walk-centred
+      // information collapses to the v1 difficulty-distance ordering.
       const score = hasEvidence
-        ? 2 * difficultyFit + 1.2 * dimensionInfo + 0.4 * typeVariety - exposurePenalty
+        ? information * (1 + 1.6 * dimensionInfo) + 0.05 * typeVariety - exposurePenalty
         : -(difficultyDistance * 10 + dimensionLoad + repeatsType * 0.1) - exposurePenalty;
       return { question, order, score };
     })
@@ -225,6 +318,7 @@ export function createAdaptiveController(questions, { rng = Math.random } = {}) 
         typeStreak: session.typeStreak,
         evidenceCount: session.evidence.length,
         dimensionCounts: { ...session.dimensionCounts },
+        standardError: abilityStandardError(session),
       };
     },
     clearExposure() {

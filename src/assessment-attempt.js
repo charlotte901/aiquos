@@ -72,7 +72,39 @@ export function createAttempt({ questions = null, totalQuestions, assessmentId =
     evidence: [],
     scoringVersion: SCORING_VERSION,
     questionBankVersion: QUESTION_BANK_VERSION,
+    // 对话式测评的独立评分结果。
+    //
+    // 为什么单独存：对话通道有自己的评分模型（src/interview-scoring-model.js），
+    // 依据是五个话题的档位分，不该混进上面的 evidence 数组 —— 那是客观题/
+    // 实操走的 IRT 链路，两套模型的证据语义与量纲不同。
+    // completed 判定仍由证据数量决定，对话分数是并行的一条结果线。
+    interview: null,
   };
+}
+
+/**
+ * 记录对话通道的评分结果（InterviewPhase 每次判分后上报）。
+ *
+ * 不产生 question evidence，只更新对话自己的分数快照。
+ */
+export function recordInterviewScore(attempt, interview) {
+  if (!attempt) return { attempt, result: null };
+  if (!interview || typeof interview !== "object") return { attempt, result: currentResult(attempt) };
+  const next = {
+    ...attempt,
+    interview: {
+      slotCredits: interview.slotCredits ?? {},
+      dimensions: Array.isArray(interview.dimensions) ? interview.dimensions : [],
+      overallScore: Number.isFinite(interview.overallScore) ? interview.overallScore : null,
+      grade: interview.grade ?? null,
+      completed: Boolean(interview.completed),
+      answeredSlots: interview.answeredSlots ?? 0,
+      totalSlots: interview.totalSlots ?? 0,
+      coveredDimensions: Array.isArray(interview.coveredDimensions) ? interview.coveredDimensions : [],
+      recordedAt: new Date().toISOString(),
+    },
+  };
+  return { attempt: next, result: currentResult(next) };
 }
 
 export function recordAnswer(attempt, question, selectedKeys, answeredAt = new Date().toISOString()) {
@@ -101,6 +133,44 @@ export function recordAnswer(attempt, question, selectedKeys, answeredAt = new D
 export function currentResult(attempt) {
   if (!attempt || attempt.evidence.length === 0) return null;
   return scoreAssessment(attempt.evidence, { totalQuestions: attempt.totalQuestions });
+}
+
+// Non-question evidence from the conversation/practical phases: an LLM (or
+// offline heuristic) judge maps a rubric score to a 0..1 credit on chosen
+// dimensions. Shaped exactly like question evidence so the vendored core
+// scores it through the same posterior — difficulty "medium" keeps it neutral.
+export function appendExternalEvidence(attempt, { id, dimKeys, credit, difficulty = "medium", label = null }) {
+  if (!id || !Array.isArray(dimKeys) || dimKeys.length === 0 || typeof credit !== "number") {
+    return { attempt, result: currentResult(attempt) };
+  }
+  const entry = {
+    questionId: String(id),
+    type: "single",
+    difficulty,
+    dimKeys: [...new Set(dimKeys)],
+    selectedKeys: [],
+    credit: Math.max(0, Math.min(1, credit)),
+    answeredAt: new Date().toISOString(),
+    ...(label ? { external: label } : {}),
+  };
+  const evidence = attempt.evidence.some((item) => item.questionId === entry.questionId)
+    ? attempt.evidence.map((item) => (item.questionId === entry.questionId ? entry : item))
+    : [...attempt.evidence, entry];
+  if (evidence.length > attempt.totalQuestions) {
+    // Same FIFO contract as recordAnswer: never exceed the budget.
+    evidence.splice(0, evidence.length - attempt.totalQuestions);
+  }
+  const next = { ...attempt, questionIds: evidence.map((item) => item.questionId), evidence };
+  return { attempt: next, result: scoreAssessment(next.evidence, { totalQuestions: next.totalQuestions }) };
+}
+
+// Time-based runs do not know their question count up front: the objective
+// phase stops by clock/precision, so the budget is finalised to exactly the
+// evidence collected once the run ends.
+export function finalizeAttempt(attempt) {
+  const totalQuestions = Math.max(1, attempt.evidence.length);
+  const next = { ...attempt, totalQuestions };
+  return { attempt: next, result: scoreAssessment(next.evidence, { totalQuestions }) };
 }
 
 // Pure per-answer credit for callers (e.g. adaptive routing) that need the

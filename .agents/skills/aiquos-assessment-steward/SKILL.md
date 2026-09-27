@@ -16,9 +16,19 @@ then the workflows.
    `scoring-core.mjs` exports instead. The only legal change is upgrading the
    whole vendored folder to a newer official package version, with its own
    tests run green.
-2. **A run is 25 questions**: 5 stages × 5, `totalQuestions = 25`. A result is
-   `completed` only when answeredCount is exactly 25 AND all six dimensions
-   (D1–D6) have evidence. Overall score and grade exist only when completed.
+2. **A comprehensive run is three timed phases** (对话式 → 客观题 CAT → 实操,
+   ~5 min each; `src/assessment-timing.js` is the single source of truth for the
+   phase list). The objective phase is a CAT: `shouldStopCat` ends it by clock,
+   by ability-SE precision, or by the item cap, while a dimension-coverage veto
+   keeps it serving until D1–D6 each have evidence. The run's evidence budget is
+   finalised at the end (`finalizeAttempt` pins `totalQuestions` to the evidence
+   actually collected). A result is `completed` only when every dimension has
+   evidence; overall score and grade exist only then. Conversation and practical
+   phases contribute rubric evidence through `appendExternalEvidence`
+   (ids `conv-*` / `prac-*`) — see the `aiquos-interview-scoring` skill for the
+   conversation side's five-band scale and anti-gaming rules.
+   Standalone channels (objective/conversation/practical) run ONE timed phase,
+   no stage map.
 3. **Question bank changes require a version bump.** The bank records
    `objective-bank-v6-120` on every attempt and snapshot (see
    `QUESTION_BANK_VERSION` in `src/assessment-attempt.js`). Any edit to

@@ -14,13 +14,12 @@ import { useFavorites } from "./favorites-store";
 import { clearAllAssessmentData } from "./assessment-attempt";
 
 export function AccountSettings({ onBack, onLogout, busy, source = "home", variant = "screen" }) {
-  const { nickname, accountId } = useAccount();
+  const { nickname, accountId, avatar: accountAvatar } = useAccount();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState("");
   const [dataCleared, setDataCleared] = useState(false);
   const avatarInputRef = useRef(null);
   const favorites = useFavorites();
@@ -31,10 +30,16 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
     window.setTimeout(() => setDataCleared(false), 2600);
   };
 
+  // 头像存进账号（data URL）而不是组件状态：这样头部右上角的圆形头像、
+  // 以及下次打开页面都能拿到同一张图。object URL 一刷新就成了死链。
   const updateAvatar = (event) => {
     const file = event.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
-    setAvatarUrl(URL.createObjectURL(file));
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") setAccount({ avatar: reader.result });
+    };
+    reader.readAsDataURL(file);
     event.target.value = "";
   };
 
@@ -52,8 +57,8 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
           <i className="account-stage-arch" aria-hidden="true" />
           <i className="account-stage-lines" aria-hidden="true" />
           <div className="account-avatar-control">
-            <div className={`account-avatar${avatarUrl ? " has-image" : ""}`} aria-hidden={avatarUrl ? "true" : undefined}>
-              {avatarUrl ? <img src={avatarUrl} alt="" /> : nickname.trim().charAt(0) || "智"}
+            <div className={`account-avatar${accountAvatar ? " has-image" : ""}`} aria-hidden={accountAvatar ? "true" : undefined}>
+              {accountAvatar ? <img src={accountAvatar} alt="" /> : nickname.trim().charAt(0) || "智"}
             </div>
             <button type="button" className="avatar-change-button" onClick={() => avatarInputRef.current?.click()}>
               <Camera size={15} weight="bold" /> 更换头像

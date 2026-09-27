@@ -155,6 +155,54 @@
   font-size: 13px;
   color: #ffffffa6;
 }
+
+/* 题库版本切换：固定在左上角「返回选择」下方，竖排两枚小胶囊。
+   它是一次性的前置选择（选定后整场测评都跟随），不需要占据版面中央；
+   放在角落既不与 TEST! 字标抢位置，也不会在垂直居中时把卡片推下去。
+   尺寸刻意做小：这是设置项，不该比四张测评卡片更抢眼。 */
+.assessment-editions {
+  position: absolute;
+  top: 78px;
+  left: 32px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.assessment-edition {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 14px;
+  /* 未选中态要在 #08080a 上读得清：10% 白底 + 近纯白字 + 30% 白描边。
+     更低的对比（6%/77%/18%）在截图里几乎糊成一团。 */
+  border: 1.5px solid #ffffff4d;
+  border-radius: 999px;
+  background: #ffffff1a;
+  color: #fffffff0;
+  text-align: left;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.assessment-edition strong { font-size: 12.5px; font-weight: 800; }
+.assessment-edition span { font-size: 10.5px; opacity: .8; }
+.assessment-edition:disabled { opacity: .5; }
+/* 选中态与 hover 的顺序不是排版偏好，是特异性问题：
+   `:hover:not(:disabled)` 的特异性 (0,3,0) 高于 `[aria-pressed="true"]` (0,2,0)，
+   所以选中项在鼠标悬停时会被 hover 底色盖掉、看起来像没选中。
+   hover 规则用 :not([aria-pressed="true"]) 排除选中项，并把选中态写在最后。 */
+.assessment-edition:hover:not(:disabled):not([aria-pressed="true"]) {
+  background: #ffffff2b;
+  border-color: #ffffff7a;
+}
+.assessment-edition[aria-pressed="true"],
+.assessment-edition[aria-pressed="true"]:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #14121a;
+}
+.assessment-edition[aria-pressed="true"] span { opacity: .7; }
+
 .assessment-back {
   position: absolute;
   top: 28px;
@@ -207,6 +255,13 @@
   left: 19px;
   top: 23px;
 }
+/* 紧凑模式：返回按钮更靠上（top 23px），切换器同步上移并收窄，
+   避免与返回按钮或字标重叠。 */
+.assessment-screen[data-compact="true"] .assessment-editions {
+  top: 68px;
+  left: 19px;
+}
+.assessment-screen[data-compact="true"] .assessment-edition span { display: none; }
 .assessment-screen[data-compact="true"] .assessment-check {
   width: 25px;
   height: 25px;

@@ -656,7 +656,10 @@ export function CaseDetail({
   immersive = false,
   transitionName,
 }) {
-  const saved = useFavoriteSaved(`case-${index}`);
+  // 收藏状态与收藏按钮共用同一份条目对象（含图片路径），这样案例库与论坛
+  // 对同一件作品的收藏状态是同一个：只按下标构造 id 会让两个入口各存一条。
+  const favoriteItem = favoriteFromCase(project, index);
+  const saved = useFavoriteSaved(favoriteItem);
   // Live cases carry their own cover; archive entries are addressed by position.
   // Using the positional image for a live case showed an unrelated archive poster
   // as the detail artwork and, worse, blurred that poster behind the piece.
@@ -746,7 +749,7 @@ export function CaseDetail({
             type="button"
             className={`favorite-button case-favorite-button${saved ? " is-saved" : ""}`}
             aria-pressed={saved}
-            onClick={() => toggleFavorite(favoriteFromCase(project, index))}
+            onClick={() => toggleFavorite(favoriteItem)}
           >
             <BookmarkSimple size={17} weight={saved ? "fill" : "regular"} />
             {saved ? "已收藏" : "收藏作品"}

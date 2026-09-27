@@ -10,4 +10,18 @@ dist/
 
 # Editor autosave leftovers (copies of CaseArchive.jsx) — not source.
 src/XX*
+# Admin-published bank overrides, one per edition (精选 / 全量).
 worker/bank-overrides.json
+worker/bank-overrides-full.json
+
+# QA screenshots and review captures produced while iterating on the UI.
+# Regenerated on demand by scripts/shots.mjs and the qa-*.mjs harnesses;
+# 100 MB+ of PNGs should not enter history.
+work/
+
+# 本地实验工作区：截图、QA 素材、温度实验的原始数据（数百 MB）
+# 只排除重资产，保留轻量的结论文档与脚本便于复现。
+work/**/results/
+work/**/samples/
+work/**/figures/
+work/temperature-study/assets/

@@ -10,6 +10,7 @@ import "./forum.css";
 import "./forum-board.css";
 import "./home-agent.css";
 import "./assessment.css";
+import "./duo-key.css";
 import "./assessment-flow.css";
 import "./choose.css";
 import "./profile.css";

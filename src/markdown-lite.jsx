@@ -30,6 +30,7 @@ export function MarkdownLite({ text }) {
   const blocks = [];
   let paragraph = [];
   let list = null; // { ordered, items }
+  let code = null; // fenced ``` block, kept verbatim
   const flushParagraph = () => {
     if (!paragraph.length) return;
     blocks.push(<p key={`p-${blocks.length}`}>{renderInline(paragraph.join(" "), `p${blocks.length}`)}</p>);
@@ -45,12 +46,75 @@ export function MarkdownLite({ text }) {
     );
     list = null;
   };
+  let tableSkip = 0;
   for (const raw of lines) {
     const line = raw.trimEnd();
+    if (tableSkip > 0) {
+      tableSkip -= 1;
+      continue;
+    }
+    if (code !== null) {
+      if (line.trim().startsWith("```")) {
+        blocks.push(
+          <pre className="md-code" key={`c-${blocks.length}`}>
+            <code>{code.join("\n")}</code>
+          </pre>,
+        );
+        code = null;
+      } else {
+        code.push(raw);
+      }
+      continue;
+    }
+    if (line.trim().startsWith("```")) {
+      flushParagraph();
+      flushList();
+      code = [];
+      continue;
+    }
     const bullet = line.match(/^\s*[-*]\s+(.*)$/);
     const ordered = line.match(/^\s*\d+[.、]\s+(.*)$/);
     const heading = line.match(/^(#{1,4})\s+(.*)$/);
     const quote = line.match(/^>\s?(.*)$/);
+    // GFM table: a header row followed by a |---|---| separator. AI answers use
+    // tables constantly (基准用例、对比表), and rendering them as pipe text is
+    // unreadable.
+    if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+      const rest = lines.slice(lines.indexOf(raw) + 1);
+      const sepPattern = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+      if (rest.length > 0 && sepPattern.test(rest[0].trim())) {
+        flushParagraph();
+        flushList();
+        const splitRow = (row) => row.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+        const header = splitRow(line);
+        const body = [];
+        let cursor = 1;
+        while (cursor < rest.length && rest[cursor].trim().startsWith("|")) {
+          body.push(splitRow(rest[cursor]));
+          cursor += 1;
+        }
+        blocks.push(
+          <div className="md-table-wrap" key={`t-${blocks.length}`}>
+            <table className="md-table">
+              <thead>
+                <tr>{header.map((cell, index) => <th key={index}>{renderInline(cell, `th${blocks.length}-${index}`)}</th>)}</tr>
+              </thead>
+              <tbody>
+                {body.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {header.map((_, cellIndex) => (
+                      <td key={cellIndex}>{renderInline(row[cellIndex] ?? "", `td${blocks.length}-${rowIndex}-${cellIndex}`)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>,
+        );
+        tableSkip = cursor;
+        continue;
+      }
+    }
     if (bullet) {
       flushParagraph();
       if (!list || list.ordered) { flushList(); list = { ordered: false, items: [] }; }
@@ -81,6 +145,14 @@ export function MarkdownLite({ text }) {
     } else {
       paragraph.push(line.trim());
     }
+  }
+  if (code !== null) {
+    // Unterminated fence: still render what was collected.
+    blocks.push(
+      <pre className="md-code" key={`c-${blocks.length}`}>
+        <code>{code.join("\n")}</code>
+      </pre>,
+    );
   }
   flushParagraph();
   flushList();

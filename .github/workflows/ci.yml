@@ -1,0 +1,22 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: unit tests
+        run: node --test tests/*.test.mjs vendor/aiquos-six-dimension-scoring/tests/*.test.mjs
+      - name: coverage on the frozen-contract modules
+        run: npx --yes c8 --include src/assessment-attempt.js --include src/comprehensive-adaptive.js --reporter text --check-coverage --lines 85 node --test tests/scoring-integration.test.mjs tests/comprehensive-adaptive.test.mjs
+      - name: build
+        run: npx vite build
