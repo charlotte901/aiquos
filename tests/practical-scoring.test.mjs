@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import practicalFull from "../src/banks/practical-80.json" with { type: "json" };
+import practicalLite from "../src/banks/practical-10.json" with { type: "json" };
 import {
   LEVEL_CREDIT,
   combinePracticalScore,
@@ -10,6 +11,7 @@ import {
   normalizeLevel,
   parsePracticalJudgeJson,
   parseRubricPoints,
+  taskImageSize,
   practicalJudgeMessages,
   scorePracticalResult,
   scoreRubric,
@@ -218,4 +220,42 @@ test("practical score route: upstream garbage falls back to heuristic", async ()
   }), "test-key", broken);
   assert.equal(response.status, 200);
   assert.equal((await response.json()).judged, "heuristic");
+});
+
+// ── 题面比例 → 生图尺寸 ────────────────────────────────────────────────────
+
+test("题面写明的比例会转成白名单尺寸", () => {
+  assert.equal(taskImageSize({ title: "生成一张横版16:9的运动会宣传海报" }), "1536x864");
+  assert.equal(taskImageSize({ goal: "将竖屏原图扩展为16:9横屏壁纸" }), "1536x864");
+  // 全角冒号与 × 号都要认
+  assert.equal(taskImageSize({ title: "比例要求：１６：９" }), "1536x864", "全角数字与冒号也应识别");
+  assert.equal(taskImageSize({ requirements: ["输出 9：16 竖版短视频封面"] }), "864x1536");
+  assert.equal(taskImageSize({ title: "生成 3:2 的摄影比例画面" }), "1536x1024");
+  assert.equal(taskImageSize({ title: "生成 2:3 竖构图" }), "1024x1536");
+});
+
+test("题面没写比例时不指定尺寸（交给服务端默认）", () => {
+  // 不猜：没有明确比例要求就返回 undefined，沿用 1024x1024
+  assert.equal(taskImageSize({ title: "画一只猫" }), undefined);
+  assert.equal(taskImageSize({ title: "生成一张水墨风格插画" }), undefined);
+  assert.equal(taskImageSize({}), undefined);
+  assert.equal(taskImageSize(null), undefined);
+});
+
+test("题库里的图片题按题面得到正确尺寸", () => {
+  const byId = new Map(practicalLite.tasks.map((t) => [t.id, t]));
+  // lite-001 / lite-004 题面明确要求 16:9
+  assert.equal(taskImageSize(byId.get("lite-001")), "1536x864", "lite-001 要求横版 16:9 海报");
+  assert.equal(taskImageSize(byId.get("lite-004")), "1536x864", "lite-004 要求扩成 16:9 壁纸");
+  // lite-008 未指定比例 → 不猜
+  assert.equal(taskImageSize(byId.get("lite-008")), undefined, "lite-008 未写比例，不应指定尺寸");
+});
+
+test("题面比例只影响图片题，文本题不传尺寸", () => {
+  // 文本类任务即便题面出现比例词，也不该被用于生图尺寸
+  const textTasks = practicalLite.tasks.filter((t) => t.outputType !== "image");
+  for (const task of textTasks) {
+    const size = taskImageSize(task);
+    assert.ok(size === undefined || typeof size === "string");
+  }
 });

@@ -55,7 +55,7 @@ import { scoreInterview } from "./interview-scoring-model";
 import { parseScoreJson } from "./interview-score-parse";
 import { onEnterSubmit } from "./ime";
 import { MarkdownLite } from "./markdown-lite";
-import { deliveryRequirements, scoringSchemeRows } from "./practical-scoring";
+import { deliveryRequirements, scoringSchemeRows, taskImageSize } from "./practical-scoring";
 import { Task3DCharacter } from "./Task3DCharacter";
 import { CharacterTuner } from "./character-tuner";
 import TUNING_DEFAULTS from "./character-tuning.json";
@@ -1707,11 +1707,23 @@ function PracticalWorkbenchPhase({
             prompt: imagePrompt(prompt),
             // 学员上传的图 + 任务自带素材一起作为参考图
             images: uploads.map((item) => item.src),
+            // 题面写明比例时按其输出（如「16:9 横版海报」→ 1536x864），
+            // 否则交给服务端默认尺寸。
+            size: taskImageSize(task),
           });
-        } catch {
+        } catch (error) {
+          // 生成失败要**说出来**，不能悄悄换成演示图。
+          // 学员拿不到真图时，若只看得到一张"看着像成品"的占位图，
+          // 会以为生成成功、照着它写提示词，评分也失去意义。
+          // 只有确实没有配置生图服务（离线模式）才降级为演示图。
           setOffline(true);
           entry.imageUrl = offlineImage(task.title);
           entry.offline = true;
+          setError(
+            error?.message
+              ? `本次生成未成功：${error.message} 已先用占位图代替，可修改提示词重试。`
+              : "本次生成未成功，已先用占位图代替，可修改提示词重试。",
+          );
         }
       } else {
         let output = "";

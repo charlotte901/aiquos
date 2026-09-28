@@ -4,12 +4,19 @@ export const ARK_IMAGE_PATH = "/api/ark/images";
 // 图片生成服务（vLLM 代理）。允许用环境变量覆盖端点，便于换服务商。
 const IMAGE_BASE_URL = "https://api.vllmproxy.com/v1";
 const IMAGE_MODEL = "gpt-image-2";
-const IMAGE_SIZES = new Set(["1024x1024", "1536x1024", "1024x1536"]);
+// 尺寸白名单。注意这里**包含 16:9**（1536x864）：上游接受非标的 16:9 取值，
+// 实测返回尺寸与请求完全一致。早期只放 gpt-image 的三个常规尺寸
+// （1024x1024 / 1536x1024 / 1024x1536），其中最高只有 3:2，
+// 于是"生成 16:9 海报/壁纸"这类明确要求比例的题目永远做不到规格合规。
+const IMAGE_SIZES = new Set(["1024x1024", "1536x1024", "1024x1536", "1536x864", "864x1536"]);
 const IMAGE_QUALITIES = new Set(["standard", "hd"]);
 const IMAGE_STYLES = new Set(["vivid", "natural"]);
 // 参考图必须是 data URI（上游不接受裸 base64）；上限与前端上传数一致。
 const ALLOWED_IMAGE_DATA_URI = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i;
 const MAX_REFERENCE_IMAGES = 6;
+// 上游生图耗时的上限。实测成功调用 40–75 秒；留足余量后仍要有个封顶，
+// 否则上游长挂时这个请求会一直占着连接（前端另有 240s 超时兜底）。
+const IMAGE_UPSTREAM_TIMEOUT_MS = 200_000;
 
 const MAX_MESSAGES = 16;
 const MAX_CONTENT_LENGTH = 12_000;
@@ -177,21 +184,32 @@ export async function handleDeepSeekChat(request, apiKey, fetcher = fetch) {
 /**
  * 图片生成：vLLM 代理的 gpt-image-2。
  *
- * 端点与参数取自服务商文档（api.vllmproxy.com/v1/images/generations）：
- *   model    gpt-image-2
- *   prompt   文字描述（必填）
- *   size     1024x1024（另有 1536x1024 / 1024x1536）
- *   quality  standard | hd
- *   style    vivid | natural
- *   n        1
- *   image    参考图（**实测上游支持**，是实现图生图/风格迁移的关键）
+ * **两个端点的分工（这是实测出来的，必须按此分流）**：
  *
- * 实测有两个必须知道的坑：
- *   1. **不要传 response_format** —— 文档称支持 url|b64_json，但实测
+ *   无参考图 → POST /images/generations
+ *     body: { model, prompt, n, size, quality, style }
+ *     纯文生图，可用。
+ *
+ *   有参考图 → POST /images/edits
+ *     body: { model, prompt, n, size, images: [{ image_url }] }
+ *     图生图（扩图、风格迁移）**必须走这个端点**。
+ *
+ * 踩过的坑（都验证过）：
+ *   1. generations + image:[dataURI] 返回 200，但**参考图被静默忽略**：
+ *      不报错、字段照收，产物却与参考图毫无关系。lite-004（把落日水面
+ *      竖图扩成 16:9）的实测产物是"樱花古装少女"的二次元图 —— 内容、风格、
+ *      色调、构图全不对。任何"只看请求体"的验证都发现不了这一点，
+ *      必须看产物图片本身。
+ *      edits 端点会真正吃参考图：同一道题返回的是原图落日水面 + 钓鱼剪影，
+ *      仅向两侧扩展 —— 正是"扩图"该有的结果。
+ *   2. **不要传 response_format** —— 文档称支持 url|b64_json，但实测
  *      传 response_format:"url" 会让上游在约 10 秒后断开连接
  *      （Node 侧报 UND_ERR_SOCKET，curl 侧同样失败）。
  *      不传该参数时，上游稳定返回 data[0].b64_json。
- *   2. 返回的图片是 base64（单张约 500–600 KB），本函数转成 data URI
+ *   3. size 受白名单限制（见 IMAGE_SIZES）。上游接受非标的 16:9
+ *      （1536x864 实测按请求尺寸返回），所以"生成 16:9 海报"能真正做到
+ *      规格合规 —— 早期白名单里最高只有 3:2，这类题目永远做不对。
+ *   4. 返回的图片是 base64（单张约 1.5–2.7 MB），本函数转成 data URI
  *      交给前端，调用方不必关心编码差异。
  */
 export async function handleArkImage(request, apiKey, fetcher = fetch) {
@@ -210,8 +228,8 @@ export async function handleArkImage(request, apiKey, fetcher = fetch) {
   // 参考图：学员上传的图 + 任务自带素材。
   //
   // 为什么必须支持：图片类任务（如"把这张竖屏图扩成 16:9"、"按这张风格图
-  // 迁移水墨画风"）的全部意义就在于"我有一张图"。早期实现只把文字提示词
-  // 发给生图接口，参考图被完全忽略 —— 学员传了图却对结果毫无影响。
+  // 迁移水墨画风"）的全部意义就在于"我有一张图"。参考图没被真正采用时，
+  // 学员传了图却对结果毫无影响，题目也就失去意义。
   //
   // 上游要求 data URI 形态（带 data:image/...;base64, 前缀的完整串）；
   // 实测纯 base64 会被拒。同时上限取 6 张，与前端上传上限一致。
@@ -221,30 +239,41 @@ export async function handleArkImage(request, apiKey, fetcher = fetch) {
   else if (Array.isArray(rawRefs)) images = rawRefs.filter((x) => typeof x === "string");
   images = images.filter((src) => ALLOWED_IMAGE_DATA_URI.test(src)).slice(0, MAX_REFERENCE_IMAGES);
 
-  // 可选参数透传（白名单校验，避免把任意字段转发给上游）。
+  const size = IMAGE_SIZES.has(payload.size) ? payload.size : "1024x1024";
+
+  // 有参考图走 edits，无参考图走 generations（见函数头注释的实测说明）。
+  const useEdits = images.length > 0;
   // 注意：绝不传 response_format —— 上游收到它会断连（见函数头注释）。
-  const body = {
-    model: IMAGE_MODEL,
-    prompt,
-    n: 1,
-    size: IMAGE_SIZES.has(payload.size) ? payload.size : "1024x1024",
-    quality: IMAGE_QUALITIES.has(payload.quality) ? payload.quality : "standard",
-    style: IMAGE_STYLES.has(payload.style) ? payload.style : "vivid",
-    // 只有确有参考图时才带该字段：空数组会让上游当作非法请求
-    ...(images.length ? { image: images } : {}),
-  };
+  // edits 不接受 quality/style，只发它认识的字段。
+  const body = useEdits
+    ? { model: IMAGE_MODEL, prompt, n: 1, size, images: images.map((image_url) => ({ image_url })) }
+    : {
+        model: IMAGE_MODEL,
+        prompt,
+        n: 1,
+        size,
+        quality: IMAGE_QUALITIES.has(payload.quality) ? payload.quality : "standard",
+        style: IMAGE_STYLES.has(payload.style) ? payload.style : "vivid",
+      };
+  const endpoint = useEdits ? `${IMAGE_BASE_URL}/images/edits` : `${IMAGE_BASE_URL}/images/generations`;
 
   let upstream;
   try {
-    upstream = await fetcher(`${IMAGE_BASE_URL}/images/generations`, {
+    upstream = await fetcher(endpoint, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
+      // 上游正常 40–75 秒返回，偶发长挂。加超时避免占着连接不放，
+      // 也让前端拿到明确的错误而不是永久等待。
+      signal: AbortSignal.timeout(IMAGE_UPSTREAM_TIMEOUT_MS),
     });
-  } catch {
+  } catch (error) {
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      return json({ error: "图片生成服务响应超时，请稍后重试。" }, 504);
+    }
     return json({ error: "暂时无法连接图片生成服务，请稍后重试。" }, 502);
   }
 

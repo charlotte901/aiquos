@@ -282,7 +282,7 @@ test("纯文本消息仍是字符串（不因多模态支持而改变形态）",
 
 // ── 生图参考图（图生图）──────────────────────────────────────────────────
 
-test("生图接口把参考图透传给上游（图生图）", async () => {
+test("有参考图时走 /images/edits 且用 images[].image_url 形态", async () => {
   const calls = [];
   const relay = async (...args) => {
     calls.push(args);
@@ -298,11 +298,22 @@ test("生图接口把参考图透传给上游（图生图）", async () => {
   });
   const res = await handleArkImage(request, "k", relay);
   assert.equal(res.status, 200);
+
+  // 关键回归：图生图必须走 edits 端点。
+  // generations + image:[dataURI] 会返回 200 但**静默忽略参考图**，
+  // 实测产物与参考图毫无关系（"扩图"变成了凭空生成）。
+  assert.equal(calls[0][0], "https://api.vllmproxy.com/v1/images/edits",
+    "有参考图时必须走 /images/edits，否则参考图被上游忽略");
+
   const body = JSON.parse(calls[0][1].body);
-  assert.deepEqual(body.image, [ref], "参考图应原样透传");
+  assert.deepEqual(body.images, [{ image_url: ref }], "参考图须为 images[].image_url 形态");
+  // edits 端点不接受 generations 那套可选参数
+  assert.ok(!("quality" in body), "edits 不接受 quality");
+  assert.ok(!("style" in body), "edits 不接受 style");
+  assert.ok(!("response_format" in body), "不得传 response_format（会导致上游断连）");
 });
 
-test("没有参考图时不带 image 字段（空数组会被上游拒绝）", async () => {
+test("无参考图时走 /images/generations（纯文生图）", async () => {
   const calls = [];
   const relay = async (...args) => {
     calls.push(args);
@@ -315,18 +326,11 @@ test("没有参考图时不带 image 字段（空数组会被上游拒绝）", a
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ prompt: "画一只猫" }),
   }), "k", relay);
-  assert.ok(!("image" in JSON.parse(calls[0][1].body)), "无参考图时不得带 image 字段");
-
-  // 空数组同样不传
-  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt: "画一只猫", image: [] }),
-  }), "k", relay);
-  assert.ok(!("image" in JSON.parse(calls[1][1].body)), "空数组不得透传");
+  assert.equal(calls[0][0], "https://api.vllmproxy.com/v1/images/generations");
+  assert.ok(!("images" in JSON.parse(calls[0][1].body)), "无参考图时不得带 images");
 });
 
-test("参考图必须带 data URI 前缀，裸 base64 被过滤", async () => {
+test("空数组与非法参考图都不触发 edits（避免上游报 images 缺失）", async () => {
   const calls = [];
   const relay = async (...args) => {
     calls.push(args);
@@ -334,25 +338,24 @@ test("参考图必须带 data URI 前缀，裸 base64 被过滤", async () => {
       headers: { "content-type": "application/json" },
     });
   };
-  // 上游实测：裸 base64 会被拒（Image request could not be completed）
   await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt: "x", image: ["iVBORw0KGgoAAAANSUhEUg=="] }),
+    body: JSON.stringify({ prompt: "画一只猫", image: [] }),
   }), "k", relay);
-  const body = JSON.parse(calls[0][1].body);
-  assert.ok(!("image" in body), "裸 base64 应被过滤（上游不接受）");
+  assert.equal(calls[0][0], "https://api.vllmproxy.com/v1/images/generations", "空数组应回落文生图");
 
-  // 非图片协议也应过滤
+  // 裸 base64 与非法协议都过不了校验 → 回落 generations，不空跑 edits
   await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt: "x", image: ["https://evil.test/a.png", "file:///etc/passwd"] }),
+    body: JSON.stringify({ prompt: "x", image: ["iVBORw0KGgoAAAANSUhEUg==", "https://evil.test/a.png", "file:///etc/passwd"] }),
   }), "k", relay);
-  assert.ok(!("image" in JSON.parse(calls[1][1].body)), "非 data URI 应被过滤");
+  assert.equal(calls[1][0], "https://api.vllmproxy.com/v1/images/generations",
+    "参考图全非法时应回落文生图（发送空 images 会被上游判 400）");
 });
 
-test("参考图数量上限为 6 张", async () => {
+test("参考图数量上限 6 张，超出部分截断", async () => {
   const calls = [];
   const relay = async (...args) => {
     calls.push(args);
@@ -366,5 +369,66 @@ test("参考图数量上限为 6 张", async () => {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ prompt: "x", image: eight }),
   }), "k", relay);
-  assert.equal(JSON.parse(calls[0][1].body).image.length, 6, "最多透传 6 张");
+  assert.equal(JSON.parse(calls[0][1].body).images.length, 6, "最多透传 6 张");
+});
+
+test("size 白名单含 16:9（1536x864），且被透传", async () => {
+  const calls = [];
+  const relay = async (...args) => {
+    calls.push(args);
+    return new Response(JSON.stringify({ data: [{ b64_json: "AA==" }] }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  // 题面要求 16:9 时必须能落到真实 16:9 尺寸：
+  // 早期白名单只有 1024x1024 / 1536x1024 / 1024x1536，最高只有 3:2，
+  // 于是"生成 16:9 海报"永远无法规格合规。
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "16:9 横版海报", size: "1536x864" }),
+  }), "k", relay);
+  assert.equal(JSON.parse(calls[0][1].body).size, "1536x864", "16:9 应被接受并透传");
+
+  // 9:16 竖版同理
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "9:16 竖版", size: "864x1536" }),
+  }), "k", relay);
+  assert.equal(JSON.parse(calls[1][1].body).size, "864x1536");
+
+  // 非白名单仍回落方形
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "x", size: "1920x1080" }),
+  }), "k", relay);
+  assert.equal(JSON.parse(calls[2][1].body).size, "1024x1024", "非白名单尺寸回落默认");
+});
+
+test("上游超时返回 504（而不是无限等待）", async () => {
+  // 模拟上游挂起：抛 TimeoutError（与 AbortSignal.timeout 触发的形态一致）
+  const hang = async () => {
+    const err = new Error("The operation was aborted due to timeout");
+    err.name = "TimeoutError";
+    throw err;
+  };
+  const res = await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "画一只猫" }),
+  }), "k", hang);
+  assert.equal(res.status, 504, "超时应返回 504，便于前端区分超时与网络故障");
+  assert.match((await res.json()).error, /超时/);
+});
+
+test("上游连接失败返回 502", async () => {
+  const broken = async () => { throw new TypeError("fetch failed"); };
+  const res = await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "画一只猫" }),
+  }), "k", broken);
+  assert.equal(res.status, 502);
 });

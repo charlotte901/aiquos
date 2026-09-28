@@ -103,6 +103,44 @@ export function scoringSchemeRows(task) {
   return (task?.requirements ?? []).filter((item) => /^评分标准/.test(String(item)));
 }
 
+/**
+ * 任务题面里明确要求的画面比例 → 生图尺寸。
+ *
+ * 为什么需要：生图接口默认输出方形（1024x1024）。题目若写明「生成 16:9 横版
+ * 海报」「扩展为 16:9 横屏壁纸」，而请求不指定尺寸，产物就是方图 ——
+ * 学员按题目要求写了提示词，产物却在"规格合规"这一项上必然不达标。
+ *
+ * 只认题面（标题/目标/交付标准）里**明写**的比例，不猜：
+ * 没有写比例的题目（如 lite-008）返回 undefined，沿用服务端默认尺寸。
+ *
+ * @returns {string|undefined} 白名单内的尺寸串
+ */
+export function taskImageSize(task) {
+  const blob = [
+    task?.title,
+    task?.goal,
+    ...(task?.requirements ?? []),
+  ].filter(Boolean).join("\n");
+
+  // 归一化全角数字/冒号与 x、× 分隔，便于统一匹配。
+  // 题库目前都是半角；题面将来若出现「１６：９」这类全角写法也应能识别。
+  // 两个易错点：
+  //   1. 必须先把全角数字转半角再处理冒号 —— 顺序反了相邻全角数字会连成一串；
+  //   2. 转换要用 String.fromCharCode（得到字符），不是 String()（会把码位
+  //      当数字转成十进制文本，０ → "48" 而不是 "0"）。
+  const text = String(blob)
+    .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+    .replace(/[：]/g, ":")
+    .replace(/[×✕✖]/g, "x");
+  const has = (...ratios) => ratios.some((r) => text.includes(r));
+
+  if (has("16:9")) return "1536x864";
+  if (has("9:16")) return "864x1536";
+  if (has("3:2")) return "1536x1024";
+  if (has("2:3")) return "1024x1536";
+  return undefined;
+}
+
 // ── LLM 评委 ────────────────────────────────────────────────────────────────
 
 function rubricText(rubric) {
