@@ -152,36 +152,67 @@ function rubricText(rubric) {
 /**
  * 评委提示词。参考答案（standardPrompt / standardProduct）只在服务端拼进
  * 上下文供对照，永远不下发到浏览器。
+ *
+ * 图片任务的关键点：判官必须**看到生成的图**。
+ * 产物维度里有「原图保真」「边缘自然」这类只能看图才能判断的要求；
+ * 早期实现只把提示词发给判官、并附一句"请依据提示词的画面要素判档"，
+ * 等于让评委闭着眼睛给"像素有没有变形、拼接处有没有伪影"打分 ——
+ * 5 个产物维度全部落空。现在把产物图作为 image_url 一并送入（多模态）。
+ *
+ * @param {object} task 任务
+ * @param {object} payload 学员作答
+ * @param {string} payload.productImage 图片任务的产物 data URI（可选）
  */
-export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", product = "", isImage = false, iterations = 1 }) {
+export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", product = "", isImage = false, iterations = 1, productImage = "" }) {
   const promptHistory = (prompts.length ? prompts : [finalPrompt])
     .map((prompt, index) => `第 ${index + 1} 次：${prompt}`)
     .join("\n\n");
+  const hasImage = typeof productImage === "string" && productImage.startsWith("data:image/");
   const productText = isImage
-    ? "（本任务为图片生成，最终产物是按最终提示词生成的图片；请依据提示词的画面要素是否覆盖各维度要求来判档）"
+    ? (hasImage
+        ? "（本任务为图片生成，最终产物图已作为图片附在本条消息中，请直接观察图片本身来判档：构图、色调、是否变形、拼接处是否自然、有无 AI 伪影。）"
+        : "（本任务为图片生成，但未收到产物图；请仅依据提示词覆盖到的画面要素判档，并在评语中说明未见到图。）")
     : String(product ?? "").slice(0, 4000);
+
+  const userContent = [
+    `任务：${task.title}`,
+    `目标：${task.goal}`,
+    `交付要求：\n${deliveryRequirements(task).map((item, index) => `${index + 1}. ${item}`).join("\n")}`,
+    `原始素材：\n${String(task.material ?? task.source ?? "").slice(0, 2000)}`,
+    "",
+    `【评分标准一 · 提示词评分】\n${rubricText(task.rubricPrompt)}`,
+    `【参考提示词（仅供对照）】\n${String(task.standardPrompt ?? "").slice(0, 1800)}`,
+    "",
+    `【评分标准二 · 最终产物评分】\n${rubricText(task.rubricProduct)}`,
+    `【参考产物（仅供对照）】\n${String(task.standardProduct ?? "").slice(0, 2200)}`,
+    "",
+    `【学员的提示词记录（共 ${iterations} 次迭代，最后一条为最终版）】\n${promptHistory || "（无）"}`,
+    `【最终产物】\n${productText}`,
+  ].join("\n");
+
   return [
     {
       role: "system",
-      content: '你是 AIQUOS 实操任务的评委。按题目的评分标准逐维度判档。只输出一个 JSON 对象（不要 markdown 代码块），格式：{"prompt":[{"dimension":"维度名","level":"excellent|good|pass","comment":"不超过40字的评语"}],"product":[…]}。level 只能取 excellent（达到优秀描述）、good（达到良好描述）、pass（仅达到待改进描述）。dimension 必须与评分标准里的维度名完全一致，顺序一致，一套不漏。',
+      content: [
+        "你是 AIQUOS 实操任务的评委，按题目的评分标准逐维度判档。",
+        "",
+        "判档纪律（直接影响测评公平性，必须遵守）：",
+        "1. **用三档描述做锚点比对，不要凭整体印象给分。** 对每个维度，先读该维度的「优秀/良好/待改进」描述，再把学员表现与三段描述逐一比对，选最贴合的那一档。",
+        "2. **三档都要敢于使用。** 明显缺项就是待改进，完整达成就是优秀；不要因为「看起来还挺努力」而普遍给良好。若某维度学员完全没做（例如提示词里根本没提该要求），必须判待改进。",
+        "3. **只看证据，不猜动机。** 判据必须能在学员的提示词或产物里找到。产物缺失、答非所问、或与题目要求无关时，判待改进。",
+        "4. **维度之间独立判档。** 不要因为某一维很强就把其余维度一起抬高；也不要用同一个理由给多个维度判同一档。",
+        "5. **评语要具体**，指出学员做到了什么或缺了什么（如「未给出字数区间」「保留了1287人这一关键数据」），不要写「基本符合要求」这类空话。",
+        "",
+        '只输出一个 JSON 对象（不要 markdown 代码块），格式：{"prompt":[{"dimension":"维度名","level":"excellent|good|pass","comment":"不超过40字的评语"}],"product":[…]}。',
+        "level 只能取 excellent（达到优秀描述）、good（达到良好描述）、pass（仅达到待改进描述）。dimension 必须与评分标准里的维度名完全一致，顺序一致，一套不漏。",
+      ].join("\n"),
     },
     {
       role: "user",
-      content: [
-        `任务：${task.title}`,
-        `目标：${task.goal}`,
-        `交付要求：\n${deliveryRequirements(task).map((item, index) => `${index + 1}. ${item}`).join("\n")}`,
-        `原始素材：\n${String(task.material ?? task.source ?? "").slice(0, 2000)}`,
-        "",
-        `【评分标准一 · 提示词评分】\n${rubricText(task.rubricPrompt)}`,
-        `【参考提示词（仅供对照）】\n${String(task.standardPrompt ?? "").slice(0, 1800)}`,
-        "",
-        `【评分标准二 · 最终产物评分】\n${rubricText(task.rubricProduct)}`,
-        `【参考产物（仅供对照）】\n${String(task.standardProduct ?? "").slice(0, 2200)}`,
-        "",
-        `【学员的提示词记录（共 ${iterations} 次迭代，最后一条为最终版）】\n${promptHistory || "（无）"}`,
-        `【最终产物】\n${productText}`,
-      ].join("\n"),
+      // 有产物图时用多模态：文字在前，图片在后（与执行 Agent 的形态一致）。
+      content: hasImage
+        ? [{ type: "text", text: userContent }, { type: "image_url", image_url: { url: productImage } }]
+        : userContent,
     },
   ];
 }

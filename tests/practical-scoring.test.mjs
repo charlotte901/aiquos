@@ -259,3 +259,58 @@ test("题面比例只影响图片题，文本题不传尺寸", () => {
     assert.ok(size === undefined || typeof size === "string");
   }
 });
+
+// ── 图片任务的评委必须拿到产物图 ────────────────────────────────────────────
+
+test("图片任务：有产物图时以多模态送入（评委才能判「原图保真/边缘自然」）", () => {
+  const task = {
+    title: "把竖屏图扩成 16:9",
+    goal: "扩图",
+    requirements: ["规格合规", "原图保真", "边缘自然"],
+    source: "素材",
+    rubricPrompt: [{ dimension: "画面描述", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "原图保真", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==";
+  const messages = practicalJudgeMessages(task, {
+    prompts: ["扩成 16:9"],
+    finalPrompt: "扩成 16:9",
+    isImage: true,
+    iterations: 1,
+    productImage: png,
+  });
+  const user = messages.find((m) => m.role === "user");
+  assert.ok(Array.isArray(user.content), "有产物图时 content 应为多模态数组");
+  const image = user.content.find((part) => part.type === "image_url");
+  assert.equal(image?.image_url?.url, png, "产物图须原样送入");
+  // 文案应明确要求"观察图片本身"，而不是"依据提示词判档"
+  const text = user.content.find((part) => part.type === "text").text;
+  assert.match(text, /观察图片本身/);
+  assert.ok(!/请依据提示词的画面要素/.test(text), "不得再让评委凭提示词猜画面");
+});
+
+test("图片任务：没拿到产物图时如实说明，而不是假装看过", () => {
+  const task = {
+    title: "扩图", goal: "g", requirements: ["原图保真"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "原图保真", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const messages = practicalJudgeMessages(task, { prompts: ["p"], finalPrompt: "p", isImage: true, iterations: 1 });
+  const user = messages.find((m) => m.role === "user");
+  assert.equal(typeof user.content, "string", "无图时保持纯文本");
+  assert.match(user.content, /未收到产物图/);
+});
+
+test("文本任务不受影响：产物仍按文本送入", () => {
+  const task = {
+    title: "写周报", goal: "g", requirements: ["三段"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "E", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const messages = practicalJudgeMessages(task, {
+    prompts: ["写周报"], finalPrompt: "写周报", product: "【本周完成】……", isImage: false, iterations: 1,
+  });
+  const user = messages.find((m) => m.role === "user");
+  assert.equal(typeof user.content, "string");
+  assert.match(user.content, /本周完成/);
+});

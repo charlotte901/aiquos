@@ -1346,6 +1346,10 @@ async function requestPracticalScore({ task, generations, finalGeneration, isIma
       prompt: finalGeneration.prompt,
       prompts: generations.map((entry) => entry.prompt),
       product: finalGeneration.output ?? "",
+      // 图片任务把产物图一并交给评委：产物维度里「原图保真」「边缘自然」
+      // 只能看图判断，只给提示词等于让评委凭空判档。
+      // 离线占位图不发（那是降级提示，不是学员产物）。
+      productImage: isImageTask && !finalGeneration.offline ? (finalGeneration.imageUrl ?? "") : "",
       isImage: isImageTask,
       iterations: generations.length,
     }),

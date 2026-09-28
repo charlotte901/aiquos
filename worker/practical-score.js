@@ -32,6 +32,12 @@ function readPayload(body) {
   // 早期这里硬截到 3 条，学员改了 8 轮、评委只看到前 3 轮，
   // "迭代改进"这一评分维度就评不准了。
   const prompts = Array.isArray(body.prompts) ? body.prompts.map(asText).filter(Boolean).slice(0, 8) : [];
+  // 图片任务的产物图：评委必须看到图才能判「原图保真/边缘自然」这类维度。
+  // 只接受 data URI，且限制体积（单张约 1.5–2.7 MB；data URI 约 2–3.6 MB）。
+  const rawImage = typeof body.productImage === "string" ? body.productImage : "";
+  const productImage = /^data:image\/(png|jpe?g|webp);base64,/i.test(rawImage) && rawImage.length < 6_000_000
+    ? rawImage
+    : "";
   return {
     taskId,
     finalPrompt: asText(body.prompt),
@@ -39,6 +45,7 @@ function readPayload(body) {
     prompts,
     isImage: body.isImage === true,
     iterations: Number.isFinite(Number(body.iterations)) ? Math.max(1, Math.min(8, Number(body.iterations))) : 1,
+    productImage,
   };
 }
 
