@@ -48,11 +48,21 @@ export async function streamDeepSeek({ messages, onDelta, signal }) {
   return complete;
 }
 
-export async function generateArkImage({ prompt, signal }) {
+/**
+ * 生成图片。
+ *
+ * @param {string} prompt 画面描述
+ * @param {string[]} [images] 参考图（data URI）。图片类任务（扩图、风格迁移）
+ *   必须把参考图传过去，否则 Agent 看不到输入图，只能凭空生成。
+ */
+export async function generateArkImage({ prompt, images = [], signal }) {
+  const body = { prompt };
+  // 只在确有参考图时才带该字段：空数组会被上游当作非法请求
+  if (Array.isArray(images) && images.length) body.image = images;
   const response = await fetch("/api/ark/images", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify(body),
     signal,
   });
   if (!response.ok) throw new Error(await readError(response));

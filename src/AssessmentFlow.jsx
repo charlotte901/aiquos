@@ -156,11 +156,14 @@ function pick(list) {
 }
 
 function Progress({ current, complete, onPick, disabled = false, total = 5 }) {
+  // 关卡号来自 URL 路由，可能是越界值（例如手改地址栏成 level/2 而该测评只有 1 关），
+  // 直接渲染会显示「2 / 1」这种分子大于分母的进度。这里钳到 [1, total]。
+  const active = Math.min(Math.max(1, current), total);
   return (
-    <div className="level-progress" aria-label={`第 ${current} 关，共 ${total} 关`}>
+    <div className="level-progress" aria-label={`第 ${active} 关，共 ${total} 关`}>
       <div className="level-nodes">
         {Array.from({ length: total }, (_, index) => index + 1).map((number) => {
-          const state = number < current ? "complete" : number === current ? "active" : "locked";
+          const state = number < active ? "complete" : number === active ? "active" : "locked";
           return (
             <button
               key={number}
@@ -175,7 +178,7 @@ function Progress({ current, complete, onPick, disabled = false, total = 5 }) {
           );
         })}
       </div>
-      <span>{current} / {total}</span>
+      <span>{active} / {total}</span>
     </div>
   );
 }
@@ -1673,7 +1676,19 @@ function PracticalWorkbenchPhase({
   const atGenerationCap = generations.length >= MAX_GENERATIONS;
   const expired = clock.remainingMs <= 0;
 
-  const imagePrompt = (prompt) => `${task.title}\n${task.goal}\n任务要求：${task.requirements.join("；")}\n活动素材：${task.source}\n用户补充：${prompt}`;
+  /**
+   * 生图提示词。
+   *
+   * 有参考图时必须显式告知 —— 上游会同时收到 image 数组与这段文字，
+   * 只给图不给"要拿它做什么"的指令，模型容易把参考图当作要模仿的内容
+   * 而不是要处理的素材。
+   */
+  const imagePrompt = (prompt) => {
+    const refs = uploads.length
+      ? `\n参考图：已附上 ${uploads.length} 张（${uploads.map((u) => u.name).join("、")}）。请以这些图作为输入素材，按上面的任务要求处理，而不是重新画一张无关的图。`
+      : "";
+    return `${task.title}\n${task.goal}\n任务要求：${task.requirements.join("；")}\n活动素材：${task.source}${refs}\n用户补充：${prompt}`;
+  };
 
   const run = async () => {
     const prompt = draft.trim();
@@ -1688,7 +1703,11 @@ function PracticalWorkbenchPhase({
     try {
       if (isImageTask) {
         try {
-          entry.imageUrl = await generateArkImage({ prompt: imagePrompt(prompt) });
+          entry.imageUrl = await generateArkImage({
+            prompt: imagePrompt(prompt),
+            // 学员上传的图 + 任务自带素材一起作为参考图
+            images: uploads.map((item) => item.src),
+          });
         } catch {
           setOffline(true);
           entry.imageUrl = offlineImage(task.title);
@@ -1895,16 +1914,10 @@ function PracticalWorkbenchPhase({
         {showMaterial && <div className="source-copy wb-material"><MarkdownLite text={task.source} /></div>}
       </section>
       <section className="agent-canvas wb-canvas" aria-live="polite" aria-label="Agent 工作区域">
-        {inputAssets(task).length > 0 && (
-          <figure className="wb-reference" aria-label="任务参考素材">
-            {inputAssets(task).map((asset) => (
-              <figure className="wb-reference-item" key={asset.src}>
-                <img src={asset.src} alt={assetLabel(asset)} />
-                <figcaption>{assetLabel(asset)}</figcaption>
-              </figure>
-            ))}
-          </figure>
-        )}
+        {/* 作答区不再重复渲染参考图。
+            任务素材在载入时已被预置到输入框上方的「已上传」条里（标注「任务素材」，
+            可移除、可追加、可粘贴），这里再画一遍只是同一张图出现两次：
+            参考图占掉画布近半高度，生成结果被挤到画布外裁掉一截。 */}
         <div className="wb-canvas-tabs" role="tablist" aria-label="产出查看">
           <button type="button" role="tab" aria-selected={canvasTab === "output"} className={canvasTab === "output" ? "is-active" : ""} onClick={() => setCanvasTab("output")}>AI 输出</button>
           <button type="button" role="tab" aria-selected={canvasTab === "history"} className={canvasTab === "history" ? "is-active" : ""} onClick={() => setCanvasTab("history")}>提示词记录（{generations.length}）</button>

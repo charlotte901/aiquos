@@ -279,3 +279,92 @@ test("纯文本消息仍是字符串（不因多模态支持而改变形态）",
   }), "k", relay);
   assert.equal(JSON.parse(calls[0][1].body).messages[0].content, "普通文本");
 });
+
+// ── 生图参考图（图生图）──────────────────────────────────────────────────
+
+test("生图接口把参考图透传给上游（图生图）", async () => {
+  const calls = [];
+  const relay = async (...args) => {
+    calls.push(args);
+    return new Response(JSON.stringify({ data: [{ b64_json: "AA==" }] }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  const ref = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ==";
+  const request = new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "把这张竖屏图扩成 16:9", image: [ref] }),
+  });
+  const res = await handleArkImage(request, "k", relay);
+  assert.equal(res.status, 200);
+  const body = JSON.parse(calls[0][1].body);
+  assert.deepEqual(body.image, [ref], "参考图应原样透传");
+});
+
+test("没有参考图时不带 image 字段（空数组会被上游拒绝）", async () => {
+  const calls = [];
+  const relay = async (...args) => {
+    calls.push(args);
+    return new Response(JSON.stringify({ data: [{ b64_json: "AA==" }] }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "画一只猫" }),
+  }), "k", relay);
+  assert.ok(!("image" in JSON.parse(calls[0][1].body)), "无参考图时不得带 image 字段");
+
+  // 空数组同样不传
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "画一只猫", image: [] }),
+  }), "k", relay);
+  assert.ok(!("image" in JSON.parse(calls[1][1].body)), "空数组不得透传");
+});
+
+test("参考图必须带 data URI 前缀，裸 base64 被过滤", async () => {
+  const calls = [];
+  const relay = async (...args) => {
+    calls.push(args);
+    return new Response(JSON.stringify({ data: [{ b64_json: "AA==" }] }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  // 上游实测：裸 base64 会被拒（Image request could not be completed）
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "x", image: ["iVBORw0KGgoAAAANSUhEUg=="] }),
+  }), "k", relay);
+  const body = JSON.parse(calls[0][1].body);
+  assert.ok(!("image" in body), "裸 base64 应被过滤（上游不接受）");
+
+  // 非图片协议也应过滤
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "x", image: ["https://evil.test/a.png", "file:///etc/passwd"] }),
+  }), "k", relay);
+  assert.ok(!("image" in JSON.parse(calls[1][1].body)), "非 data URI 应被过滤");
+});
+
+test("参考图数量上限为 6 张", async () => {
+  const calls = [];
+  const relay = async (...args) => {
+    calls.push(args);
+    return new Response(JSON.stringify({ data: [{ b64_json: "AA==" }] }), {
+      headers: { "content-type": "application/json" },
+    });
+  };
+  const eight = Array.from({ length: 8 }, () => "data:image/png;base64,AA==");
+  await handleArkImage(new Request(`http://local.test${ARK_IMAGE_PATH}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "x", image: eight }),
+  }), "k", relay);
+  assert.equal(JSON.parse(calls[0][1].body).image.length, 6, "最多透传 6 张");
+});

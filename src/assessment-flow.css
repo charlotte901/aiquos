@@ -723,7 +723,24 @@
 .agent-output code { padding: 1px 6px; border-radius: 6px; background: #f1f3f6; font-size: .92em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .agent-output .md-heading { margin: 0; font-weight: 800; font-size: 1.05em; }
 .agent-output .md-quote { margin: 0; color: #687382; }
-.agent-image { width: 100%; min-height: 0; flex: 1; object-fit: cover; border-radius: 14px; background: var(--assessment-soft); }
+/* 生成图必须保持原始宽高比。
+   早期用 width:100% + object-fit:cover，会把横图与竖图都强行铺满并裁切，
+   16:9 的横版被压扁、9:16 的竖版被截掉两端 —— 学员看到的比例是错的。
+
+   实现要点：width:auto，让浏览器按原始比例推高度。这里**不能**写 width:100%：
+   宽度写死后叠 max-height，object-fit:contain 只缩不放，位图会在框里留白 ——
+   实测竖版参考图在 722px 宽的框里只画出 155px，看起来就是"小图漂在大空框里"。
+   尺寸约束统一交给 max-width/max-height:100%，替换元素在 width:auto 下等比回缩，
+   16:9/9:16/1:1 三种比例实测零偏差。 */
+.agent-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+  background: var(--assessment-soft);
+}
 .agent-error { margin: 7px 0 -2px; color: var(--duo-red-lip); font-size: 13px; font-weight: 700; }
 .agent-composer { width: 100%; min-height: 62px; margin-top: 14px; padding-left: 20px; background: #fff; }
 .agent-composer textarea { width: 100%; height: 38px; min-height: 38px; resize: none; border: 0; outline: 0; color: #263243; background: transparent; font-size: 15px; line-height: 1.5; padding-top: 9px; }
@@ -1436,7 +1453,11 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  /* 视口不够高时（实测 1280×720）头部+栅格+输入区的总高会超出面板，
+     固定 overflow:hidden 会把「交卷评分」永久裁掉、学员无法交卷。
+     改为 auto：够高时不产生滚动条，不够高时可滚动到底触达按钮。 */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* The practical phase is content-heavy (requirements + generated answer). Its
@@ -1464,7 +1485,10 @@
   gap: 16px;
   margin-top: 12px;
   flex: 1 1 auto;
-  min-height: 200px;
+  /* 1440×900 以上是设计基准；在 768–800px 高的视口里，200px 的下限会把
+     下方的输入框与「交卷评分」挤出面板（实测 1280×800 溢出 21px、按钮被裁）。
+     140px 仍容得下图片与选项卡，短视口下不再裁切。 */
+  min-height: 140px;
   overflow: hidden;
 }
 
@@ -1476,6 +1500,28 @@
   max-height: 100%;
   overflow: auto;
   scrollbar-width: thin;
+}
+
+/* 画布内有生成图时，让图片适配画布，而不是把画布撑高。
+   早期这里是 overflow-y:auto + 外层 max-height:62vh：画布本身只有约 380px 高，
+   一张 1:1 的图却有 726px，于是图被裁掉一半以上（实测溢出 674px）——
+   学员看到的是"图显示不全"。改为 flex 列 + 图片容器吃掉剩余高度，
+   高度不足时位图等比回缩，三种比例都完整可见且不变形。 */
+.workbench-grid > .wb-canvas:has(.wb-image-wrap) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.workbench-grid > .wb-canvas:has(.wb-image-wrap) .wb-image-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.workbench-grid > .wb-canvas:has(.wb-image-wrap) .agent-image {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* Both columns scroll; give them a visible thin scrollbar so the student can
@@ -1542,18 +1588,23 @@
   font-weight: 800;
 }
 
-.wb-reference { margin: 0; display: grid; gap: 10px; }
-
 .wb-reference-item {
   margin: 0;
   display: grid;
   gap: 5px;
+  width: fit-content;
+  max-width: 100%;
 }
 
+/* 参考图的框必须贴住位图，不能先撑满整列再把图画小。
+   原来 width:100% + max-height：竖版原图（945×1253）在 722px 宽的列里
+   只画出 155px 宽，框内 78% 是空白 —— 学员看到"一张小图漂在大空框里"。
+   改成 width:auto，框随位图收缩，横竖方三种比例都不再有留白。 */
 .wb-reference-item img {
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
   /* The canvas column has the room, so previews can be generous here; the
      brief column keeps the full criteria list instead. */
   max-height: 210px;
@@ -1563,10 +1614,18 @@
   background: #fff;
 }
 
-/* Multiple reference assets sit side by side so one column shows them all. */
+/* Multiple reference assets sit side by side so one column shows them all.
+   托盘本身也贴住内容：单张竖版原图时，整行宽的灰底托盘里只有一小张图，
+   看上去像是"图没加载出来"。width:fit-content + 居中让底色只包住图片。 */
 .wb-reference {
-  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
-  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
   padding: 10px;
   border-radius: 14px;
   background: color-mix(in srgb, var(--assessment-color) 4%, #fff);
@@ -1614,11 +1673,33 @@
 
 .wb-canvas .wb-output { flex: 1; }
 
-.wb-image-wrap { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
+/* 图片包裹：高度由图片自身决定，不参与 flex 伸展。
+   早期用 flex:1 + overflow:hidden，容器会被压成 0 高度，
+   图片退回浏览器默认的 20×20 —— 看起来就是"显示区域不对"。
+   在画布内时由上面的 :has(.wb-image-wrap) 规则接管高度；
+   这里的 max-height 是画布之外的兜底约束。 */
+.wb-image-wrap {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 62vh;
+}
 
 .wb-image-wrap figcaption { color: #a08349; font-size: 13px; font-weight: 700; text-align: center; }
 
-.wb-image { border-radius: 16px; border: 2px solid #eef1f5; background: repeating-conic-gradient(#f2f4f7 0 25%, #fff 0 50%) 0 0 / 22px 22px; padding: 8px; }
+/* 画布内的生成图：外框保留棋盘底（透明区可见），图片本身等比居中。 */
+.wb-image {
+  border-radius: 16px;
+  border: 2px solid #eef1f5;
+  background: repeating-conic-gradient(#f2f4f7 0 25%, #fff 0 50%) 0 0 / 22px 22px;
+  padding: 8px;
+  box-sizing: border-box;
+}
 
 .wb-history { display: grid; gap: 11px; align-content: start; overflow: auto; }
 
@@ -1841,13 +1922,19 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* 底部留出主按钮的高度：它是 flex 兄弟节点，但滚动到底时最后一条标准
-     会停在按钮后面，看起来像被遮住。这段 padding 让最后一条能滚到按钮上方。 */
   padding-right: 6px;
   /* 底部净空：主按钮是滚动区的兄弟节点，空间不足时最后一条标准会停在按钮
      下方被遮住。24px 保证「整体规范」这类末条能完整滚到按钮上方。 */
   padding-bottom: 24px;
   scrollbar-width: thin;
+  /* 内容（任务目标 + 交付标准）比一屏高时，最后一条标准会被拦腰截断，
+     而 mac 的浮层滚动条平时不可见 —— 看起来像「内容丢了」。
+     底部渐隐给出「下面还有」的视觉线索。
+     渐隐高度必须**小于**上面的 padding-bottom(24px)：滚到底时容器底部
+     正好是那段净空，渐隐整段落在净空里，末条标准保持完全不透明；
+     若渐隐高于净空，末条的底边会被一起淡掉（读起来像没渲染完）。 */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent 100%);
 }
 
 .wb-brief-scroll::-webkit-scrollbar { width: 8px; }
@@ -1901,8 +1988,8 @@
 }
 
 /* 简报态的参考图比作答态大，但仍要留出交付标准与按钮的位置：
-   102px 的图片高度是实测能在 900px 视口内同时露出标准首条与主按钮的上限。 */
-.wb-brief-refs { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+   168px 的图片高度是实测能在 900px 视口内同时露出标准首条与主按钮的上限。
+   托盘已是 flex（见 .wb-reference），这里只放宽每张图的高度上限。 */
 .wb-brief-refs .wb-reference-item img { max-height: 168px; }
 
 .wb-brief-criteria { display: grid; gap: 12px; }
@@ -2075,13 +2162,19 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* 底部留出主按钮的高度：它是 flex 兄弟节点，但滚动到底时最后一条标准
-     会停在按钮后面，看起来像被遮住。这段 padding 让最后一条能滚到按钮上方。 */
   padding-right: 6px;
   /* 底部净空：主按钮是滚动区的兄弟节点，空间不足时最后一条标准会停在按钮
      下方被遮住。24px 保证「整体规范」这类末条能完整滚到按钮上方。 */
   padding-bottom: 24px;
   scrollbar-width: thin;
+  /* 内容（任务目标 + 交付标准）比一屏高时，最后一条标准会被拦腰截断，
+     而 mac 的浮层滚动条平时不可见 —— 看起来像「内容丢了」。
+     底部渐隐给出「下面还有」的视觉线索。
+     渐隐高度必须**小于**上面的 padding-bottom(24px)：滚到底时容器底部
+     正好是那段净空，渐隐整段落在净空里，末条标准保持完全不透明；
+     若渐隐高于净空，末条的底边会被一起淡掉（读起来像没渲染完）。 */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent 100%);
 }
 
 .wb-brief-scroll::-webkit-scrollbar { width: 8px; }
@@ -2135,8 +2228,8 @@
 }
 
 /* 简报态的参考图比作答态大，但仍要留出交付标准与按钮的位置：
-   102px 的图片高度是实测能在 900px 视口内同时露出标准首条与主按钮的上限。 */
-.wb-brief-refs { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+   168px 的图片高度是实测能在 900px 视口内同时露出标准首条与主按钮的上限。
+   托盘已是 flex（见 .wb-reference），这里只放宽每张图的高度上限。 */
 .wb-brief-refs .wb-reference-item img { max-height: 168px; }
 
 .wb-brief-criteria { display: grid; gap: 12px; }

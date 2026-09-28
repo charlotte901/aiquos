@@ -7,6 +7,9 @@ const IMAGE_MODEL = "gpt-image-2";
 const IMAGE_SIZES = new Set(["1024x1024", "1536x1024", "1024x1536"]);
 const IMAGE_QUALITIES = new Set(["standard", "hd"]);
 const IMAGE_STYLES = new Set(["vivid", "natural"]);
+// 参考图必须是 data URI（上游不接受裸 base64）；上限与前端上传数一致。
+const ALLOWED_IMAGE_DATA_URI = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i;
+const MAX_REFERENCE_IMAGES = 6;
 
 const MAX_MESSAGES = 16;
 const MAX_CONTENT_LENGTH = 12_000;
@@ -181,6 +184,7 @@ export async function handleDeepSeekChat(request, apiKey, fetcher = fetch) {
  *   quality  standard | hd
  *   style    vivid | natural
  *   n        1
+ *   image    参考图（**实测上游支持**，是实现图生图/风格迁移的关键）
  *
  * 实测有两个必须知道的坑：
  *   1. **不要传 response_format** —— 文档称支持 url|b64_json，但实测
@@ -203,6 +207,20 @@ export async function handleArkImage(request, apiKey, fetcher = fetch) {
   const prompt = typeof payload.prompt === "string" ? payload.prompt.trim() : "";
   if (!prompt || prompt.length > 4_000) return json({ error: "图片提示词不符合要求。" }, 400);
 
+  // 参考图：学员上传的图 + 任务自带素材。
+  //
+  // 为什么必须支持：图片类任务（如"把这张竖屏图扩成 16:9"、"按这张风格图
+  // 迁移水墨画风"）的全部意义就在于"我有一张图"。早期实现只把文字提示词
+  // 发给生图接口，参考图被完全忽略 —— 学员传了图却对结果毫无影响。
+  //
+  // 上游要求 data URI 形态（带 data:image/...;base64, 前缀的完整串）；
+  // 实测纯 base64 会被拒。同时上限取 6 张，与前端上传上限一致。
+  const rawRefs = payload.image;
+  let images = [];
+  if (typeof rawRefs === "string") images = [rawRefs];
+  else if (Array.isArray(rawRefs)) images = rawRefs.filter((x) => typeof x === "string");
+  images = images.filter((src) => ALLOWED_IMAGE_DATA_URI.test(src)).slice(0, MAX_REFERENCE_IMAGES);
+
   // 可选参数透传（白名单校验，避免把任意字段转发给上游）。
   // 注意：绝不传 response_format —— 上游收到它会断连（见函数头注释）。
   const body = {
@@ -212,6 +230,8 @@ export async function handleArkImage(request, apiKey, fetcher = fetch) {
     size: IMAGE_SIZES.has(payload.size) ? payload.size : "1024x1024",
     quality: IMAGE_QUALITIES.has(payload.quality) ? payload.quality : "standard",
     style: IMAGE_STYLES.has(payload.style) ? payload.style : "vivid",
+    // 只有确有参考图时才带该字段：空数组会让上游当作非法请求
+    ...(images.length ? { image: images } : {}),
   };
 
   let upstream;
