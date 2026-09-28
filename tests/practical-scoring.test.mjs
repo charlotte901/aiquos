@@ -307,7 +307,9 @@ test("图片任务：评委同时收到参考原图与产物，可逐项比对�
   const user = messages.find((m) => m.role === "user");
   assert.ok(Array.isArray(user.content), "有图时应为多模态");
   const urls = user.content.filter((p) => p.type === "image_url").map((p) => p.image_url.url);
-  assert.deepEqual(urls, [ref, out], "顺序必须是：参考原图 → 产物");
+  assert.equal(urls[0], ref, "第一张必须是参考原图");
+  assert.equal(urls[urls.length - 1], out, "最后一张必须是学员产物");
+  assert.ok(urls.length >= 2, "至少 2 张");
   const text = user.content.find((p) => p.type === "text").text;
   assert.match(text, /参考原图/, "文案须说明附了原图");
   assert.match(text, /比对/, "文案须要求与原图逐项比对");
@@ -363,4 +365,46 @@ test("文本任务不受影响：产物仍按文本送入", () => {
   const user = messages.find((m) => m.role === "user");
   assert.equal(typeof user.content, "string");
   assert.match(user.content, /本周完成/);
+});
+
+
+// ── 标准产物范例（对照基准）───────────────────────────────────────────────
+
+test("图片任务：评委收到 参考原图 → 标准范例 → 学员产物（三图带标签）", () => {
+  // 这是 lite-004「色彩融合/边缘自然」恒判满分的修复：
+  // 评委此前没有"优秀长什么样"的参照，只能凭审美判断。
+  const task = {
+    title: "扩图", goal: "g", requirements: ["原图保真"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "原图保真", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const m = practicalJudgeMessages(task, {
+    prompts: ["p"], finalPrompt: "p", isImage: true, iterations: 1,
+    productImage: "data:image/png;base64,PROD",
+    referenceImages: ["data:image/jpeg;base64,REF"],
+    standardProductImage: "data:image/jpeg;base64,STD",
+  });
+  const c = m.find(x=>x.role==="user").content;
+  const urls = c.filter(p=>p.type==="image_url").map(p=>p.image_url.url);
+  assert.deepEqual(urls, ["data:image/jpeg;base64,REF","data:image/jpeg;base64,STD","data:image/png;base64,PROD"],
+    "顺序：参考原图 → 标准范例 → 学员产物");
+  const txt = c.filter(p=>p.type==="text").map(p=>p.text).join(" ");
+  assert.match(txt, /标准产物范例/, "须标注范例");
+  assert.match(txt, /对照基准/, "须说明用途");
+});
+
+test("无标准范例时不插入占位（保持两图）", () => {
+  const task = {
+    title: "t", goal: "g", requirements: ["x"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "E", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const m = practicalJudgeMessages(task, {
+    prompts: ["p"], finalPrompt: "p", isImage: true, iterations: 1,
+    productImage: "data:image/png;base64,P",
+    referenceImages: ["data:image/jpeg;base64,R"],
+    standardProductImage: "",
+  });
+  const urls = m.find(x=>x.role==="user").content.filter(p=>p.type==="image_url").map(p=>p.image_url.url);
+  assert.equal(urls.length, 2, "无范例时只有两图");
 });

@@ -171,7 +171,7 @@ function rubricText(rubric) {
  * @param {object} payload 学员作答
  * @param {string} payload.productImage 图片任务的产物 data URI（可选）
  */
-export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", product = "", isImage = false, iterations = 1, productImage = "", referenceImages = [] }) {
+export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", product = "", isImage = false, iterations = 1, productImage = "", referenceImages = [], standardProductImage = "" }) {
   const promptHistory = (prompts.length ? prompts : [finalPrompt])
     .map((prompt, index) => `第 ${index + 1} 次：${prompt}`)
     .join("\n\n");
@@ -182,12 +182,24 @@ export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", p
     .filter((src) => typeof src === "string" && src.startsWith("data:image/"))
     .slice(0, 3);
   const hasRefs = refs.length > 0;
+  // 标准产物图（题库 role=product 的范例）：评委判"优秀"时的对照基准。
+  // 没有它，评委只能凭自己的审美判断产物好不好 —— 实测导致 lite-004 的
+  // 「色彩融合」「边缘自然」对所有水平档恒判满分。
+  const stdImg = typeof standardProductImage === "string" && standardProductImage.startsWith("data:image/")
+    ? standardProductImage : "";
+  const hasStd = Boolean(stdImg);
   const productText = isImage
     ? (hasImage
         ? (hasRefs
-            ? `（本任务为图片生成。消息中附有 ${refs.length + 1} 张图片：前 ${refs.length} 张是任务给定的参考原图，最后 1 张是学员的最终产物。`
-              + "判「原图保真/构图保留」类维度时，请逐项比对产物与原图（主体位置、朝向、大结构、色调是否一致、有无被重绘或替换）；"
-              + "判「边缘自然/色彩融合」时观察衔接处有无接缝与伪影。）"
+            ? [
+                `（本任务为图片生成。消息附图顺序与用途：`,
+                 `  · 前 ${refs.length} 张 —— 任务给定的参考原图（学员的输入素材）`,
+                 ...(hasStd ? [`  · 第 ${refs.length + 1} 张 —— 题库的标准产物范例（判「优秀」档的对照基准）`] : []),
+                 `  · 最后 1 张 —— 学员的最终产物。`,
+                 `判「原图保真/构图保留」类维度时，请逐项比对学员产物与参考原图（主体位置、朝向、大结构、色调是否一致、有无被重绘或替换）；`,
+                 `判「色彩融合/边缘自然/艺术感染力」类维度时，请以标准产物范例为"优秀"的参照，再比对学员产物达到什么程度；`,
+                 `判「边缘自然/色彩融合」时观察衔接处有无接缝与伪影。）`,
+                ].join("\n")
             : "（本任务为图片生成，产物图已附上，但未收到参考原图；判「原图保真」类维度时请依据产物自身是否协调一致来判档，并在评语中说明未见到原图。）")
         : "（本任务为图片生成，但未收到产物图；请仅依据提示词覆盖到的画面要素判档，并在评语中说明未见到图。）")
     : String(product ?? "").slice(0, 4000);
@@ -221,6 +233,11 @@ export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", p
         "4. **维度之间独立判档。** 不要因为某一维很强就把其余维度一起抬高；也不要用同一个理由给多个维度判同一档。",
         "5. **评语要具体**，指出学员做到了什么或缺了什么（如「未给出字数区间」「保留了1287人这一关键数据」），不要写「基本符合要求」这类空话。",
         "6. **涉及「保真/保留」的维度必须与参考原图逐项比对。** 若附有参考原图，不得仅凭产物本身好看就判优秀；必须核对原图的主体、位置、朝向、结构是否被保留。原图被重绘、主体被替换或构图被改动，一律不得判优秀。",
+        "7. **保真类维度按三级客观锚点判，不凭「看起来差不多」。** 先在心里列出参考原图的关键特征（主体是什么、在画面什么位置、朝向、大结构与色调），再逐项在产物中核对，按缺失项数量判档：",
+        "   · 全部特征在产物中都能对应上（主体一致、位置一致、结构一致）→ 优秀；",
+        "   · 有 1–2 项特征与实际不符或位置有可察觉偏移 → 良好；",
+        "   · 主体被替换、被重绘，或位置/结构明显改变 → 待改进。",
+        "   注意：**不得因为「产物整体好看」而抬高保真档位**。保真考的是与原图的一致性，不是产物的美观程度。",
         "",
         '只输出一个 JSON 对象（不要 markdown 代码块），格式：{"prompt":[{"dimension":"维度名","level":"excellent|good|pass","comment":"不超过40字的评语"}],"product":[…]}。',
         "level 只能取 excellent（达到优秀描述）、good（达到良好描述）、pass（仅达到待改进描述）。dimension 必须与评分标准里的维度名完全一致，顺序一致，一套不漏。",
@@ -233,11 +250,15 @@ export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", p
       content: (hasImage || hasRefs)
         ? [
             { type: "text", text: userContent },
-            ...refs.map((url, index) => ({
-              type: "text",
-              text: `【参考原图 ${index + 1}】`,
-            })),
-            ...refs.flatMap((url) => [{ type: "image_url", image_url: { url } }]),
+            // 标签与图片逐一交错，评委才能确定每张图的用途
+            ...refs.flatMap((url, i) => [
+              { type: "text", text: `【参考原图 ${i + 1}】` },
+              { type: "image_url", image_url: { url } },
+            ]),
+            ...(hasStd
+              ? [{ type: "text", text: "【标准产物范例（对照基准）】" },
+                 { type: "image_url", image_url: { url: stdImg } }]
+              : []),
             ...(hasImage
               ? [{ type: "text", text: "【学员的最终产物】" },
                  { type: "image_url", image_url: { url: productImage } }]

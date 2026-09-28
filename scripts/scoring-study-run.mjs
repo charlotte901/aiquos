@@ -32,7 +32,8 @@ const OUT = join(STUDY, "results");
 mkdirSync(OUT, { recursive: true });
 
 const BASE = process.env.BASE || "http://127.0.0.1:4286";
-const REPEATS = Number(process.env.REPEATS || 3);
+// worker 内部已改为 3 票取中位档，外层重复次数默认降为 1（避免 9 倍开销）
+const REPEATS = Number(process.env.REPEATS || 1);
 const ONLY = process.env.ONLY ? process.env.ONLY.split(",") : null;   // 只跑指定题（冒烟用）
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

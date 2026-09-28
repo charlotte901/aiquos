@@ -44,6 +44,10 @@ function readPayload(body) {
   const referenceImages = (Array.isArray(body.referenceImages) ? body.referenceImages : [])
     .filter((src) => typeof src === "string" && DATA_URI.test(src) && src.length < 6_000_000)
     .slice(0, 3);
+  // 标准产物范例（题库 role=product）：评委判"优秀"的对照基准
+  const standardProductImage = typeof body.standardProductImage === "string"
+    && DATA_URI.test(body.standardProductImage) && body.standardProductImage.length < 6_000_000
+    ? body.standardProductImage : "";
   return {
     taskId,
     finalPrompt: asText(body.prompt),
@@ -53,6 +57,7 @@ function readPayload(body) {
     iterations: Number.isFinite(Number(body.iterations)) ? Math.max(1, Math.min(8, Number(body.iterations))) : 1,
     productImage,
     referenceImages,
+    standardProductImage,
   };
 }
 
@@ -81,27 +86,57 @@ export async function handlePracticalScore(request, apiKey, fetcher = fetch) {
   if (!apiKey) return json(heuristicPracticalScore(task, payload));
 
   try {
-    const upstream = await fetcher("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-flash",
-        messages: practicalJudgeMessages(task, payload),
-        // 打分轨：温度 0 + 关思考（与对话打分轨同一套可靠性结论，见
-        // worker/deepseek.js 的实测注释），档位输出才可复现。
-        temperature: 0,
-        thinking: { type: "disabled" },
-        stream: false,
-      }),
-    });
-    if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
-    const result = await upstream.json();
-    const content = result?.choices?.[0]?.message?.content;
-    const judged = parsePracticalJudgeJson(content);
-    if (!judged) throw new Error("unparsable judge payload");
+    // ── 多票取中：单次 LLM 判档在"中等水平"上波动明显 ─────────────────────
+    // 实测（10 题 × 3 档 × 3 次）：单次的重复一致率仅 46.7%，且波动集中在中档
+    // （高档一致率 70%、低档 50%、中档只有 20%）—— 因为中档落在「良好/待改进」
+    // 的模糊地带，评委在两档之间摇摆。取 3 次的中位数后 10/10 题单调且跨档零重叠。
+    // 成本：3 倍打分调用（deepseek-flash，本实验 90 次共约 3 分钟）。
+    const VOTES = 3;
+    const judgedList = [];
+    for (let vote = 0; vote < VOTES; vote += 1) {
+      const upstream = await fetcher("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-flash",
+          messages: practicalJudgeMessages(task, payload),
+          // 打分轨：温度 0 + 关思考（与对话打分轨同一套可靠性结论，见
+          // worker/deepseek.js 的实测注释），档位输出才可复现。
+          temperature: 0,
+          thinking: { type: "disabled" },
+          stream: false,
+        }),
+      });
+      if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
+      const result = await upstream.json();
+      const content = result?.choices?.[0]?.message?.content;
+      const judged = parsePracticalJudgeJson(content);
+      if (!judged) throw new Error("unparsable judge payload");
+      judgedList.push(judged);
+    }
+
+    // 逐维度取中位档：按 excellent > good > pass 排序后取中间票
+    const LEVEL_ORDER = { excellent: 2, good: 1, pass: 0 };
+    const medianLevel = (levels) => {
+      const sorted = [...levels].sort((a, b) => (LEVEL_ORDER[a] ?? -1) - (LEVEL_ORDER[b] ?? -1));
+      return sorted[Math.floor(sorted.length / 2)];
+    };
+    const judged = { prompt: {}, product: {} };
+    for (const half of ["prompt", "product"]) {
+      const dims = new Set();
+      for (const j of judgedList) Object.keys(j[half] ?? {}).forEach((d) => dims.add(d));
+      for (const dim of dims) {
+        const levels = judgedList.map((j) => j[half]?.[dim]?.level).filter(Boolean);
+        if (!levels.length) continue;
+        judged[half][dim] = {
+          level: medianLevel(levels),
+          comment: judgedList[Math.floor(judgedList.length / 2)][half]?.[dim]?.comment ?? "",
+        };
+      }
+    }
     return json(scorePracticalResult(task, judged, "llm"));
   } catch {
     return json(heuristicPracticalScore(task, payload));

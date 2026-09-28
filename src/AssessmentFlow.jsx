@@ -110,6 +110,12 @@ async function referenceDataUri(src) {
   }
 }
 
+/** 题库的标准产物范例（role=product）：评分时的对照基准，不是学员输入。 */
+function productAssets(task) {
+  const list = Array.isArray(task?.assets) ? task.assets : [];
+  return list.filter((asset) => asset && asset.src && asset.role === "product");
+}
+
 /** 素材的图注与无障碍名称（label 优先，其次按角色推断）。 */
 function assetLabel(asset) {
   if (asset?.label) return asset.label;
@@ -1385,6 +1391,11 @@ async function requestPracticalScore({ task, generations, finalGeneration, isIma
       referenceImages: isImageTask
         ? (await Promise.all(inputAssets(task).map((asset) => referenceDataUri(asset.src)))).filter(Boolean)
         : [],
+      // 标准产物范例（role=product）：评委判「优秀」的对照基准。
+      // 之前只把它当输入素材过滤掉，评委没有参照 → 「色彩融合」等维度恒判满分。
+      standardProductImage: isImageTask
+        ? ((await Promise.all(productAssets(task).map((asset) => referenceDataUri(asset.src)))).find(Boolean) ?? "")
+        : "",
       isImage: isImageTask,
       iterations: generations.length,
     }),
