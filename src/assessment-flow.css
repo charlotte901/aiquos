@@ -1502,39 +1502,31 @@
   scrollbar-width: thin;
 }
 
-/* 画布内有生成图时，让图片适配画布，而不是把画布撑高。
-   早期这里是 overflow-y:auto + 外层 max-height:62vh：画布本身只有约 380px 高，
-   一张 1:1 的图却有 726px，于是图被裁掉一半以上（实测溢出 674px）——
-   学员看到的是"图显示不全"。改为 flex 列 + 图片容器吃掉剩余高度，
-   高度不足时位图等比回缩，三种比例都完整可见且不变形。 */
-.workbench-grid > .wb-canvas:has(.wb-image-wrap) {
+/* 画布固定高度、内部线程滚动。
+   多轮迭代后画布里有多个产物气泡，不是单张图；这里让画布本身不滚动
+   （.wb-thread 自己滚），否则会出现"外层滚动条 + 线程滚动条"两层，
+   滚轮停在哪层取决于光标位置，操作很别扭。
+   图片的尺寸约束在 .wb-thread 里按轮次设定（见下方 wb-image-wrap）。 */
+.workbench-grid > .wb-canvas {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.workbench-grid > .wb-canvas:has(.wb-image-wrap) .wb-image-wrap {
-  flex: 1 1 auto;
   min-height: 0;
-  max-height: none;
 }
 
-.workbench-grid > .wb-canvas:has(.wb-image-wrap) .agent-image {
-  max-width: 100%;
-  max-height: 100%;
-}
+.workbench-grid > .wb-canvas .wb-thread { flex: 1 1 auto; min-height: 0; }
 
 /* Both columns scroll; give them a visible thin scrollbar so the student can
    tell there is more content instead of reading a clipped list as broken. */
 .workbench-grid > .wb-brief::-webkit-scrollbar,
 .workbench-grid > .wb-canvas::-webkit-scrollbar,
 .wb-output::-webkit-scrollbar,
-.wb-history::-webkit-scrollbar { width: 8px; }
+.wb-thread::-webkit-scrollbar { width: 8px; }
 
 .workbench-grid > .wb-brief::-webkit-scrollbar-thumb,
 .workbench-grid > .wb-canvas::-webkit-scrollbar-thumb,
 .wb-output::-webkit-scrollbar-thumb,
-.wb-history::-webkit-scrollbar-thumb {
+.wb-thread::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
 }
@@ -1650,25 +1642,6 @@
 
 .wb-canvas { gap: 13px; }
 
-.wb-canvas-tabs { display: flex; gap: 8px; }
-
-.wb-canvas-tabs button {
-  padding: 7px 16px;
-  border-radius: 999px;
-  border: 2px solid #e4e9f0;
-  background: #fff;
-  color: #687382;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.wb-canvas-tabs button.is-active {
-  border-color: var(--assessment-color);
-  color: var(--assessment-deep);
-  background: var(--assessment-soft);
-}
-
 .wb-output { font-size: 15.5px; min-height: 0; overflow: auto; }
 
 .wb-canvas .wb-output { flex: 1; }
@@ -1701,18 +1674,81 @@
   box-sizing: border-box;
 }
 
-.wb-history { display: grid; gap: 11px; align-content: start; overflow: auto; }
-
-.wb-history-item {
-  padding: 12px 15px;
-  border-radius: 14px;
-  background: #f7f9fc;
-  border: 2px solid #e8edf3;
+/* ── 对话线程（多轮迭代）──
+   每一轮 = 「我的指令」气泡 + 「Agent 产物」气泡，依次向下堆叠，
+   最近一轮在最下方。像豆包那样连续迭代，学员能回看每一轮改了什么、
+   结果怎么变，而不是只看得到最后一次产物。
+   容器自身滚动（画布高度固定），新气泡出现时由 JS 滚到底。 */
+.wb-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  padding-right: 4px;
 }
 
-.wb-history-item strong { display: block; color: var(--assessment-deep); font-size: 13.5px; margin-bottom: 4px; }
+.wb-thread::-webkit-scrollbar { width: 8px; }
 
-.wb-history-item p { margin: 0; color: #36445a; font-size: 14.5px; line-height: 1.55; white-space: pre-wrap; }
+.wb-thread::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color) 30%, #fff);
+}
+
+.wb-thread::-webkit-scrollbar-track { background: transparent; }
+
+.wb-turn { display: flex; flex-direction: column; gap: 10px; flex: 0 0 auto; }
+
+.wb-turn-line { display: flex; flex-direction: column; gap: 5px; }
+
+.wb-turn-who {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+/* 学员指令：右对齐、浅色气泡，与 Agent 产物明确区分。 */
+.wb-turn-user { align-items: flex-end; }
+
+.wb-turn-user .wb-turn-who {
+  background: color-mix(in srgb, var(--assessment-color) 14%, #fff);
+  color: var(--assessment-deep);
+}
+
+.wb-turn-prompt {
+  margin: 0;
+  max-width: 88%;
+  padding: 10px 15px;
+  border-radius: 14px 14px 4px 14px;
+  background: color-mix(in srgb, var(--assessment-color) 10%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 18%, #fff);
+  color: #263243;
+  font-size: 14.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Agent 产物：左对齐，占满可用宽度。 */
+.wb-turn-agent .wb-turn-who { background: #eef1f6; color: #4d5a6c; }
+
+.wb-turn-agent .wb-output { flex: 0 1 auto; }
+
+/* 等待本轮产物时的占位：紧贴气泡下方，不占满整屏。 */
+.wb-turn-pending { min-height: 76px; padding: 14px; }
+
+/* 线程里的生成图不再吃掉全部高度：多轮并存，每张按容器等比缩放即可。 */
+.wb-thread .wb-image-wrap { max-height: 46vh; }
+
+.wb-thread .agent-image { max-height: 44vh; }
 
 .workbench-actions { display: grid; gap: 11px; margin-top: 14px; }
 
@@ -1869,7 +1905,6 @@
 .phase-timer { font-size: 16px; }
 .phase-timer svg { width: 18px; height: 18px; }
 .wb-chip { font-size: 15.5px; }
-.wb-canvas-tabs button { font-size: 16px; }
 .source-toggle { font-size: 15px; }
 .wb-requirements li { font-size: 16px; }
 .wb-brief .agent-section-heading { font-size: 16px; }
@@ -1882,8 +1917,6 @@
 .quiz-brief { font-size: 15px; color: #5c6878; }
 .interview-who span:not(.interview-avatar) { font-size: 15px; }
 .wb-reference-item figcaption { font-size: 14px; }
-.wb-history-item strong { font-size: 15px; }
-.wb-history-item p { font-size: 16px; }
 .wb-hint { font-size: 15px; }
 .offline-chip { font-size: 14px; }
 .wb-material { font-size: 16px; }
@@ -2109,7 +2142,6 @@
 .phase-timer { font-size: 16px; }
 .phase-timer svg { width: 18px; height: 18px; }
 .wb-chip { font-size: 15.5px; }
-.wb-canvas-tabs button { font-size: 16px; }
 .source-toggle { font-size: 15px; }
 .wb-requirements li { font-size: 16px; }
 .wb-brief .agent-section-heading { font-size: 16px; }
@@ -2122,8 +2154,6 @@
 .quiz-brief { font-size: 15px; color: #5c6878; }
 .interview-who span:not(.interview-avatar) { font-size: 15px; }
 .wb-reference-item figcaption { font-size: 14px; }
-.wb-history-item strong { font-size: 15px; }
-.wb-history-item p { font-size: 16px; }
 .wb-hint { font-size: 15px; }
 .offline-chip { font-size: 14px; }
 .wb-material { font-size: 16px; }
@@ -2390,10 +2420,8 @@
   .wb-brief-criteria .wb-requirements li { font-size: 17.5px; }
   .task-body.practical-task .agent-brief { font-size: 17px; }
   .wb-output { font-size: 17px; }
-  .wb-history-item p { font-size: 17px; }
   .wb-material { font-size: 16.5px; }
   .source-toggle { font-size: 16px; }
-  .wb-canvas-tabs button { font-size: 16.5px; }
   .agent-section-heading { font-size: 16.5px; }
   .phase-timer { font-size: 17px; }
   .wb-chip { font-size: 16px; }
@@ -2514,15 +2542,25 @@
 
 .wb-requirements li::before { left: 9px; top: 8px; width: 21px; height: 21px; font-size: 12.5px; }
 
-.wb-canvas-tabs { gap: 7px; }
 
-.wb-canvas-tabs button { padding: 5px 14px; }
 
-.wb-canvas-tabs button + button { margin-left: 0; }
 
 .workbench-actions { gap: 9px; margin-top: 10px; }
 
 .wb-composer { min-height: 88px; padding: 9px 9px 9px 17px; border-radius: 18px; }
+
+/* 矮视口（1280×720 这类）里，对话线程是主要阅读区，但栅格分给它的
+   高度只有 170px 左右，一轮问答就占满，回看历史要频繁滚动。
+   这里压缩线程自身的行距与气泡内边距，把省下来的高度还给内容。 */
+.wb-thread { gap: 13px; }
+
+.wb-turn { gap: 8px; }
+
+.wb-turn-prompt { padding: 8px 13px; font-size: 14px; }
+
+.wb-thread .wb-output { font-size: 15px; }
+
+.wb-turn-pending { min-height: 60px; padding: 12px; }
 
 .wb-composer textarea { min-height: 54px; }
 

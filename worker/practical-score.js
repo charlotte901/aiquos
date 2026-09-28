@@ -28,14 +28,17 @@ function json(payload, status = 200) {
 function readPayload(body) {
   const taskId = typeof body.taskId === "string" ? body.taskId : "";
   const asText = (value) => (typeof value === "string" ? value.slice(0, 8000) : "");
-  const prompts = Array.isArray(body.prompts) ? body.prompts.map(asText).filter(Boolean).slice(0, 3) : [];
+  // 迭代轮次与前端上限（MAX_GENERATIONS = 8）保持一致：
+  // 早期这里硬截到 3 条，学员改了 8 轮、评委只看到前 3 轮，
+  // "迭代改进"这一评分维度就评不准了。
+  const prompts = Array.isArray(body.prompts) ? body.prompts.map(asText).filter(Boolean).slice(0, 8) : [];
   return {
     taskId,
     finalPrompt: asText(body.prompt),
     product: asText(body.product),
     prompts,
     isImage: body.isImage === true,
-    iterations: Number.isFinite(Number(body.iterations)) ? Math.max(1, Math.min(3, Number(body.iterations))) : 1,
+    iterations: Number.isFinite(Number(body.iterations)) ? Math.max(1, Math.min(8, Number(body.iterations))) : 1,
   };
 }
 

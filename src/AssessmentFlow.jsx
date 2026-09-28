@@ -56,6 +56,7 @@ import { parseScoreJson } from "./interview-score-parse";
 import { onEnterSubmit } from "./ime";
 import { MarkdownLite } from "./markdown-lite";
 import { deliveryRequirements, scoringSchemeRows, taskImageSize } from "./practical-scoring";
+import { practicalAgentMessages, practicalImagePrompt, practicalImageRefs } from "./practical-agent";
 import { Task3DCharacter } from "./Task3DCharacter";
 import { CharacterTuner } from "./character-tuner";
 import TUNING_DEFAULTS from "./character-tuning.json";
@@ -109,7 +110,10 @@ function clearInterviewState() {
   }
 }
 const DIMENSION_KEYS = SCORING_DIMENSIONS.map((dimension) => dimension.key);
-const MAX_GENERATIONS = 3;
+// 迭代轮次上限。豆包式的连续迭代本来就是"改到满意为止"，3 次太少
+// （「结构对了再抠标题」这类局部微调很快用完）；但也要有上限，
+// 否则一次实操会长到无法收尾。8 轮 + 5 分钟计时共同约束节奏。
+const MAX_GENERATIONS = 8;
 
 // 双轨采样温度：聊天轨要活（措辞多变、口癖、接话自然），打分轨要稳
 // （同一段回答两次评分不该抖动）。worker 端会按请求钳制到 0–2。
@@ -1329,31 +1333,6 @@ function offlineAgentOutput(task, prompt) {
   return `> **离线演示输出** —— 当前未连接 AI 服务，以下为按交付标准整理的产出框架。\n\n**任务**：${task.title}\n\n**你的提示词**：${prompt}\n\n---\n\n${steps}\n\n---\n\n以上框架在接入 AI 服务后会由 Agent 依据原始素材实际生成完整交付内容。`;
 }
 
-function agentMessages(task, prompt, uploads = []) {
-  const brief = `任务：${task.title}\n目标：${task.goal}\n要求：\n${task.requirements.map((item, index) => `${index + 1}. ${item}`).join("\n")}\n\n原始素材：\n${task.source}\n\n用户提示词：\n${prompt}`;
-  // 学员上传了参考图 → 用多模态 content，让 Agent 真的"看见"这张图。
-  // deepseek-flash 支持 image 输入；没有上传时保持纯字符串，省带宽也省 token。
-  if (!Array.isArray(uploads) || uploads.length === 0) {
-    return [
-      { role: "system", content: "你是 AIQUOS 实操测评的执行 Agent。请严格根据用户提示词和原始素材完成任务；保留关键数据，不补充素材中没有的信息。输出仅包含最终交付内容，不解释你的推理。" },
-      { role: "user", content: brief },
-    ];
-  }
-  return [
-    {
-      role: "system",
-      content: "你是 AIQUOS 实操测评的执行 Agent。请严格根据用户提示词和原始素材完成任务；保留关键数据，不补充素材中没有的信息。用户可能附上参考图，请按图片内容行事。输出仅包含最终交付内容，不解释你的推理。",
-    },
-    {
-      role: "user",
-      content: [
-        { type: "text", text: `${brief}\n\n（学员附上了 ${uploads.length} 张参考图）` },
-        ...uploads.map((item) => ({ type: "image_url", image_url: { url: item.src } })),
-      ],
-    },
-  ];
-}
-
 // 评分走服务端 /api/practical-score：题库的评分标准与参考答案只存在
 // 服务端（publicTask 不下发），学员交卷后由服务端对照 rubric 逐维评分，
 // 回传每一维的档位、得分与评语。
@@ -1435,16 +1414,20 @@ function PracticalWorkbenchPhase({
   const [draft, setDraft] = useState("");
   const [generations, setGenerations] = useState([]);
   const [liveOutput, setLiveOutput] = useState("");
+  // 正在生成的那一轮指令：先把它作为一条"我"的气泡放进线程，
+  // 学员才不会在等待时觉得自己的输入消失了（旧版要等整轮结束才出现）。
+  const [livePrompt, setLivePrompt] = useState("");
   const [running, setIsRunning] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState("");
   const [offline, setOffline] = useState(false);
   const [showMaterial, setShowMaterial] = useState(false);
-  const [canvasTab, setCanvasTab] = useState("output");
   // 学员上传的参考图（data URI）。实操任务里常需要"我有一张图，请按它来"，
   // 没有上传就只能靠文字描述，很多任务没法做。
   const [uploads, setUploads] = useState([]);
   const uploadInputRef = useRef(null);
+  // 线程滚动容器：新气泡出现时滚到底，保持最新一轮可见。
+  const threadRef = useRef(null);
   // 评分报告（/api/practical-score 的返回；离线兜底时只有总档位分）。
   const [scoreReport, setScoreReport] = useState(null);
   // 两步态：先只呈现任务与交付标准（大字、留白充足），确认后再进入作答界面。
@@ -1484,11 +1467,18 @@ function PracticalWorkbenchPhase({
         : phase === "score"
           ? "评分出炉：每个维度都有档位、得分和评语，对照看看还能从哪里加分。"
           : generations.length
-            ? "生成完成！可以优化提示词再生成，也可以完成本关。"
+            ? "生成完成！可以继续提要求让 Agent 改，直到满意再交卷。"
             : (storyPhase === "opening" || storyPhase === "ending" ? lines[lineIndex]?.text : "在下方撰写提示词并点击发送，驱动 Agent 完成任务。"),
       speakerName: guardian,
     });
   }, [phase, storyPhase, running, generations.length, lineIndex, lines, guardian, onCharacterFeedback]);
+
+  // 新气泡出现或流式输出增长时，把线程滚到底 —— 连续迭代时最新一轮
+  // 必须在视野里，否则学员会以为"没反应"。
+  useEffect(() => {
+    const node = threadRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [generations.length, running, liveOutput]);
 
   useEffect(() => {
     let active = true;
@@ -1676,20 +1666,6 @@ function PracticalWorkbenchPhase({
   const atGenerationCap = generations.length >= MAX_GENERATIONS;
   const expired = clock.remainingMs <= 0;
 
-  /**
-   * 生图提示词。
-   *
-   * 有参考图时必须显式告知 —— 上游会同时收到 image 数组与这段文字，
-   * 只给图不给"要拿它做什么"的指令，模型容易把参考图当作要模仿的内容
-   * 而不是要处理的素材。
-   */
-  const imagePrompt = (prompt) => {
-    const refs = uploads.length
-      ? `\n参考图：已附上 ${uploads.length} 张（${uploads.map((u) => u.name).join("、")}）。请以这些图作为输入素材，按上面的任务要求处理，而不是重新画一张无关的图。`
-      : "";
-    return `${task.title}\n${task.goal}\n任务要求：${task.requirements.join("；")}\n活动素材：${task.source}${refs}\n用户补充：${prompt}`;
-  };
-
   const run = async () => {
     const prompt = draft.trim();
     // Past the bell a student may still submit one prompt they had already
@@ -1699,14 +1675,22 @@ function PracticalWorkbenchPhase({
     setError("");
     setIsRunning(true);
     setLiveOutput("");
+    // 先把本轮指令放上屏：等待期间学员能看见"我说了什么"，
+    // 而不是输入框清空后只剩一个转圈。
+    setLivePrompt(prompt);
+    // 本轮之前已完成的轮次：文本任务作为对话历史，图片任务作为修订底图。
+    const history = generations;
+    const previous = history[history.length - 1] ?? null;
+    const turnNumber = history.length + 1;
     const entry = { prompt, offline: false };
     try {
       if (isImageTask) {
+        // 参考图 = 学员上传的素材 + 上一轮产物（见 practicalImageRefs 的说明）。
+        const refs = practicalImageRefs(uploads, previous, turnNumber);
         try {
           entry.imageUrl = await generateArkImage({
-            prompt: imagePrompt(prompt),
-            // 学员上传的图 + 任务自带素材一起作为参考图
-            images: uploads.map((item) => item.src),
+            prompt: practicalImagePrompt(task, prompt, refs.map((r) => r.name), turnNumber),
+            images: refs.map((r) => r.src),
             // 题面写明比例时按其输出（如「16:9 横版海报」→ 1536x864），
             // 否则交给服务端默认尺寸。
             size: taskImageSize(task),
@@ -1729,8 +1713,9 @@ function PracticalWorkbenchPhase({
         let output = "";
         let failed = false;
         try {
+          // 多轮：把已完成的轮次一并交给 Agent，支持"在上一版上再改"。
           output = await streamDeepSeek({
-            messages: agentMessages(task, prompt, uploads),
+            messages: practicalAgentMessages(task, history, prompt, uploads),
             onDelta: (message) => {
               output = message;
               setLiveOutput(message);
@@ -1748,12 +1733,12 @@ function PracticalWorkbenchPhase({
       }
       setGenerations((current) => [...current, entry]);
       setDraft("");
-      setCanvasTab("output");
     } catch (requestError) {
       setError(requestError.message || "运行失败，请重试。");
     } finally {
       setIsRunning(false);
       setLiveOutput("");
+      setLivePrompt("");
     }
   };
 
@@ -1910,7 +1895,7 @@ function PracticalWorkbenchPhase({
       <h2>{task.title}</h2>
       <div className="workbench-meta">
         <span className="wb-chip">{isImageTask ? "图片生成" : "文本生成"}</span>
-        <span className={`wb-chip${generations.length ? " is-active" : ""}`}>第 {Math.max(1, generations.length)} / {MAX_GENERATIONS} 次生成</span>
+        <span className={`wb-chip${generations.length ? " is-active" : ""}`}>第 {Math.max(1, generations.length)} / {MAX_GENERATIONS} 轮迭代</span>
         {offline && <span className="offline-chip">离线演示模式</span>}
         <PhaseTimer remainingMs={clock.remainingMs} />
       </div>
@@ -1926,39 +1911,57 @@ function PracticalWorkbenchPhase({
         {showMaterial && <div className="source-copy wb-material"><MarkdownLite text={task.source} /></div>}
       </section>
       <section className="agent-canvas wb-canvas" aria-live="polite" aria-label="Agent 工作区域">
-        {/* 作答区不再重复渲染参考图。
-            任务素材在载入时已被预置到输入框上方的「已上传」条里（标注「任务素材」，
-            可移除、可追加、可粘贴），这里再画一遍只是同一张图出现两次：
-            参考图占掉画布近半高度，生成结果被挤到画布外裁掉一截。 */}
-        <div className="wb-canvas-tabs" role="tablist" aria-label="产出查看">
-          <button type="button" role="tab" aria-selected={canvasTab === "output"} className={canvasTab === "output" ? "is-active" : ""} onClick={() => setCanvasTab("output")}>AI 输出</button>
-          <button type="button" role="tab" aria-selected={canvasTab === "history"} className={canvasTab === "history" ? "is-active" : ""} onClick={() => setCanvasTab("history")}>提示词记录（{generations.length}）</button>
-        </div>
-        {canvasTab === "history" ? (
-          generations.length ? (
-            <div className="wb-history">
-              {generations.map((generation, index) => (
-                <div key={index} className="wb-history-item">
-                  <strong>第 {index + 1} 次生成</strong>
-                  <p>{generation.prompt}</p>
-                </div>
-              ))}
+        {/* 对话线程：每一轮的「我的指令 + Agent 产物」依次留在画布里，
+            像豆包那样连续迭代——学员能看到自己改了什么、结果怎么变。
+            早期是「AI 输出 / 提示词记录」两个标签页，产物只留最后一张、
+            提示词另存一处，迭代过程被割成两份，也看不出每轮改动的效果。
+            参考图不在此重复渲染：它已在输入框上方的「已上传」条里。 */}
+        <div className="wb-thread" ref={threadRef}>
+          {generations.length === 0 && !running && (
+            <div className="agent-empty">
+              <Sparkle weight="fill" />
+              <span>{isImageTask ? "写下画面提示词，Agent 将在这里生成主视觉。" : "写好提示词后，Agent 将在这里完成交付。"}</span>
             </div>
-          ) : <div className="agent-empty"><Sparkle weight="fill" /><span>还没有生成记录。</span></div>
-        ) : running && !liveOutput && !finalGeneration?.imageUrl ? (
-          <div className="agent-empty"><CircleNotch className="reply-spinner" weight="bold" /><span>{isImageTask ? "正在生成主视觉…" : "正在整理材料…"}</span></div>
-        ) : running && liveOutput ? (
-          <div className="agent-output wb-output is-streaming"><MarkdownLite text={liveOutput} /></div>
-        ) : finalGeneration?.imageUrl ? (
-          <figure className="wb-image-wrap">
-            <img className="agent-image wb-image" src={finalGeneration.imageUrl} alt={`${task.title}生成结果`} />
-            {finalGeneration.offline && <figcaption>离线演示图</figcaption>}
-          </figure>
-        ) : finalGeneration?.output ? (
-          <div className="agent-output wb-output"><MarkdownLite text={finalGeneration.output} /></div>
-        ) : (
-          <div className="agent-empty"><Sparkle weight="fill" /><span>写好提示词后，Agent 将在这里完成交付。</span></div>
-        )}
+          )}
+          {generations.map((generation, index) => (
+            <div className="wb-turn" key={`turn-${index}`}>
+              <div className="wb-turn-line wb-turn-user">
+                <span className="wb-turn-who">我</span>
+                <p className="wb-turn-prompt">{generation.prompt}</p>
+              </div>
+              <div className="wb-turn-line wb-turn-agent">
+                <span className="wb-turn-who">Agent</span>
+                {generation.imageUrl ? (
+                  <figure className="wb-image-wrap">
+                    <img className="agent-image wb-image" src={generation.imageUrl} alt={`第 ${index + 1} 轮生成结果`} />
+                    {generation.offline && <figcaption>离线演示图</figcaption>}
+                  </figure>
+                ) : (
+                  <div className="agent-output wb-output"><MarkdownLite text={generation.output ?? ""} /></div>
+                )}
+              </div>
+            </div>
+          ))}
+          {running && (
+            <div className="wb-turn">
+              <div className="wb-turn-line wb-turn-user">
+                <span className="wb-turn-who">我</span>
+                <p className="wb-turn-prompt">{livePrompt}</p>
+              </div>
+              <div className="wb-turn-line wb-turn-agent">
+                <span className="wb-turn-who">Agent</span>
+                {liveOutput ? (
+                  <div className="agent-output wb-output is-streaming"><MarkdownLite text={liveOutput} /></div>
+                ) : (
+                  <div className="agent-empty wb-turn-pending">
+                    <CircleNotch className="reply-spinner" weight="bold" />
+                    <span>{isImageTask ? "正在生成主视觉…" : "正在整理材料…"}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </section>
     </div>
     {error && <p className="agent-error" role="alert">{error}</p>}
@@ -2013,7 +2016,7 @@ function PracticalWorkbenchPhase({
           onChange={(event) => setDraft(event.target.value)}
           onPaste={handlePaste}
           onKeyDown={onEnterSubmit(run, { withMeta: true, when: () => !running })}
-          placeholder={atGenerationCap ? `已达 ${MAX_GENERATIONS} 次生成上限，请完成本关` : expired ? "时间到——可直接提交你已写好的提示词，或点击「完成本关」" : generations.length ? "优化你的提示词，让 Agent 重新生成…" : isImageTask ? "写下画面提示词（主体/场景/风格/构图/文字），可粘贴参考图，⌘+Enter 生成…" : "写下你的提示词（角色/任务/约束/格式），可粘贴图片，⌘+Enter 运行…"}
+          placeholder={atGenerationCap ? `已达 ${MAX_GENERATIONS} 轮迭代上限，可点击「交卷评分」` : expired ? "时间到——可继续提交已写好的要求，或点击「交卷评分」" : generations.length ? "继续提要求（如「第三段再短一点」），Agent 会在上一版基础上改…" : isImageTask ? "写下画面提示词（主体/场景/风格/构图/文字），可粘贴参考图，⌘+Enter 生成…" : "写下你的提示词（角色/任务/约束/格式），可粘贴图片，⌘+Enter 运行…"}
           rows={2}
         />
         <button
@@ -2021,14 +2024,14 @@ function PracticalWorkbenchPhase({
           className="agent-send"
           disabled={running || !draft.trim() || (expired && generations.length > 0) || atGenerationCap}
           onClick={run}
-          aria-label={generations.length ? "重新生成" : isImageTask ? "生成图片" : "运行 Agent"}
+          aria-label={generations.length ? "继续迭代" : isImageTask ? "生成图片" : "运行 Agent"}
         >
           {running ? <CircleNotch className="reply-spinner" weight="bold" /> : <PaperPlaneTilt weight="fill" />}
         </button>
       </label>
       {generations.length > 0 && (
         <div className="wb-complete-row">
-          <span className="wb-hint">{generations.length > 1 ? `已迭代 ${generations.length} 次——会评估、会优化，正是高分信号` : "也可以优化提示词再生成一次"}</span>
+          <span className="wb-hint">{generations.length > 1 ? `已迭代 ${generations.length} 轮——会评估、会优化，正是高分信号` : "可以继续提要求让 Agent 改，满意后再交卷"}</span>
           <TaskAction disabled={finishing || running} onClick={finish} label={finishing ? "AI 评委评分中…" : "交卷评分"} variant="comprehensive" />
         </div>
       )}

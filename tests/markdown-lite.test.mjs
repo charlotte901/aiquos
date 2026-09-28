@@ -43,7 +43,10 @@ test("conversation bubbles and agent output both render through MarkdownLite", a
   const flow = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
   assert.match(flow, /<MarkdownLite text=\{item\.content\} \/>/);
   assert.match(flow, /<MarkdownLite text=\{liveOutput\} \/>/);
-  assert.match(flow, /<MarkdownLite text=\{finalGeneration\.output\} \/>/);
+  // 实操产物按轮次渲染（多轮迭代后每轮各留一个气泡），不再是单一的
+  // finalGeneration.output；但每轮产物仍必须经 MarkdownLite 渲染，
+  // 否则标题/列表/表格会退化成纯文本。
+  assert.match(flow, /<MarkdownLite text=\{generation\.output \?\? ""\} \/>/);
   assert.match(flow, /<MarkdownLite text=\{task\.source\} \/>/);
 });
 
