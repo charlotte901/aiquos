@@ -42,28 +42,11 @@ const dataUri = (relPath) => {
   return `data:${mime};base64,${buf.toString("base64")}`;
 };
 
-/** 与前端 practicalImagePrompt 同构（首轮、无迭代说明）。 */
-const imagePrompt = (task, prompt, refNames) => {
-  const refs = refNames.length
-    ? `\n参考图：已附上 ${refNames.length} 张（${refNames.join("、")}）。请以这些图作为输入素材，按上面的任务要求处理，而不是重新画一张无关的图。`
-    : "";
-  return [
-    task.title,
-    task.goal,
-    `任务要求：${(task.requirements ?? []).join("；")}`,
-    `活动素材：${task.source}${refs}`,
-    `用户补充：${prompt}`,
-  ].join("\n");
-};
-
-/** 题面写明的比例 → 尺寸（与前端 taskImageSize 一致的规则）。 */
-const taskImageSize = (task) => {
-  const blob = [task.title, task.goal, ...(task.requirements ?? [])].filter(Boolean).join("\n");
-  const text = String(blob).replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/[：]/g, ":");
-  if (text.includes("16:9")) return "1536x864";
-  if (text.includes("9:16")) return "864x1536";
-  return undefined;
-};
+// 直接引用产品代码，不再复制一份逻辑。
+// 教训：本脚本原先自己复制了一套 imagePrompt，产品侧修掉「题目要求泄漏」
+// 之后脚本没跟着改，重跑实验仍会用旧逻辑生成产物、得出错误结论。
+import { practicalImagePrompt } from "../src/practical-agent.js";
+import { taskImageSize } from "../src/practical-scoring.js";
 
 const results = [];
 for (const taskId of IMAGE_TASKS) {
@@ -73,9 +56,10 @@ for (const taskId of IMAGE_TASKS) {
     const promptFile = join(ANSWERS, `${taskId}.prompt.${slot}.txt`);
     if (!existsSync(promptFile)) { console.log(`✗ 缺少 ${taskId} ${slot} 的提示词`); continue; }
     const studentPrompt = readFileSync(promptFile, "utf8").trim();
-    const body = { prompt: imagePrompt(task, studentPrompt, refs.map((r) => r.name)) };
+    // 只发学员原话 + 迭代/参考图说明（尺寸由**学员提示词**决定）
+    const body = { prompt: practicalImagePrompt(task, studentPrompt, refs.map((r) => r.name), 1) };
     if (refs.length) body.image = refs.map((r) => r.src);
-    const size = taskImageSize(task);
+    const size = taskImageSize(studentPrompt, task);
     if (size) body.size = size;
 
     console.log(`\n── ${taskId} ${slot} · 参考图 ${refs.length} 张 · size=${size || "(默认)"}`);

@@ -116,12 +116,30 @@ async function scoreOnce(task, slot, repeat) {
   return raw ? JSON.parse(raw) : { status: 0, error: "no-response" };
 }
 
+// 断点续跑：启动时读入已有结果，按 (题, 档, 重复序号) 去重。
+// 否则"只补跑某几题"会把其余题目的结果整体覆盖掉（本实验踩过两次）。
+const RUNS_FILE = join(OUT, "raw-runs.json");
 const rows = [];
+const seen = new Set();
+if (existsSync(RUNS_FILE)) {
+  try {
+    for (const r of JSON.parse(readFileSync(RUNS_FILE, "utf8"))) {
+      if (r && !r.error) {                       // 只保留成功记录，失败的重跑
+        rows.push(r);
+        seen.add(`${r.taskId}|${r.slot}|${r.repeat}`);
+      }
+    }
+    console.log(`已载入 ${rows.length} 条历史成功记录（断点续跑）`);
+  } catch { /* 文件损坏则从零开始 */ }
+}
 let index = 0;
 for (const task of tasks) {
   for (const slot of ["S1", "S2", "S3"]) {
     for (let repeat = 1; repeat <= REPEATS; repeat += 1) {
       index += 1;
+      if (seen.has(`${task.id}|${slot}|${repeat}`)) {
+        continue;                                 // 已有成功记录，跳过
+      }
       const result = await scoreOnce(task, slot, repeat);
       const payload = result.payload;
       const row = {
@@ -142,9 +160,10 @@ for (const task of tasks) {
         error: result.error ?? payload?.error ?? null,
       };
       rows.push(row);
+      if (!row.error) seen.add(`${row.taskId}|${row.slot}|${row.repeat}`);
       const tail = row.error ? `ERR ${String(row.error).slice(0, 60)}` : `${row.totalScore}/${row.maxScore} (${row.judged})`;
       console.log(`[${String(index).padStart(3)}/${tasks.length * 3 * REPEATS}] ${task.id} ${slot} #${repeat} → ${tail}  ${row.ms}ms`);
-      writeFileSync(join(OUT, "raw-runs.json"), JSON.stringify(rows, null, 2));
+      writeFileSync(RUNS_FILE, JSON.stringify(rows, null, 2));
       await sleep(150);
     }
   }

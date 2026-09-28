@@ -38,6 +38,12 @@ function readPayload(body) {
   const productImage = /^data:image\/(png|jpe?g|webp);base64,/i.test(rawImage) && rawImage.length < 6_000_000
     ? rawImage
     : "";
+  // 参考图（任务自带的输入素材）：判「原图保真」类维度时必须与原图比对。
+  // 上限 3 张，单张同 productImage 的体积限制。
+  const DATA_URI = /^data:image\/(png|jpe?g|webp);base64,/i;
+  const referenceImages = (Array.isArray(body.referenceImages) ? body.referenceImages : [])
+    .filter((src) => typeof src === "string" && DATA_URI.test(src) && src.length < 6_000_000)
+    .slice(0, 3);
   return {
     taskId,
     finalPrompt: asText(body.prompt),
@@ -46,6 +52,7 @@ function readPayload(body) {
     isImage: body.isImage === true,
     iterations: Number.isFinite(Number(body.iterations)) ? Math.max(1, Math.min(8, Number(body.iterations))) : 1,
     productImage,
+    referenceImages,
   };
 }
 

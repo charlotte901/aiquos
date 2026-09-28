@@ -12,6 +12,7 @@ import {
   parsePracticalJudgeJson,
   parseRubricPoints,
   taskImageSize,
+  ratioToSize,
   practicalJudgeMessages,
   scorePracticalResult,
   scoreRubric,
@@ -224,31 +225,31 @@ test("practical score route: upstream garbage falls back to heuristic", async ()
 
 // ── 题面比例 → 生图尺寸 ────────────────────────────────────────────────────
 
-test("题面写明的比例会转成白名单尺寸", () => {
-  assert.equal(taskImageSize({ title: "生成一张横版16:9的运动会宣传海报" }), "1536x864");
-  assert.equal(taskImageSize({ goal: "将竖屏原图扩展为16:9横屏壁纸" }), "1536x864");
-  // 全角冒号与 × 号都要认
-  assert.equal(taskImageSize({ title: "比例要求：１６：９" }), "1536x864", "全角数字与冒号也应识别");
-  assert.equal(taskImageSize({ requirements: ["输出 9：16 竖版短视频封面"] }), "864x1536");
-  assert.equal(taskImageSize({ title: "生成 3:2 的摄影比例画面" }), "1536x1024");
-  assert.equal(taskImageSize({ title: "生成 2:3 竖构图" }), "1024x1536");
+test("尺寸由学员提示词决定：写明比例才给对应尺寸", () => {
+  assert.equal(taskImageSize("生成一张横版16:9的运动会宣传海报"), "1536x864");
+  assert.equal(taskImageSize("把这张竖屏图扩展为16:9横屏壁纸"), "1536x864");
+  // 全角数字与冒号也要认
+  assert.equal(taskImageSize("比例要求：１６：９"), "1536x864");
+  assert.equal(taskImageSize("输出 9：16 竖版短视频封面"), "864x1536");
+  assert.equal(taskImageSize("生成 3:2 的摄影比例画面"), "1536x1024");
+  assert.equal(taskImageSize("生成 2:3 竖构图"), "1024x1536");
 });
 
-test("题面没写比例时不指定尺寸（交给服务端默认）", () => {
-  // 不猜：没有明确比例要求就返回 undefined，沿用 1024x1024
-  assert.equal(taskImageSize({ title: "画一只猫" }), undefined);
-  assert.equal(taskImageSize({ title: "生成一张水墨风格插画" }), undefined);
-  assert.equal(taskImageSize({}), undefined);
-  assert.equal(taskImageSize(null), undefined);
+test("学员没写比例时不给尺寸（关键公平性回归）", () => {
+  // 这是本项修复的核心：早期从题面代办尺寸，导致无论学员是否写明比例，
+  // 「规格合规」维度都自动满分 —— 低/中/高三档实测均为 2.00/2.00，白送且无区分度。
+  // 现在尺寸跟随学员提示词：没写就用服务端默认（方形），由评分标准扣分。
+  assert.equal(taskImageSize("画一只猫"), undefined);
+  assert.equal(taskImageSize("生成一张水墨风格插画"), undefined);
+  assert.equal(taskImageSize(""), undefined);
+  assert.equal(taskImageSize(undefined), undefined);
 });
 
-test("题库里的图片题按题面得到正确尺寸", () => {
-  const byId = new Map(practicalLite.tasks.map((t) => [t.id, t]));
-  // lite-001 / lite-004 题面明确要求 16:9
-  assert.equal(taskImageSize(byId.get("lite-001")), "1536x864", "lite-001 要求横版 16:9 海报");
-  assert.equal(taskImageSize(byId.get("lite-004")), "1536x864", "lite-004 要求扩成 16:9 壁纸");
-  // lite-008 未指定比例 → 不猜
-  assert.equal(taskImageSize(byId.get("lite-008")), undefined, "lite-008 未写比例，不应指定尺寸");
+test("题面里的比例不再影响输出尺寸（仅学员提示词决定）", () => {
+  // 即使 task 参数里含 16:9，只要学员提示词没提，也不应给出 16:9 尺寸
+  const task = { title: "生成一张横版16:9的运动会宣传海报", goal: "16:9", requirements: ["16:9"] };
+  assert.equal(taskImageSize("画个海报", task), undefined, "题面不得代办尺寸");
+  assert.equal(taskImageSize("画个 16:9 的海报", task), "1536x864", "学员写了才给");
 });
 
 test("题面比例只影响图片题，文本题不传尺寸", () => {
@@ -283,10 +284,59 @@ test("图片任务：有产物图时以多模态送入（评委才能判「原�
   assert.ok(Array.isArray(user.content), "有产物图时 content 应为多模态数组");
   const image = user.content.find((part) => part.type === "image_url");
   assert.equal(image?.image_url?.url, png, "产物图须原样送入");
-  // 文案应明确要求"观察图片本身"，而不是"依据提示词判档"
+  // 文案应要求评委观察图片，而不是"依据提示词判档"
   const text = user.content.find((part) => part.type === "text").text;
-  assert.match(text, /观察图片本身/);
   assert.ok(!/请依据提示词的画面要素/.test(text), "不得再让评委凭提示词猜画面");
+  assert.match(text, /图片生成/);
+});
+
+test("图片任务：评委同时收到参考原图与产物，可逐项比对保真度", () => {
+  // 这是公平性缺陷的回归测试：只给产物时，「原图保真」「构图保留」
+  // 这类维度无从判断，评委只能凭"产物好看"给分，导致该维度恒为满分。
+  const task = {
+    title: "扩图", goal: "g", requirements: ["原图保真"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "原图保真", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const ref = "data:image/jpeg;base64,/9j/AAA";
+  const out = "data:image/png;base64,iVBOR";
+  const messages = practicalJudgeMessages(task, {
+    prompts: ["p"], finalPrompt: "p", isImage: true, iterations: 1,
+    productImage: out, referenceImages: [ref],
+  });
+  const user = messages.find((m) => m.role === "user");
+  assert.ok(Array.isArray(user.content), "有图时应为多模态");
+  const urls = user.content.filter((p) => p.type === "image_url").map((p) => p.image_url.url);
+  assert.deepEqual(urls, [ref, out], "顺序必须是：参考原图 → 产物");
+  const text = user.content.find((p) => p.type === "text").text;
+  assert.match(text, /参考原图/, "文案须说明附了原图");
+  assert.match(text, /比对/, "文案须要求与原图逐项比对");
+});
+
+test("图片任务：缺参考原图时如实说明，不假装比对过", () => {
+  const task = {
+    title: "扩图", goal: "g", requirements: ["原图保真"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "原图保真", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const messages = practicalJudgeMessages(task, {
+    prompts: ["p"], finalPrompt: "p", isImage: true, iterations: 1,
+    productImage: "data:image/png;base64,iVBOR", referenceImages: [],
+  });
+  const text = messages.find((m) => m.role === "user").content.find((p) => p.type === "text").text;
+  assert.match(text, /未收到参考原图/);
+});
+
+test("判档纪律含「保真类维度须与原图比对」条款", () => {
+  const task = {
+    title: "t", goal: "g", requirements: ["x"], source: "s",
+    rubricPrompt: [{ dimension: "D", points: 2, excellent: "A", good: "B", pass: "C" }],
+    rubricProduct: [{ dimension: "E", points: 2, excellent: "A", good: "B", pass: "C" }],
+  };
+  const messages = practicalJudgeMessages(task, { prompts: ["p"], finalPrompt: "p", isImage: true, iterations: 1 });
+  const sys = messages.find((m) => m.role === "system").content;
+  assert.match(sys, /保真/, "系统提示词须要求比对保真度");
+  assert.match(sys, /一律不得判优秀/);
 });
 
 test("图片任务：没拿到产物图时如实说明，而不是假装看过", () => {

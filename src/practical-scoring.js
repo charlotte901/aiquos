@@ -103,42 +103,50 @@ export function scoringSchemeRows(task) {
   return (task?.requirements ?? []).filter((item) => /^评分标准/.test(String(item)));
 }
 
-/**
- * 任务题面里明确要求的画面比例 → 生图尺寸。
- *
- * 为什么需要：生图接口默认输出方形（1024x1024）。题目若写明「生成 16:9 横版
- * 海报」「扩展为 16:9 横屏壁纸」，而请求不指定尺寸，产物就是方图 ——
- * 学员按题目要求写了提示词，产物却在"规格合规"这一项上必然不达标。
- *
- * 只认题面（标题/目标/交付标准）里**明写**的比例，不猜：
- * 没有写比例的题目（如 lite-008）返回 undefined，沿用服务端默认尺寸。
- *
- * @returns {string|undefined} 白名单内的尺寸串
- */
-export function taskImageSize(task) {
-  const blob = [
-    task?.title,
-    task?.goal,
-    ...(task?.requirements ?? []),
-  ].filter(Boolean).join("\n");
-
-  // 归一化全角数字/冒号与 x、× 分隔，便于统一匹配。
-  // 题库目前都是半角；题面将来若出现「１６：９」这类全角写法也应能识别。
+/** 归一化比例写法：全角数字/冒号 → 半角，× → x。 */
+function normalizeRatioText(input) {
   // 两个易错点：
   //   1. 必须先把全角数字转半角再处理冒号 —— 顺序反了相邻全角数字会连成一串；
   //   2. 转换要用 String.fromCharCode（得到字符），不是 String()（会把码位
   //      当数字转成十进制文本，０ → "48" 而不是 "0"）。
-  const text = String(blob)
+  return String(input ?? "")
     .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
     .replace(/[：]/g, ":")
     .replace(/[×✕✖]/g, "x");
-  const has = (...ratios) => ratios.some((r) => text.includes(r));
+}
 
-  if (has("16:9")) return "1536x864";
-  if (has("9:16")) return "864x1536";
-  if (has("3:2")) return "1536x1024";
-  if (has("2:3")) return "1024x1536";
+const RATIO_TO_SIZE = [
+  [["16:9", "16：9"], "1536x864"],
+  [["9:16"], "864x1536"],
+  [["3:2"], "1536x1024"],
+  [["2:3"], "1024x1536"],
+];
+
+/** 从任意文本里提取学员要求的画面比例 → 生图尺寸；没写返回 undefined。 */
+export function ratioToSize(input) {
+  const text = normalizeRatioText(input);
+  for (const [keys, size] of RATIO_TO_SIZE) {
+    if (keys.some((k) => text.includes(k))) return size;
+  }
   return undefined;
+}
+
+/**
+ * 输出尺寸由**学员的提示词**决定，而不是由题面代办。
+ *
+ * 为什么必须这样：早期实现从题面读「16:9」并自动指定尺寸，于是哪怕学员
+ * 一个字的比例要求都没写，「规格合规」这一维度也自动满足 —— 该维度对所有
+ * 水平档恒为满分，白送 2 分且不产生任何区分度（实测低/中/高三档都是 2.00）。
+ * 改为按学员提示词决定后：写明比例才得到对应尺寸，没写就输出默认方形，
+ * 「规格合规」才真实反映学员是否把要求表达清楚。
+ *
+ * @param {string} prompt 学员的提示词（可含历次迭代，取最后一次即可）
+ * @param {object} [task] 任务（仅在学员未提比例时用于回退判断，通常不参与）
+ * @returns {string|undefined} 白名单内的尺寸串；undefined 表示用服务端默认
+ */
+export function taskImageSize(prompt, task) {
+  void task;
+  return ratioToSize(prompt);
 }
 
 // ── LLM 评委 ────────────────────────────────────────────────────────────────
@@ -163,14 +171,24 @@ function rubricText(rubric) {
  * @param {object} payload 学员作答
  * @param {string} payload.productImage 图片任务的产物 data URI（可选）
  */
-export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", product = "", isImage = false, iterations = 1, productImage = "" }) {
+export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", product = "", isImage = false, iterations = 1, productImage = "", referenceImages = [] }) {
   const promptHistory = (prompts.length ? prompts : [finalPrompt])
     .map((prompt, index) => `第 ${index + 1} 次：${prompt}`)
     .join("\n\n");
   const hasImage = typeof productImage === "string" && productImage.startsWith("data:image/");
+  // 参考图（题目自带的输入素材）：判「原图保真」「色彩融合」「构图保留」这类维度
+  // 必须同时看到原图与产物，否则评委只能凭空猜测原图长什么样。
+  const refs = (Array.isArray(referenceImages) ? referenceImages : [])
+    .filter((src) => typeof src === "string" && src.startsWith("data:image/"))
+    .slice(0, 3);
+  const hasRefs = refs.length > 0;
   const productText = isImage
     ? (hasImage
-        ? "（本任务为图片生成，最终产物图已作为图片附在本条消息中，请直接观察图片本身来判档：构图、色调、是否变形、拼接处是否自然、有无 AI 伪影。）"
+        ? (hasRefs
+            ? `（本任务为图片生成。消息中附有 ${refs.length + 1} 张图片：前 ${refs.length} 张是任务给定的参考原图，最后 1 张是学员的最终产物。`
+              + "判「原图保真/构图保留」类维度时，请逐项比对产物与原图（主体位置、朝向、大结构、色调是否一致、有无被重绘或替换）；"
+              + "判「边缘自然/色彩融合」时观察衔接处有无接缝与伪影。）"
+            : "（本任务为图片生成，产物图已附上，但未收到参考原图；判「原图保真」类维度时请依据产物自身是否协调一致来判档，并在评语中说明未见到原图。）")
         : "（本任务为图片生成，但未收到产物图；请仅依据提示词覆盖到的画面要素判档，并在评语中说明未见到图。）")
     : String(product ?? "").slice(0, 4000);
 
@@ -202,6 +220,7 @@ export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", p
         "3. **只看证据，不猜动机。** 判据必须能在学员的提示词或产物里找到。产物缺失、答非所问、或与题目要求无关时，判待改进。",
         "4. **维度之间独立判档。** 不要因为某一维很强就把其余维度一起抬高；也不要用同一个理由给多个维度判同一档。",
         "5. **评语要具体**，指出学员做到了什么或缺了什么（如「未给出字数区间」「保留了1287人这一关键数据」），不要写「基本符合要求」这类空话。",
+        "6. **涉及「保真/保留」的维度必须与参考原图逐项比对。** 若附有参考原图，不得仅凭产物本身好看就判优秀；必须核对原图的主体、位置、朝向、结构是否被保留。原图被重绘、主体被替换或构图被改动，一律不得判优秀。",
         "",
         '只输出一个 JSON 对象（不要 markdown 代码块），格式：{"prompt":[{"dimension":"维度名","level":"excellent|good|pass","comment":"不超过40字的评语"}],"product":[…]}。',
         "level 只能取 excellent（达到优秀描述）、good（达到良好描述）、pass（仅达到待改进描述）。dimension 必须与评分标准里的维度名完全一致，顺序一致，一套不漏。",
@@ -209,9 +228,21 @@ export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", p
     },
     {
       role: "user",
-      // 有产物图时用多模态：文字在前，图片在后（与执行 Agent 的形态一致）。
-      content: hasImage
-        ? [{ type: "text", text: userContent }, { type: "image_url", image_url: { url: productImage } }]
+      // 多模态：文字 → 参考图（按顺序标注）→ 产物图。
+      // 顺序必须固定且与文案说明一致，否则评委分不清哪张是原图、哪张是产物。
+      content: (hasImage || hasRefs)
+        ? [
+            { type: "text", text: userContent },
+            ...refs.map((url, index) => ({
+              type: "text",
+              text: `【参考原图 ${index + 1}】`,
+            })),
+            ...refs.flatMap((url) => [{ type: "image_url", image_url: { url } }]),
+            ...(hasImage
+              ? [{ type: "text", text: "【学员的最终产物】" },
+                 { type: "image_url", image_url: { url: productImage } }]
+              : []),
+          ]
         : userContent,
     },
   ];

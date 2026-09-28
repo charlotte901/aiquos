@@ -80,6 +80,36 @@ function inputAssets(task) {
   return list.filter((asset) => asset && asset.src && asset.role !== "product");
 }
 
+/**
+ * 把任务自带的参考图读成 data URI，供评分时与产物比对。
+ *
+ * 为什么需要：判「原图保真」这类维度必须同时看到原图与产物。
+ * 早期只把产物发给评委，评委无从知道原图长什么样，
+ * 只能凭"产物本身好看"给分 —— 这类维度因而恒为满分。
+ *
+ * 失败时返回空串（该张跳过），不影响评分主流程。
+ */
+async function referenceDataUri(src) {
+  if (typeof src !== "string" || !src) return "";
+  if (src.startsWith("data:image/")) return src;
+  try {
+    const response = await fetch(src);
+    if (!response.ok) return "";
+    const blob = await response.blob();
+    if (!blob.type.startsWith("image/")) return "";
+    // 压到长边 768px：评委只需看清构图与色调，原图直传会让请求体过大
+    const bitmap = await createImageBitmap(blob);
+    const scale = Math.min(1, 768 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.85);
+  } catch {
+    return "";
+  }
+}
+
 /** 素材的图注与无障碍名称（label 优先，其次按角色推断）。 */
 function assetLabel(asset) {
   if (asset?.label) return asset.label;
@@ -1350,6 +1380,11 @@ async function requestPracticalScore({ task, generations, finalGeneration, isIma
       // 只能看图判断，只给提示词等于让评委凭空判档。
       // 离线占位图不发（那是降级提示，不是学员产物）。
       productImage: isImageTask && !finalGeneration.offline ? (finalGeneration.imageUrl ?? "") : "",
+      // 同时把任务自带的参考原图发给评委：判「原图保真」必须与原图比对，
+      // 只给产物等于让评委凭空猜测原图长什么样。
+      referenceImages: isImageTask
+        ? (await Promise.all(inputAssets(task).map((asset) => referenceDataUri(asset.src)))).filter(Boolean)
+        : [],
       isImage: isImageTask,
       iterations: generations.length,
     }),
@@ -1695,9 +1730,10 @@ function PracticalWorkbenchPhase({
           entry.imageUrl = await generateArkImage({
             prompt: practicalImagePrompt(task, prompt, refs.map((r) => r.name), turnNumber),
             images: refs.map((r) => r.src),
-            // 题面写明比例时按其输出（如「16:9 横版海报」→ 1536x864），
-            // 否则交给服务端默认尺寸。
-            size: taskImageSize(task),
+            // 尺寸由**学员提示词**决定（写明 16:9 才输出 16:9）。
+            // 不用题面代办：那样「规格合规」对所有水平档恒为满分，白送分且无区分度。
+            // 学员一个字的比例都没写 → 用服务端默认方形，由评分标准扣分。
+            size: taskImageSize(prompt, task),
           });
         } catch (error) {
           // 生成失败要**说出来**，不能悄悄换成演示图。

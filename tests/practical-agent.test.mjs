@@ -103,19 +103,41 @@ test("离线占位图不作为下一轮底图（避免在假图上迭代）", ()
   assert.equal(refs.length, 0);
 });
 
-test("生图提示词声明参考图张数，并在迭代轮次说明是在改上一版", () => {
-  const first = practicalImagePrompt(TASK, "扩成 16:9", ["参考原图"], 1);
-  assert.match(first, /参考图：已附上 1 张/);
-  assert.ok(!/第 \d+ 轮迭代/.test(first), "首轮不应出现迭代说明");
-
-  const third = practicalImagePrompt(TASK, "颜色再暖一点", ["参考原图", "上一轮产物（第 2 轮）"], 3);
-  assert.match(third, /参考图：已附上 2 张/);
-  assert.match(third, /这是第 3 轮迭代/);
-  assert.match(third, /保持未被要求改动的部分不变/);
+test("生图提示词只包含学员原话（关键公平性回归）", () => {
+  // 早期实现把 task.title / task.goal / task.requirements 全拼进生图请求，
+  // 学员写 16 个字、模型却拿到题目全文要求 —— 三档产物因而几乎相同。
+  // 本测试锁定：题目内容一律不得进入生图提示词。
+  const task = {
+    title: "把竖屏图扩成 16:9 壁纸",
+    goal: "在保持原图完全保真的前提下扩展为 16:9 横屏壁纸，要求色调统一、边缘自然无拼接痕迹",
+    requirements: ["达到评分标准：规格合规", "达到评分标准：原图保真"],
+    source: "素材说明",
+  };
+  const text = practicalImagePrompt(task, "把这张图改成16:9的横屏壁纸", [], 1);
+  assert.equal(text, "把这张图改成16:9的横屏壁纸", "不得掺入任何题目内容");
+  assert.ok(!text.includes("保真"), "题目里的「保真」要求不得注入");
+  assert.ok(!text.includes("边缘自然"), "题目里的细节要求不得注入");
+  assert.ok(!text.includes(task.title), "标题不得注入");
+  assert.ok(!text.includes("评分标准"), "评分要求不得注入");
 });
 
-test("没有参考图时不写参考图说明（也不写迭代说明）", () => {
-  const text = practicalImagePrompt(TASK, "画一张海报", [], 1);
-  assert.ok(!text.includes("参考图："));
-  assert.match(text, /用户补充：画一张海报/);
+test("有参考图时只追加一句来源说明，不追加题目要求", () => {
+  const text = practicalImagePrompt({ title: "T", goal: "G", requirements: ["R"] },
+    "扩成 16:9", ["参考原图（竖屏）"], 1);
+  assert.ok(text.startsWith("扩成 16:9"), "学员原话在最前");
+  assert.match(text, /已随本条消息附上 1 张参考图/);
+  assert.ok(!text.includes("G") && !text.includes("R"), "题目内容不得出现");
+});
+
+test("迭代轮次说明不掺入题目要求", () => {
+  const text = practicalImagePrompt({ title: "T", goal: "G", requirements: ["R"] },
+    "颜色再暖一点", ["参考原图", "上一轮产物（第 1 轮）"], 2);
+  assert.match(text, /这是第 2 轮迭代/);
+  assert.match(text, /未要求改动的部分保持不变/);
+  assert.ok(!text.includes("G") && !text.includes("R"));
+});
+
+test("没有参考图时只有学员原话", () => {
+  const text = practicalImagePrompt({ title: "T", goal: "G", requirements: ["R"] }, "画一张海报", [], 1);
+  assert.equal(text, "画一张海报");
 });

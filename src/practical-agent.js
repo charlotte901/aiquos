@@ -93,19 +93,32 @@ export function practicalAgentMessages(task, turns = [], prompt = "", uploads = 
  */
 export function practicalImagePrompt(task, prompt, refNames = [], turnNumber = 1) {
   const names = Array.isArray(refNames) ? refNames : [];
+  void task;   // 刻意不使用 task.goal / requirements，理由见下
+  // ─────────────────────────────────────────────────────────────────────
+  // 生图提示词**只能包含学员自己写的内容**。
+  //
+  // 这是一个致命缺陷的修复：早期实现把 task.title / task.goal /
+  // task.requirements 全部拼进生图请求，学员的提示词只是末尾一行「用户补充」。
+  // 于是生图模型读到了题目全文（例如「保持原本图片完全保真」「新扩展区域与
+  // 原图色调风格统一，边缘自然无拼接痕迹」）—— 学员写 16 个字，模型却拿到了
+  // 全部细节要求，产物自然达标。
+  //
+  // 后果：低/中/高三档产物几乎相同，「规格合规」等维度对所有档位恒为满分
+  // （实测低档 2.00/2.00），图片题的产物侧完全不产生区分度。
+  // 测的其实是「题目写得好不好」，而不是「学员表达得清不清楚」。
+  //
+  // 现在只发学员的原话：学员没写比例就不给比例、没写主标题就没有主标题、
+  // 没写风格就是通用风格。产物差异因此真实反映提示词的完备程度。
+  // 题目要求仍然完整呈现在作答界面（左栏交付标准），学员该抄进提示词的，
+  // 必须自己写 —— 这正是实操测评要考察的能力。
+  // ─────────────────────────────────────────────────────────────────────
   const refs = names.length
-    ? `\n参考图：已附上 ${names.length} 张（${names.join("、")}）。请以这些图作为输入素材，按上面的任务要求处理，而不是重新画一张无关的图。`
+    ? `\n（已随本条消息附上 ${names.length} 张参考图：${names.join("、")}。请把它们作为输入素材，而不是重新画一张无关的图。）`
     : "";
   const revising = turnNumber > 1
-    ? `\n这是第 ${turnNumber} 轮迭代：上一轮的产物已作为最后一张参考图附上。请在这张图的基础上按新指令修改，保持未被要求改动的部分不变。`
+    ? `\n（这是第 ${turnNumber} 轮迭代：上一轮产物已作为最后一张参考图附上。请在这张图基础上按上面的指令修改，未要求改动的部分保持不变。）`
     : "";
-  return [
-    task.title,
-    task.goal,
-    `任务要求：${(task.requirements ?? []).join("；")}`,
-    `活动素材：${task.source}${refs}${revising}`,
-    `用户补充：${prompt}`,
-  ].join("\n");
+  return `${prompt}${refs}${revising}`;
 }
 
 /**
