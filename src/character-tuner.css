@@ -106,3 +106,29 @@
   white-space: pre;
   user-select: text;
 }
+
+/* ── 页面布局调参面板（stage-layout-tuner）：与角色面板并排，各占一角 ── */
+.ctune-layout-dock {
+  right: auto;
+  left: 14px;
+  bottom: 14px;
+  width: 292px;
+}
+
+/* 三个 tab（卡片/舞台/字标）挤一行 */
+.ctune-layout-dock .ctune-tabs { grid-template-columns: repeat(3, 1fr); }
+
+/* 保存状态提示色 */
+.ctune-layout-dock .ctune-actions button:disabled { opacity: .6; cursor: default; }
+
+/* 锚定规则提示行（stage-layout-tuner） */
+.ctune-layout-dock .ctune-note {
+  margin: -4px 0 8px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #98a2b3;
+}
+
+/* 三按钮操作行（两个调参面板都是 保存/导出/重置 三个按钮） */
+.ctune-actions { grid-template-columns: 1fr auto auto; }
+.ctune-actions button:last-child { padding: 7px 9px; }

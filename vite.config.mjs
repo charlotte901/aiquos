@@ -9,7 +9,13 @@ import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./worker/practical-t
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./worker/practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./worker/comprehensive-quiz.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./worker/admin.js";
+import { STAGE_LAYOUT_TUNING_PATH, handleStageLayoutTuning, CHARACTER_TUNING_PATH, handleCharacterTuning } from "./worker/stage-layout-tuning.js";
 import { setBankPersistence } from "./worker/bank-store.js";
+
+// 三元素布局调参（?tune=1 面板「保存」）写回这份文件，成为新的默认值。
+const stageLayoutTuningPath = fileURLToPath(new URL("./src/stage-layout-tuning.json", import.meta.url));
+// 角色统一微调（?tune=1 右下面板「保存」）写回这份文件。
+const characterTuningPath = fileURLToPath(new URL("./src/character-tuning.json", import.meta.url));
 
 // Admin bank edits persist to a gitignored overrides file next to the worker —
 // one file per edition, so publishing to the 全量版 cannot disturb the 精选版.
@@ -133,6 +139,34 @@ export default defineConfig(({ mode }) => {
               headers: { "content-type": req.headers["content-type"] || "application/json" },
               body: ["GET", "HEAD"].includes(req.method) ? undefined : Buffer.concat(chunks),
             }));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(STAGE_LAYOUT_TUNING_PATH, async (req, res) => {
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handleStageLayoutTuning(new Request(new URL(STAGE_LAYOUT_TUNING_PATH, base), {
+              method: req.method,
+              headers: { "content-type": req.headers["content-type"] || "application/json" },
+              body: req.method === "POST" ? Buffer.concat(chunks) : undefined,
+            }), stageLayoutTuningPath);
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(CHARACTER_TUNING_PATH, async (req, res) => {
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handleCharacterTuning(new Request(new URL(CHARACTER_TUNING_PATH, base), {
+              method: req.method,
+              headers: { "content-type": req.headers["content-type"] || "application/json" },
+              body: req.method === "POST" ? Buffer.concat(chunks) : undefined,
+            }), characterTuningPath);
             res.statusCode = response.status;
             response.headers.forEach((value, key) => res.setHeader(key, value));
             if (!response.body) return res.end();

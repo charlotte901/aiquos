@@ -59,14 +59,15 @@ export function Task3DCharacter({ id = "comprehensive" }) {
   // 全程用同一位向导（此处曾按阶段切换，导致第 1 关与「对话式测评」
   // 撞了同一个人物）。
   const character = CHARACTERS[id] ?? FALLBACK;
-  // 缩放/位移微调：文件默认值 + 调参面板的本地覆盖（后者优先）。
-  // 面板改动通过 subscribeTuning 通知，这里保持为 state 以便即时重渲染。
+  // 统一微调：一套 {scale, x, y} 对全部四个角色生效（此前按通道各调一套，
+  // 四个人物的落位/大小互相不一致，调一个其他三个不动）。本地覆盖优先于
+  // 文件默认值，面板改动经 subscribeTuning 通知，state 变化即时重渲染。
   const resolveTuning = () => ({
-    ...(TUNING_DEFAULTS[id] ?? { scale: 1, x: 0, y: 0 }),
-    ...(readTuningOverrides()?.[id] ?? {}),
+    ...TUNING_DEFAULTS,
+    ...(readTuningOverrides() ?? {}),
   });
   const [tuning, setTuning] = useState(resolveTuning);
-  useEffect(() => subscribeTuning(() => setTuning(resolveTuning())), [id]);
+  useEffect(() => subscribeTuning(() => setTuning(resolveTuning())), []);
 
   // 播放节奏：整段动画播完 → 停在结束姿态 10 秒 → 再播下一轮。
   //

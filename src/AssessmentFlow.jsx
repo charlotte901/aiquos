@@ -59,7 +59,8 @@ import { deliveryRequirements, scoringSchemeRows, taskImageSize } from "./practi
 import { practicalAgentMessages, practicalImagePrompt, practicalImageRefs } from "./practical-agent";
 import { Task3DCharacter } from "./Task3DCharacter";
 import { CharacterTuner } from "./character-tuner";
-import TUNING_DEFAULTS from "./character-tuning.json";
+import { useStageLayout, stageLayoutVars } from "./stage-layout-store";
+import { StageLayoutTuner } from "./stage-layout-tuner";
 import { useStageConfetti } from "./use-stage-confetti";
 import { DIMENSIONS as SCORING_DIMENSIONS } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
@@ -1941,153 +1942,274 @@ function PracticalWorkbenchPhase({
     );
   }
 
-  return <div className="task-body practical-task workbench" data-phase="work">
-    <div className="workbench-head">
-      <h2>{task.title}</h2>
-      <div className="workbench-meta">
-        <span className="wb-chip">{isImageTask ? "图片生成" : "文本生成"}</span>
-        <span className={`wb-chip${generations.length ? " is-active" : ""}`}>第 {Math.max(1, generations.length)} / {MAX_GENERATIONS} 轮迭代</span>
-        {offline && <span className="offline-chip">离线演示模式</span>}
-        <PhaseTimer remainingMs={clock.remainingMs} />
+  const scheme = scoringSchemeRows(task);
+  return (
+    <div className="task-body practical-task workbench" data-phase="work">
+      <div className="workbench-head">
+        <h2>{task.title}</h2>
+        <div className="workbench-meta">
+          <span className="wb-chip">{isImageTask ? "图片生成任务" : "文本生成任务"}</span>
+          <span className={`wb-chip${generations.length ? " is-active" : ""}`}>第 {Math.max(1, generations.length)} / {MAX_GENERATIONS} 轮迭代</span>
+          {offline && <span className="offline-chip">离线演示模式</span>}
+          <PhaseTimer remainingMs={clock.remainingMs} />
+        </div>
       </div>
-    </div>
-    <div className="agent-workspace workbench-grid">
-      <section className="agent-checklist wb-brief" aria-label="任务简报">
-        <p className="wb-goal">{task.goal}</p>
-        <div className="agent-section-heading"><ClipboardText weight="fill" /><span>交付标准</span></div>
-        <ol className="wb-requirements">
-          {deliveryRequirements(task).map((item) => <li key={item}>{item}</li>)}
-        </ol>
-        <button className="source-toggle" type="button" onClick={() => setShowMaterial((value) => !value)}>{showMaterial ? "收起原始素材" : "查看原始素材"}</button>
-        {showMaterial && <div className="source-copy wb-material"><MarkdownLite text={task.source} /></div>}
-      </section>
-      <section className="agent-canvas wb-canvas" aria-live="polite" aria-label="Agent 工作区域">
-        {/* 对话线程：每一轮的「我的指令 + Agent 产物」依次留在画布里，
-            像豆包那样连续迭代——学员能看到自己改了什么、结果怎么变。
-            早期是「AI 输出 / 提示词记录」两个标签页，产物只留最后一张、
-            提示词另存一处，迭代过程被割成两份，也看不出每轮改动的效果。
-            参考图不在此重复渲染：它已在输入框上方的「已上传」条里。 */}
-        <div className="wb-thread" ref={threadRef}>
-          {generations.length === 0 && !running && (
-            <div className="agent-empty">
-              <Sparkle weight="fill" />
-              <span>{isImageTask ? "写下画面提示词，Agent 将在这里生成主视觉。" : "写好提示词后，Agent 将在这里完成交付。"}</span>
+      <div className="agent-workspace workbench-grid">
+        {/* 左侧：题目展示与交付标准、参考素材 */}
+        <section className="agent-checklist wb-brief wb-task-panel" aria-label="任务要求与交付标准">
+          <div className="wb-task-scroll">
+            <div className="wb-task-card wb-goal-card">
+              <div className="agent-section-heading">
+                <Target weight="fill" />
+                <span>任务背景与目标</span>
+              </div>
+              <p className="wb-goal">{task.goal}</p>
             </div>
-          )}
-          {generations.map((generation, index) => (
-            <div className="wb-turn" key={`turn-${index}`}>
-              <div className="wb-turn-line wb-turn-user">
-                <span className="wb-turn-who">我</span>
-                <p className="wb-turn-prompt">{generation.prompt}</p>
+
+            <div className="wb-task-card wb-requirements-card">
+              <div className="agent-section-heading">
+                <ClipboardText weight="fill" />
+                <span>交付标准</span>
               </div>
-              <div className="wb-turn-line wb-turn-agent">
-                <span className="wb-turn-who">Agent</span>
-                {generation.imageUrl ? (
-                  <figure className="wb-image-wrap">
-                    <img className="agent-image wb-image" src={generation.imageUrl} alt={`第 ${index + 1} 轮生成结果`} />
-                    {generation.offline && <figcaption>离线演示图</figcaption>}
-                  </figure>
-                ) : (
-                  <div className="agent-output wb-output"><MarkdownLite text={generation.output ?? ""} /></div>
-                )}
-              </div>
+              <ol className="wb-requirements">
+                {deliveryRequirements(task).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ol>
+              {scheme.length > 0 && (
+                <div className="wb-scheme-note">
+                  <Sparkle weight="fill" size={14} />
+                  <span>评分对标：{scheme.join("；")}（共 20 分，AI 评委逐维评定）</span>
+                </div>
+              )}
             </div>
-          ))}
-          {running && (
-            <div className="wb-turn">
-              <div className="wb-turn-line wb-turn-user">
-                <span className="wb-turn-who">我</span>
-                <p className="wb-turn-prompt">{livePrompt}</p>
+
+            {inputAssets(task).length > 0 && (
+              <div className="wb-task-card wb-assets-card">
+                <div className="agent-section-heading">
+                  <ImageSquare weight="fill" />
+                  <span>任务参考图（已挂载）</span>
+                </div>
+                <figure className="wb-reference" aria-label="任务参考素材">
+                  {inputAssets(task).map((asset) => (
+                    <figure className="wb-reference-item" key={asset.src}>
+                      <img src={asset.src} alt={assetLabel(asset)} />
+                      <figcaption>{assetLabel(asset)}</figcaption>
+                    </figure>
+                  ))}
+                </figure>
               </div>
-              <div className="wb-turn-line wb-turn-agent">
-                <span className="wb-turn-who">Agent</span>
-                {liveOutput ? (
-                  <div className="agent-output wb-output is-streaming"><MarkdownLite text={liveOutput} /></div>
-                ) : (
-                  <div className="agent-empty wb-turn-pending">
-                    <CircleNotch className="reply-spinner" weight="bold" />
-                    <span>{isImageTask ? "正在生成主视觉…" : "正在整理材料…"}</span>
+            )}
+
+            {task.source && (
+              <div className="wb-task-card wb-source-card">
+                <div className="agent-section-heading">
+                  <ListChecks weight="fill" />
+                  <span>原始素材</span>
+                </div>
+                <button
+                  className="source-toggle"
+                  type="button"
+                  onClick={() => setShowMaterial((value) => !value)}
+                >
+                  {showMaterial ? "收起原始素材" : "展开查看原始素材"}
+                </button>
+                {showMaterial && (
+                  <div className="source-copy wb-material">
+                    <MarkdownLite text={task.source} />
                   </div>
                 )}
               </div>
+            )}
+          </div>
+        </section>
+
+        {/* 右侧：Codex / 豆包式 AI 对话工作台 */}
+        <section className="agent-canvas wb-canvas wb-chat-panel" aria-live="polite" aria-label="AI 对话工作区域">
+          {/* 对话窗口顶部 Agent 状态栏 */}
+          <header className="wb-chat-header">
+            <div className="wb-chat-agent-info">
+              <div className="wb-agent-avatar">
+                <Sparkle weight="fill" />
+              </div>
+              <div className="wb-agent-titles">
+                <strong>AI 伴学 Agent</strong>
+                <span className="wb-agent-status-tag">
+                  <span className={`wb-status-dot${running ? " is-pulsing" : ""}`} />
+                  {running ? "正在执行任务…" : "在线就绪 · 支持多轮调整"}
+                </span>
+              </div>
             </div>
-          )}
-        </div>
-      </section>
+            <div className="wb-chat-meta">
+              <span className="wb-chat-iter-badge">
+                第 <b>{Math.max(1, generations.length)}</b> / {MAX_GENERATIONS} 轮
+              </span>
+            </div>
+          </header>
+
+          {/* 对话消息流（中间自适应滚动） */}
+          <div className="wb-thread" ref={threadRef}>
+            {generations.length === 0 && !running && (
+              <div className="agent-empty wb-chat-welcome">
+                <div className="wb-welcome-badge">
+                  <Sparkle weight="fill" size={26} />
+                </div>
+                <h3>实操对话工作台已就绪</h3>
+                <p>请对照左侧任务目标与交付标准，在下方输入提示词驱动我完成交付。</p>
+                <div className="wb-welcome-tips">
+                  <span>💡 支持直接截图粘贴或上传图片</span>
+                  <span>⚡️ 快捷键 ⌘+Enter 快速运行</span>
+                  <span>🔄 生成后可多轮对话精细调整</span>
+                </div>
+              </div>
+            )}
+            {generations.map((generation, index) => (
+              <div className="wb-turn" key={`turn-${index}`}>
+                <div className="wb-turn-line wb-turn-user">
+                  <span className="wb-turn-who">我</span>
+                  <p className="wb-turn-prompt">{generation.prompt}</p>
+                </div>
+                <div className="wb-turn-line wb-turn-agent">
+                  <span className="wb-turn-who">Agent</span>
+                  {generation.imageUrl ? (
+                    <figure className="wb-image-wrap">
+                      <img className="agent-image wb-image" src={generation.imageUrl} alt={`第 ${index + 1} 轮生成结果`} />
+                      {generation.offline && <figcaption>离线演示图</figcaption>}
+                    </figure>
+                  ) : (
+                    <div className="agent-output wb-output"><MarkdownLite text={generation.output ?? ""} /></div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {running && (
+              <div className="wb-turn">
+                <div className="wb-turn-line wb-turn-user">
+                  <span className="wb-turn-who">我</span>
+                  <p className="wb-turn-prompt">{livePrompt}</p>
+                </div>
+                <div className="wb-turn-line wb-turn-agent">
+                  <span className="wb-turn-who">Agent</span>
+                  {liveOutput ? (
+                    <div className="agent-output wb-output is-streaming"><MarkdownLite text={liveOutput} /></div>
+                  ) : (
+                    <div className="agent-empty wb-turn-pending">
+                      <CircleNotch className="reply-spinner" weight="bold" />
+                      <span>{isImageTask ? "正在根据提示词生成主视觉…" : "正在整理材料并生成产出…"}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 底部输入与操作区：直接集成在右侧对话窗口底部 */}
+          <div className="workbench-actions wb-chat-bottom">
+            {error && <p className="agent-error" role="alert">{error}</p>}
+
+            {uploads.length > 0 && (
+              <div className="wb-uploads" aria-label="已上传的参考图">
+                {uploads.map((item, index) => (
+                  <figure
+                    className={`wb-upload${item.fromTask ? " is-task-asset" : ""}`}
+                    key={`${item.name}-${index}`}
+                    title={item.fromTask ? `任务素材：${item.name}` : `我上传的：${item.name}`}
+                  >
+                    <img src={item.src} alt={item.name} />
+                    <button
+                      type="button"
+                      className="wb-upload-remove"
+                      aria-label={`移除 ${item.name}`}
+                      disabled={running}
+                      onClick={() => setUploads((current) => current.filter((_, i) => i !== index))}
+                    >
+                      <X weight="bold" size={12} />
+                    </button>
+                    {item.fromTask && <figcaption className="wb-upload-tag">任务素材</figcaption>}
+                  </figure>
+                ))}
+                <span className="wb-uploads-note">Agent 会参考这些图 · 也可直接粘贴截图</span>
+              </div>
+            )}
+
+            <label className="agent-composer wb-composer">
+              <span className="sr-only">给 Agent 的提示词</span>
+              <div className="wb-composer-main">
+                <textarea
+                  disabled={running || (expired && generations.length > 0) || atGenerationCap}
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onPaste={handlePaste}
+                  onKeyDown={onEnterSubmit(run, { withMeta: true, when: () => !running })}
+                  placeholder={
+                    atGenerationCap
+                      ? `已达 ${MAX_GENERATIONS} 轮迭代上限，可点击下方「交卷评分」`
+                      : expired
+                        ? "时间到——可继续提交已写好的要求，或点击下方「交卷评分」"
+                        : generations.length
+                          ? "继续提要求（如「第三段再短一点」「色调偏暖」），Agent 会在上一版基础上改…"
+                          : isImageTask
+                            ? "写下画面提示词（主体/场景/风格/构图/色彩），可粘贴参考图，⌘+Enter 生成…"
+                            : "写下你的提示词（角色/任务/约束/格式），可粘贴图片，⌘+Enter 运行…"
+                  }
+                  rows={2}
+                />
+                <div className="wb-composer-toolbar">
+                  <div className="wb-composer-tools">
+                    <button
+                      type="button"
+                      className="wb-upload-trigger"
+                      aria-label="上传参考图"
+                      title="上传参考图（最多 4 张）"
+                      disabled={running || uploads.length >= 4}
+                      onClick={() => uploadInputRef.current?.click()}
+                    >
+                      <ImageSquare weight="bold" size={18} />
+                      {uploads.length > 0 && <span className="wb-upload-count">{uploads.length}/4</span>}
+                    </button>
+                    <input
+                      ref={uploadInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      onChange={handleUpload}
+                    />
+                    <span className="wb-composer-hint">⌘ + Enter 发送</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="agent-send"
+                    disabled={running || !draft.trim() || (expired && generations.length > 0) || atGenerationCap}
+                    onClick={run}
+                    aria-label={generations.length ? "继续迭代" : isImageTask ? "生成图片" : "运行 Agent"}
+                  >
+                    {running ? <CircleNotch className="reply-spinner" weight="bold" /> : <PaperPlaneTilt weight="fill" />}
+                  </button>
+                </div>
+              </div>
+            </label>
+
+            {generations.length > 0 && (
+              <div className="wb-complete-row">
+                <span className="wb-hint">
+                  {generations.length > 1
+                    ? `已迭代 ${generations.length} 轮——会评估、会优化，正是高分信号`
+                    : "可以继续提要求让 Agent 改，满意后再交卷"}
+                </span>
+                <TaskAction
+                  disabled={finishing || running}
+                  onClick={finish}
+                  label={finishing ? "AI 评委评分中…" : "交卷评分"}
+                  variant="comprehensive"
+                />
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
-    {error && <p className="agent-error" role="alert">{error}</p>}
-    <div className="workbench-actions">
-      {uploads.length > 0 && (
-        <div className="wb-uploads" aria-label="已上传的参考图">
-          {uploads.map((item, index) => (
-            <figure
-              className={`wb-upload${item.fromTask ? " is-task-asset" : ""}`}
-              key={`${item.name}-${index}`}
-              title={item.fromTask ? `任务素材：${item.name}` : `我上传的：${item.name}`}
-            >
-              <img src={item.src} alt={item.name} />
-              <button
-                type="button"
-                className="wb-upload-remove"
-                aria-label={`移除 ${item.name}`}
-                disabled={running}
-                onClick={() => setUploads((current) => current.filter((_, i) => i !== index))}
-              >
-                <X weight="bold" size={12} />
-              </button>
-              {item.fromTask && <figcaption className="wb-upload-tag">任务素材</figcaption>}
-            </figure>
-          ))}
-          <span className="wb-uploads-note">Agent 会参考这些图 · 也可直接粘贴截图</span>
-        </div>
-      )}
-      <label className="agent-composer wb-composer">
-        <span className="sr-only">给 Agent 的提示词</span>
-        <button
-          type="button"
-          className="wb-upload-trigger"
-          aria-label="上传参考图"
-          title="上传参考图（最多 4 张）"
-          disabled={running || uploads.length >= 4}
-          onClick={() => uploadInputRef.current?.click()}
-        >
-          <ImageSquare weight="bold" size={20} />
-        </button>
-        <input
-          ref={uploadInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="sr-only"
-          onChange={handleUpload}
-        />
-        <textarea
-          disabled={running || (expired && generations.length > 0) || atGenerationCap}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onPaste={handlePaste}
-          onKeyDown={onEnterSubmit(run, { withMeta: true, when: () => !running })}
-          placeholder={atGenerationCap ? `已达 ${MAX_GENERATIONS} 轮迭代上限，可点击「交卷评分」` : expired ? "时间到——可继续提交已写好的要求，或点击「交卷评分」" : generations.length ? "继续提要求（如「第三段再短一点」），Agent 会在上一版基础上改…" : isImageTask ? "写下画面提示词（主体/场景/风格/构图/文字），可粘贴参考图，⌘+Enter 生成…" : "写下你的提示词（角色/任务/约束/格式），可粘贴图片，⌘+Enter 运行…"}
-          rows={2}
-        />
-        <button
-          type="button"
-          className="agent-send"
-          disabled={running || !draft.trim() || (expired && generations.length > 0) || atGenerationCap}
-          onClick={run}
-          aria-label={generations.length ? "继续迭代" : isImageTask ? "生成图片" : "运行 Agent"}
-        >
-          {running ? <CircleNotch className="reply-spinner" weight="bold" /> : <PaperPlaneTilt weight="fill" />}
-        </button>
-      </label>
-      {generations.length > 0 && (
-        <div className="wb-complete-row">
-          <span className="wb-hint">{generations.length > 1 ? `已迭代 ${generations.length} 轮——会评估、会优化，正是高分信号` : "可以继续提要求让 Agent 改，满意后再交卷"}</span>
-          <TaskAction disabled={finishing || running} onClick={finish} label={finishing ? "AI 评委评分中…" : "交卷评分"} variant="comprehensive" />
-        </div>
-      )}
-    </div>
-  </div>;
+  );
 }
 
 /** 入场动画结束后摘掉 animation，避免残留 transform 改变后代 fixed 的定位基准。 */
@@ -2117,6 +2239,11 @@ export function AssessmentTask({
 }) {
   const layoutSettled = useSettledAfterAnimation();
 
+  // 三元素自由布局（卡片 / 角色舞台 / TEST! 字标）：
+  // 值来自 src/stage-layout-tuning.json + ?tune=1 面板的本地覆盖，
+  // 以 --lo-* CSS 变量注入，所有定位由 CSS 端读取（见 assessment-flow.css）。
+  const stageLayout = useStageLayout();
+
   const theme = ASSESSMENT_THEMES[id];
   const comprehensive = id === "comprehensive";
   const total = phaseCount(id);
@@ -2142,17 +2269,19 @@ export function AssessmentTask({
         "--assessment-soft": theme.soft,
         "--assessment-glow": theme.glow,
         "--assessment-deep": theme.deep,
+        ...stageLayoutVars(stageLayout),
       }}
     >
       <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
         <ArrowLeft weight="bold" /> {comprehensive ? "返回关卡地图" : "返回测评选择"}
       </button>
-      <h1 className="flow-wordmark" aria-label="TEST! 测评关卡">
-        <TestWordmark />
-      </h1>
       <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} total={total} />
 
       <div className={`task-stage-layout${layoutSettled ? " is-settled" : ""}`}>
+        {/* 字标放进画布容器：随 --lo-zoom 与卡片/舞台同一坐标系等比缩放 */}
+        <h1 className="flow-wordmark" aria-label="TEST! 测评关卡">
+          <TestWordmark />
+        </h1>
         <section className="task-panel is-enlarged" aria-label={`${theme.title}第 ${stage} 关`}>
           <Guides />
           <TaskHeader id={id} stage={stage} mode={mode} />
@@ -2188,9 +2317,13 @@ export function AssessmentTask({
         </aside>
       </div>
 
-      {/* 角色微调面板：仅在 ?tune=1 时挂载，生产页面完全不加载 */}
+      {/* 调参面板：仅在 ?tune=1 时挂载，生产页面完全不加载。
+          两个面板各管一层：页面布局（卡片/舞台/字标坐标）与角色视频微调。 */}
       {new URLSearchParams(window.location.search).has("tune") && (
-        <CharacterTuner defaults={TUNING_DEFAULTS} />
+        <>
+          <StageLayoutTuner />
+          <CharacterTuner />
+        </>
       )}
     </main>
   );
