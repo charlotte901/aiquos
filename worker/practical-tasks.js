@@ -21,11 +21,17 @@ function publicTask(task) {
     goal: task.goal,
     requirements: task.requirements,
     source: task.material,
+    // 难度元数据随任务下发：前端把真实难度写进实操证据，融合层据此做
+    // IRT 等值校准（见 src/comprehensive-weighting.js 的 practicalChannel）。
+    ...(task.difficulty ? { difficulty: task.difficulty } : {}),
     ...(Array.isArray(task.dimKeys) && task.dimKeys.length ? { dimKeys: task.dimKeys } : {}),
     ...(Array.isArray(task.assets) && task.assets.length ? { assets: task.assets } : {}),
     ...(task.outputType === "image" ? { outputType: "image" } : {}),
   };
 }
+
+// 任务难度锚点（与客观题同一难度量纲）。
+const TASK_ANCHOR = { low: -1, medium: 0, high: 1 };
 
 export function createPracticalTasks({
   levelId = "academy",
@@ -34,6 +40,7 @@ export function createPracticalTasks({
   count = 5,
   rng = Math.random,
   edition: editionInput,
+  difficultyHint = null,
 } = {}) {
   const edition = normalizeEdition(editionInput ?? DEFAULT_EDITION);
   const pool = poolFor(edition);
@@ -43,7 +50,22 @@ export function createPracticalTasks({
   }
   const filtered = pool.filter((task) =>
     (levelId === "all" || task.levelId === levelId)
-    && (origin === "all" || task.origin === origin));
+      && (origin === "all" || task.origin === origin));
+  // 能力知情选任务（实验 3 的 R1 规则）：把任务难度对到当前能力估计附近
+  // （相对能力目标 ≈ −0.5..0.5，锚点曲线最陡、区分度最大的判别带），
+  // 而不是纯随机——随机失配会把学员推进 credit 饱和区（全优/全待改进），
+  // 实操通道因此失去区分度（模拟实测地板率 11.7%→4.4%）。
+  // difficultyHint 缺省或非法时保持纯随机，老客户端不受影响。
+  const hint = Number(difficultyHint);
+  const usable = Number.isFinite(hint) ? Math.max(-1.6, Math.min(1.6, hint)) : null;
+  if (usable !== null) {
+    const target = usable - 0.5;
+    return filtered
+      .map((task) => ({ task, distance: Math.abs((TASK_ANCHOR[task.difficulty] ?? 0) - target), order: rng() }))
+      .sort((left, right) => left.distance - right.distance || left.order - right.order)
+      .slice(0, Math.max(1, Math.min(filtered.length, count)))
+      .map((item) => publicTask(item.task));
+  }
   return filtered
     .map((task) => ({ task, order: rng() }))
     .sort((left, right) => left.order - right.order)
@@ -60,6 +82,7 @@ export async function handlePracticalTasks(request) {
     taskId: url.searchParams.get("taskId"),
     count: Number(url.searchParams.get("count")) || 5,
     edition,
+    difficultyHint: url.searchParams.get("difficultyHint"),
   });
   return new Response(JSON.stringify({ tasks, edition }), {
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },

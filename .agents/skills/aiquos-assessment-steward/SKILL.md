@@ -23,12 +23,32 @@ then the workflows.
    keeps it serving until D1–D6 each have evidence. The run's evidence budget is
    finalised at the end (`finalizeAttempt` pins `totalQuestions` to the evidence
    actually collected). A result is `completed` only when every dimension has
-   evidence; overall score and grade exist only then. Conversation and practical
-   phases contribute rubric evidence through `appendExternalEvidence`
-   (ids `conv-*` / `prac-*`) — see the `aiquos-interview-scoring` skill for the
-   conversation side's five-band scale and anti-gaming rules.
+   evidence; overall score and grade exist only then. The practical phase
+   contributes rubric evidence through `appendExternalEvidence` (id `prac-*`,
+   carrying the task's real `difficulty` for IRT equating); the conversation
+   phase is scored by its own model (`recordInterviewScore`, see the
+   `aiquos-interview-scoring` skill) and does NOT enter the evidence array.
    Standalone channels (objective/conversation/practical) run ONE timed phase,
    no stage map.
+2a. **Interview seeding routes the CAT** (`src/cat-seeding.js`): the first
+   objective-question request may carry the interview score summary; the server
+   converts it to a routing prior N(θ₀, 1/κ) (θ₀=(s−80)/10 clamped ±1.6, κ up
+   to `SEED_KAPPA_MAX` = 1, calibrated by `work/cat-seeding-study`). The prior
+   feeds selection & the SE stop rule ONLY — never scoring. Changing
+   `SEED_KAPPA_MAX` must cite the κ-grid experiment.
+2b. **Three-channel composite** (`src/comprehensive-weighting.js`): completed
+   snapshots carry `composite` — each channel's per-dimension score inverted to
+   the common θ scale (objective logit, interview (s−80)/10, practical
+   credit-anchor + task-difficulty equating), weighted `DEFAULT_WEIGHTS`
+   0.60/0.25/0.15 (calibrated by `work/weighting-study`; RMSE-plateau +
+   anti-gaming + stability fences), re-normalised per dimension when a channel
+   is missing. `WEIGHTING_VERSION` bumps on any change. The awakening report
+   renders the composite radar + channel table + `report-recommendations.js`
+   priorities.
+2c. **Ability-informed practical selection**: the client sends `difficultyHint`
+   (θ̂ from the objective result); the worker picks the task whose difficulty is
+   nearest θ̂−0.5 (`work/scheduling-study`). The practical evidence must carry
+   the task's real difficulty for the equating in 2b.
 3. **Question bank changes require a version bump.** The bank records
    `objective-bank-v6-120` on every attempt and snapshot (see
    `QUESTION_BANK_VERSION` in `src/assessment-attempt.js`). Any edit to

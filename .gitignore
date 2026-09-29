@@ -25,3 +25,4 @@ work/**/results/
 work/**/samples/
 work/**/figures/
 work/temperature-study/assets/
+coverage/

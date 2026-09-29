@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -1000,6 +1000,7 @@ function AdaptiveObjectivePhase({
   onAnswer,
   comprehensiveResult = null,
   adaptiveTelemetry = null,
+  adaptivePrior = null,
 }) {
   const [phase, setPhase] = useState(hasStory ? "opening" : "quiz");
   const [question, setQuestion] = useState(null);
@@ -1133,7 +1134,9 @@ function AdaptiveObjectivePhase({
     answered: evidenceMirror.length,
     elapsedMs: seconds * 1000 - clock.remainingMs,
     budgetMs: seconds * 1000,
-    standardError: abilityStandardError({ evidence: evidenceMirror }),
+    // 定档先验计入信息量：与服务端路由同一口径，否则 SE 永远偏高，
+    // 「精度达标提前结束」在定档模式下不会触发（服务端 session 的镜像）。
+    standardError: abilityStandardError({ evidence: evidenceMirror, prior: adaptivePrior }),
     uncoveredCount,
   });
 
@@ -1456,6 +1459,7 @@ function PracticalWorkbenchPhase({
   onComplete,
   onCharacterFeedback,
   onTaskEvidence = null,
+  abilityResult = null,
 }) {
   // phase: opening → brief（读任务）→ work（作答）→ score（评分报告）
   const [phase, setPhase] = useState(hasStory ? "opening" : "brief");
@@ -1531,7 +1535,24 @@ function PracticalWorkbenchPhase({
     if (node) node.scrollTop = node.scrollHeight;
   }, [generations.length, running, liveOutput]);
 
+  // 能力知情选任务（实验 3 R1）：用当前（客观题 CAT 已收敛的）能力估计
+  // 提示服务端挑难度匹配的实操任务。θ̂ = logit(维度分均值)，无结果时不带
+  // hint（退化为随机，单通道/抢跑场景）。
+  const abilityHint = useMemo(() => {
+    const scored = abilityResult?.dimensions?.filter((dimension) => Number.isFinite(dimension.score));
+    if (!scored?.length) return null;
+    const overall = scored.reduce((sum, dimension) => sum + dimension.score, 0) / scored.length;
+    const p = Math.max(0.02, Math.min(0.98, overall / 100));
+    return Math.max(-1.6, Math.min(1.6, Math.log(p / (1 - p))));
+  }, [abilityResult]);
+
   useEffect(() => {
+    // 开始作答/评分后不再取任务：交卷时 abilityHint 会随实操证据进入 IRT
+    // 结果而变化，若此时重取任务会把学员已评分的任务整个换掉（评分报告页
+    // 标题与内容错配）。注意综合测评的实操阶段从剧情直接进 work 态、
+    // 不经过 brief——守卫必须按「是否已在作答/评分」判断，不能按「是否
+    // 在 brief」判断（后者会让综合测评永远取不到任务，实测踩过）。
+    if (phase === "score" || generations.length > 0 || briefAcknowledged) return undefined;
     let active = true;
     setTaskStatus("loading");
     const params = new URLSearchParams();
@@ -1539,6 +1560,7 @@ function PracticalWorkbenchPhase({
     else params.set("levelId", levelId);
     params.set("count", "1");
     params.set("edition", readEdition());
+    if (abilityHint !== null) params.set("difficultyHint", abilityHint.toFixed(2));
     fetch(`/api/practical-tasks?${params.toString()}`)
       .then(async (response) => {
         if (!response.ok) throw new Error("任务加载失败。");
@@ -1566,7 +1588,10 @@ function PracticalWorkbenchPhase({
     return () => {
       active = false;
     };
-  }, [levelId, taskId, reloadToken, hasStory]);
+    // abilityHint 进依赖：θ̂ 在客观题阶段结束后才可用，续答场景下任务
+    // 请求可能先于结果就绪发出，结果到位后重取一次匹配难度的任务
+    // （仍限定 brief 态：学员还没开始作答，重取无副作用）。
+  }, [levelId, taskId, reloadToken, hasStory, abilityHint, phase, generations.length, briefAcknowledged]);
 
   if (storyPhase === "opening" || storyPhase === "ending") {
     return (
@@ -1820,6 +1845,9 @@ function PracticalWorkbenchPhase({
       id: `prac-${task.id}`,
       dimKeys: Array.isArray(task.dimKeys) && task.dimKeys.length ? task.dimKeys : ["D3", "D4"],
       credit: report.credit,
+      // 任务真实难度随证据入库：融合层按此做 IRT 等值校准（难度不同的
+      // 任务上拿到同一 credit，折算的绝对能力不同）。缺省回退 medium。
+      difficulty: task.difficulty ?? "medium",
       label: "实操任务",
     });
     setFinishing(false);
@@ -1827,7 +1855,11 @@ function PracticalWorkbenchPhase({
     setPhase("score");
   };
 
-  if (phase === "brief" || (!briefAcknowledged && phase !== "work")) {
+  // score 必须排除在简报守卫外：综合测评走剧情路径（opening→work），
+  // briefAcknowledged 恒为 false，若让 score 落进这个分支，交卷后的评分
+  // 报告会被渲染成简报屏（实测：整场走完却看不到评分，data-phase=brief）。
+  // 单通道经 brief→work 置位过 briefAcknowledged，从未暴露此路径。
+  if (phase === "brief" || (!briefAcknowledged && phase !== "work" && phase !== "score")) {
     const scheme = scoringSchemeRows(task);
     return (
       <div className="task-body practical-task workbench" data-phase="brief">
@@ -2233,6 +2265,7 @@ export function AssessmentTask({
   onAnswerComprehensive,
   comprehensiveResult,
   adaptiveTelemetry = null,
+  adaptivePrior = null,
   onExternalEvidence = null,
   onInterviewScore = null,
   busy,
@@ -2294,6 +2327,7 @@ export function AssessmentTask({
               onAnswer={onAnswerComprehensive}
               comprehensiveResult={comprehensiveResult}
               adaptiveTelemetry={adaptiveTelemetry}
+              adaptivePrior={adaptivePrior}
             />
           ) : mode === "conversation" ? (
             <InterviewPhase
@@ -2308,6 +2342,7 @@ export function AssessmentTask({
               levelId={comprehensive ? "workshop" : "all"}
               taskId={new URLSearchParams(window.location.search).get("task")}
               onTaskEvidence={comprehensive ? onExternalEvidence : null}
+              abilityResult={comprehensiveResult}
             />
           )}
         </section>

@@ -15,6 +15,7 @@ import {
   selectAdaptiveQuestion,
   startAdaptiveStage,
 } from "../src/comprehensive-adaptive.js";
+import { normalizePrior, normalizeSeedPayload, seedSession } from "../src/cat-seeding.js";
 import { getBankState } from "./bank-store.js";
 import { DEFAULT_EDITION, normalizeEdition } from "../src/bank-editions.js";
 
@@ -65,6 +66,8 @@ function normalizeSession(raw) {
     dimensionCounts: { ...base.dimensionCounts, ...(raw.dimensionCounts ?? {}) },
     typeCounts: { ...base.typeCounts, ...(raw.typeCounts ?? {}) },
     typeStreak: Number.isFinite(raw.typeStreak) ? raw.typeStreak : 0,
+    // 定档先验随 session 回传；损坏/越界的先验在这里被丢弃，不会报错。
+    prior: normalizePrior(raw.prior),
   };
 }
 
@@ -118,6 +121,8 @@ export function debugSnapshot(session) {
     evidenceCount: session.evidence.length,
     dimensionCounts: { ...session.dimensionCounts },
     ability: estimateRunAbility(session.evidence.length ? session : createAdaptiveSession()),
+    seeded: Boolean(session.prior),
+    ...(session.prior ? { prior: { ...session.prior } } : {}),
   };
 }
 
@@ -138,6 +143,11 @@ export async function handleComprehensiveQuestion(request) {
   }
   const stage = Math.max(1, Math.min(5, Number(payload.stage ?? 1) || 1));
   let session = normalizeSession(payload.session);
+  // 对话定档：客观题阶段的第一题请求可携带对话通道的分数摘要，服务端
+  // 折算成路由先验（normalizeSeedPayload 全程钳制，脏数据退化为不定档）。
+  // 只在 session 尚无先验、尚无作答证据时生效一次，之后随 session 回传。
+  const seed = normalizeSeedPayload(payload?.interviewSeed);
+  if (seed) session = seedSession(session, seed);
   if (payload.outcome && typeof payload.outcome === "object" && payload.outcome.questionId) {
     session = applyOutcomeToSession(session, payload.outcome, edition);
   }

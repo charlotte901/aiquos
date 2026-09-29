@@ -11,6 +11,7 @@ import {
   validateQuestionBank,
 } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 import { clearExposureStore } from "./comprehensive-adaptive.js";
+import { buildComposite } from "./comprehensive-weighting.js";
 
 /**
  * @typedef {Object} ResponseEvidence
@@ -184,8 +185,12 @@ export function isAttemptComplete(result) {
 }
 
 // A completed attempt is stored exactly once and never revised afterwards.
+// `result` 保持纯 vendor IRT 视图（证据分），`composite` 是三通道加权视图
+// （客观/对话/实操，见 src/comprehensive-weighting.js），`interview` 是对话
+// 通道的原始档位记录。旧快照没有这两个字段：报告层按缺失降级渲染。
 export function snapshotAttempt(attempt, result) {
   if (!isAttemptComplete(result)) return null;
+  const composite = buildComposite(attempt);
   return {
     assessmentId: attempt.assessmentId,
     startedAt: attempt.startedAt,
@@ -194,6 +199,8 @@ export function snapshotAttempt(attempt, result) {
     questionIds: [...attempt.questionIds],
     evidence: attempt.evidence.map((item) => ({ ...item })),
     result,
+    ...(composite ? { composite } : {}),
+    ...(attempt.interview ? { interview: attempt.interview } : {}),
     scoringVersion: attempt.scoringVersion,
     questionBankVersion: attempt.questionBankVersion,
   };

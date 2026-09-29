@@ -32,6 +32,8 @@ const modules = [
   "worker/admin.js",
   "src/bank-editions.js",
   "src/comprehensive-adaptive.js",
+  "src/cat-seeding.js",
+  "src/comprehensive-weighting.js",
   "src/comprehensive-questions.json",
   "src/banks/comprehensive-880.json",
   "src/banks/practical-80.json",

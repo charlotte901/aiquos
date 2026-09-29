@@ -5,6 +5,7 @@ import {
   historyAtCapacity,
   latestCompletedSnapshot,
 } from "./assessment-attempt";
+import { buildRecommendations } from "./report-recommendations";
 
 // Demo scores shown when no completed comprehensive attempt exists yet. Real
 // reports always come from a stored history snapshot produced by the vendored
@@ -63,6 +64,19 @@ function bandOf(score) {
   return score >= 80 ? "strong" : score >= 60 ? "developing" : "focus";
 }
 
+function bandLabel(band) {
+  return band === "strong" ? "优势" : band === "developing" ? "发展中" : "待提升";
+}
+
+function channelCell(score) {
+  return score === null || score === undefined ? "—" : String(score);
+}
+
+function channelOverallText(score, count, unit) {
+  if (score === null || score === undefined) return count > 0 ? `完成 ${count} ${unit}` : "未参加";
+  return `${score} 分 · ${count > 0 ? `${count} ${unit}` : "无记录"}`;
+}
+
 const gradeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
 
 function grade(score) {
@@ -92,22 +106,37 @@ function reportModel(snapshot) {
       isDemo: true,
     };
   }
+  // 三通道加权视图（升级后的快照带 composite）：雷达与总分用它；
+  // 旧快照没有 composite 时按 vendor IRT 结果渲染，行为与升级前一致。
+  const composite = snapshot.composite && Array.isArray(snapshot.composite.dimensions) ? snapshot.composite : null;
+  const source = composite ?? snapshot.result;
   return {
-    dimensions: snapshot.result.dimensions.map((item) => ({
+    dimensions: source.dimensions.map((item) => ({
       key: item.key,
       name: item.name,
       short: item.short,
       score: item.score,
       evidenceCount: item.evidenceCount,
-      advice: ADVICE_BANDS[item.key]?.[bandOf(item.score)] ?? "",
+      channels: item.channels ?? null,
+      advice: ADVICE_BANDS[item.key]?.[bandOf(item.score ?? 0)] ?? "",
     })),
-    overallScore: snapshot.result.overallScore,
-    grade: snapshot.result.grade ?? grade(snapshot.result.overallScore ?? 0),
+    overallScore: source.overallScore,
+    grade: source.grade ?? grade(source.overallScore ?? 0),
     meta: `综合测评 · 完成于 ${formatCompletedAt(snapshot.completedAt)} · ${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题`,
     versions: {
       scoring: snapshot.scoringVersion,
       bank: snapshot.questionBankVersion,
+      ...(composite ? { weighting: composite.weightingVersion } : {}),
     },
+    composite,
+    channelOveralls: composite
+      ? {
+        objective: composite.channels.objective.overallScore,
+        interview: composite.channels.interview.overallScore,
+        practical: composite.channels.practical.overallScore,
+      }
+      : null,
+    recommendations: composite ? buildRecommendations(composite) : null,
     isDemo: false,
   };
 }
@@ -220,6 +249,42 @@ export function AwakeningReportContent({ snapshot = null }) {
           </ul>
         </section>
 
+        {model.composite && (
+          <section className="report-channels" aria-label="三通道得分分解">
+            <h2>三个阶段各测出了什么</h2>
+            <p className="report-channels-note">
+              同一维度由三个通道分别测量后加权融合（客观 {Math.round((model.composite.weights.objective ?? 0) * 100)}% · 对话 {Math.round((model.composite.weights.interview ?? 0) * 100)}% · 实操 {Math.round((model.composite.weights.practical ?? 0) * 100)}%）。落差大的维度会在下方建议里单独解释。
+            </p>
+            <table className="report-channel-table">
+              <thead>
+                <tr>
+                  <th>维度</th>
+                  <th>客观题</th>
+                  <th>对话</th>
+                  <th>实操</th>
+                  <th>融合</th>
+                </tr>
+              </thead>
+              <tbody>
+                {model.dimensions.map((item) => (
+                  <tr key={item.key}>
+                    <th scope="row">{item.name}</th>
+                    <td>{channelCell(item.channels?.objective)}</td>
+                    <td>{channelCell(item.channels?.interview)}</td>
+                    <td>{channelCell(item.channels?.practical)}</td>
+                    <td><b>{item.score}</b></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <ul className="report-channel-overalls">
+              <li><span>客观题阶段</span><b>{channelOverallText(model.channelOveralls?.objective, model.composite.channels.objective.answeredCount, "题")}</b></li>
+              <li><span>对话式采访</span><b>{channelOverallText(model.channelOveralls?.interview, model.composite.channels.interview.answeredSlots, "话题")}</b></li>
+              <li><span>实操任务</span><b>{channelOverallText(model.channelOveralls?.practical, model.composite.channels.practical.taskCount, "题")}</b></li>
+            </ul>
+          </section>
+        )}
+
         <section className="report-guidance">
           <div className="report-method">
             <button
@@ -232,9 +297,10 @@ export function AwakeningReportContent({ snapshot = null }) {
             </button>
             {methodOpen && (
               <ul className="report-method-list">
-                <li>题目难度锚点：低 = −1、中 = 0、高 = +1；维度估计采用 N(0,1) 先验的能力估计（与官方评分核心一致）。</li>
-                <li>多选题部分得分：命中率 − 0.6 × 误选率，限制在 0 到 1；单选与判断题须完全正确。</li>
-                <li>总分 = 六维得分的平均值四舍五入；等级 S ≥ 90、A ≥ 80、B ≥ 70、C ≥ 60、D &lt; 60。</li>
+                <li>流程：先对话式采访定档（约 5 分钟）→ 客观题按定档自适应出题（约 5 分钟）→ 实操任务（约 5 分钟）。</li>
+                <li>客观题阶段以对话分数为初始先验定档出题，先验只影响「出哪道题、何时停」，不进评分；题目难度锚点：低 = −1、中 = 0、高 = +1，维度估计采用 N(0,1) 先验的能力估计（与官方评分核心一致）。</li>
+                <li>多选题部分得分：命中率 − 0.6 × 误选率，限制在 0 到 1；单选与判断题须完全正确；实操按逐维评分标准折算 20 分制得分率。</li>
+                <li>三通道分数先各自反演到共同的能力潜变量（客观题 IRT 量表的逆映射、对话评分模型的逆映射、实操锚点曲线的逆映射），再按权重融合后映射回 0–100（当前客观 {Math.round((model.composite?.weights.objective ?? 0.5) * 100)}% · 对话 {Math.round((model.composite?.weights.interview ?? 0.25) * 100)}% · 实操 {Math.round((model.composite?.weights.practical ?? 0.25) * 100)}%），缺失通道按维度重新归一化权重；总分 = 六维融合分的平均值四舍五入；等级 S ≥ 90、A ≥ 80、B ≥ 70、C ≥ 60、D &lt; 60。</li>
                 <li>进行中只显示已有作答维度的估计，不产生总分与等级。</li>
               </ul>
             )}
@@ -247,14 +313,41 @@ export function AwakeningReportContent({ snapshot = null }) {
           )}
           <div>
             <h2>个性化学习建议</h2>
-            <ul className="advice-list">
-              {model.dimensions.map((item) => <li key={item.key}>{item.advice}</li>)}
-            </ul>
+            {model.recommendations ? (
+              <>
+                {model.recommendations.summary && <p className="advice-summary">{model.recommendations.summary}</p>}
+                {model.recommendations.consistency?.flag && (
+                  <p className="advice-consistency" role="note">{model.recommendations.consistency.note}</p>
+                )}
+                <ol className="advice-priority-list">
+                  {model.recommendations.priorities.map((item) => (
+                    <li key={item.key} className={`is-${item.band}`}>
+                      <div className="advice-priority-head">
+                        <strong>{item.name}</strong>
+                        <span className={`advice-band is-${item.band}`}>{bandLabel(item.band)} · {item.score} 分</span>
+                      </div>
+                      <p>{item.advice}</p>
+                      {item.gap && (
+                        <div className="advice-gap">
+                          <em>{item.gap.title}</em>
+                          <p>{item.gap.note}</p>
+                          {item.gap.actions.map((action) => <p key={action} className="advice-action">{action}</p>)}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : (
+              <ul className="advice-list">
+                {model.dimensions.map((item) => <li key={item.key}>{item.advice}</li>)}
+              </ul>
+            )}
           </div>
           <div>
             <h2>推荐学习资源</h2>
             <ul className="resource-list">
-              {RESOURCES.map((item) => (
+              {(model.recommendations?.resources ?? RESOURCES).map((item) => (
                 <li key={item.title}>
                   <em>{item.tag}</em>
                   <strong>{item.title}</strong>
@@ -266,7 +359,7 @@ export function AwakeningReportContent({ snapshot = null }) {
         </section>
         <footer className="report-footnote">
           {model.versions
-            ? `基于 ${model.versions.bank} 题库 · 评分模型 v${model.versions.scoring} · 结果保存在本机`
+            ? `基于 ${model.versions.bank} 题库 · 评分模型 v${model.versions.scoring}${model.versions.weighting ? ` · 加权方案 v${model.versions.weighting}` : ""} · 结果保存在本机`
             : "演示数据 · 完成一次综合测评后展示真实画像"}
         </footer>
       </div>

@@ -14,15 +14,22 @@ import { createAdaptiveController } from "../src/comprehensive-adaptive.js";
 import {
   QUESTION_BANK_VERSION,
   appendHistorySnapshot,
+  clearAllAssessmentData,
   clearAttemptDraft,
   createAttempt,
   currentResult,
+  exportAttemptHistory,
+  historyAtCapacity,
   isAttemptComplete,
+  latestCompletedSnapshot,
   loadAttemptDraft,
   loadAttemptHistory,
+  readCurrentBankVersion,
   recordAnswer,
   saveAttemptDraft,
   snapshotAttempt,
+  withBankVersion,
+  writeCurrentBankVersion,
 } from "../src/assessment-attempt.js";
 
 const questions = bank.questions;
@@ -190,6 +197,89 @@ test("draft and history persistence round-trip through storage", () => {
     // Corrupt or foreign-version data is ignored rather than crashing.
     backing.set("aiquos.comprehensive-history.v1", JSON.stringify([{ scoringVersion: "0.0.0" }]));
     assert.deepEqual(loadAttemptHistory(), []);
+  } finally {
+    if (saved.localStorage === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = saved.localStorage;
+  }
+});
+
+test("history helpers, bank-version cache and degraded storage paths", () => {
+  const saved = { ...globalThis };
+  const backing = new Map();
+  globalThis.localStorage = {
+    getItem: (key) => (backing.has(key) ? backing.get(key) : null),
+    setItem: (key, value) => backing.set(key, String(value)),
+    removeItem: (key) => backing.delete(key),
+  };
+  // Blob/URL/document stubs for exportAttemptHistory.
+  const clicks = [];
+  globalThis.Blob = class Blob {
+    constructor(parts, options) { this.parts = parts; this.type = options?.type ?? ""; }
+  };
+  globalThis.URL = { createObjectURL: () => "blob:stub", revokeObjectURL: () => {} };
+  globalThis.document = {
+    createElement: () => ({ click: () => clicks.push(1), set href(v) { this._href = v; }, set download(v) { this._download = v; } }),
+  };
+  try {
+    // storageSet 总是先写模块级 memoryStore 兜底（跨测试共享），
+    // 开头必须把两个存储都清干净，空态断言才成立。
+    clearAllAssessmentData();
+    assert.equal(latestCompletedSnapshot(), null);
+    assert.equal(historyAtCapacity(), false);
+    writeCurrentBankVersion("objective-bank-v9-120");
+    assert.equal(readCurrentBankVersion(), "objective-bank-v9-120");
+    // 容量与最新快照查询。
+    for (let index = 0; index < 12; index += 1) {
+      let attempt = createAttempt({ questions, totalQuestions: TOTAL });
+      for (const question of questions) {
+        attempt = recordAnswer(attempt, question, question.answer).attempt;
+      }
+      const complete = scoreAssessment(attempt.evidence, { totalQuestions: TOTAL });
+      appendHistorySnapshot(snapshotAttempt(attempt, complete));
+    }
+    assert.equal(historyAtCapacity(), true);
+    assert.ok(latestCompletedSnapshot());
+    assert.equal(exportAttemptHistory(), 12);
+    assert.equal(clicks.length, 1);
+    // 版本重标只影响进行中的 attempt。
+    const relabelled = withBankVersion(createAttempt({ totalQuestions: 1 }), "objective-bank-v9-120");
+    assert.equal(relabelled.questionBankVersion, "objective-bank-v9-120");
+    assert.equal(withBankVersion(null, "x"), null);
+    clearAllAssessmentData();
+    assert.deepEqual(loadAttemptHistory(), []);
+  } finally {
+    if (saved.localStorage === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = saved.localStorage;
+    if (saved.Blob === undefined) delete globalThis.Blob;
+    else globalThis.Blob = saved.Blob;
+    if (saved.URL === undefined) delete globalThis.URL;
+    else globalThis.URL = saved.URL;
+    if (saved.document === undefined) delete globalThis.document;
+    else globalThis.document = saved.document;
+  }
+});
+
+test("memory fallback keeps the run alive when storage throws", () => {
+  const saved = { ...globalThis };
+  globalThis.localStorage = {
+    getItem: () => { throw new Error("private mode"); },
+    setItem: () => { throw new Error("quota"); },
+    removeItem: () => { throw new Error("denied"); },
+  };
+  try {
+    clearAllAssessmentData();
+    let attempt = createAttempt({ questions, totalQuestions: TOTAL });
+    for (const question of questions) {
+      attempt = recordAnswer(attempt, question, question.answer).attempt;
+    }
+    saveAttemptDraft(attempt);
+    // localStorage 抛错时内存副本兜底：当前会话读得到自己的写入。
+    const draft = loadAttemptDraft();
+    assert.ok(draft);
+    assert.equal(draft.evidence.length, TOTAL);
+    assert.deepEqual(loadAttemptHistory(), []);
+    clearAttemptDraft();
+    clearAllAssessmentData();
   } finally {
     if (saved.localStorage === undefined) delete globalThis.localStorage;
     else globalThis.localStorage = saved.localStorage;

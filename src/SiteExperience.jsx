@@ -198,11 +198,20 @@ export function SiteExperience() {
   // between requests. Selection lives in worker/comprehensive-quiz.js.
   const routingRef = useRef(bootstrap.current.routing);
   const pendingOutcomeRef = useRef(bootstrap.current.pendingOutcome);
+  // 对话通道的最新评分摘要（ref 版）：fetchComprehensiveQuestion 是
+  // useCallback([])，读 state 会拿到旧闭包；客观题第一题请求要靠它带上
+  // 定档输入。submitInterviewScore 每次判分后同步刷新。
+  const interviewRef = useRef(bootstrap.current.state.attempt?.interview ?? null);
   // Which timed phases (conversation/objective/practical) a resumed draft has
   // already finished — persists with the draft so the map unlocks correctly.
   const phasesDoneRef = useRef(Array.isArray(bootstrap.current.phasesDone) ? bootstrap.current.phasesDone : []);
   // Routing telemetry for the optional aiquos.debug overlay; off by default.
   const [adaptiveTelemetry, setAdaptiveTelemetry] = useState(null);
+  // 服务端定档先验的镜像：停止判据（shouldStopCat 的 SE 分母）必须与
+  // 路由同一口径计入先验信息量，否则「定档提前停」在客户端永远不触发。
+  // 续答恢复时从 draft 的 routing session 里带回来——否则客观题中途刷新
+  // 后客户端 SE 口径与服务端路由不一致（只影响停止时机，不影响分数）。
+  const [adaptivePrior, setAdaptivePrior] = useState(() => bootstrap.current.routing?.prior ?? null);
   // 每次进入任务页递增，作为 AssessmentTask 的 key。
   // 没有它时，从 TEST 页再次进入同一关卡会复用上一次的组件实例，
   // 上一轮的对话记录、计时归零与「已结束」状态会残留（学员看到无法作答的死页面）。
@@ -564,7 +573,9 @@ export function SiteExperience() {
       routingRef.current = null;
       pendingOutcomeRef.current = null;
       phasesDoneRef.current = [];
+      interviewRef.current = null;
       setAdaptiveTelemetry(null);
+      setAdaptivePrior(null);
       setAttemptState({ attempt, result: null });
       // A fresh card click starts from phase 1: without this reset a previous
       // finished run would leave every node unlocked and let a student skip
@@ -592,6 +603,18 @@ export function SiteExperience() {
   const fetchComprehensiveQuestion = useCallback(async (levelId, stage, options = {}) => {
     const outcome = pendingOutcomeRef.current;
     pendingOutcomeRef.current = null;
+    // 对话定档：客观题阶段的第一题（尚无路由 session）把对话通道的分数
+    // 摘要带给服务端，由服务端折算路由先验。之后 session 由服务端生成并
+    // 原样回传，这里不再重复携带。
+    const interviewSeed = routingRef.current === null && interviewRef.current
+      ? {
+        overallScore: interviewRef.current.overallScore ?? null,
+        dimensions: Array.isArray(interviewRef.current.dimensions) ? interviewRef.current.dimensions : [],
+        answeredSlots: interviewRef.current.answeredSlots ?? 0,
+        totalSlots: interviewRef.current.totalSlots ?? 5,
+        completed: Boolean(interviewRef.current.completed),
+      }
+      : null;
     try {
       const response = await fetch("/api/comprehensive-question", {
         method: "POST",
@@ -604,6 +627,7 @@ export function SiteExperience() {
           session: routingRef.current,
           exposure: loadExposureStore(),
           edition: readEdition(),
+          ...(interviewSeed ? { interviewSeed } : {}),
           ...(outcome ? { outcome } : {}),
           debug: isAdaptiveDebugOn(),
         }),
@@ -612,6 +636,7 @@ export function SiteExperience() {
       const data = await response.json();
       if (!data.question) throw new Error("出题服务未返回题目");
       routingRef.current = data.session ?? null;
+      setAdaptivePrior(data.session?.prior ?? null);
       if (data.exposure && typeof data.exposure === "object") saveExposureStore(data.exposure);
       if (typeof data.bankVersion === "string") {
         writeCurrentBankVersion(data.bankVersion);
@@ -668,6 +693,8 @@ export function SiteExperience() {
     setAttemptState((current) => {
       const base = current.attempt ?? createAttempt({ totalQuestions: EVIDENCE_BUDGET });
       const next = recordInterviewScore(base, interview);
+      // 同步 ref：客观题第一题请求的定档输入读这里（见 fetchComprehensiveQuestion）。
+      interviewRef.current = next.attempt.interview;
       saveAttemptDraft({ ...next.attempt, routing: routingRef.current, phasesDone: phasesDoneRef.current });
       return { ...current, attempt: next.attempt, result: next.result ?? current.result };
     });
@@ -687,7 +714,9 @@ export function SiteExperience() {
     routingRef.current = null;
     pendingOutcomeRef.current = null;
     phasesDoneRef.current = [];
+    interviewRef.current = null;
     setAdaptiveTelemetry(null);
+    setAdaptivePrior(null);
     setAttemptState({ attempt, result: null });
     setProgress((current) => ({ ...current, comprehensive: 1 }));
   }
@@ -919,6 +948,7 @@ export function SiteExperience() {
               onExternalEvidence={submitExternalEvidence}
               onInterviewScore={submitInterviewScore}
               onFetchComprehensiveQuestion={fetchComprehensiveQuestion}
+              adaptivePrior={adaptivePrior}
               onAnswerComprehensive={submitComprehensiveAnswer}
               comprehensiveResult={attemptState.result}
               adaptiveTelemetry={adaptiveTelemetry}

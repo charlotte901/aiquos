@@ -79,6 +79,9 @@ export function createAdaptiveSession() {
     // the running same-type streak. Empty evidence keeps v1 behavior exactly.
     evidence: [],
     typeStreak: 0,
+    // v3.1: 对话式测评折算出的路由先验 {theta, kappa}（见 src/cat-seeding.js）。
+    // null = 未定档（独立客观题通道、对话缺考或老会话），一切行为与 v3 相同。
+    prior: null,
   };
 }
 
@@ -101,16 +104,23 @@ export function applyAdaptiveOutcome(session, outcome) {
 // 1-parameter logistic ability estimate over the run's light evidence — the
 // same model family as the vendored scoring core, used here only to aim the
 // next question's difficulty. Returns null before any credited answer.
+//
+// 对话定档先验（session.prior = {theta, kappa}）以 N(θ₀, 1/κ) 形式并入：
+// 目标函数加上 −κ·(θ−θ₀) 一项，等价于「先验伪证据」。证据越攒越多，
+// 先验的相对权重自然衰减——不需要手写的衰减系数。κ=0 时退回原始行为。
 export function estimateRunAbility(session) {
   const evidence = session.evidence.filter((item) => typeof item.credit === "number");
-  if (evidence.length === 0) return null;
+  const prior = session.prior && Number.isFinite(session.prior.theta) && Number.isFinite(session.prior.kappa)
+    ? session.prior
+    : null;
+  if (evidence.length === 0 && !prior) return null;
   let low = -8;
   let high = 8;
   for (let iteration = 0; iteration < 48; iteration += 1) {
     const theta = (low + high) / 2;
     const derivative = evidence.reduce(
       (sum, item) => sum + item.credit - 1 / (1 + Math.exp(-(theta - ANCHOR[item.difficulty]))),
-      -theta,
+      prior ? -theta - prior.kappa * (theta - prior.theta) : -theta,
     );
     if (derivative > 0) low = theta;
     else high = theta;
@@ -119,11 +129,17 @@ export function estimateRunAbility(session) {
 }
 
 // Blend the ability estimate with the position walk (both centred on 0) into
-// the difficulty the next question should sit at.
+// the difficulty the next question should sit at. 没有任何客观题证据时，
+// 定档先验就是能力估计本身（第一题直接打在 θ₀ 附近，而不是从 medium 盲试）。
 export function nextTargetDifficulty(session) {
   const ability = estimateRunAbility(session);
   const walk = session.position - 1;
-  if (ability === null) return walk;
+  if (ability === null) {
+    if (session.prior && Number.isFinite(session.prior.theta)) {
+      return Math.max(-1.8, Math.min(1.8, session.prior.theta));
+    }
+    return walk;
+  }
   return 0.65 * Math.max(-1.8, Math.min(1.8, ability)) + 0.35 * walk;
 }
 
@@ -140,11 +156,14 @@ export function itemInformation(theta, difficulty) {
 // Standard error of the ability estimate: the inverse square root of test
 // information (sum of item information over credited evidence). Drives the
 // precision stopping rule — stop when theta is measured tightly enough.
+// 先验按其信息量 κ 计入检验信息：这正是「定档让 CAT 能提前停」的机制——
+// 盲启动要约 23 题才能把 SE 压到 0.42，带 κ=2 的先验约 13 题即可。
 export function abilityStandardError(session) {
   const evidence = session.evidence.filter((item) => typeof item.credit === "number");
-  if (evidence.length === 0) return null;
+  const prior = session.prior && Number.isFinite(session.prior.kappa) ? session.prior : null;
+  if (evidence.length === 0 && !prior) return null;
   const theta = estimateRunAbility(session);
-  let information = 0;
+  let information = prior ? prior.kappa : 0;
   for (const item of evidence) information += itemInformation(theta, item.difficulty);
   return information > 0 ? 1 / Math.sqrt(information) : null;
 }
@@ -319,6 +338,7 @@ export function createAdaptiveController(questions, { rng = Math.random } = {}) 
         evidenceCount: session.evidence.length,
         dimensionCounts: { ...session.dimensionCounts },
         standardError: abilityStandardError(session),
+        seeded: Boolean(session.prior),
       };
     },
     clearExposure() {
