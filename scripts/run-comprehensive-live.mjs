@@ -18,8 +18,9 @@ import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { chromeBin } from "./lib/chrome.mjs";
 
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CHROME = chromeBin();
 const BASE = process.argv[2] || "http://127.0.0.1:4286";
 const OUT = "work/comprehensive-upgrade/real-run";
 mkdirSync(`${OUT}/shots`, { recursive: true });

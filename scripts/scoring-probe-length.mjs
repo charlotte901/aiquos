@@ -20,6 +20,7 @@ import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { chromeBin } from "./lib/chrome.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, "..");
@@ -35,7 +36,7 @@ const product = readFileSync(join(STUDY, "answers", "lite-003.product.S3.txt"), 
 const CASES = ["P-long-bad", "P-short-good", "P-tiny-good"];
 const REPEATS = Number(process.env.REPEATS || 3);
 
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CHROME = chromeBin();
 const profile = mkdtempSync(join(tmpdir(), "aiq-probe-"));
 const port = 9600 + Math.floor(Math.random() * 200);
 const child = spawn(CHROME, [

@@ -11,8 +11,9 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readFile, writeFile } from "node:fs/promises";
+import { chromeBin, rmProfile } from "./lib/chrome.mjs";
 
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CHROME = chromeBin();
 const BASE = process.argv[2] || "http://127.0.0.1:4287";
 const OUT = "work/task-shots";
 const SIZE = { width: 1600, height: 1000 };
@@ -98,5 +99,5 @@ for (const task of bank.tasks) {
 socket.close();
 child.kill();
 await sleep(800);
-try { rmSync(profile, { recursive: true, force: true }); } catch { /* Chrome still holds files; the temp dir is OS-cleaned */ }
+rmProfile(profile);
 console.log(`DONE ${bank.tasks.length} shots in ${OUT}`);

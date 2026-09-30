@@ -11,8 +11,9 @@ import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { chromeBin, rmProfile } from "./lib/chrome.mjs";
 
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CHROME = chromeBin();
 const URL_ARG = process.argv[2] || "http://localhost:5173/";
 const SIZES = process.argv.slice(3).length
   ? process.argv.slice(3)
@@ -153,5 +154,5 @@ try {
 } finally {
   child.kill();
   await sleep(300);
-  rmSync(profile, { recursive: true, force: true });
+  rmProfile(profile);
 }

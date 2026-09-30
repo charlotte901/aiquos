@@ -22,6 +22,7 @@ import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { chromeBin } from "./lib/chrome.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, "..");
@@ -54,7 +55,7 @@ const imageDataUri = (taskId, slot) => {
 };
 
 // ── 启动浏览器 ──
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CHROME = chromeBin();
 const profile = mkdtempSync(join(tmpdir(), "aiq-score-"));
 const port = 9300 + Math.floor(Math.random() * 200);
 const child = spawn(CHROME, [
