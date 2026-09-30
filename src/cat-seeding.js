@@ -14,9 +14,10 @@
 //      高报 → 立刻接到难题、答错照样压分；低报 → 简单题全对、θ 提升有限。
 //
 // 量纲校准：对话分 s（60–100）与客观题维度分同族（都是 100·sigmoid(θ) 的
-// 展示分）。线性映射 θ₀ = (s − 80) / 10 让档位落点对齐题目难度锚点：
-//   66（提及）→ −1.4   74（具体）→ −0.6   81（可操作）→ +0.1
-//   88（有判断）→ +0.8  90（熟练）→ +1.0   96+（专业）→ 钳制 +1.6
+// 展示分）。线性映射 θ₀ = (s − 80) / 10 让档位落点对齐题目难度锚点
+// （BAND_SCORES = 60/66/74/86/96/99/100）：
+//   66（提及）→ −1.4   74（具体）→ −0.6   86（可操作）→ +0.6
+//   96（有判断）→ +1.6（钳）  99（熟练）→ +1.6（钳）  100（专业）→ +1.6（钳）
 // 题目难度锚点为 low/medium/high = −1/0/+1，θ₀ 钳制在 ±1.6 内：
 // 超出后选题已饱和到最高/最低难度档，更大的值没有信息量。
 //
@@ -50,19 +51,18 @@ function clamp(value, minimum, maximum) {
  */
 export function interviewSeedTheta(input) {
   const { overallScore = null, dimensions = [] } = input && typeof input === "object" ? input : {};
-  const candidates = [];
-  if (overallScore !== null && overallScore !== undefined && Number.isFinite(Number(overallScore))) {
-    candidates.push(Number(overallScore));
-  }
-  if (Array.isArray(dimensions)) {
-    for (const item of dimensions) {
-      if (item && item.score !== null && item.score !== undefined && Number.isFinite(Number(item.score))) {
-        candidates.push(Number(item.score));
-      }
-    }
-  }
-  if (candidates.length === 0) return null;
-  const mean = candidates.reduce((sum, value) => sum + value, 0) / candidates.length;
+  const hasOverall = overallScore !== null && overallScore !== undefined && Number.isFinite(Number(overallScore));
+  const dimScores = Array.isArray(dimensions)
+    ? dimensions
+        .filter((item) => item && item.score !== null && item.score !== undefined && Number.isFinite(Number(item.score)))
+        .map((item) => Number(item.score))
+    : [];
+  // 契约是「优先总分」：总分本身已是覆盖维度的均值，再与维度分混平均会
+  // 把种子稀释（overall 改加权口径时更甚）。总分缺失才退回维度分均值。
+  const mean = hasOverall
+    ? Number(overallScore)
+    : (dimScores.length ? dimScores.reduce((sum, value) => sum + value, 0) / dimScores.length : null);
+  if (mean === null) return null;
   return clamp((mean - SEED_CENTER) / SEED_SCALE, -SEED_THETA_LIMIT, SEED_THETA_LIMIT);
 }
 

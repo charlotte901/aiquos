@@ -124,7 +124,7 @@ test("bank store serves a separate pool and version per edition", () => {
   const lite = getBankState("B");
   assert.equal(full.questions.length, 880);
   assert.equal(lite.questions.length, 120);
-  assert.equal(full.bankVersion, "objective-bank-v6-880");
+  assert.equal(full.bankVersion, "objective-bank-v7-880");
   assert.equal(lite.bankVersion, "objective-bank-v6-120");
   assert.equal(full.edition, "A");
   assert.equal(lite.edition, "B");

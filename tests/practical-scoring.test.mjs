@@ -16,6 +16,7 @@ import {
   practicalJudgeMessages,
   scorePracticalResult,
   scoreRubric,
+  scoringRequirements,
   scoringSchemeRows,
 } from "../src/practical-scoring.js";
 import { handlePracticalScore, PRACTICAL_SCORE_PATH } from "../worker/practical-score.js";
@@ -407,4 +408,25 @@ test("无标准范例时不插入占位（保持两图）", () => {
   });
   const urls = m.find(x=>x.role==="user").content.filter(p=>p.type==="image_url").map(p=>p.image_url.url);
   assert.equal(urls.length, 2, "无范例时只有两图");
+});
+
+test("scoringRequirements excludes rubric-derived meta rows that display keeps", () => {
+  // 精选库任务的 requirements 全是「达到评分标准：…」行（导入器从量规维度
+  // 推导验收点时显式加的标记）。展示层保留它们；评分/启发式层必须排除，
+  // 否则产物永远不含「基础符合度」这类词，离线启发分被压到底档。
+  const lite = practicalLite.tasks[0];
+  assert.ok(lite.requirements.length > 0);
+  assert.ok(lite.requirements.every((item) => item.startsWith("达到评分标准")));
+  // 展示层保留（简报的验收提示）。
+  assert.equal(deliveryRequirements(lite).length, lite.requirements.length);
+  // 评分层排除；全量库的「评分标准一/二…」两种前缀也一并排除。
+  assert.equal(scoringRequirements(lite).length, 0);
+  const full = practicalFull.tasks[0];
+  assert.equal(scoringRequirements(full).length,
+    full.requirements.filter((item) => !/^(评分标准|达到评分标准)/.test(item)).length);
+  // 评委消息不得包含元信息行。
+  const messages = practicalJudgeMessages({ ...full, iterations: 1, promptHistory: "x", product: "y", images: [] }, []);
+  const joined = messages.map((m) => m.content).join("\n");
+  assert.ok(!joined.includes("达到评分标准"));
+  assert.ok(!joined.includes("评分标准一："));
 });

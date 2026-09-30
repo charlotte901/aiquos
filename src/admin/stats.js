@@ -27,8 +27,14 @@ export function overviewKpis(roster) {
 export function gradeDistribution(roster) {
   const runs = allRunsOf(roster);
   const buckets = { S: 0, A: 0, B: 0, C: 0, D: 0 };
-  for (const run of runs) buckets[run.grade] += 1;
-  return buckets;
+  // run.grade 可能缺失（旧版 localStorage 快照没有该字段）：计入「未定级」
+  // 而不是产生 undefined 键 + NaN 计数（会把该次测评从图表里悄悄丢掉）。
+  let ungraded = 0;
+  for (const run of runs) {
+    if (Object.hasOwn(buckets, run.grade)) buckets[run.grade] += 1;
+    else ungraded += 1;
+  }
+  return ungraded > 0 ? { ...buckets, "未定级": ungraded } : buckets;
 }
 
 export function dimensionAverages(roster) {
@@ -46,7 +52,9 @@ export function dimensionAverages(roster) {
   });
 }
 
-// Eight ISO-week buckets ending with the current week.
+// Eight rolling 7-day buckets anchored on today's end-of-day (NOT calendar/ISO
+// weeks — the boundary and labels shift by one day as the viewing weekday
+// changes; that is the intended behaviour for a "recent activity" trend).
 export function weeklyTrend(roster, now = new Date()) {
   const runs = allRunsOf(roster);
   const endOfThisWeek = new Date(now);

@@ -95,9 +95,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
       "minutes": "5",
       "outputType": "image",
       "assets": [
@@ -205,7 +208,10 @@
         "D2",
         "D5"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
       "minutes": "5",
       "outputType": "text"
     },
@@ -304,9 +310,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
       "minutes": "5",
       "outputType": "text"
     },
@@ -405,9 +414,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
       "minutes": "5",
       "outputType": "image",
       "assets": [
@@ -518,9 +530,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
       "minutes": "5",
       "outputType": "text"
     },
@@ -619,9 +634,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
       "minutes": "8",
       "outputType": "text"
     },
@@ -720,9 +738,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
       "minutes": "8",
       "outputType": "text"
     },
@@ -821,9 +842,12 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
       "minutes": "8",
       "outputType": "image",
       "assets": [
@@ -941,7 +965,10 @@
         "D2",
         "D5"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
       "minutes": "8",
       "outputType": "text"
     },
@@ -1042,7 +1069,10 @@
         "D2",
         "D5"
       ],
-      "dims": [],
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
       "minutes": "12",
       "outputType": "text"
     }

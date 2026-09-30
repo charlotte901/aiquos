@@ -237,7 +237,11 @@ export async function handleArkImage(request, apiKey, fetcher = fetch) {
   let images = [];
   if (typeof rawRefs === "string") images = [rawRefs];
   else if (Array.isArray(rawRefs)) images = rawRefs.filter((x) => typeof x === "string");
-  images = images.filter((src) => ALLOWED_IMAGE_DATA_URI.test(src)).slice(0, MAX_REFERENCE_IMAGES);
+  images = images
+    // 单图体积上限：没有上限时超大 data URI 会原样转发上游（内存/带宽放大）。
+    // 口径与 worker/practical-score.js 的产物图一致（6M 字符）。
+    .filter((src) => ALLOWED_IMAGE_DATA_URI.test(src) && src.length <= 6_000_000)
+    .slice(0, MAX_REFERENCE_IMAGES);
 
   const size = IMAGE_SIZES.has(payload.size) ? payload.size : "1024x1024";
 

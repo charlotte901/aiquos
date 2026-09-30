@@ -11,6 +11,9 @@ import { CREDIT_SCALE } from "./interview-scoring.js";
 
 /** 把任意数值吸附到最近的合法档位。 */
 export function snapToScale(value) {
+  // NaN 防线：Math.abs(NaN-x) 恒为 NaN、比较恒 false，reduce 会静默落到
+  // 最低档 0（而不是中性值）。非有限输入一律回退中间档 0.45。
+  if (!Number.isFinite(value)) return 0.45;
   return CREDIT_SCALE.reduce(
     (best, credit) => (Math.abs(credit - value) < Math.abs(best - value) ? credit : best),
     CREDIT_SCALE[0],

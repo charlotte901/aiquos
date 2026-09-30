@@ -38,8 +38,13 @@ function partIndex(unit, tag) {
   if (part) return CN_NUM[part[1]] ?? 1;
   const group = tag.match(/^第(\d+)组/);
   if (group) return Number(group[1]);
-  // 第十单元判断题专练：5 个标签按声明顺序定档。
-  const judgeTags = Object.keys(TAG_DIMENSIONS).filter((key) => !key.includes("部分") && !key.includes("组") && unit === "第十单元");
+  // 第十单元判断题专练：5 个标签按声明顺序定档。过滤必须排除
+  // 「第701-720题」这类占位串（不含"部分/组"，曾把 judgeTags 撑成 6 项
+  // 导致 indexOf 整体 +1、80 道判断题难度旋转一档——2026-09-30 审计修复）。
+  const judgeTags = Object.keys(TAG_DIMENSIONS).filter(
+    (key) => !key.includes("部分") && !key.includes("组") && !/^第\d+-\d+题$/.test(key) && unit === "第十单元",
+  );
+  if (judgeTags.length !== 5) throw new Error(`第十单元判断题标签应为 5 个，实际 ${judgeTags.length}: ${judgeTags}`);
   return Math.max(1, judgeTags.indexOf(tag) + 1);
 }
 
@@ -66,8 +71,9 @@ function shuffleOptions(question, seed) {
     const j = Math.floor(rng() * (i + 1));
     [options[i], options[j]] = [options[j], options[i]];
   }
-  const oldToNew = new Map(question.options.map((option, index) => [option.key, options[index].key]));
-  const answer = question.answer.map((key) => oldToNew.get(key));
+  // 旧键 → 该选项洗牌后的新位置键。注意不能映射到「洗牌后落在旧位置上的选项」的原始键——
+  // 那是反方向，约 1/2 的题答案会指错（历史缺陷，已由 repair-objective-answers.mjs 修复存量题库）。
+  const answer = question.answer.map((key) => "ABCD"[options.findIndex((option) => option.key === key)]);
   return { options: options.map((option, index) => ({ key: "ABCD"[index], text: option.text })), answer };
 }
 

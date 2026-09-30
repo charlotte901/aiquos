@@ -141,7 +141,10 @@ export function currentResult(attempt) {
 // dimensions. Shaped exactly like question evidence so the vendored core
 // scores it through the same posterior — difficulty "medium" keeps it neutral.
 export function appendExternalEvidence(attempt, { id, dimKeys, credit, difficulty = "medium", label = null }) {
-  if (!id || !Array.isArray(dimKeys) || dimKeys.length === 0 || typeof credit !== "number") {
+  // Number.isFinite 而非 typeof：typeof NaN === "number" 会放行 NaN，
+  // Math.max(0, Math.min(1, NaN)) 仍是 NaN，一条 NaN 证据就能把整个维度
+  // 的 MAP 二分压到 −8（= 0 分）。
+  if (!id || !Array.isArray(dimKeys) || dimKeys.length === 0 || !Number.isFinite(credit)) {
     return { attempt, result: currentResult(attempt) };
   }
   const entry = {

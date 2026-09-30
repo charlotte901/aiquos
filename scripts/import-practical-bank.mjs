@@ -26,24 +26,35 @@ const OUT_DIR = join(here, "..", "src", "banks");
 
 const LEVELS = ["academy", "labyrinth", "workshop", "station", "court"];
 
+/** 「建议用时」缺失时的回填口径（与精选库 low=5/medium=8/high=12 一致）。 */
+const MINUTES_BY_DIFFICULTY = { low: 5, medium: 8, high: 12 };
+
 /** 「考察维度」中文名 → 六维键。源文档用词与评分核心的对应关系。 */
 const DIM_KEY = {
   AI基础认知: "D1",
   提示词工程: "D2",
   AI工具使用: "D3",
   AI结果评估: "D4",
+  AI结果评估与优化: "D4",
   结果评估: "D4",
+  结果评估与优化: "D4",
   人机协同: "D5",
   人机协同解决问题: "D5",
   伦理合规: "D6",
   伦理与合规: "D6",
+  AI伦理与合规: "D6",
+  AI伦理: "D6",
 };
 
-function dimKeysFor(dims) {
+function dimKeysFor(dims, id) {
   const keys = [...new Set(dims.map((name) => DIM_KEY[name]).filter(Boolean))];
-  // 评分核心要求每题都有维度证据；源文档偶尔只标一个，这里补一个最贴近的
-  // 邻接维度（提示词工程是所有实操任务的共同底座）。
-  if (keys.length === 0) return ["D2", "D5"];
+  // 兜底必须响亮：2026-09-30 审计发现 90 个任务全部落进这个分支且无人察觉
+  // （源文档维度名与映射表全部不匹配），导致实操证据只进 D2/D5。今后任何
+  // 兜底都逐题打印，未映射的原始名一并报出。
+  if (keys.length === 0) {
+    console.warn(`[dimKeys 兜底] 题 ${id} 考察维度未映射（原文: ${JSON.stringify(dims)}），回落 [D2,D5]`);
+    return ["D2", "D5"];
+  }
   if (keys.length === 1) return [...new Set([keys[0], "D2"])];
   return keys.slice(0, 2);
 }
@@ -172,9 +183,9 @@ function convert(task, origin, index) {
     standardProduct: fields.product || "",
     rubricPrompt: task.rubricPrompt ?? [],
     rubricProduct: task.rubricProduct ?? [],
-    dimKeys: dimKeysFor(task.dims),
+    dimKeys: dimKeysFor(task.dims, task.id),
     dims: task.dims,
-    minutes: task.minutes,
+    minutes: task.minutes || MINUTES_BY_DIFFICULTY[task.difficulty] || 0,
     outputType,
   };
   const assets = assetsFor(task, origin);

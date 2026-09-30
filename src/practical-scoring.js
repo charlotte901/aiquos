@@ -98,6 +98,17 @@ export function deliveryRequirements(task) {
   return (task?.requirements ?? []).filter((item) => !/^评分标准/.test(String(item)));
 }
 
+/**
+ * 评分与启发式专用的交付要求：额外排除「达到评分标准：…」行。
+ * 那是导入器从量规维度名推导验收点时显式加的元信息标记（精选库任务的
+ * requirements 全部是这种行）——留在覆盖率分母里会把离线启发分压到底档
+ * （产物永远不含「基础符合度」这类词），发给评委也与量规重复。
+ * 展示层（简报）保留它们作为验收提示。
+ */
+export function scoringRequirements(task) {
+  return (task?.requirements ?? []).filter((item) => !/^(评分标准|达到评分标准)/.test(String(item).trim()));
+}
+
 /** 评分构成元信息（如「评分标准一：提示词评分（10分）」），简报里单列展示。 */
 export function scoringSchemeRows(task) {
   return (task?.requirements ?? []).filter((item) => /^评分标准/.test(String(item)));
@@ -207,7 +218,10 @@ export function practicalJudgeMessages(task, { prompts = [], finalPrompt = "", p
   const userContent = [
     `任务：${task.title}`,
     `目标：${task.goal}`,
-    `交付要求：\n${deliveryRequirements(task).map((item, index) => `${index + 1}. ${item}`).join("\n")}`,
+    // 元信息行（评分标准…/达到评分标准…）不发给评委：与下方量规重复。
+    ...(scoringRequirements(task).length > 0
+      ? [`交付要求：\n${scoringRequirements(task).map((item, index) => `${index + 1}. ${item}`).join("\n")}`]
+      : []),
     `原始素材：\n${String(task.material ?? task.source ?? "").slice(0, 2000)}`,
     "",
     `【评分标准一 · 提示词评分】\n${rubricText(task.rubricPrompt)}`,
@@ -367,7 +381,7 @@ export function heuristicPracticalScore(task, { prompts = [], finalPrompt = "", 
   const bestPrompt = effectivePrompts.reduce((best, current) => (
     [...current].length > [...best].length ? current : best
   ), "");
-  const requirements = deliveryRequirements(task);
+  const requirements = scoringRequirements(task);
   const pq = promptQuality(bestPrompt);
   const rq = isImage ? pq : productQuality(product, requirements);
 

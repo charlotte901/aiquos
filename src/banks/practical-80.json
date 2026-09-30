@@ -94,10 +94,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -195,10 +198,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -295,10 +301,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -395,10 +404,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -496,10 +508,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -519,36 +534,7 @@
         "1. 字数控制在150~200字",
         "2. 包含：开头钩子、卖点阐述、使用场景、购买引导",
         "3. 语气热情但真实，不夸大功效",
-        "4. 直接输出文案正文，不要标题、不要解释",
-        "\"\"\"",
-        "def generate_intro(product):",
-        "prompt = TEMPLATE.format(",
-        "name=product[\"name\"],",
-        "price=product[\"price\"],",
-        "feature=product[\"feature\"],",
-        ")",
-        "response = client.chat.completions.create(",
-        "model=\"deepseek-chat\",",
-        "messages=[{\"role\": \"user\", \"content\": prompt}],",
-        "max_tokens=600,  # 给足空间，避免截断",
-        "temperature=0.8,",
-        ")",
-        "# 检测是否被截断",
-        "if response.choices[0].finish_reason == \"length\":",
-        "print(f\"警告：{product['name']} 的输出可能被截断\")",
-        "return response.choices[0].message.content",
-        "for i, p in enumerate(products, 1):",
-        "try:",
-        "intro = generate_intro(p)",
-        "print(f\"[{i}/{len(products)}] {p['name']}：\\n{intro}\\n\")",
-        "except Exception as e:",
-        "print(f\"[{i}/{len(products)}] {p['name']} 生成失败：{e}\")",
-        "```",
-        "简要解释：",
-        "- 把 `max_tokens` 提高到 600，并检查 `finish_reason` 是否为 `length` 来感知截断；",
-        "- 用结构化模板：角色 + 产品信息分节 + 明确输出要求，显著提升生成稳定性和质量；",
-        "- 批量处理加 try/except 和进度打印，便于排查失败项；",
-        "- 真正100条规模建议改并发（参考第11题）。"
+        "4. 直接输出文案正文，不要标题、不要解释"
       ],
       "material": "```python\nimport openai\nclient = openai.OpenAI(api_key=\"your-key\", base_url=\"https://api.deepseek.com/v1\")\nproducts = [\n{\"name\": \"智能手表\", \"price\": 1999, \"feature\": \"心率监测\"},\n{\"name\": \"蓝牙耳机\", \"price\": 499, \"feature\": \"主动降噪\"}\n]\nfor p in products:\nprompt = f\"请写一个产品介绍：{p['name']}，价格{p['price']}元，卖点是{p['feature']}\"\nresponse = client.chat.completions.create(\nmodel=\"deepseek-chat\",\nmessages=[{\"role\": \"user\", \"content\": prompt}],\nmax_tokens=50  # 这里的限制可能导致输出被截断\n)\nprint(f\"{p['name']}: {response.choices[0].message.content}\")\n```",
       "standardPrompt": "角色设定：你是一位熟悉提示词工程和批量内容生成的Python工程师。\n问题描述：我需要批量生成100份个性化产品介绍，使用模板动态插入产品名称、价格和卖点。当前代码 `max_tokens=50` 限制太低，输出经常被截断，且Prompt结构不够清晰。\n代码内容：\n```python\nimport openai\nclient = openai.OpenAI(api_key=\"your-key\", base_url=\"https://api.deepseek.com/v1\")\nproducts = [\n{\"name\": \"智能手表\", \"price\": 1999, \"feature\": \"心率监测\"},\n{\"name\": \"蓝牙耳机\", \"price\": 499, \"feature\": \"主动降噪\"}\n]\nfor p in products:\nprompt = f\"请写一个产品介绍：{p['name']}，价格{p['price']}元，卖点是{p['feature']}\"\nresponse = client.chat.completions.create(\nmodel=\"deepseek-chat\",\nmessages=[{\"role\": \"user\", \"content\": prompt}],\nmax_tokens=50  # 这里的限制可能导致输出被截断\n)\nprint(f\"{p['name']}: {response.choices[0].message.content}\")\n```\n修正要求：\n1. 识别max_tokens设置的风险\n2. 修改代码，确保输出不被截断\n3. 优化Prompt使其更结构化（使用模板引擎思路）\n4. 处理批量调用时的错误和进度",
@@ -629,10 +615,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -730,10 +719,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -831,10 +823,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D1"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI基础认知"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -934,8 +929,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -1033,10 +1031,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -1134,10 +1135,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1235,10 +1239,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D1"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI基础认知"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1336,10 +1343,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1437,10 +1447,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D6"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI伦理与合规"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1456,37 +1469,7 @@
         "1. 只输出Python代码，不要任何解释、不要问候、不要\"以下是代码\"之类的话。",
         "2. 不要使用Markdown代码块标记（不要写```python和```）。",
         "3. 函数名为 fib(n)，使用记忆化或迭代实现，n为非负整数。",
-        "4. 直接以 def fib(n): 开头。",
-        "\"\"\"",
-        "def generate_code(task_prompt):",
-        "response = client.chat.completions.create(",
-        "model=\"deepseek-chat\",",
-        "messages=[",
-        "{\"role\": \"system\", \"content\": \"你是一个代码生成器，只输出可执行Python代码，不输出任何自然语言。\"},",
-        "{\"role\": \"user\", \"content\": task_prompt},",
-        "],",
-        "temperature=0.2,",
-        ")",
-        "raw = response.choices[0].message.content.strip()",
-        "# 兜底：万一模型还是带了```python```，提取出来",
-        "match = re.search(r\"```(?:python)?\\s*(.*?)```\", raw, re.DOTALL)",
-        "code = match.group(1).strip() if match else raw",
-        "return code",
-        "if __name__ == \"__main__\":",
-        "code = generate_code(PROMPT)",
-        "print(\"生成的代码：\")",
-        "print(code)",
-        "print(\"\\n执行测试：\")",
-        "ns = {}",
-        "exec(code, ns)",
-        "print(\"fib(10) =\", ns[\"fib\"](10))  # 期望 55",
-        "```",
-        "简要解释：",
-        "- 提示词明确要求\"只输出 Python 代码、不要 Markdown 标记、直接以 def 开头\"；",
-        "- 系统消息再强化一次\"只输出代码\"约束；",
-        "- 用 `temperature=0.2` 降低随机性；",
-        "- 兜底用正则提取 ```python``` 内的代码，保证即使模型违规也能拿到纯净代码；",
-        "- 拿到代码后可直接 `exec` 执行测试。"
+        "4. 直接以 def fib(n): 开头。"
       ],
       "material": "```python\nimport openai\nclient = openai.OpenAI(api_key=\"your-key\")\nresponse = client.chat.completions.create(\nmodel=\"deepseek-chat\",\nmessages=[{\"role\": \"user\", \"content\": \"写一个函数，计算斐波那契数列第n项\"}]\n)\nprint(response.choices[0].message.content)\n# 输出：包含了代码块外的解释文字\n```\n评分标准一：提示词评分（10分）\n评分标准二：最终产物评分（10分）",
       "standardPrompt": "角色设定：你是一位擅长提示词工程的Python工程师，需要让AI生成可直接执行的代码。\n问题描述：要求AI生成一个Python函数，但返回结果混有代码和解释，导致无法直接执行。希望AI只输出纯净的Python代码。\n代码内容：\n```python\nimport openai\nclient = openai.OpenAI(api_key=\"your-key\")\nresponse = client.chat.completions.create(\nmodel=\"deepseek-chat\",\nmessages=[{\"role\": \"user\", \"content\": \"写一个函数，计算斐波那契数列第n项\"}]\n)\nprint(response.choices[0].message.content)\n# 输出：包含了代码块外的解释文字\n```\n修正要求：\n1. 在提示词中强约束AI只输出Python代码\n2. 提供输出格式约定\n3. 用代码提取逻辑兜底\n4. 给出完整可运行代码",
@@ -1567,10 +1550,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1668,10 +1654,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1769,10 +1758,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1870,10 +1862,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -1971,10 +1966,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -2072,10 +2070,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -2173,10 +2174,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D6"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI伦理与合规"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -2276,8 +2280,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -2375,10 +2382,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -2394,41 +2404,7 @@
         "1. 只输出 Mermaid 代码，不要任何解释、不要问候。",
         "2. 用 ```mermaid 代码块包裹。",
         "3. 起始为 graph TD（自上而下）。",
-        "4. 包含：输入账号密码 → 校验 → 成功/失败分支 → 锁定账户等节点。",
-        "```mermaid",
-        "graph TD",
-        "A[开始] --> B{条件判断}",
-        "B -->|是| C[处理]",
-        "B -->|否| D[结束]",
-        "```",
-        "\"\"\"",
-        "def generate_mermaid(prompt):",
-        "response = client.chat.completions.create(",
-        "model=\"deepseek-chat\",",
-        "messages=[",
-        "{\"role\": \"system\", \"content\": \"你是Mermaid图表生成专家，只输出代码块。\"},",
-        "{\"role\": \"user\", \"content\": prompt},",
-        "],",
-        "temperature=0.2,",
-        ")",
-        "raw = response.choices[0].message.content",
-        "# 提取 ```mermaid ... ``` 内的代码",
-        "match = re.search(r\"```mermaid\\s*(.*?)```\", raw, re.DOTALL)",
-        "if match:",
-        "return match.group(1).strip()",
-        "# 兜底：可能没带代码块",
-        "return raw.strip()",
-        "if __name__ == \"__main__\":",
-        "code = generate_mermaid(PROMPT)",
-        "print(\"Mermaid 代码：\")",
-        "print(code)",
-        "print(\"\\n可在 Markdown 中用 ```mermaid 代码块直接渲染。\")",
-        "```",
-        "简要解释：",
-        "- 提示词明确要求\"用 Mermaid 语法\"、\"用 ```mermaid 代码块包裹\"，并给出语法示例；",
-        "- 系统消息再约束\"只输出代码块\"；",
-        "- 用正则 `r\"```mermaid\\s*(.*?)```\"` 提取纯净的 Mermaid 代码，去除模型可能添加的解释文字；",
-        "- 拿到代码后可直接拼入 Markdown 文档，GitHub/Typora/Notion 等均支持 ```mermaid 渲染。"
+        "4. 包含：输入账号密码 → 校验 → 成功/失败分支 → 锁定账户等节点。"
       ],
       "material": "```python\nimport openai\nclient = openai.OpenAI(api_key=\"your-key\")\nresponse = client.chat.completions.create(\nmodel=\"deepseek-chat\",\nmessages=[{\"role\": \"user\", \"content\": \"画一个用户登录的流程图\"}]\n)\nprint(response.choices[0].message.content)\n# AI输出纯文本描述，而不是Mermaid代码\n```\n评分标准一：提示词评分（10分）\n评分标准二：最终产物评分（10分）",
       "standardPrompt": "角色设定：你是一位熟悉Mermaid语法和AI集成的Python工程师。\n问题描述：我需要让AI生成Mermaid流程图代码，并在Markdown中渲染。但当前代码AI输出纯文本描述，不是Mermaid语法。\n代码内容：\n```python\nimport openai\nclient = openai.OpenAI(api_key=\"your-key\")\nresponse = client.chat.completions.create(\nmodel=\"deepseek-chat\",\nmessages=[{\"role\": \"user\", \"content\": \"画一个用户登录的流程图\"}]\n)\nprint(response.choices[0].message.content)\n# AI输出纯文本描述，而不是Mermaid代码\n```\n修正要求：\n1. 提示词中明确要求用Mermaid语法\n2. 给出语法示例\n3. 提取纯净Mermaid代码\n4. 给出完整可运行代码",
@@ -2509,10 +2485,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -2637,8 +2616,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -2740,10 +2722,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "image"
     },
     {
@@ -2845,10 +2830,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 5,
       "outputType": "image"
     },
     {
@@ -2950,10 +2938,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "image"
     },
     {
@@ -3055,10 +3046,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 8,
       "outputType": "image"
     },
     {
@@ -3181,10 +3175,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D3"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI工具使用"
+      ],
+      "minutes": 12,
       "outputType": "image"
     },
     {
@@ -3288,8 +3285,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -3390,10 +3390,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -3497,8 +3500,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -3597,10 +3603,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -3707,8 +3716,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -3811,10 +3823,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -3914,8 +3929,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4018,10 +4036,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4120,10 +4141,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4228,10 +4252,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4329,10 +4356,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4430,10 +4460,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4531,10 +4564,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4632,10 +4668,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4733,10 +4772,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4844,10 +4886,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -4950,10 +4995,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 5,
       "outputType": "text"
     },
     {
@@ -5051,10 +5099,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5152,10 +5203,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5260,8 +5314,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5363,10 +5420,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5471,10 +5531,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5577,10 +5640,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5683,10 +5749,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5789,10 +5858,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -5895,10 +5967,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6001,10 +6076,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6107,10 +6185,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6216,10 +6297,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6324,10 +6408,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6432,8 +6519,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6540,8 +6630,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6649,8 +6742,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6762,8 +6858,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6875,8 +6974,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 8,
       "outputType": "text"
     },
     {
@@ -6988,8 +7090,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7099,8 +7204,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7208,8 +7316,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7319,8 +7430,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7428,8 +7542,11 @@
         "D2",
         "D5"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "人机协同解决问题"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7532,10 +7649,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7640,10 +7760,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7747,10 +7870,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7851,10 +7977,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -7957,10 +8086,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -8063,10 +8195,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -8169,10 +8304,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -8275,10 +8413,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -8381,10 +8522,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     },
     {
@@ -8489,10 +8633,13 @@
       ],
       "dimKeys": [
         "D2",
-        "D5"
+        "D4"
       ],
-      "dims": [],
-      "minutes": "",
+      "dims": [
+        "提示词工程",
+        "AI结果评估与优化"
+      ],
+      "minutes": 12,
       "outputType": "text"
     }
   ]

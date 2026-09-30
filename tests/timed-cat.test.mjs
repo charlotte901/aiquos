@@ -389,3 +389,12 @@ test("the interview ladder binds every slot to two scoring dimensions", () => {
     assert.ok(slot.rubric.length > 10);
   }
 });
+
+test("judge discipline quotes the seven-band scale and never the obsolete five-band one", () => {
+  // 2026-09-30 审计：纪律条款曾仍写死 0/0.25/0.5/0.75/1 与 0.1 粒度，
+  // 与同一提示词里的七档锚点自相矛盾——LLM 按 0.75 给分被 snapToScale
+  // 静默改档到 0.8（跨两个校准锚）。纪律与 CREDIT_SCALE 必须同源。
+  const text = judgeDiscipline();
+  assert.ok(text.includes(CREDIT_SCALE.map(String).join(" / ")), "discipline must quote the exact seven-band sequence");
+  for (const stale of ["0.25", "0.75", "0.1 粒度"]) assert.ok(!text.includes(stale), `stale five-band token: ${stale}`);
+});

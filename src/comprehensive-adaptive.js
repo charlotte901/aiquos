@@ -105,9 +105,12 @@ export function applyAdaptiveOutcome(session, outcome) {
 // same model family as the vendored scoring core, used here only to aim the
 // next question's difficulty. Returns null before any credited answer.
 //
-// 对话定档先验（session.prior = {theta, kappa}）以 N(θ₀, 1/κ) 形式并入：
-// 目标函数加上 −κ·(θ−θ₀) 一项，等价于「先验伪证据」。证据越攒越多，
-// 先验的相对权重自然衰减——不需要手写的衰减系数。κ=0 时退回原始行为。
+// 对话定档先验（session.prior = {theta, kappa}）以 N(θ₀, 1/κ) 形式并入，
+// 并且**替换**（而非叠加）无先验时的隐式 N(0,1) 基线项 −θ：定档先验本身就
+// 是能力估计，叠加基线会把种子腰斩成 κθ₀/(1+κ)（κ=1、θ₀=1.6 时第一题
+// 打在 0.52 而非声明的 θ₀ 附近——2026-09-30 修复）。证据越攒越多，先验的
+// 相对权重自然衰减；κ=0 时不启用先验。此替换同时让 SE 公式（κ+ΣI）与
+// 估计器口径一致——叠加基线时估计器实际精度是 1+κ+ΣI，SE 会系统性高估。
 export function estimateRunAbility(session) {
   const evidence = session.evidence.filter((item) => typeof item.credit === "number");
   const prior = session.prior && Number.isFinite(session.prior.theta) && Number.isFinite(session.prior.kappa)
@@ -120,7 +123,7 @@ export function estimateRunAbility(session) {
     const theta = (low + high) / 2;
     const derivative = evidence.reduce(
       (sum, item) => sum + item.credit - 1 / (1 + Math.exp(-(theta - ANCHOR[item.difficulty]))),
-      prior ? -theta - prior.kappa * (theta - prior.theta) : -theta,
+      prior ? -prior.kappa * (theta - prior.theta) : -theta,
     );
     if (derivative > 0) low = theta;
     else high = theta;
@@ -134,12 +137,9 @@ export function estimateRunAbility(session) {
 export function nextTargetDifficulty(session) {
   const ability = estimateRunAbility(session);
   const walk = session.position - 1;
-  if (ability === null) {
-    if (session.prior && Number.isFinite(session.prior.theta)) {
-      return Math.max(-1.8, Math.min(1.8, session.prior.theta));
-    }
-    return walk;
-  }
+  // ability === null 只在「无证据且无先验」时发生；带先验时零证据的估计
+  // 恰为 θ₀，无需再走分支。
+  if (ability === null) return walk;
   return 0.65 * Math.max(-1.8, Math.min(1.8, ability)) + 0.35 * walk;
 }
 

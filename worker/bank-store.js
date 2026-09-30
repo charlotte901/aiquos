@@ -25,7 +25,12 @@ import { validateQuestionBank } from "../vendor/aiquos-six-dimension-scoring/scr
 /** 版本串 → 该版本的起始版本号。两套题池各自独立编号。 */
 const BUNDLED_VERSIONS = {
   B: "objective-bank-v6-120",
-  A: "objective-bank-v6-880",
+  // v7: 2026-09-30 全量审计的数据修复（详见 docs/audit-2026-09-30.md）：
+  //   1) 选项洗牌答案重映射方向错误——432/880 题答案重写；
+  //   2) 判断题难度整体错位一档（partIndex 差一）——130 题难度回写。
+  // 两项均由 scripts/repair-objective-answers.mjs / repair-judge-difficulty.mjs
+  // 幂等修复，导入脚本根因已同步修正。
+  A: "objective-bank-v7-880",
 };
 
 export const BUNDLED_BANK_VERSION = BUNDLED_VERSIONS[DEFAULT_EDITION];
@@ -40,6 +45,11 @@ const BUNDLED_BANKS = {
 let persistence = null;
 // 按版本缓存：{ [edition]: state }
 const states = new Map();
+// 各版次历史上发布过的最大主版本号。resetBank 回到内置基线后再次发布时，
+// nextVersion 必须越过历史最大值——否则 v6→发布v7→reset→再发布会再次产出
+// v7，内容却已不同，旧 v7 时期的草稿会在"新 v7"下错误存活（版本契约要求
+// 按版本丢弃旧草稿）。仅内存级（无后端的演示部署够用；多 isolate 各自记账）。
+const maxPublishedMajor = new Map();
 
 function publicState(raw) {
   return {
@@ -67,9 +77,14 @@ function compileOverride(payload, edition) {
   };
 }
 
-function nextVersion(previous, count) {
+function nextVersion(previous, count, edition) {
   const match = VERSION_PATTERN.exec(previous ?? "");
-  const major = match ? Number(match[1]) + 1 : 2;
+  const candidates = [
+    match ? Number(match[1]) + 1 : 2,
+    (maxPublishedMajor.get(edition) ?? 0) + 1,
+  ];
+  const major = Math.max(...candidates);
+  maxPublishedMajor.set(edition, Math.max(maxPublishedMajor.get(edition) ?? 0, major));
   return `objective-bank-v${major}-${count}`;
 }
 
@@ -88,6 +103,9 @@ export function getBankState(editionInput) {
       if (raw) {
         const state = compileOverride(JSON.parse(raw), edition);
         states.set(edition, state);
+        // 持久化覆盖的版本号计入历史最大值：重启后 reset+再发布也不会回卷。
+        const loaded = VERSION_PATTERN.exec(state.bankVersion ?? "");
+        if (loaded) maxPublishedMajor.set(edition, Math.max(maxPublishedMajor.get(edition) ?? 0, Number(loaded[1])));
         return publicState(state);
       }
     } catch {
@@ -112,7 +130,7 @@ export function setBank(questions, editionInput) {
   validateQuestionBank(questions);
   const current = getBankState(edition);
   const payload = {
-    bankVersion: nextVersion(current.bankVersion, questions.length),
+    bankVersion: nextVersion(current.bankVersion, questions.length, edition),
     questions,
     source: "override",
     updatedAt: new Date().toISOString(),

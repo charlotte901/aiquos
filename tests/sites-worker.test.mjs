@@ -1,9 +1,16 @@
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import worker from "../worker/index.js";
 import { createObjectiveQuestions, handleObjectiveQuestions } from "../worker/objective-quiz.js";
 import { createPracticalTasks, handlePracticalTasks } from "../worker/practical-tasks.js";
+
+// Sites 打包产物（dist/）由 `npm run build` 生成，且其后置脚本还需要本地
+// .openai/hosting.json（部署配置，不入库）。CI 的单测步骤在 build 之前跑，
+// 本仓库刚克隆时也没有 dist —— 产物缺失时这两条测试显式 skip，而不是假红。
+const DIST_BUILT = existsSync(fileURLToPath(new URL("../dist/server/worker/index.js", import.meta.url)));
 
 test("serves existing static assets without a fallback", async () => {
   const calls = [];
@@ -141,7 +148,7 @@ test("routes direct assessment banks through the worker", async () => {
   assert.equal(fullPayload.edition, "A");
 });
 
-test("emits the files required by Sites packaging", async () => {
+test("emits the files required by Sites packaging", { skip: !DIST_BUILT && "dist 未构建（npm run build + 本地 .openai/hosting.json）" }, async () => {
   await access(new URL("../dist/client/index.html", import.meta.url));
   // 入口在 worker/ 下：worker 模块之间是 ./ 与 ../src 的相对导入，打包结果
   // 必须保留源码层级（server/worker、server/src、server/vendor 互为兄弟）。
@@ -151,7 +158,7 @@ test("emits the files required by Sites packaging", async () => {
   await access(new URL("../dist/.openai/hosting.json", import.meta.url));
 });
 
-test("the packaged worker boots and serves both editions", async () => {
+test("the packaged worker boots and serves both editions", { skip: !DIST_BUILT && "dist 未构建（npm run build + 本地 .openai/hosting.json）" }, async () => {
   // 这条断言的意义在于：模块能否被解析只有真正 import 才知道。之前把 worker
   // 文件平铺到 server/ 根目录时，`../src/...` 会解析到 server 之外，静态检查
   // 看不出来，import 才报 ERR_MODULE_NOT_FOUND。

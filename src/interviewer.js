@@ -43,7 +43,7 @@ export const INTERVIEWER = {
 // 与"先给任务"的旧版相比，开场由学员的真实经历驱动，而不是由测评方派题。
 //
 // 每槽绑定评分维度与档位锚点（见 src/interview-scoring.js 的 SLOT_RUBRICS：
-// 0 / 0.25 / 0.5 / 0.75 / 1 五档，判分必须引用学员原话作为证据）。
+// 0 / 0.2 / 0.45 / 0.65 / 0.8 / 0.92 / 1 七档，判分必须引用学员原话作为证据）。
 // followUps 是得分不足时的追问话术（换角度再问，而不是重复原题）。
 export const INTERVIEW_LADDER = [
   {
@@ -134,10 +134,13 @@ function clamp(value, min, max) {
 }
 
 /**
- * 归一到五档量表。档位内允许 0.1 粒度，但四舍五入到最近档位，
+ * 归一到七档量表（CREDIT_SCALE）。任意数值四舍五入到最近档位，
  * 避免模型给出 0.63 这种无法审计的分数。
  */
 export function snapToScale(value) {
+  // NaN 防线：Math.abs(NaN-x) 恒为 NaN、比较恒 false，reduce 会静默落到
+  // 最低档 0（而不是中性值）。非有限输入一律回退中间档 0.45。
+  if (!Number.isFinite(value)) return 0.45;
   const nearest = CREDIT_SCALE.reduce(
     (best, credit) => (Math.abs(credit - value) < Math.abs(best - value) ? credit : best),
     CREDIT_SCALE[0],

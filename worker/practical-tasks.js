@@ -69,7 +69,7 @@ export function createPracticalTasks({
   return filtered
     .map((task) => ({ task, order: rng() }))
     .sort((left, right) => left.order - right.order)
-    .slice(0, Math.max(1, Math.min(pool.length, count)))
+    .slice(0, Math.max(1, Math.min(filtered.length, count)))
     .map((item) => publicTask(item.task));
 }
 

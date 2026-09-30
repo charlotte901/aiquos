@@ -292,7 +292,12 @@ export function extractFields(paragraphs) {
     // 无标签段落：按当前归属追加。
     if (mode === "prompt") prompt = prompt ? `${prompt}\n${line}` : line;
     else if (mode === "product") product = product ? `${product}\n${line}` : line;
-    else if (mode === "instructions") instructions.push(line);
+    else if (mode === "instructions") {
+      // 代码块起始行之后的内容属于参考答案而非任务要求——继续追加会把
+      // 标准答案泄漏进下发给学生看的要求列表（full-006/015/024 的教训）。
+      if (/^(\"\"\"|```)/.test(line)) mode = "answer";
+      else instructions.push(line);
+    }
     else if (mode === "answer") product = product ? `${product}\n${line}` : line;
     else if (!scene) scene = line;
     else material = material ? `${material}\n${line}` : line;

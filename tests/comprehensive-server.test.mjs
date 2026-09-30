@@ -172,3 +172,34 @@ test("the endpoint never re-serves a used question within a run", async () => {
     session = data.session;
   }
 });
+
+test("hostile session payloads cannot corrupt routing evidence or coverage", async () => {
+  // 2026-09-30 审计：evidence 透传曾只查 typeof credit === "number"——
+  // credit 99/-5/NaN、伪难度、dimensionCounts 里的 NaN 全部被采信，
+  // NaN 难度把 θ 估计钉到 −8 并可伪装维度已覆盖。现在逐字段服务端重验。
+  const response = await post({
+    scope: "bank",
+    debug: true,
+    session: {
+      evidence: [
+        { credit: 99, difficulty: "high" },                       // credit 越界 → 钳到 1
+        { credit: 42, difficulty: "bogus-difficulty" },           // 伪难度 → 整条丢弃
+        { credit: Number.NaN, difficulty: "low" },                // NaN → 整条丢弃
+        { credit: 0.5, difficulty: "medium", dimKeys: ["D9", "D2"] }, // 伪维度键 → 过滤
+      ],
+      dimensionCounts: { D1: Number.NaN, D2: "x", D3: -5, D4: 3 },
+      usedQuestionIds: ["ai-obj-001"],
+    },
+  });
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  const evidence = data.session.evidence;
+  // NaN credit 与伪难度两条被丢弃，保留钳制后的越界条目与过滤维度键后的条目。
+  assert.equal(evidence.length, 2);
+  assert.equal(evidence[0].credit, 1);
+  assert.ok(evidence.every((item) => ["low", "medium", "high"].includes(item.difficulty)));
+  assert.ok(evidence.every((item) => item.dimKeys.every((key) => /^D[1-6]$/.test(key))));
+  const counts = data.session.dimensionCounts;
+  assert.ok(Object.entries(counts).every(([key, value]) => /^D[1-6]$/.test(key) && Number.isFinite(value) && value >= 0));
+  assert.ok(Number.isFinite(data.debug.ability));
+});

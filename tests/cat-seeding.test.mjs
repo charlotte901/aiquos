@@ -83,13 +83,15 @@ test("normalizePrior repairs a prior damaged in transit", () => {
   assert.deepEqual(normalizePrior({ theta: 1.9, kappa: 1 }), { theta: 1.6, kappa: 1 }); // 钳回界内
 });
 
-test("a prior-only session behaves like a MAP estimate with shrinkage", () => {
+test("a prior-only session estimates exactly at the seed theta", () => {
   const prior = { theta: 1.6, kappa: 2 };
   const session = { ...createAdaptiveSession(), prior };
-  // 无证据时 MAP = κθ₀/(1+κ)：隐含 N(0,1) 与定档先验合并后的收缩。
-  assert.ok(Math.abs(estimateRunAbility(session) - (2 * 1.6) / 3) < 1e-6);
-  // 选题目标 = 0.65·能力估计 + 0.35·游走（游走起点 0）。
-  assert.ok(Math.abs(nextTargetDifficulty(session) - 0.65 * (2 * 1.6) / 3) < 1e-9);
+  // 无证据时估计恰为 θ₀：定档先验**替换**隐式 N(0,1) 基线（旧实现叠加
+  // 基线把种子收缩成 κθ₀/(1+κ)=1.07，与「第一题打在 θ₀ 附近」的文档承诺
+  // 矛盾——2026-09-30 修复）。估计器与 SE 现在同口径（κ+ΣI）。
+  assert.ok(Math.abs(estimateRunAbility(session) - 1.6) < 1e-6);
+  // 选题目标 = 0.65·θ₀ + 0.35·游走（游走起点 0）。
+  assert.ok(Math.abs(nextTargetDifficulty(session) - 0.65 * 1.6) < 1e-9);
   // 先验信息量计入 SE：1/√κ。
   assert.ok(Math.abs(abilityStandardError(session) - 1 / Math.sqrt(2)) < 1e-9);
 });

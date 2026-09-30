@@ -37,7 +37,7 @@ import {
   scoreAssessment,
 } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
-export const WEIGHTING_VERSION = "1.1.0";
+export const WEIGHTING_VERSION = "1.2.0"; // 1.2.0: 实操通道反演改吃 rawScore(credit 口径)
 export const CHANNEL_KEYS = ["objective", "interview", "practical"];
 export const DEFAULT_WEIGHTS = Object.freeze({ objective: 0.6, interview: 0.25, practical: 0.15 });
 
@@ -191,8 +191,18 @@ export function fuseChannels(channels, weights = DEFAULT_WEIGHTS) {
     interview: channels.interview ?? { dimensions: [] },
     practical: channels.practical ?? { dimensions: [] },
   };
+  // 实操通道有两个分数字段且量纲不同：score = σ(θ) 的展示分，
+  // rawScore = 得分率 credit（×100）。channelTheta 的实操逆函数是
+  // credit 锚点曲线，只能吃 credit——喂展示分会量纲错位（credit 0.555
+  // 的中等表现被记为 θ≈−0.23，满分也只有 0.73）。有 rawScore 用它；
+  // 旧快照没有时退回 logit 反演展示分（即其自身 sigmoid 的逆）。
+  const practicalTheta = (item) => {
+    if (!item) return null;
+    if (Number.isFinite(Number(item.rawScore))) return channelTheta("practical", item.rawScore);
+    return channelTheta("objective", item.score);
+  };
   const channelDim = (channel) => new Map(
-    (channel.dimensions ?? []).map((item) => [item.key, item.score ?? null]),
+    (channel.dimensions ?? []).map((item) => [item.key, item]),
   );
   const maps = {
     objective: channelDim(byChannel.objective),
@@ -209,9 +219,10 @@ export function fuseChannels(channels, weights = DEFAULT_WEIGHTS) {
     const parts = [];
     const channelScores = {};
     for (const channel of CHANNEL_KEYS) {
-      const score = maps[channel].get(key) ?? null;
+      const item = maps[channel].get(key);
+      const score = item?.score ?? null;
       channelScores[channel] = score;
-      const theta = channelTheta(channel, score);
+      const theta = channel === "practical" ? practicalTheta(item) : channelTheta(channel, score);
       if (theta !== null && normalized[channel] > 0) parts.push([theta, normalized[channel]]);
     }
     if (parts.length === 0) {

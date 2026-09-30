@@ -48,6 +48,37 @@ function json(payload, status = 200) {
   });
 }
 
+// ── 证据 sanitisation：session 会经客户端回传，绝不能直接信任 ──────────────
+// 正规客户端回传的就是服务端上次产出的 session；任何偏差都是脏数据或恶意
+// 注入。credit 钳到 [0,1]、difficulty 必须是合法档、dimKeys 过滤到 D1–D6、
+// dimensionCounts 只接受有限正数——否则一律丢弃该字段/该条证据，而不是让
+// NaN 把 θ 估计钉到 −8 或把未覆盖维度伪装成已覆盖。
+const DIFFICULTIES = new Set(["low", "medium", "high"]);
+const DIMENSION_KEY_PATTERN = /^D[1-6]$/;
+
+function sanitizeEvidence(items) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .filter((item) => item && typeof item === "object" && Number.isFinite(item.credit))
+    .map((item) => ({
+      credit: Math.max(0, Math.min(1, item.credit)),
+      difficulty: DIFFICULTIES.has(item.difficulty) ? item.difficulty : null,
+      dimKeys: Array.isArray(item.dimKeys) ? item.dimKeys.filter((key) => DIMENSION_KEY_PATTERN.test(key)) : [],
+    }))
+    .filter((item) => item.difficulty !== null);
+}
+
+function sanitizeDimensionCounts(raw, base) {
+  const out = { ...base };
+  if (!raw || typeof raw !== "object") return out;
+  for (const [key, value] of Object.entries(raw)) {
+    if (DIMENSION_KEY_PATTERN.test(key) && Number.isFinite(value) && value >= 0) {
+      out[key] = Math.min(999, Math.floor(value));
+    }
+  }
+  return out;
+}
+
 // Merge a client-supplied session over fresh defaults so partial or stale
 // shapes can never crash selection. Extra fields pass through harmlessly.
 function normalizeSession(raw) {
@@ -58,12 +89,10 @@ function normalizeSession(raw) {
     ...raw,
     position: Number.isFinite(raw.position) ? Math.max(0, Math.min(2, raw.position)) : base.position,
     usedQuestionIds: Array.isArray(raw.usedQuestionIds)
-      ? raw.usedQuestionIds.filter((id) => typeof id === "string")
+      ? raw.usedQuestionIds.filter((id) => typeof id === "string").slice(0, 2000)
       : [],
-    evidence: Array.isArray(raw.evidence)
-      ? raw.evidence.filter((item) => item && typeof item === "object" && typeof item.credit === "number")
-      : [],
-    dimensionCounts: { ...base.dimensionCounts, ...(raw.dimensionCounts ?? {}) },
+    evidence: sanitizeEvidence(raw.evidence).slice(0, 100),
+    dimensionCounts: sanitizeDimensionCounts(raw.dimensionCounts, base.dimensionCounts),
     typeCounts: { ...base.typeCounts, ...(raw.typeCounts ?? {}) },
     typeStreak: Number.isFinite(raw.typeStreak) ? raw.typeStreak : 0,
     // 定档先验随 session 回传；损坏/越界的先验在这里被丢弃，不会报错。
@@ -77,12 +106,13 @@ function normalizeSession(raw) {
 // wire.
 export function applyOutcomeToSession(session, { outcome, credit = null, questionId }, edition) {
   let next = applyAdaptiveOutcome(session, outcome);
-  if (typeof credit === "number" && questionId) {
+  // outcome.credit 与 evidence 一样来自网络：只接受有限数并钳到 [0,1]。
+  if (Number.isFinite(credit) && questionId) {
     const question = currentBank(edition).byId.get(questionId);
     if (question) {
       next = {
         ...next,
-        evidence: [...next.evidence, { credit, difficulty: question.difficulty, dimKeys: [...question.dimKeys] }],
+        evidence: [...next.evidence, { credit: Math.max(0, Math.min(1, credit)), difficulty: question.difficulty, dimKeys: [...question.dimKeys] }],
       };
     }
   }

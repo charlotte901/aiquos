@@ -53,9 +53,12 @@ test("the package's own CLI and examples still agree with the core", async () =>
   // produce the same numbers as importing the core here.
   const require = createRequire(import.meta.url);
   const { execFileSync } = require("node:child_process");
+  const { fileURLToPath } = require("node:url");
   const cli = new URL("../vendor/aiquos-six-dimension-scoring/scripts/score-responses.mjs", import.meta.url);
   const example = new URL("../vendor/aiquos-six-dimension-scoring/examples/comprehensive-responses.json", import.meta.url);
-  const output = JSON.parse(execFileSync(process.execPath, [cli.href.replace("file://", ""), example.href.replace("file://", "")], { encoding: "utf8" }));
+  // href.replace("file://","") 在 Windows 上产生 "/C:/..."（被解析为 C:\C:\...）；
+  // 必须 fileURLToPath。
+  const output = JSON.parse(execFileSync(process.execPath, [fileURLToPath(cli), fileURLToPath(example)], { encoding: "utf8" }));
   const manual = JSON.parse(await readFile(example, "utf8"));
   const evidence = manual.responses.map(({ question, selectedKeys, answeredAt }) =>
     createResponseEvidence(question, selectedKeys, answeredAt),

@@ -738,14 +738,18 @@ function InterviewPhase({
     });
   }
 
-  async function requestInterviewer({ followUp = false, lastNote = "", threadOverride = null } = {}) {
-    const currentSlot = INTERVIEW_LADDER[Math.min(slotIndex, INTERVIEW_LADDER.length - 1)];
+  async function requestInterviewer({ followUp = false, lastNote = "", threadOverride = null, slotOverride = null, slotIndexOverride = null } = {}) {
+    // 槽位必须显式传入：send() 里 setSlotIndex 是异步的，直接读闭包里的
+    // slotIndex 会拿到旧值——生成的问题比打分槽位滞后一档（experience 的
+    // 追问被按 goal 量规判分、consolidate 的问题从未发出），2026-09-30 修复。
+    const index = slotIndexOverride ?? slotIndex;
+    const currentSlot = slotOverride ?? INTERVIEW_LADDER[Math.min(index, INTERVIEW_LADDER.length - 1)];
     if (!ladderDone) {
       try {
         const raw = await chatOnce({
           messages: interviewChatMessages({
             thread: threadOverride ?? thread,
-            slot: { ...currentSlot, index: slotIndex, intent: currentSlot.rubric },
+            slot: { ...currentSlot, index, intent: currentSlot.rubric },
             followUp,
             lastNote,
           }),
@@ -768,7 +772,10 @@ function InterviewPhase({
     return { reply: "", note: "" };
   }
 
-  // 打分轨：不阻塞 UI、不设 loading、失败静默（启发式临时分已垫底）。
+  // 打分轨：不阻塞 UI、不设 loading。失败时把本地启发式分垫底记进证据
+  // （否则离线/断网时对话通道静默归零，六维里对话证据全部缺失——注释曾
+  // 承诺过垫底但实现只更新了 UI 芯片，2026-09-30 补上）。recordCredit 的
+  // 取高规则保证后续追问的权威分只会向上覆盖。
   //
   // 解析用 parseScoreJson 而不是 parseInterviewerJson：后者是聊天轨的解析器，
   // 要求返回对象含非空 reply，而打分轨只返回 {score, evidence, note} ——
@@ -783,8 +790,12 @@ function InterviewPhase({
       .then((raw) => {
         const parsed = parseScoreJson(raw);
         if (parsed) recordCredit(slotObj, parsed.score, parsed.evidence);
+        else recordCredit(slotObj, heuristicSlotCredit(slotObj.id, userAnswer), "");
       })
-      .catch(() => { /* 临时启发式分保留，不打扰学员 */ });
+      .catch(() => {
+        // 打分轨不可用：启发式保守分垫底，对话通道不再无证据。
+        recordCredit(slotObj, heuristicSlotCredit(slotObj.id, userAnswer), "");
+      });
   }
 
   async function startInterview() {
@@ -845,14 +856,20 @@ function InterviewPhase({
         asked = await requestInterviewer({ followUp: true, lastNote: "有点笼统", threadOverride: threadWithAnswer });
       } else {
         followSlotRef.current = null;
-        setSlotIndex((current) => current + 1);
+        const nextIndex = slotIndex + 1;
+        setSlotIndex(nextIndex);
         setFollowUsed(0);
         if (isLastSlot) {
           await beginClosing(nextCount);
           gradeAnswerInBackground({ slot: currentSlot, userAnswer: content, priorAnswer: probing?.answer ?? "" });
           return;
         }
-        asked = await requestInterviewer({ threadOverride: threadWithAnswer });
+        // 下一问必须按 nextIndex 的槽位生成（见 requestInterviewer 的槽位说明）。
+        asked = await requestInterviewer({
+          threadOverride: threadWithAnswer,
+          slotOverride: INTERVIEW_LADDER[Math.min(nextIndex, INTERVIEW_LADDER.length - 1)],
+          slotIndexOverride: nextIndex,
+        });
       }
       if (!String(asked?.reply ?? "").trim()) {
         asked = { reply: pick(currentSlot.asks) || currentSlot.rubric, note: "" };
@@ -1323,7 +1340,7 @@ function AdaptiveObjectivePhase({
             </div>
           </header>
           <p className="quiz-feedback-answer"><b>正确答案</b>{result.answerText}</p>
-          <p className="quiz-feedback-analysis"><b>解析</b>{question.analysis}</p>
+          {question.analysis?.trim() && <p className="quiz-feedback-analysis"><b>解析</b>{question.analysis}</p>}
           <div className="quiz-feedback-dims">
             {question.dims.map((dim) => <span key={dim}>{dim}</span>)}
           </div>
@@ -1416,11 +1433,15 @@ async function requestPracticalScore({ task, generations, finalGeneration, isIma
 // 只给一个总档位分，不带逐维明细——界面会明示这是离线估算。
 function practicalHeuristic(task, generation) {
   const output = `${generation.output ?? ""} ${generation.prompt}`;
-  const hits = task.requirements.filter((requirement) => {
+  // 「评分标准…/达到评分标准…」是元信息行，不得进入覆盖率分母
+  // （精选库 requirements 全是「达到评分标准：…」行，产物永远不含
+  // 「基础符合度」这类词，离线兜底分会被压到底档）。
+  const realRequirements = task.requirements.filter((item) => !/^(评分标准|达到评分标准)/.test(String(item).trim()));
+  const hits = realRequirements.filter((requirement) => {
     const tokens = requirement.split(/[，。：:、\s]+/).filter((token) => token.length >= 2);
     return tokens.some((token) => output.includes(token));
   }).length;
-  const coverage = task.requirements.length ? hits / task.requirements.length : 0.5;
+  const coverage = realRequirements.length ? hits / realRequirements.length : 0.5;
   const promptDepth = Math.min(1, [...generation.prompt].length / 120);
   return Math.round(Math.min(1, 0.65 * coverage + 0.35 * promptDepth) * 100) / 100;
 }

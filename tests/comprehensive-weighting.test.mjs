@@ -85,7 +85,9 @@ test("latent fusion inverts each channel to the common theta scale", () => {
   const channels = {
     objective: { dimensions: [{ key: "D1", score: 70 }, { key: "D6", score: 90 }] },
     interview: { dimensions: [{ key: "D1", score: 90 }, { key: "D6", score: null }] },
-    practical: { dimensions: [{ key: "D1", score: 50 }, { key: "D6", score: null }] },
+    // 实操通道的 credit 口径在 rawScore；score 是 σ(θ) 展示分（量纲不同，
+    // 误喂 credit 曲线正是 1.2.0 修掉的量纲错位）。
+    practical: { dimensions: [{ key: "D1", score: 63, rawScore: 50 }, { key: "D6", score: null }] },
   };
   const fused = fuseChannels(channels, { objective: 0.5, interview: 0.25, practical: 0.25 });
   // D1：θ = 0.5·logit(.7) + 0.25·(90−80)/10 + 0.25·credit⁻¹(.50)。
@@ -98,6 +100,15 @@ test("latent fusion inverts each channel to the common theta scale", () => {
   const d6 = fused.dimensions.find((dimension) => dimension.key === "D6");
   assert.equal(d6.score, Math.round(100 / (1 + Math.exp(-1.6))));
   assert.deepEqual(d6.channels, { objective: 90, interview: null, practical: null });
+  // 旧快照兼容：无 rawScore 的 practical score 按 logit 反演（σ 的逆），
+  // 而不是误走 credit 曲线——50 分展示分应给出 θ=0，而非 credit(0.5)≈−0.23。
+  const legacy = fuseChannels({
+    objective: { dimensions: [] },
+    interview: { dimensions: [] },
+    practical: { dimensions: [{ key: "D2", score: 50 }] },
+  }, { objective: 0.6, interview: 0.25, practical: 0.15 });
+  const d2 = legacy.dimensions.find((dimension) => dimension.key === "D2");
+  assert.equal(d2.score, 50); // θ=0 → σ(0)=0.5
 });
 
 test("latent fusion removes the channel scale offset and stays bounded", () => {
