@@ -234,7 +234,7 @@
   will-change: filter, transform;
 }
 
-/* The admission ticket: one white card, tilted, split by a perforation into
+/* The admission ticket: one white card, level, split by a perforation into
    the form's main stub and the keepsake stub. The whole ticket slams down. */
 .login-screen .login-composition {
   display: grid;
@@ -242,7 +242,7 @@
   width: min(706px, 100%);
   background: #fffdfb;
   border-radius: 20px;
-  transform: rotate(-1.6deg);
+
   box-shadow: 0 36px 80px rgba(76, 26, 56, 0.34);
   animation: login-stamp-slam 700ms cubic-bezier(0.22, 0.9, 0.32, 1.18) both;
 }
@@ -253,10 +253,10 @@
   display: none !important;
 }
 @keyframes login-stamp-slam {
-  0% { opacity: 0; transform: scale(2.3) rotate(-8deg); }
-  55% { opacity: 1; transform: scale(0.95) rotate(-1deg); }
-  78% { transform: scale(1.03) rotate(-2deg); }
-  100% { opacity: 1; transform: scale(1) rotate(-1.6deg); }
+  0% { opacity: 0; transform: scale(2.3) rotate(-6deg); }
+  55% { opacity: 1; transform: scale(0.95) rotate(-0.8deg); }
+  78% { transform: scale(1.03) rotate(0.5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 /* Punch holes where the tear line meets the edges, painted with the ground. */
 .login-screen .login-composition::before,

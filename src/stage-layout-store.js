@@ -114,9 +114,22 @@ export function useStageLayout() {
   const [win, setWin] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
   useEffect(() => subscribeStageLayout((next) => setOverrides(readStageLayoutOverrides())), []);
   useEffect(() => {
-    const onResize = () => setWin({ w: window.innerWidth, h: window.innerHeight });
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    const update = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setWin((previous) => (previous.w === w && previous.h === h ? previous : { w, h }));
+    };
+    update();
+    window.addEventListener("resize", update);
+    // 嵌入式 webview 可能在 0×0 视口下完成启动（刷新直达任务页时），
+    // 事后不一定派发 resize：观察 body 的实际排版尺寸兜底，
+    // 与 DesignStage 的 useStageSize 同一模式。
+    const observer = new ResizeObserver(update);
+    observer.observe(document.body);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
   }, []);
   const layout = mergeStageLayout(overrides);
   return { ...layout, geometry: deriveStageGeometry(layout, win.w, win.h) };

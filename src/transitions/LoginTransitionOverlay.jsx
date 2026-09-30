@@ -316,7 +316,7 @@ export function LoginTransitionOverlay({
       z: 0,
       rotX: 0,
       rotY: 0,
-      rotZ: -0.0279, // the ticket's resting -1.6° tilt
+      rotZ: 0, // the ticket lands flat (user call: no resting tilt)
       scale: pxLenToWorldAt(targetW, 0) / 2.4,
     };
 
@@ -448,6 +448,7 @@ export function LoginTransitionOverlay({
     let animId = 0;
     let releaseTimer = 0;
     let prevP = reverse ? 1 : 0;
+    let lastStepNow = performance.now();
     let completed = false;
 
     const step = (now) => {
@@ -479,7 +480,11 @@ export function LoginTransitionOverlay({
       bgBase.material.opacity = baseT;
       bgDeco.material.opacity = decoT;
 
-      const speed = Math.abs(p - prevP) * 55;
+      // uSpeed 时间归一：|Δp|/Δt 折算回 60fps 的每帧增量（×55/60·60），
+      // 掉帧时 Δp 翻倍但 Δt 同步翻倍，弯曲不再脉冲；钳 1.6 兜底尖峰。
+      const dtSec = Math.max(1 / 240, (now - (lastStepNow ?? now - 16.7)) / 1000);
+      lastStepNow = now;
+      const speed = Math.min(1.6, (Math.abs(p - prevP) / dtSec) * (55 / 60));
       const dirX = p >= prevP ? 1 : -1;
       prevP = p;
 
@@ -501,7 +506,7 @@ export function LoginTransitionOverlay({
         onComplete?.();
         releaseTimer = window.setTimeout(() => {
           setReleasing(true);
-          releaseTimer = window.setTimeout(() => onRelease?.(), 480);
+          releaseTimer = window.setTimeout(() => onRelease?.(), 230);
         }, 60);
       }
     };

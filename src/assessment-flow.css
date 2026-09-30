@@ -696,8 +696,10 @@
     position: relative;
     order: 1;
     width: 100%;
-    height: 280px;
-    min-height: 280px;
+    /* 窄屏人物同步放大 120%（280→336px）：与桌面舞台加宽同一比例，
+       四个通道的人物在两种布局下视觉大小一致。 */
+    height: 336px;
+    min-height: 336px;
   }
   .task-flow .flow-wordmark {
     position: static;
