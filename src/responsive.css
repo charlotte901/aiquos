@@ -1702,22 +1702,25 @@ body {
   position: absolute;
   inset: calc(-1 * clamp(40px, calc(8 * var(--vw, 1vw)), 120px));
   z-index: 0;
-  background-image: var(--detail-art);
-  /* `cover` cropped hard here. The backdrop is wider than it is tall, so a
-     portrait artwork was zoomed until only a slice of it survived, and a
-     landscape one had its edges cut off — either way the blur read as an
-     arbitrary smear rather than the piece's own colour and light.
-     `contain` keeps the whole artwork in frame; the gaps it leaves are covered by
-     the oversized `inset`, the `scale` below, and the veil, and are invisible
-     under a blur radius this large anyway. */
-  background-size: contain;
+  background-image: var(--detail-art), var(--detail-art);
+  /* Two layers of the SAME artwork. `contain` alone left a portrait piece as a
+     centre column: the layer's side gaps were transparent, so the Cases tab's
+     pink ground showed through and the backdrop read as "portrait + pink
+     letterboxing". The second layer paints `cover` underneath — same image, so
+     every pixel keeps the piece's own colours, and under this blur radius the
+     composite reads as one flat wash of the artwork's hue. The `contain` layer
+     stays on top so the whole piece's light still leads the mix (cover alone
+     would show an arbitrary slice of a portrait as the entire smear). */
+  background-size: contain, cover;
   background-repeat: no-repeat;
   background-position: center;
   /* Blur is sized from the smaller viewport axis rather than the width, so the
-     smear stays proportional on a tall window where `vw` alone under-blurs. The
-     floor keeps it soft on small screens instead of resolving into shapes.
-     Kept on one line so the guard test that pins this rule can match it. */
-  filter: blur(max(48px, clamp(34px, calc(6 * var(--vmin, 1vmin)), 96px))) saturate(1.85) brightness(0.78) contrast(1.06);
+     smear stays proportional on a tall window where `vw` alone under-blurs.
+     The radius is far past "soft focus": at this size the two layers melt into
+     one flat field of the piece's own hue — the backdrop reads as a solid
+     colour taken from the artwork, not as a recognisable copy of it. Kept on
+     one line so the guard test that pins this rule can match it. */
+  filter: blur(max(140px, clamp(110px, calc(16 * var(--vmin, 1vmin)), 240px))) saturate(1.85) brightness(0.78) contrast(1.06);
   transform: scale(1.18);
   pointer-events: none;
 }
