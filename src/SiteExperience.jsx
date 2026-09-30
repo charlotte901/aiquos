@@ -48,7 +48,7 @@ import { animateScrollPage } from "./transitions";
 import { pushPages } from "./slide-transition";
 import { skipCaseIntro } from "./CaseArchive";
 import { getStageSize } from "./stage";
-import { LoginTransitionOverlay, getStoredScheme } from "./transitions/LoginTransitionOverlay";
+import { LoginTransitionOverlay, getStoredScheme, prewarmLoginTransition } from "./transitions/LoginTransitionOverlay";
 import { SchemeSwitcher } from "./transitions/SchemeSwitcher";
 
 // A move with no cards to cut around takes the whole frame as one band.
@@ -293,6 +293,18 @@ export function SiteExperience() {
     return () => {
       window.removeEventListener("popstate", pop);
       window.removeEventListener("hashchange", pop);
+    };
+  }, []);
+  // 登录转场预热：等首屏与案例准备就绪后的空闲期，把 WebGL 渲染器、屏幕级
+  // 纹理与三种方案的 shader 编译全部提前完成，点击「AI测评」时零停摆起步。
+  useEffect(() => {
+    const warm = () => { prewarmLoginTransition(); };
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(warm, { timeout: 6000 })
+      : window.setTimeout(warm, 3200);
+    return () => {
+      if (window.cancelIdleCallback && typeof idle === "number") window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
     };
   }, []);
   useEffect(() => {
@@ -786,6 +798,7 @@ export function SiteExperience() {
               active={view === "home"}
               flattened={homeShellFlat}
               transitionBusy={moving}
+              transitionActive={webglTransition.active}
               pushing={pushing}
               pushFrom={pushFrom}
               pushTo={pushTo}

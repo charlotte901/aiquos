@@ -29,6 +29,150 @@ export function setStoredScheme(scheme) {
   } catch {}
 }
 
+// ── 跨点击复用的重资源 ──────────────────────────────────────────────────────
+// 每次点击都新建 WebGL 上下文 + 按屏幕尺寸重画 canvas 纹理 + 等待 shader
+// 首次编译，实测在点击处造成 100–380ms 的停摆（两个长任务 102+87ms）。
+// 渲染器与视口等大的纹理跟单次飞行无关，模块级缓存、空闲时预热——点击
+// 路径只剩「测量 + 建 mesh + 起步」。
+const shared = {
+  renderer: null,
+  canvas: null,
+  textures: new Map(), // key -> THREE.Texture（键含视口尺寸）
+};
+
+function sharedTexture(key, make) {
+  let tex = shared.textures.get(key);
+  if (!tex) {
+    tex = make();
+    shared.textures.set(key, tex);
+  }
+  return tex;
+}
+
+function getSharedRenderer(width, height) {
+  if (!shared.renderer) {
+    shared.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+    shared.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    shared.renderer.toneMappingExposure = 1.22;
+    shared.canvas = shared.renderer.domElement;
+  }
+  shared.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  shared.renderer.setSize(width, height);
+  return shared.renderer;
+}
+
+// 视口级资产：测量结果 + 幕布/票据的真实纹理。canvas 纹理要等第一次
+// render 才上传 GPU（整屏 RGBA ≈ 数 MB），不预热这段上传就落在点击当刻。
+const assetsByViewport = new Map();
+
+function getAssets(width, height) {
+  const key = `${width}x${height}`;
+  let assets = assetsByViewport.get(key);
+  if (assets) return assets;
+  const m = measureLoginScene() ?? {
+    width: Math.min(706, width * 0.94),
+    height: Math.min(706, width * 0.94) * (383 / 706),
+    splitX: Math.min(706, width * 0.94) - 196,
+    stubHorizontal: false,
+    center: { x: width / 2, y: height / 2 },
+    fields: [],
+    texts: {},
+  };
+  const wordScreen = m.word
+    ? {
+      ...m.word,
+      cx: m.center.x + (m.word.cx - m.width / 2),
+      cy: m.center.y + (m.word.cy - m.height / 2),
+    }
+    : null;
+  assets = {
+    m,
+    wordScreen,
+    baseTex: createLoginBackdropBaseTexture(width, height),
+    decoTex: createLoginBackdropDecoTexture(width, height, wordScreen),
+    frontRaw: createTicketFrontTexture(m, { rawColor: true }),
+    frontStd: createTicketFrontTexture(m, { rawColor: false }),
+  };
+  assetsByViewport.set(key, assets);
+  return assets;
+}
+
+/** 释放一组临时 mesh/material（纹理归缓存所有，不在这里销毁）。 */
+function disposeTempObject(root) {
+  root.traverse?.((node) => {
+    node.geometry?.dispose?.();
+    if (node.material) {
+      if (node.material.map && ![...shared.textures.values()].includes(node.material.map)) {
+        node.material.map.dispose?.();
+      }
+      node.material.dispose?.();
+    }
+  });
+}
+
+/**
+ * 空闲预热：建好渲染器、画好与视口等大的幕布纹理，并用 1×1 占位纹理把
+ * 三种方案的 shader 全部编译进 GL 上下文（编译成本发生在程序首次使用时，
+ * 不预热就会落在点击当刻）。SiteExperience 在挂载后的空闲期调用一次。
+ */
+export function prewarmLoginTransition() {
+  if (typeof window === "undefined") return;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  getSharedRenderer(width, height);
+  sharedTexture("shadow", () => createCardShadowTexture());
+  sharedTexture("back", () => createTicketBackTexture());
+  // 真实资产（测量 + 幕布/票据纹理）一并构建；下面的预热渲染把纹理上传
+  // 进 GPU，点击当刻不再有任何整屏上传。
+  const assets = getAssets(width, height);
+
+  try {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
+    camera.position.set(0, 0, 5);
+    const dummy = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+    dummy.needsUpdate = true;
+    const ticketW = assets.m.width;
+    const ticketH = assets.m.height;
+    const backdrop = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({ map: assets.baseTex }),
+    );
+    scene.add(backdrop);
+    const deco = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({ map: assets.decoTex }),
+    );
+    scene.add(deco);
+    const stamp = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.4, 2.4 * (ticketH / ticketW), 4, 4),
+      createStampMaterial(assets.frontRaw, ticketW, ticketH),
+    );
+    scene.add(stamp);
+    const eject = createEjectCard(assets.frontRaw, sharedTexture("back", () => createTicketBackTexture()), ticketW, ticketH);
+    scene.add(eject.group);
+    const origami = createOrigamiTicket(assets.frontRaw, dummy, ticketW, ticketH);
+    scene.add(origami.root);
+    shared.renderer.compile(scene, camera);
+    shared.renderer.render(scene, camera);
+    disposeTempObject(eject.group);
+    disposeTempObject(origami.root);
+    stamp.geometry.dispose();
+    stamp.material.dispose();
+    backdrop.geometry.dispose();
+    backdrop.material.dispose();
+    deco.geometry.dispose();
+    deco.material.dispose();
+    dummy.dispose();
+  } catch {
+    // 预热失败不致命：点击路径仍会完整构建。
+  }
+}
+
 /** Eased flight: gentle ease-in (leaving the cube), hard ease-out into the
  * slam, then a damped 3.5% overshoot settle. No linear segments anywhere. */
 function flightCurve(t) {
@@ -90,15 +234,7 @@ export function LoginTransitionOverlay({
     const camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 100);
     camera.position.set(0, 0, camDist);
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: "high-performance",
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(width, height);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.22;
+    const renderer = getSharedRenderer(width, height);
     viewport.appendChild(renderer.domElement);
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.35));
@@ -122,18 +258,10 @@ export function LoginTransitionOverlay({
     };
     const pxLenToWorldAt = (len, z) => len * (visibleAt(camDist - z) / height);
 
-    // ── Live measurement of the real login composition ─────────────────────
-    // The panel is always mounted but hidden; one synchronous unhide/measure/
-    // rehide gives pixel-true geometry for whatever viewport is in effect.
-    const m = measureLoginScene() ?? {
-      width: Math.min(706, width * 0.94),
-      height: Math.min(706, width * 0.94) * (383 / 706),
-      splitX: Math.min(706, width * 0.94) - 196,
-      stubHorizontal: false,
-      center: { x: width / 2, y: height / 2 },
-      fields: [],
-      texts: {},
-    };
+    // ── Shared per-viewport assets (measurement + real textures) ───────────
+    // 预热时已构建并完成首次 GPU 上传；视口未变时这里全是缓存命中。
+    const assets = getAssets(width, height);
+    const m = assets.m;
 
     // ── Backdrop veil: the login field, faded over home ────────────────────
     // Textures are drawn at 1:1 screen scale and the planes are sized to the
@@ -144,13 +272,7 @@ export function LoginTransitionOverlay({
     const bgZ = -2.4;
     // m.word is measured relative to the card; the veil canvas is the whole
     // screen, so re-anchor it to the card's on-screen centre.
-    const wordScreen = m.word
-      ? {
-          ...m.word,
-          cx: m.center.x + (m.word.cx - m.width / 2),
-          cy: m.center.y + (m.word.cy - m.height / 2),
-        }
-      : null;
+    const wordScreen = assets.wordScreen;
     const makeVeil = (tex, z) => {
       const visH = visibleAt(camDist - z);
       const visW = visH * (width / height);
@@ -168,8 +290,8 @@ export function LoginTransitionOverlay({
       scene.add(mesh);
       return mesh;
     };
-    const bgBase = makeVeil(createLoginBackdropBaseTexture(width, height), bgZ);
-    const bgDeco = makeVeil(createLoginBackdropDecoTexture(width, height, wordScreen), bgZ + 0.02);
+    const bgBase = makeVeil(assets.baseTex, bgZ);
+    const bgDeco = makeVeil(assets.decoTex, bgZ + 0.02);
 
     // ── Anchor: the ticket departs from / returns into the live cube ───────
     let anchorRect = null;
@@ -217,13 +339,14 @@ export function LoginTransitionOverlay({
     // ── Scheme object ──────────────────────────────────────────────────────
     // Scheme A's hand-written shader samples raw (no three.js decode/encode),
     // so its texture must be un-tagged or the card renders washed out.
-    const frontTex = createTicketFrontTexture(m, { rawColor: scheme === "A" });
-    const backTex = createTicketBackTexture();
+    // 正面纹理随视口资产缓存（raw/std 两个变体预热时都已构建）。
+    const frontTex = scheme === "A" ? assets.frontRaw : assets.frontStd;
+    const backTex = sharedTexture("back", () => createTicketBackTexture());
     let animObject = null;
 
     const makeGroundShadow = () => {
       const mat = new THREE.MeshBasicMaterial({
-        map: createCardShadowTexture(),
+        map: sharedTexture("shadow", () => createCardShadowTexture()),
         transparent: true,
         opacity: 0,
         depthWrite: false,
@@ -273,7 +396,7 @@ export function LoginTransitionOverlay({
         dispose() {
           geo.dispose();
           mat.dispose();
-          ground.mat.map?.dispose();
+          // ground.mat.map 是共享缓存的阴影纹理——归缓存所有，不在此销毁。
           ground.mat.dispose();
         },
       };
@@ -391,14 +514,13 @@ export function LoginTransitionOverlay({
         viewport.removeChild(renderer.domElement);
       }
       animObject?.dispose?.();
+      // mesh/material 是单次飞行的开销，销毁；渲染器与屏幕级纹理是模块级
+      // 缓存（渲染器复用省去上下文重建，纹理复用省去整屏 canvas 重画），
+      // 必须跨点击存活——只解除挂载，绝不 dispose。
       for (const mesh of [bgBase, bgDeco]) {
         mesh.geometry.dispose();
-        mesh.material.map?.dispose();
         mesh.material.dispose();
       }
-      frontTex.dispose();
-      backTex.dispose();
-      renderer.dispose();
       scene.clear();
     };
   }, [active, reverse, scheme, onComplete, onRelease]);

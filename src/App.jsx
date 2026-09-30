@@ -127,6 +127,9 @@ export function App({
   pushing = false,
   pushFrom = null,
   pushTo = null,
+  // WebGL 登录转场进行中：遮幕升起后首页在幕后不可见，立方体与案例层继续
+  // 渲染只会和转场渲染器抢 GPU（实测每几帧一次 50ms 掉帧），转场期间冻结。
+  transitionActive = false,
   onCubeMotionChange,
 }) {
   // The size the site is composed against: the fixed 16:9 design frame in wide
@@ -327,7 +330,7 @@ export function App({
             <div className="cube-position">
               <CubeDisplay faces={faces} nextFaces={nextFaces}
                 flattened={flattened}
-                active={active && visible && tab === "home"}
+                active={active && visible && tab === "home" && !transitionActive}
                 onMotionChange={onCubeMotionChange}
                 preloadCases={casesReady}
                 onCaseReady={handleCaseReady} />
