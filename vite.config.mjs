@@ -9,8 +9,23 @@ import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./worker/practical-t
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./worker/practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./worker/comprehensive-quiz.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./worker/admin.js";
+import { AUTH_LOGIN_PATH, AUTH_ME_PATH, AUTH_REGISTER_PATH, handleAuthLogin, handleAuthMe, handleAuthRegister } from "./worker/auth.js";
+import {
+  DATA_ASSIGNMENTS_PATH,
+  DATA_ASSIGNMENT_STATUS_PATH,
+  DATA_ME_PATH,
+  DATA_RUNS_PATH,
+  DATA_TEACHER_OVERVIEW_PATH,
+  handleDataAssignments,
+  handleDataAssignmentStatus,
+  handleDataMe,
+  handleDataRuns,
+  handleDataTeacherOverview,
+} from "./worker/data.js";
 import { STAGE_LAYOUT_TUNING_PATH, handleStageLayoutTuning, CHARACTER_TUNING_PATH, handleCharacterTuning } from "./worker/stage-layout-tuning.js";
 import { setBankPersistence } from "./worker/bank-store.js";
+import { setAccountPersistence } from "./worker/account-store.js";
+import { setSharedDataPersistence } from "./worker/data-store.js";
 
 // 三元素布局调参（?tune=1 面板「保存」）写回这份文件，成为新的默认值。
 const stageLayoutTuningPath = fileURLToPath(new URL("./src/stage-layout-tuning.json", import.meta.url));
@@ -37,6 +52,32 @@ setBankPersistence({
       // Nothing persisted: resetting to bundled is already complete.
     }
   },
+});
+
+// 账号与共享数据的 fs 持久化（均 gitignored）。auth-accounts.json 同时保管
+// 令牌签名密钥——首次注册时随机生成，之后随文件存活。
+const authAccountsPath = fileURLToPath(new URL("./worker/auth-accounts.json", import.meta.url));
+setAccountPersistence({
+  load: () => {
+    try {
+      return readFileSync(authAccountsPath, "utf8");
+    } catch {
+      return null;
+    }
+  },
+  save: (raw) => writeFileSync(authAccountsPath, raw),
+});
+
+const sharedDataPath = fileURLToPath(new URL("./worker/aiquos-shared-data.json", import.meta.url));
+setSharedDataPersistence({
+  load: () => {
+    try {
+      return readFileSync(sharedDataPath, "utf8");
+    } catch {
+      return null;
+    }
+  },
+  save: (raw) => writeFileSync(sharedDataPath, raw),
 });
 
 export default defineConfig(({ mode }) => {
@@ -144,6 +185,67 @@ export default defineConfig(({ mode }) => {
             if (!response.body) return res.end();
             Readable.fromWeb(response.body).pipe(res);
           });
+          server.middlewares.use(AUTH_REGISTER_PATH, async (req, res) => {
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handleAuthRegister(new Request(new URL(AUTH_REGISTER_PATH, base), {
+              method: req.method,
+              headers: { "content-type": req.headers["content-type"] || "application/json" },
+              body: req.method === "POST" ? Buffer.concat(chunks) : undefined,
+            }), { AIQUOS_TEACHER_INVITE_CODE: env.AIQUOS_TEACHER_INVITE_CODE });
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(AUTH_LOGIN_PATH, async (req, res) => {
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handleAuthLogin(new Request(new URL(AUTH_LOGIN_PATH, base), {
+              method: req.method,
+              headers: { "content-type": req.headers["content-type"] || "application/json" },
+              body: req.method === "POST" ? Buffer.concat(chunks) : undefined,
+            }));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(AUTH_ME_PATH, async (req, res) => {
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handleAuthMe(new Request(new URL(AUTH_ME_PATH, base), {
+              method: req.method,
+              headers: { authorization: req.headers.authorization },
+            }));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          });
+          const jsonHandler = (handler, path, options = {}) => async (req, res) => {
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const base = `http://${req.headers.host || "127.0.0.1"}`;
+            const response = await handler(new Request(new URL(path, base), {
+              method: req.method,
+              headers: {
+                "content-type": req.headers["content-type"] || "application/json",
+                authorization: req.headers.authorization,
+              },
+              body: ["GET", "HEAD"].includes(req.method) ? undefined : Buffer.concat(chunks),
+            }), options.env);
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            if (!response.body) return res.end();
+            Readable.fromWeb(response.body).pipe(res);
+          };
+          server.middlewares.use(DATA_RUNS_PATH, jsonHandler(handleDataRuns, DATA_RUNS_PATH));
+          server.middlewares.use(DATA_ME_PATH, jsonHandler(handleDataMe, DATA_ME_PATH));
+          server.middlewares.use(DATA_ASSIGNMENTS_PATH, jsonHandler(handleDataAssignments, DATA_ASSIGNMENTS_PATH));
+          server.middlewares.use(DATA_ASSIGNMENT_STATUS_PATH, jsonHandler(handleDataAssignmentStatus, DATA_ASSIGNMENT_STATUS_PATH));
+          server.middlewares.use(DATA_TEACHER_OVERVIEW_PATH, jsonHandler(handleDataTeacherOverview, DATA_TEACHER_OVERVIEW_PATH));
           server.middlewares.use(STAGE_LAYOUT_TUNING_PATH, async (req, res) => {
             const chunks = [];
             for await (const chunk of req) chunks.push(chunk);

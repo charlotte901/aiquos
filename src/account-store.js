@@ -102,6 +102,29 @@ export function setAccount(patch) {
   emit();
 }
 
+/**
+ * 登录成功后采用服务端身份：本机账号 ID 换成服务端 accountId（昵称同步），
+ * 教师端的学员名册据此与这台浏览器配对。收藏会随 accountId 切换自动迁移
+ * （favorites-store 的 subscribeAccount 已处理）。
+ */
+export function adoptAuthenticatedProfile(profile) {
+  if (!profile || typeof profile.accountId !== "string") return;
+  const nextId = profile.accountId.trim();
+  if (!ID_PATTERN.test(nextId) || account.accountId === nextId) {
+    if (profile.nickname && profile.nickname !== account.nickname) {
+      setAccount({ nickname: profile.nickname });
+    }
+    return;
+  }
+  account = { ...account, nickname: profile.nickname || account.nickname, accountId: nextId };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
+  } catch {
+    /* 存储不可用时仅保留内存态 */
+  }
+  emit();
+}
+
 export function subscribeAccount(listener) {
   listeners.add(listener);
   return () => listeners.delete(listener);

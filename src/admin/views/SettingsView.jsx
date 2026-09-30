@@ -1,7 +1,7 @@
 import { ArrowCounterClockwise, Info } from "@phosphor-icons/react";
 import { DIFFICULTY_ANCHORS, DIMENSIONS, SCORING_VERSION } from "../../../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
-export function SettingsView({ bankMeta, onResetBank }) {
+export function SettingsView({ bankMeta, dataStatus, dataError, teacher, onResetBank }) {
   return (
     <div className="admin-view settings-view">
       <section className="panel">
@@ -34,16 +34,19 @@ export function SettingsView({ bankMeta, onResetBank }) {
       <section className="panel">
         <h2>数据说明</h2>
         <dl className="settings-list">
-          <div><dt>学员数据</dt><dd>概览与学员页的班级数据为确定性生成的演示数据；「本机学员」来自这台机器上学生端的真实完成记录。</dd></div>
-          <div><dt>学生端存储</dt><dd className="is-mono">aiquos.comprehensive-attempt.v1 / aiquos.comprehensive-history.v1 / aiquos.adaptive-exposure.v1</dd></div>
-          <div><dt>管理端口令</dt><dd>本地演示口令 admin，仅前端校验，无真实账号体系。</dd></div>
+          <div><dt>数据链路</dt><dd>{dataStatus === "ready"
+            ? "服务端实时：学生登录后完成综合测评，成绩摘要（总分/六维/题库版本）经 /api/data/runs 上报，本页与概览、学员、组卷中心共用这一份数据。"
+            : `服务端暂不可达（${dataError ?? "未知错误"}），当前为离线演示名册。`}</dd></div>
+          <div><dt>教师账号</dt><dd>{teacher ? `${teacher.nickname}（${teacher.account}）· 服务端校验，PBKDF2 密码哈希，HMAC 会话令牌` : "—"}</dd></div>
+          <div><dt>组卷推送</dt><dd>组卷中心下发的试卷实时出现在学生端「老师推送」区；学生完成后该作业的完成名单与均分自动回填。</dd></div>
+          <div><dt>学生端存储</dt><dd className="is-mono">aiquos.comprehensive-attempt.v1 / aiquos.comprehensive-history.v1 / aiquos.adaptive-exposure.v1 / aiquos.auth.v1</dd></div>
           <div><dt>版本契约</dt><dd>每次保存题库自动晋升版本；进行中的学生草稿按新版本续跑，历史快照保留原版本可查。</dd></div>
         </dl>
       </section>
 
       <p className="overview-foot">
         <Info size={14} weight="fill" />
-        本控制台与学生端同源同设计体系，接口同走 worker；接入真实账号与数据库时替换 src/admin/ 的数据层即可。
+        本控制台与学生端同源同设计体系，接口同走 worker；账号与学生数据在 dev 下落盘于 worker/auth-accounts.json 与 worker/aiquos-shared-data.json（gitignored）。
       </p>
     </div>
   );

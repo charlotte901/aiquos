@@ -12,6 +12,8 @@ import { useRef, useState } from "react";
 import { setAccount, useAccount } from "./account-store";
 import { useFavorites } from "./favorites-store";
 import { clearAllAssessmentData } from "./assessment-attempt";
+import { clearSession, readProfile } from "./auth-client";
+import { writeActiveAssignmentId } from "./run-report";
 
 export function AccountSettings({ onBack, onLogout, busy, source = "home", variant = "screen" }) {
   const { nickname, accountId, avatar: accountAvatar } = useAccount();
@@ -23,6 +25,15 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
   const [dataCleared, setDataCleared] = useState(false);
   const avatarInputRef = useRef(null);
   const favorites = useFavorites();
+  // 已登录：以服务端档案展示身份；未登录：保留本地演示资料卡。
+  const authProfile = readProfile();
+  const logout = () => {
+    clearSession();
+    // 作业暂存一并清掉：换人登录后，上一位的作业关联不应挂到新账号的
+    // 完成记录上。
+    writeActiveAssignmentId(null);
+    onLogout();
+  };
 
   const clearLocalData = () => {
     clearAllAssessmentData();
@@ -82,7 +93,9 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
           <div><dt>作品</dt><dd>4 项</dd></div>
           <div><dt>收藏</dt><dd>{favorites.length} 条</dd></div>
         </dl>
-        <p className="account-note">演示资料仅在本页展示，不会保存或传输。</p>
+        <p className="account-note">{authProfile
+          ? "登录后完成测评会上报成绩摘要给教师端；头像与草稿等明细仅存本机。"
+          : "演示资料仅在本页展示，不会保存或传输。"}</p>
       </aside>
 
       <div className="account-editor">
@@ -91,8 +104,41 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             <p className="account-kicker">AIQUOS / ACCOUNT</p>
             <h2>账号设置</h2>
           </div>
-          <span>本地演示 · 不做登录校验</span>
+          <span>{authProfile ? "已登录 · 服务端账号" : "本地资料 · 未登录"}</span>
         </header>
+        {authProfile ? (
+          <form onSubmit={(event) => { event.preventDefault(); setSaved(true); window.setTimeout(() => setSaved(false), 2200); }}>
+            <label className="settings-field">
+              <span><User size={18} weight="bold" /> 昵称</span>
+              <input type="text" value={nickname} onChange={(event) => setAccount({ nickname: event.target.value })} autoComplete="nickname" />
+            </label>
+            <label className="settings-field">
+              <span><User size={18} weight="bold" /> 登录账号</span>
+              <input type="text" value={authProfile.account} readOnly disabled title="登录账号注册后不可修改" />
+            </label>
+            <label className="settings-field">
+              <span><User size={18} weight="bold" /> 系统账号 ID</span>
+              <input type="text" value={authProfile.accountId} readOnly disabled autoComplete="username" />
+            </label>
+            <label className="settings-field">
+              <span><User size={18} weight="bold" /> 角色</span>
+              <input type="text" value={authProfile.role === "teacher" ? "教师" : "学生"} readOnly disabled />
+            </label>
+            <label className="settings-field">
+              <span><User size={18} weight="bold" /> 班级</span>
+              <input type="text" value={authProfile.className || "未加入班级"} readOnly disabled title="班级在注册时填写" />
+            </label>
+            <div className="account-actions">
+              <p>{saved ? "昵称已在本机更新。" : "登录账号与角色由服务端管理；密码请通过重新登录验证。"}</p>
+              <div>
+                <button type="submit" className="save-button">保存昵称</button>
+                <button type="button" className="logout-button" onClick={logout} disabled={busy}>
+                  <SignOut size={18} weight="bold" /> 退出登录
+                </button>
+              </div>
+            </div>
+          </form>
+        ) : (
         <form onSubmit={saveProfile}>
           <label className="settings-field">
             <span><User size={18} weight="bold" /> 昵称</span>
@@ -136,17 +182,21 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             <p>{saved ? "资料已在本地演示中更新。" : "修改后点击保存，密码不会被上传。"}</p>
             <div>
               <button type="submit" className="save-button">保存资料</button>
-              <button type="button" className="logout-button" onClick={onLogout} disabled={busy}>
+              <button type="button" className="logout-button" onClick={logout} disabled={busy}>
                 <SignOut size={18} weight="bold" /> 退出登录
               </button>
             </div>
           </div>
         </form>
+        )}
         <section className="account-privacy" aria-label="数据与隐私">
           <h3>数据与隐私</h3>
           <p>
             综合测评的答题草稿、历史报告（最多 12 份）与自适应出题的选题记录全部保存在本机浏览器
-            （localStorage），不上传任何服务器。可随时一键清除：
+            （localStorage）。{authProfile
+              ? "登录状态下，每次完成综合测评会把成绩摘要（总分、六维得分、题库版本）上报到教师端，供老师查看班级与个人报告。"
+              : "未登录时不向服务器上报任何数据。"}
+            本机数据可随时一键清除：
           </p>
           <ul>
             <li><code>aiquos.comprehensive-attempt.v1</code> 未完成测评的续答草稿</li>

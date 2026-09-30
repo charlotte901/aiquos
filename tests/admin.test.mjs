@@ -12,10 +12,11 @@ import {
   setBankPersistence,
 } from "../worker/bank-store.js";
 import { handleAdminBank } from "../worker/admin.js";
+import { createAccount, issueToken, setAccountPersistence } from "../worker/account-store.js";
 import { handleComprehensiveQuestion } from "../worker/comprehensive-quiz.js";
 import bundledBank from "../src/comprehensive-questions.json" with { type: "json" };
 import { withBankVersion } from "../src/assessment-attempt.js";
-import { buildRoster, allRuns, gradeOf } from "../src/admin/cohort.js";
+import { buildServerRoster, buildRoster, allRuns, gradeOf } from "../src/admin/cohort.js";
 import {
   bankAudit,
   dimensionAverages,
@@ -24,10 +25,35 @@ import {
   weeklyTrend,
 } from "../src/admin/stats.js";
 
-const request = (method, body) => handleAdminBank(
+// 题库写操作需要教师令牌：为测试签一个（内存态账号库）。
+setAccountPersistence(null);
+const teacherToken = await (async () => {
+  const result = await createAccount({
+    account: "admin-test@aiquos.local",
+    password: "teach1234",
+    nickname: "审计教师",
+    role: "teacher",
+    teacherInviteCode: "INV",
+    expectedInviteCode: "INV",
+  });
+  return issueToken(result.record);
+})();
+const studentToken = await (async () => {
+  const result = await createAccount({
+    account: "13800138000",
+    password: "stud1234",
+    nickname: "审计学员",
+  });
+  return issueToken(result.record);
+})();
+
+const request = (method, body, token = teacherToken) => handleAdminBank(
   new Request("https://example.com/api/admin/bank", {
     method,
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   }),
 );
@@ -55,6 +81,13 @@ test("the store serves the bundled bank by default and validates overrides", () 
 
 test("saving publishes the next bank version and serving reflects the edit", async () => {
   resetBank();
+
+  // 写操作必须带教师令牌：无令牌 401，学生令牌 403，GET 保持公开。
+  assert.equal((await request("PUT", { questions: bundledBank.questions }, null)).status, 401);
+  assert.equal((await request("DELETE", undefined, null)).status, 401);
+  assert.equal((await request("PUT", { questions: bundledBank.questions }, studentToken)).status, 403);
+  assert.equal((await request("GET", undefined, null)).status, 200);
+
   const edited = structuredClone(bundledBank.questions);
   edited[0] = { ...edited[0], q: "管理端编辑后的题干：以下哪项是AI与传统软件的本质区别？", difficulty: "high" };
 
@@ -210,4 +243,32 @@ test("the bank audit flags real imbalance and accepts the shipped bank", () => {
   const lopsidedAudit = bankAudit(lopsided);
   assert.ok(lopsidedAudit.warnings.length >= 1);
   assert.equal(lopsidedAudit.byDifficulty.low + lopsidedAudit.byDifficulty.medium + lopsidedAudit.byDifficulty.high, 40);
+});
+
+test("buildServerRoster groups server students+runs into the local roster shape", () => {
+  const roster = buildServerRoster({
+    students: [
+      { accountId: "aiquos000000001", nickname: "小林", className: "AI 应用 1 班", account: "13800000002" },
+      { accountId: "aiquos000000002", nickname: "未作答学员", className: "", account: "13800000003" },
+    ],
+    runs: [
+      {
+        id: "run-1", accountId: "aiquos000000001", completedAt: "2026-10-01T09:00:00.000Z",
+        overallScore: 86, grade: "A", dimensions: [{ key: "D1", score: 85 }], assignmentId: "asg-1",
+      },
+      {
+        id: "run-2", accountId: "aiquos000000001", completedAt: "2026-10-02T09:00:00.000Z",
+        overallScore: 90, grade: "S", dimensions: [{ key: "D1", score: 91 }], assignmentId: null,
+      },
+    ],
+  });
+  assert.equal(roster.length, 2);
+  const student = roster[0];
+  assert.equal(student.id, "aiquos000000001");
+  assert.equal(student.source, "server");
+  assert.equal(student.runs.length, 2);
+  assert.equal(student.runs[0].id, "run-1"); // 按完成时间升序
+  assert.equal(student.runs[1].overallScore, 90);
+  assert.equal(roster[1].runs.length, 0); // 注册未作答：零 run 不炸
+  assert.equal(roster[1].className, "未分班");
 });

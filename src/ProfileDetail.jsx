@@ -28,6 +28,7 @@ import { CaseDetail } from "./CaseArchive";
 import { ForumDetail } from "./ForumBoard";
 import { AwakeningReportModal } from "./AwakeningReport";
 import { loadAttemptHistory } from "./assessment-attempt";
+import { authFetch, readProfile } from "./auth-client";
 
 const gradeBadgeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
 
@@ -546,6 +547,9 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   const [classQuery, setClassQuery] = useState("");
   const [classSearch, setClassSearch] = useState(null);
   const [classNotice, setClassNotice] = useState("");
+  // 登录后的服务端班级数据（真实班级名 / 班级均分 / 我的排名）。
+  const [serverClass, setServerClass] = useState(null);
+  const [serverRuns, setServerRuns] = useState([]);
   const [reportOpen, setReportOpen] = useState(false);
   const [recordDrafts, setRecordDrafts] = useState({});
   const [recordEntries, setRecordEntries] = useState({});
@@ -560,6 +564,27 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
       setAttemptHistory(loadAttemptHistory());
     }
   }, [active]);
+  // 登录时拉取服务端班级统计与自己的完成记录（教师端看到的同一份数据）；
+  // 未登录/离线时保持演示班级视图，不打扰匿名体验。
+  useEffect(() => {
+    if (!active || id !== "organizations" || !readProfile()) {
+      setServerClass(null);
+      setServerRuns([]);
+      return undefined;
+    }
+    let alive = true;
+    authFetch("/api/data/me")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (!alive || !payload) return;
+        if (payload.classStats) setServerClass(payload.classStats);
+        if (Array.isArray(payload.runs)) setServerRuns(payload.runs);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [active, id]);
   const worksBoardRef = useRef(null);
   const favoriteBoardRef = useRef(null);
   const favorites = useFavorites();
@@ -793,28 +818,76 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
             <div className="organization-title">
               <p>MY ORGANIZATION</p>
               <h1>我的组织</h1>
-              <span>{activeClass ? `${activeClass.name} · ${activeClass.term}学期` : "尚未加入班级"}</span>
+              <span>
+                {serverClass
+                  ? `${serverClass.className} · 服务端班级数据`
+                  : activeClass ? `${activeClass.name} · ${activeClass.term}学期` : "尚未加入班级"}
+              </span>
             </div>
-            <form className="class-code-form" onSubmit={searchClass}>
-              <div className="class-code-field">
-                <input
-                  value={classQuery}
-                  onChange={(event) => setClassQuery(event.target.value)}
-                  placeholder="输入班级口令，如 AI2026B"
-                  aria-label="班级口令"
-                />
-                <button type="submit" aria-label="搜索班级" title="搜索班级">
-                  <MagnifyingGlass size={19} weight="bold" />
-                </button>
-              </div>
-              {activeClass && (
-                <button type="button" className="class-exit-button" onClick={leaveClass}>
-                  <SignOut size={17} weight="bold" />
-                  退出班级
-                </button>
-              )}
-            </form>
+            {!serverClass && (
+              <form className="class-code-form" onSubmit={searchClass}>
+                <div className="class-code-field">
+                  <input
+                    value={classQuery}
+                    onChange={(event) => setClassQuery(event.target.value)}
+                    placeholder="输入班级口令，如 AI2026B"
+                    aria-label="班级口令"
+                  />
+                  <button type="submit" aria-label="搜索班级" title="搜索班级">
+                    <MagnifyingGlass size={19} weight="bold" />
+                  </button>
+                </div>
+                {activeClass && (
+                  <button type="button" className="class-exit-button" onClick={leaveClass}>
+                    <SignOut size={17} weight="bold" />
+                    退出班级
+                  </button>
+                )}
+              </form>
+            )}
           </header>
+          {serverClass ? (
+            <>
+              <div className="class-info-grid">
+                {[
+                  { label: "班级", value: serverClass.className },
+                  { label: "班级人数", value: `${serverClass.studentCount} 人` },
+                  { label: "班级平均分", value: serverClass.classAverage === null ? "暂无" : `${Math.round(serverClass.classAverage)} 分` },
+                  { label: "我的最新排名", value: serverClass.myRank === null ? "完成一次测评后出分" : `第 ${serverClass.myRank} 名` },
+                ].map((item) => (
+                  <article key={item.label}>
+                    <Users size={20} weight="bold" />
+                    <strong>{item.label}</strong>
+                    <span>{item.value}</span>
+                  </article>
+                ))}
+              </div>
+              <p className="class-server-note">
+                班级与排名来自老师端同一份服务端数据（按每位学员最近一次完成记录排名）。
+                {serverRuns.length > 0 && ` 我已上报 ${serverRuns.length} 次完成记录。`}
+                班级在注册时选择；如需调整请联系老师。
+              </p>
+              {serverRuns.length > 0 && (
+                <table className="class-server-runs">
+                  <caption>我的完成记录（老师端可见的同一份数据）</caption>
+                  <thead>
+                    <tr><th>完成时间</th><th>总分</th><th>等级</th><th>作业</th></tr>
+                  </thead>
+                  <tbody>
+                    {serverRuns.slice(0, 6).map((run) => (
+                      <tr key={run.id}>
+                        <td>{new Date(run.completedAt).toLocaleDateString("zh-CN")}</td>
+                        <td><b>{Math.round(run.overallScore)}</b></td>
+                        <td>{run.grade ? <span className={gradeBadgeClass(run.grade)}>{run.grade}</span> : "—"}</td>
+                        <td>{run.assignmentId ? "老师推送" : "自主测评"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          ) : (
+          <>
           <div className="class-search-area" role="status">
             {classNotice && <p className="class-notice">{classNotice}</p>}
             {classSearch && classSearch.id !== activeClass?.id && (
@@ -883,8 +956,12 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
             <div className="organization-empty">
               <Users size={34} weight="bold" />
               <strong>还没有加入班级</strong>
-              <p>输入老师提供的班级口令，搜索并加入后即可查看班级信息和排名。</p>
+              <p>{readProfile()
+                ? "登录账号尚未填写班级，或班里还没有完成记录；完成一次综合测评后这里会出现真实班级数据。"
+                : "输入老师提供的班级口令，搜索并加入后即可查看班级信息和排名。"}</p>
             </div>
+          )}
+          </>
           )}
         </section>
       )}

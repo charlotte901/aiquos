@@ -11,6 +11,13 @@ import { AwakeningReport } from "./AwakeningReport";
 import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
+import { adoptAuthenticatedProfile } from "./account-store";
+import { apiMe } from "./auth-client";
+import {
+  readActiveAssignmentId,
+  reportRunSnapshot,
+  writeActiveAssignmentId,
+} from "./run-report";
 import { assessmentHash, getAssessmentRoute } from "./assessment-flow";
 import { siteViewForHash } from "./routes";
 import { readEdition, writeEdition } from "./bank-editions";
@@ -216,6 +223,8 @@ export function SiteExperience() {
   // 没有它时，从 TEST 页再次进入同一关卡会复用上一次的组件实例，
   // 上一轮的对话记录、计时归零与「已结束」状态会残留（学员看到无法作答的死页面）。
   const [taskEntryId, setTaskEntryId] = useState(0);
+  // 进入作业前的自选题库版本：作业完成上报后还原（见 completeAssessmentStage）。
+  const editionBeforeAssignmentRef = useRef(null);
   const [moving, setMoving] = useState(false);
   // Narrower than `moving`: true only while a page push is in flight. The two
   // pages are siblings and only one of them is the current tab, so switching
@@ -306,6 +315,11 @@ export function SiteExperience() {
       if (window.cancelIdleCallback && typeof idle === "number") window.cancelIdleCallback(idle);
       else window.clearTimeout(idle);
     };
+  }, []);
+  // 会话探针：令牌过期/服务端重启时静默清掉本地会话（作业看板随之隐藏），
+  // 避免拿着死会话等到完成上报那一刻才失败。
+  useEffect(() => {
+    apiMe().catch(() => {});
   }, []);
   useEffect(() => {
     if (["home", "login", "cases", "forum"].includes(view)) {
@@ -574,8 +588,19 @@ export function SiteExperience() {
     go("assessment-map", assessmentHash(id));
   }
 
-  function startAssessment(id) {
+  function startAssessment(id, options = {}) {
     if (id === "comprehensive") {
+      // 教师推送的组卷作业：记住 assignmentId（完成上报时带上），并切换到
+      // 作业指定的题库版本——作业以哪个题池下发，就以哪个题池作答。
+      // 学员进入前的自选题库版本记在 ref 里，作业完成后还原，避免一次
+      // 作业永久改写学员的自主练习偏好。
+      if (options.assignmentId) {
+        writeActiveAssignmentId(options.assignmentId);
+        if (options.edition) {
+          editionBeforeAssignmentRef.current = readEdition();
+          writeEdition(options.edition);
+        }
+      }
       // Card click always starts a clean run: fresh routing session, fresh
       // attempt, draft cleared so no earlier unfinished run can bleed in.
       // The budget is an upper bound — a time-based run finalises to the
@@ -757,7 +782,17 @@ export function SiteExperience() {
     if (stage === total) {
       const finalized = finalizeAttempt(attemptState.attempt ?? createAttempt({ totalQuestions: 1 }));
       if (isAttemptComplete(finalized.result)) {
-        appendHistorySnapshot(snapshotAttempt(finalized.attempt, finalized.result));
+        const snapshot = snapshotAttempt(finalized.attempt, finalized.result);
+        appendHistorySnapshot(snapshot);
+        // 登录状态下把这次完成上报给教师端（得分/六维/题库版本）；同时若
+        // 这次是老师推送的作业，服务端会把它计入该作业的完成名单。
+        const assignmentId = readActiveAssignmentId();
+        reportRunSnapshot(snapshot, assignmentId);
+        writeActiveAssignmentId(null);
+        if (editionBeforeAssignmentRef.current !== null) {
+          writeEdition(editionBeforeAssignmentRef.current);
+          editionBeforeAssignmentRef.current = null;
+        }
         clearAttemptDraft();
         setAttemptState({ attempt: null, result: null });
         phasesDoneRef.current = [];
@@ -838,7 +873,10 @@ export function SiteExperience() {
                   <span className="login-stub-stamp">ADMIT ONE</span>
                 </aside>
                 <div className="login-surface">
-                  <LoginForm onLogin={() => {
+                  <LoginForm onLogin={(profile) => {
+                    // 严格登录成功（或注册即登录）后：本机身份换成服务端账号，
+                    // 教师端名册与后续完成上报都以这个身份配对。
+                    adoptAuthenticatedProfile(profile);
                     go("choose");
                   }} />
                 </div>
@@ -875,7 +913,16 @@ export function SiteExperience() {
         hidden={view !== "assessments"}
       >
         <ErrorBoundary>
-          <AssessmentHub onBack={() => go("choose")} onStart={startAssessment} busy={moving} />
+          <AssessmentHub
+            onBack={() => go("choose")}
+            onStart={startAssessment}
+            onAssign={(assignment) => startAssessment("comprehensive", {
+              assignmentId: assignment.id,
+              edition: assignment.edition,
+            })}
+            busy={moving}
+            active={view === "assessments"}
+          />
         </ErrorBoundary>
             </div>
       <div

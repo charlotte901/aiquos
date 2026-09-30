@@ -173,11 +173,30 @@ const skipStory = async () => {
 };
 
 // ── 入口：登录 → CHOOSE → TEST hub → 综合测评 ──────────────────────────────
-log("进入登录页 → CHOOSE → 测评中心");
+log("进入登录页（严格校验：先注册一次性账号） → CHOOSE → 测评中心");
 await go("#login", 4500);
 await shot("01-login");
-await evaluate("document.querySelector('.login-form button[type=submit], .login-form button')?.click()");
-await sleep(2600);
+// 严格登录时代：空表单不再放行。切换到注册页，填一次性账号（手机号 +
+// 强密码），注册即登录进入 CHOOSE。
+const RUNNER_ACCOUNT = `138${String(Date.now()).slice(-8)}`;
+await evaluate("document.querySelector('.login-mode-tabs button:nth-child(2)')?.click()");
+await evaluate(`(() => {
+  const set = (input, value) => {
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setter.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  const fields = [...document.querySelectorAll('.login-form .login-field input')];
+  set(fields[0], ${JSON.stringify(RUNNER_ACCOUNT)});
+  set(fields[1], 'aiquos2026play');
+})()`);
+await evaluate("document.querySelector('.login-form button[type=submit]')?.click()");
+for (let i = 0; i < 20; i += 1) {
+  if (await evaluate("location.hash === '#choose'")) break;
+  await sleep(700);
+}
+check("注册并登录进入 CHOOSE", await evaluate("location.hash === '#choose'"));
+await sleep(1200);
 await evaluate("[aria-label='测试闯关 · 走进智核域'] , [...document.querySelectorAll('.choose-card')].find(c => c.textContent.includes('测试闯关'))?.click()");
 await sleep(2800);
 await shot("02-testhub");

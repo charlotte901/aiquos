@@ -7,16 +7,23 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as icons from "@phosphor-icons/react";
 import { getLoginScreenSize } from "../src/cube-geometry.js";
+import * as authValidation from "../src/auth-validation.js";
+import * as authClient from "../src/auth-client.js";
 
 const source = await readFile(new URL("../src/LoginForm.jsx", import.meta.url), "utf8");
 const { code } = await transform(source, { loader: "jsx", jsx: "automatic", format: "cjs" });
 const compiled = { exports: {} };
 // Compile the local JSX module using the project's existing React instance.
+// 相对导入在这里手工映射：new Function 内的 require 没有模块路径可依。
 const require = createRequire(import.meta.url);
-new Function("require", "module", "exports", code)(
-  (name) => name === "@phosphor-icons/react" ? icons : require(name), compiled, compiled.exports,
-);
-const { LoginForm, submitDemoLogin } = compiled.exports;
+const moduleShim = (name) => {
+  if (name === "@phosphor-icons/react") return icons;
+  if (name === "./auth-validation") return authValidation;
+  if (name === "./auth-client") return authClient;
+  return require(name);
+};
+new Function("require", "module", "exports", code)(moduleShim, compiled, compiled.exports);
+const { LoginForm } = compiled.exports;
 
 test("form contains labeled account/password controls and a working submit affordance", () => {
   const html = renderToStaticMarkup(createElement(LoginForm, { onLogin() {} }));
@@ -26,15 +33,25 @@ test("form contains labeled account/password controls and a working submit affor
   assert.match(html, /type="submit"/);
   assert.match(html, /aria-label="显示密码"/);
   assert.match(html, /novalidate=""/i);
-  assert.doesNotMatch(html, /required|pattern=|type="email"|name="(?:password|username)"/);
+  // 严格校验时代的表单必须提供登录/注册两个模式。
+  assert.match(html, /登录/);
+  assert.match(html, /注册/);
 });
 
-test("demo submission accepts empty input, clears it and navigates without reading credentials", () => {
-  const actions = [];
-  const form = { reset: () => actions.push("reset"), get elements() { throw new Error("must not read credentials"); } };
-  submitDemoLogin({ preventDefault: () => actions.push("prevent"), currentTarget: form }, () => actions.push("navigate"));
-  assert.deepEqual(actions, ["prevent", "reset", "navigate"]);
-  assert.doesNotMatch(source, /fetch\(|localStorage|sessionStorage|FormData|XMLHttpRequest/);
+test("strict submission never navigates without validation — no credential persistence in the form module", () => {
+  // 表单只经 auth-client 走 /api/auth/*；本体不得自行持久化凭证。
+  assert.doesNotMatch(source, /localStorage|sessionStorage|document\.cookie/);
+  // 提交必须经过异步 API（不再有同步直通的 submitDemoLogin）。
+  assert.match(source, /apiLogin|apiRegister/);
+  assert.doesNotMatch(source, /export function submitDemoLogin/);
+});
+
+test("register mode renders nickname and class fields after switching", async () => {
+  // 静态渲染默认登录态；注册字段在源码中条件渲染，直接断言源码结构，
+  // 交互路径由 e2e（qa-full-e2e）覆盖。
+  assert.match(source, /mode === "register" \&\& \(/);
+  assert.match(source, /昵称（可选）/);
+  assert.match(source, /班级（可选/);
 });
 
 test("login canvas inverse scaling retains native control dimensions at all sizes", () => {
@@ -47,10 +64,13 @@ test("login canvas inverse scaling retains native control dimensions at all size
   }
 });
 
-test("AI测评 always opens login and submission opens the choose step", async () => {
+test("AI测评 always opens login and successful login adopts the server profile then opens choose", async () => {
   const experience = await readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8");
   assert.match(experience, /onAssessment=\{\(\) => go\("login"\)\}/);
-  assert.match(experience, /onLogin=\{\(\) => \{\s*go\("choose"\);\s*\}\}/);
+  assert.match(experience, /adoptAuthenticatedProfile\(profile\)/);
   assert.match(experience, /onTest=\{\(\) => go\("assessments"\)\}/);
   assert.doesNotMatch(experience, /hasLoginSession|startLoginSession|auth-session|expiresAt|sessionStorage/);
+  // 完成上报与作业关联已接入。
+  assert.match(experience, /reportRunSnapshot\(/);
+  assert.match(experience, /readActiveAssignmentId\(\)/);
 });

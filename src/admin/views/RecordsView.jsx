@@ -22,6 +22,7 @@ export function RecordsView({ roster, onRefreshRoster }) {
     if (!query.trim()) return true;
     return run.studentName.includes(query.trim()) || String(run.overallScore).includes(query.trim());
   }), [runs, query, source]);
+  const sourceLabel = (value) => (value === "server" ? "服务端" : value === "local" ? "本机真实" : "演示班级");
 
   return (
     <div className="admin-view">
@@ -32,19 +33,20 @@ export function RecordsView({ roster, onRefreshRoster }) {
         </label>
         <select value={source} onChange={(event) => setSource(event.target.value)} aria-label="按来源筛选">
           <option value="all">全部来源</option>
+          <option value="server">服务端（学生上报）</option>
           <option value="local">本机真实</option>
           <option value="demo">演示班级</option>
         </select>
         <span className="toolbar-count">{filtered.length} 条记录</span>
         <button type="button" className="is-ghost" onClick={onRefreshRoster}>
-          <ArrowClockwise size={15} weight="bold" /> 刷新本机数据
+          <ArrowClockwise size={15} weight="bold" /> 刷新数据
         </button>
       </div>
 
       {filtered.length === 0 ? (
         <div className="empty-state">
           <strong>暂无测评记录</strong>
-          <p>去学生端完成一次综合测评，然后点右上角刷新本机数据。</p>
+          <p>学生登录学生端完成综合测评后，成绩会自动汇总到这里；也可点右上角刷新。</p>
         </div>
       ) : (
         <table className="admin-table is-hover">
@@ -58,13 +60,15 @@ export function RecordsView({ roster, onRefreshRoster }) {
                 <td><b>{run.studentName}</b></td>
                 <td>{run.className}</td>
                 <td><b>{run.overallScore}</b></td>
-                <td><span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span></td>
+                <td>{run.grade
+                  ? <span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span>
+                  : "—"}</td>
                 <td>
                   <span className="mini-dims" aria-hidden="true">
                     {run.dimensions.map((dim) => <i key={dim.key} style={{ width: `${Math.max(6, dim.score * 0.28)}px` }} title={`${dim.short} ${dim.score}`} />)}
                   </span>
                 </td>
-                <td><em className={`src-tag is-${run.source}`}>{run.source === "local" ? "本机真实" : "演示班级"}</em></td>
+                <td><em className={`src-tag is-${run.source}`}>{sourceLabel(run.source)}</em></td>
                 <td>
                   <button type="button" className="row-edit" onClick={() => setSelected(run)}>查看</button>
                 </td>
@@ -87,7 +91,9 @@ export function RecordsView({ roster, onRefreshRoster }) {
             <div className="edit-body">
               <div className="snapshot-head">
                 <div className="snapshot-grade">
-                  <span className={`grade-badge is-${selected.grade.toLowerCase()}`}>{selected.grade}</span>
+                  {selected.grade
+                    ? <span className={`grade-badge is-${selected.grade.toLowerCase()}`}>{selected.grade}</span>
+                    : <span className="grade-badge">—</span>}
                   <b>{selected.overallScore}</b>
                   <span>总分</span>
                 </div>

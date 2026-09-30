@@ -74,6 +74,63 @@
   gap: 12px;
   margin-top: 4px;
 }
+/* 登录/注册切换：与字段同宽的分段控件，替代旧的「演示模式」说明。 */
+.login-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #fbe4ef;
+  box-shadow: inset 0 0 0 1px #f4d3e3;
+}
+.login-mode-tabs button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #93637c;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+.login-mode-tabs button.is-active {
+  background: #fff;
+  color: #d94f8c;
+  box-shadow: 0 2px 8px #e7a4c23d;
+}
+.login-mode-tabs button:focus-visible { outline: 2px solid #d94f8c; outline-offset: 2px; }
+/* 字段级错误：输入框描红 + 输入框下方一行提示（role=alert 即时播报）。 */
+.login-field.is-invalid {
+  border-color: #e04760;
+  background: #fff5f6;
+  box-shadow: 0 0 0 3px #e0476021;
+}
+.login-field.is-invalid:focus-within { border-color: #c73049; box-shadow: 0 0 0 3px #e0476030; }
+.login-field-error {
+  margin: -6px 0 0 14px;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #c73049;
+}
+/* 表单级错误（服务端返回：账号或密码不正确 / 锁定 / 网络失败）。 */
+.login-form-error {
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #fdecef;
+  box-shadow: inset 0 0 0 1px #f6c6cf;
+  color: #b02440;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+}
+.login-submit:disabled {
+  filter: grayscale(0.15);
+  opacity: 0.72;
+  transform: none;
+  cursor: wait;
+}
 .login-field {
   display: flex;
   align-items: center;

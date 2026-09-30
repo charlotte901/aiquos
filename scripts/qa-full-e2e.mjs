@@ -6,14 +6,14 @@ import { spawn } from "node:child_process";
 import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { chromeBin } from "./lib/chrome.mjs";
 
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const BASE = process.argv[2] || "http://127.0.0.1:4287";
 mkdirSync("work/e2e", { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const profile = mkdtempSync(join(tmpdir(), "aiquos-e2e-"));
-const child = spawn(CHROME, [
+const child = spawn(chromeBin(), [
   "--headless=new", "--remote-debugging-port=9370", `--user-data-dir=${profile}`,
   "--no-first-run", "--no-default-browser-check", "--disable-gpu",
   "--hide-scrollbars", "--force-device-scale-factor=1", "about:blank",

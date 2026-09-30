@@ -311,3 +311,112 @@
     transform: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 教师推送的组卷作业（登录后显示）：一条白色横幅头 + 作业卡列表。
+ * 置于 TEST! 字标与测评卡片之间——老师布置的优先于自由练习。
+ * ──────────────────────────────────────────────────────────────────────────── */
+.assessment-assignments {
+  width: calc(1502px * var(--assessment-unit));
+  max-width: calc(100% - 40px);
+  margin-top: calc(30px * var(--assessment-unit));
+}
+.assessment-assignments-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-radius: 18px 18px 0 0;
+  background: #ffffff0f;
+  box-shadow: inset 0 0 0 1px #ffffff24;
+  color: #fff;
+}
+.assessment-assignments-head svg { color: #7fd0a8; flex-shrink: 0; }
+.assessment-assignments-head div { flex: 1; min-width: 0; }
+.assessment-assignments-head strong { display: block; font-size: 15px; font-weight: 800; letter-spacing: .01em; }
+.assessment-assignments-head span { display: block; margin-top: 2px; font-size: 11.5px; color: #ffffffa6; }
+.assessment-assignments-head em {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #7fd0a81f;
+  box-shadow: inset 0 0 0 1px #7fd0a84d;
+  color: #a8e4c6;
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.assessment-assignments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.assignment-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 22px;
+  border-radius: 16px;
+  background: #ffffff08;
+  box-shadow: inset 0 0 0 1px #ffffff1c;
+}
+.assignment-card-main { flex: 1; min-width: 0; }
+.assignment-card-main strong { font-size: 14.5px; font-weight: 800; letter-spacing: .01em; }
+.assignment-card-main p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #ffffffa6;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.assignment-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #ffffff7d;
+}
+.assignment-due { display: inline-flex; align-items: center; gap: 4px; color: #f2c94c; }
+.assignment-start {
+  flex-shrink: 0;
+  padding: 11px 22px;
+  border-radius: 999px;
+  background: #fff;
+  color: #14121a;
+  font-size: 13.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.assignment-start:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px #ffffff26; }
+.assignment-start:focus-visible { outline: 2px solid #ffffff8c; outline-offset: 3px; }
+.assignment-start:disabled { opacity: .55; cursor: default; }
+.assignment-card.is-done { background: #7fd0a80d; box-shadow: inset 0 0 0 1px #7fd0a833; }
+.assignment-card-status {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+  min-width: 74px;
+  color: #a8e4c6;
+}
+.assignment-card-status svg { color: #7fd0a8; }
+.assignment-card-status strong { font-size: 17px; font-weight: 800; }
+.assignment-card-status span { font-size: 10.5px; color: #ffffff8c; }
+.assessment-screen[data-compact="true"] .assessment-assignments {
+  width: 100%;
+  max-width: none;
+  margin-top: 24px;
+}
+.assessment-screen[data-compact="true"] .assignment-card {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.assessment-screen[data-compact="true"] .assignment-start { width: 100%; }

@@ -32,7 +32,7 @@ function MiniRadar({ dimensions }) {
   );
 }
 
-export function StudentsView({ roster }) {
+export function StudentsView({ roster, dataSource }) {
   const [query, setQuery] = useState("");
   const [className, setClassName] = useState("all");
   const [selected, setSelected] = useState(null);
@@ -43,6 +43,7 @@ export function StudentsView({ roster }) {
     if (!query.trim()) return true;
     return student.name.includes(query.trim());
   }), [roster, query, className]);
+  const sourceLabel = (source) => (source === "server" ? "服务端" : source === "local" ? "本机真实" : "演示班级");
 
   return (
     <div className="admin-view">
@@ -75,17 +76,21 @@ export function StudentsView({ roster }) {
           </thead>
           <tbody>
             {filtered.map((student) => {
-              const average = Math.round(student.runs.reduce((sum, run) => sum + run.overallScore, 0) / student.runs.length);
+              const average = student.runs.length > 0
+                ? Math.round(student.runs.reduce((sum, run) => sum + run.overallScore, 0) / student.runs.length)
+                : null;
               const latest = student.runs[student.runs.length - 1];
               return (
                 <tr key={student.id} onClick={() => setSelected(student)}>
                   <td><b>{student.name}</b></td>
                   <td>{student.className}</td>
                   <td>{student.runs.length} 次</td>
-                  <td>{formatDate(latest.completedAt)}</td>
-                  <td>{average}</td>
-                  <td><span className={`grade-badge is-${latest.grade.toLowerCase()}`}>{latest.grade}</span></td>
-                  <td><em className={`src-tag is-${student.source}`}>{student.source === "local" ? "本机真实" : "演示班级"}</em></td>
+                  <td>{latest ? formatDate(latest.completedAt) : "—"}</td>
+                  <td>{average ?? "—"}</td>
+                  <td>{latest?.grade
+                    ? <span className={`grade-badge is-${latest.grade.toLowerCase()}`}>{latest.grade}</span>
+                    : "—"}</td>
+                  <td><em className={`src-tag is-${student.source}`}>{sourceLabel(student.source)}</em></td>
                 </tr>
               );
             })}
@@ -99,20 +104,28 @@ export function StudentsView({ roster }) {
             <header>
               <div>
                 <h2>{selected.name}</h2>
-                <p>{selected.className} · {selected.runs.length} 次完成 · 平均 {Math.round(selected.runs.reduce((sum, run) => sum + run.overallScore, 0) / selected.runs.length)} 分</p>
+                <p>
+                  {selected.className} · {selected.runs.length} 次完成
+                  {selected.runs.length > 0 && ` · 平均 ${Math.round(selected.runs.reduce((sum, run) => sum + run.overallScore, 0) / selected.runs.length)} 分`}
+                </p>
               </div>
               <button type="button" onClick={() => setSelected(null)} aria-label="关闭学员详情"><X size={18} weight="bold" /></button>
             </header>
             <div className="drawer-body">
-              <div className="drawer-radar">
-                <MiniRadar dimensions={selected.runs[selected.runs.length - 1].dimensions} />
-                <p>最近一次六维画像</p>
-              </div>
+              {selected.runs.length > 0 && (
+                <div className="drawer-radar">
+                  <MiniRadar dimensions={selected.runs[selected.runs.length - 1].dimensions} />
+                  <p>最近一次六维画像</p>
+                </div>
+              )}
               <table className="admin-table">
                 <thead>
                   <tr><th>完成时间</th><th>总分</th><th>等级</th><th>趋势</th></tr>
                 </thead>
                 <tbody>
+                  {selected.runs.length === 0 && (
+                    <tr><td colSpan={4}>该学员还没有完成记录</td></tr>
+                  )}
                   {selected.runs.map((run, index) => {
                     const previous = selected.runs[index - 1]?.overallScore;
                     const delta = previous === undefined ? null : run.overallScore - previous;
@@ -120,7 +133,9 @@ export function StudentsView({ roster }) {
                       <tr key={run.id}>
                         <td>{formatDate(run.completedAt)}</td>
                         <td><b>{run.overallScore}</b></td>
-                        <td><span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span></td>
+                        <td>{run.grade
+                          ? <span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span>
+                          : "—"}</td>
                         <td>
                           {delta === null ? "首次" : delta >= 0
                             ? <span className="is-up"><ArrowUpRight size={14} weight="bold" /> +{delta}</span>

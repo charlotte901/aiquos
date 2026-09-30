@@ -118,6 +118,42 @@ export function buildRoster() {
   return roster;
 }
 
+/**
+ * 服务端实时名册：把 /api/data/teacher/overview 的 students + runs 组装成
+ * 与本地 roster 相同的形状（id/name/className/source/runs[]），数据概览、
+ * 学员管理、测评记录三个视图无需感知数据来源。
+ */
+export function buildServerRoster(payload) {
+  if (!payload || !Array.isArray(payload.students)) return [];
+  const runsByAccount = new Map();
+  for (const run of Array.isArray(payload.runs) ? payload.runs : []) {
+    if (!run || typeof run.accountId !== "string") continue;
+    if (!runsByAccount.has(run.accountId)) runsByAccount.set(run.accountId, []);
+    runsByAccount.get(run.accountId).push({
+      id: run.id,
+      studentId: run.accountId,
+      completedAt: run.completedAt,
+      overallScore: run.overallScore,
+      grade: run.grade ?? null,
+      dimensions: Array.isArray(run.dimensions) ? run.dimensions : [],
+      answeredCount: run.answeredCount ?? null,
+      totalQuestions: run.totalQuestions ?? null,
+      assignmentId: run.assignmentId ?? null,
+      source: "server",
+      bankVersion: run.bankVersion ?? null,
+    });
+  }
+  return payload.students.map((student) => ({
+    id: student.accountId,
+    name: student.nickname || student.account,
+    className: student.className || "未分班",
+    source: "server",
+    account: student.account ?? "",
+    runs: (runsByAccount.get(student.accountId) ?? [])
+      .sort((left, right) => String(left.completedAt).localeCompare(String(right.completedAt))),
+  }));
+}
+
 export function allRuns(roster) {
   return roster.flatMap((student) =>
     student.runs.map((run) => ({ ...run, studentName: student.name, className: student.className })),

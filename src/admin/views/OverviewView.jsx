@@ -8,14 +8,14 @@ import {
 } from "../stats.js";
 import { allRuns } from "../cohort.js";
 
-const GRADE_COLORS = { S: "var(--grade-s)", A: "var(--grade-a)", B: "var(--grade-b)", C: "var(--grade-c)", D: "var(--grade-d)" };
+const GRADE_COLORS = { S: "var(--grade-s)", A: "var(--grade-a)", B: "var(--grade-b)", C: "var(--grade-c)", D: "var(--grade-d)", 未定级: "#97a0b2" };
 
 function formatDate(iso) {
   const date = new Date(iso);
   return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-export function OverviewView({ roster, bankMeta }) {
+export function OverviewView({ roster, bankMeta, dataSource }) {
   const kpis = useMemo(() => overviewKpis(roster), [roster]);
   const grades = useMemo(() => gradeDistribution(roster), [roster]);
   const dims = useMemo(() => dimensionAverages(roster), [roster]);
@@ -28,12 +28,13 @@ export function OverviewView({ roster, bankMeta }) {
   const maxTrend = Math.max(1, ...trend.map((bucket) => bucket.count));
   const weakest = [...dims].sort((left, right) => left.average - right.average)[0];
   const strongest = [...dims].sort((left, right) => right.average - left.average)[0];
+  const sourceLabel = (source) => (source === "server" ? "服务端" : source === "local" ? "本机真实" : "演示班级");
 
   return (
     <div className="admin-view">
       <section className="kpi-grid" aria-label="关键指标">
         {[
-          { label: "在册学员", value: kpis.studentCount, hint: "含演示班级与本机真实作答" },
+          { label: "在册学员", value: kpis.studentCount, hint: dataSource === "ready" ? "服务端注册学员（真实作答）" : "离线演示名册（服务不可达）" },
           { label: "累计完成测评", value: kpis.runCount, hint: "综合测评完整通关" },
           { label: "平均总分", value: kpis.averageOverall, hint: "全部完成记录的均分" },
           { label: "近 7 天完成", value: kpis.weeklyCompletions, hint: "本周新增完成数" },
@@ -102,8 +103,10 @@ export function OverviewView({ roster, bankMeta }) {
                   <td>{run.studentName}</td>
                   <td>{formatDate(run.completedAt)}</td>
                   <td><b>{run.overallScore}</b></td>
-                  <td><span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span></td>
-                  <td><em className={`src-tag is-${run.source}`}>{run.source === "local" ? "本机真实" : "演示班级"}</em></td>
+                  <td>{run.grade
+                    ? <span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span>
+                    : "—"}</td>
+                  <td><em className={`src-tag is-${run.source}`}>{sourceLabel(run.source)}</em></td>
                 </tr>
               ))}
             </tbody>
