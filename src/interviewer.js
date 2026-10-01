@@ -275,7 +275,7 @@ export function interviewChatMessages({ thread, slot, followUp, lastNote }) {
   // 问过什么，出现"能跑起来了吗"隔两轮再问一遍的重复。
   const history = thread
     .filter((item) => !item.pending && item.content)
-    .slice(-16)
+    .slice(-24)
     .map(({ role, content }) => ({ role: role === "user" ? "user" : "assistant", content }));
   const ask = followUp
     ? `学员刚回答了你的问题，但还可以更具体（你的观察：${lastNote || "有点笼统"}）。先接住他说的内容给一个具体的肯定，再顺着他的话换一个更好回答的角度帮他展开；不要否定他，不要重复问过的问题。`
@@ -352,7 +352,7 @@ export function interviewMessages({ thread, slot, followUp, lastNote }) {
       : `请提出你的第 ${slot.index + 1} 个采访问题。要求：这一问必须落在本话题考点上（${rubric?.intent ?? slot.rubric}），可参考问法（${slot.asks.join("／")}），用你自己的话问，一到两句，别照抄。`;
   const history = thread
     .filter((item) => !item.pending && item.content)
-    .slice(-16)
+    .slice(-24)
     .map(({ role, content }) => ({ role: role === "user" ? "user" : "assistant", content }));
   return [
     {

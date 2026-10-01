@@ -18,7 +18,10 @@ const MAX_REFERENCE_IMAGES = 6;
 // 否则上游长挂时这个请求会一直占着连接（前端另有 240s 超时兜底）。
 const IMAGE_UPSTREAM_TIMEOUT_MS = 200_000;
 
-const MAX_MESSAGES = 16;
+// 采访回复按 1–3 条气泡分 development 发送，每条气泡即一条消息：5–6 轮对话
+// 的线程就有 17+ 条，16 的上限会让第 6 轮的下一问被 400 拒绝（实测）。
+// 40 覆盖整场采访（5 槽 + 追问），同时保留防滥用意义。
+const MAX_MESSAGES = 40;
 const MAX_CONTENT_LENGTH = 12_000;
 
 function json(payload, status = 200) {
@@ -158,12 +161,39 @@ export async function handleDeepSeekChat(request, apiKey, fetcher = fetch) {
   }
 
   if (!wantsStream) {
-    const result = await upstream.json();
-    // 上游偶尔返回 200 但 content 为空（例如命中内容过滤、或模型只产出
-    // reasoning 而没给最终答案）。以前这里用 `|| ""` 把空回复伪装成正常
-    // 结果，调用方拿到空字符串后既不报错也没有内容——界面上表现为"记者的
-    // 话迟迟不来"。现在把它变成明确的错误，让调用方走兜底话术。
-    const message = result?.choices?.[0]?.message?.content;
+    let result = await upstream.json();
+    // 上游偶尔返回 200 但 content 为空。实测（2026-10-01 采访第 2 问，三连
+    // 复现两次 502）主要形态是思考模式只产出 reasoning_content、content 为
+    // 空字符串、finish_reason 仍为 "stop"——护栏 502 后客户端当业务错误
+    // 不重试，采访直接掉进离线模式。
+    // 自愈：空内容时关思考重发一发（非流式、确定性，几乎必出正文）；仍空
+    // 才走 502 让调用方兜底。
+    let message = result?.choices?.[0]?.message?.content;
+    if (typeof message !== "string" || message.trim() === "") {
+      try {
+        const alreadyDisabled = thinkingBody.thinking?.type === "disabled";
+        const retry = await fetcher("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "deepseek-flash",
+            messages,
+            temperature,
+            stream: false,
+            ...(alreadyDisabled ? {} : { thinking: { type: "disabled" } }),
+          }),
+        });
+        if (retry.ok) {
+          result = await retry.json();
+          message = result?.choices?.[0]?.message?.content;
+        }
+      } catch {
+        // 自愈失败沿用原 502 路径
+      }
+    }
     if (typeof message !== "string" || message.trim() === "") {
       const finish = result?.choices?.[0]?.finish_reason;
       return json({ error: `模型未返回内容${finish ? `（${finish}）` : ""}，请重试。` }, 502);

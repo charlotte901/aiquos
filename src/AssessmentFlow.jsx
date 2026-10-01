@@ -185,10 +185,14 @@ async function chatOnce({ messages, temperature, thinking }) {
         ...(temperature != null ? { temperature } : {}),
         ...(thinking ? { thinking } : {}),
       }),
+      // 等待预算：单次尝试最多 20 秒（用户约定），超时按可重试错误处理。
+      signal: AbortSignal.timeout(20_000),
     });
     if (!response.ok) {
       const detail = await response.json().catch(() => null);
-      throw new Error(detail?.error || "AI 服务暂时不可用。");
+      const error = new Error(detail?.error || "AI 服务暂时不可用。");
+      error.status = response.status;
+      throw error;
     }
     const payload = await response.json();
     if (typeof payload.message !== "string") throw new Error("AI 服务未返回内容。");
@@ -197,7 +201,14 @@ async function chatOnce({ messages, temperature, thinking }) {
   try {
     return await request();
   } catch (error) {
-    if (error?.name !== "AbortError" && error?.name !== "TypeError") throw error;
+    // 可重试：断链/超时/网络 + 服务端瞬时（5xx/429——上游限流与抖动）。
+    // 4xx 业务错误确定性失败，重试无意义。
+    const transient = error?.name === "AbortError"
+      || error?.name === "TimeoutError"
+      || error?.name === "TypeError"
+      || error?.status === 429
+      || (typeof error?.status === "number" && error.status >= 500);
+    if (!transient) throw error;
     await new Promise((resolve) => setTimeout(resolve, 600));
     return request();
   }
