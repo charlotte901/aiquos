@@ -39,6 +39,15 @@ export function getViewportLayout(width, viewportHeight) {
   const cubeX = cubeCenterX - 813 * cubeScale;
   const cubeY = cubeTop - 282 * cubeScale;
   const cubeBottom = cubeY + 877 * cubeScale;
+  // 立方体底缘之下的底部元素块（轮播点 35px + 文案两行 ≈ 82px）整体有
+  // 一个视口高度上限：Windows 任务栏约 48px，贴着立方体算出的 dots-top
+  // 在矮窗口会把文案压进任务栏（用户实测被遮挡）。上限按「视口高 −
+  // 任务栏余量 − 块高」收；不低于立方体底缘上方 24px，避免盖住机身。
+  const dotsTopRaw = compact ? cubeBottom + 3 : cubeBottom + 2 * cubeScale;
+  const dotsTop = Math.max(
+    cubeBottom - 24,
+    Math.min(dotsTopRaw, viewportHeight - 136),
+  );
   const brandScale = compact
     ? Math.min((width - 32) / 1300, (height * 0.17) / 345)
     : Math.min(width / 1536, (height / 1024) * 1.05);
@@ -48,8 +57,9 @@ export function getViewportLayout(width, viewportHeight) {
     : // Align the explore button's center with the carousel toggle's center:
       // the button sits 275.5 design px into the intro block (h2 3x42x1.15
       // + 18 gap + p 2x17x1.65 + 31 gap + 51/2 button half), the toggle's
-      // center sits 17.5 design px below dots-top (cubeBottom + 2*cubeScale).
-      cubeBottom + 2 * cubeScale + (17.5 - 275.5) * unit;
+      // center sits 17.5 design px below dots-top——上限生效时以收缩后的
+      // dotsTop 为基准，按钮与轮播暂停键的对齐关系保持不变。
+      dotsTop + (17.5 - 275.5) * unit;
   const introLeft = compact
     ? clamp(width * 0.07, 22, 48)
     : Math.max(36, (width * 72) / 1536);
@@ -84,7 +94,7 @@ export function getViewportLayout(width, viewportHeight) {
       "--intro-left": `${introLeft}px`,
       "--intro-right": `${introRight}px`,
       "--dots-left": `${cubeCenterX - (compact ? 41 : 75 * cubeScale)}px`,
-      "--dots-top": `${cubeBottom + (compact ? 3 : 2 * cubeScale)}px`,
+      "--dots-top": `${dotsTop}px`,
       "--cube-center": `${cubeCenterX}px`,
       "--hint-top": `${cubeBottom + 28}px`,
       "--stats-width": compact ? `${width - 36}px` : `${842 * unit}px`,

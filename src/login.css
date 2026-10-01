@@ -164,6 +164,15 @@
   font-size: 16px;
 }
 .login-field input::placeholder { color: #b98da3; }
+/* Chrome 的密码自动填充会在 input 上画一层不透明的淡蓝底，盖掉
+   transparent 背景——用足够大的内阴影把它压回票面白，文字色一并锁定。 */
+.login-field input:-webkit-autofill,
+.login-field input:-webkit-autofill:hover,
+.login-field input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #332030;
+  caret-color: #332030;
+}
 .login-password-toggle {
   display: grid;
   place-items: center;
