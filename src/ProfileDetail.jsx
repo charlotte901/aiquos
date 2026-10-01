@@ -107,6 +107,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 const TODAY = new Date();
+const RECORD_ENTRIES_KEY = "aiquos.record-entries.v1";
 TODAY.setHours(0, 0, 0, 0);
 const CLASS_LIBRARY = [
   {
@@ -552,7 +553,16 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   const [serverRuns, setServerRuns] = useState([]);
   const [reportOpen, setReportOpen] = useState(false);
   const [recordDrafts, setRecordDrafts] = useState({});
-  const [recordEntries, setRecordEntries] = useState({});
+  // 我的记录：localStorage 持久化（此前是纯 useState，刷新即丢——保存按钮形同虚设）。
+  const [recordEntries, setRecordEntries] = useState(() => {
+    try {
+      const raw = localStorage.getItem(RECORD_ENTRIES_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
   const [realRecordsByDay, setRealRecordsByDay] = useState(getRealRecordsByDay);
   const [attemptHistory, setAttemptHistory] = useState(() => loadAttemptHistory());
   const [reportSnapshot, setReportSnapshot] = useState(null);
@@ -662,17 +672,19 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
     const content = recordDraft.trim();
     if (!content) return;
 
-    setRecordEntries((current) => ({
-      ...current,
-      [selectedKey]: [
-        {
-          id: `${Date.now()}`,
-          time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }),
-          content,
-        },
-        ...(current[selectedKey] ?? []),
-      ],
-    }));
+    setRecordEntries((current) => {
+      const entry = {
+        id: `${Date.now()}`,
+        time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        content,
+      };
+      const next = {
+        ...current,
+        [selectedKey]: [entry, ...(current[selectedKey] ?? [])],
+      };
+      try { localStorage.setItem(RECORD_ENTRIES_KEY, JSON.stringify(next)); } catch { /* 存储满时放弃持久化，本次会话仍可见 */ }
+      return next;
+    });
     updateRecordDraft("");
   };
 

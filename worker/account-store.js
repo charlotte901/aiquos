@@ -185,6 +185,37 @@ export async function createAccount({ account, password, nickname, role, classNa
   }
 }
 
+/** 改昵称（已登录）：校验复用注册规则；返回 {ok, record} 或 {error}。 */
+export function updateNickname(accountId, nickname) {
+  const check = validateNickname(nickname);
+  if (!check.ok) return { error: check.error };
+  const current = loadState();
+  const record = findAccountById(accountId);
+  if (!record) return { error: "账号不存在" };
+  record.nickname = check.value;
+  persist();
+  return { ok: true, record };
+}
+
+/** 改密码（已登录）：验证旧密码 → 新盐重哈希。旧密码错误返回 {error}。 */
+export async function updatePassword(accountId, oldPassword, newPassword) {
+  const record = findAccountById(accountId);
+  if (!record) return { error: "账号不存在" };
+  const check = validatePassword(newPassword, record.account);
+  if (!check.ok) return { error: check.error };
+  const oldHash = await hashPassword(String(oldPassword ?? ""), fromB64url(record.salt));
+  let diff = 0;
+  const given = oldHash, expected = record.hash;
+  if (given.length === expected.length) {
+    for (let index = 0; index < given.length; index += 1) diff |= given.charCodeAt(index) ^ expected.charCodeAt(index);
+  } else diff = 1;
+  if (diff !== 0) return { error: "当前密码不正确" };
+  record.salt = b64url(randomBytes(16));
+  record.iterations = PBKDF2_ITERATIONS;
+  record.hash = await hashPassword(newPassword, fromB64url(record.salt));
+  persist();
+  return { ok: true, record };
+}
 /** 登录校验：账号不存在与密码错误返回同一句提示（不泄露注册面）。 */
 export async function verifyLogin(account, password) {
   const normalized = normalizeAccount(account);

@@ -5,6 +5,8 @@
 // 连续 5 次失败锁定 10 分钟）。令牌为 HMAC 签名的无状态串，客户端以
 // Authorization: Bearer 携带。
 import {
+  updateNickname,
+  updatePassword,
   createAccount,
   issueToken,
   publicProfile,
@@ -15,6 +17,8 @@ import { normalizeAccount } from "../src/auth-validation.js";
 
 export const AUTH_REGISTER_PATH = "/api/auth/register";
 export const AUTH_LOGIN_PATH = "/api/auth/login";
+export const AUTH_PROFILE_PATH = "/api/auth/profile";
+export const AUTH_PASSWORD_PATH = "/api/auth/password";
 export const AUTH_ME_PATH = "/api/auth/me";
 
 const MAX_FAILURES = 5;
@@ -157,6 +161,43 @@ export async function handleAuthMe(request) {
   const verified = await verifyToken(bearerToken(request));
   if (!verified) return json({ error: "登录状态已失效，请重新登录" }, 401);
   return json({ profile: publicProfile(verified.record) });
+}
+
+async function requireAuth(request) {
+  const verified = await verifyToken(bearerToken(request));
+  if (!verified) return { error: json({ error: "登录状态已失效，请重新登录" }, 401) };
+  return { accountId: verified.payload.sub, record: verified.record };
+}
+
+export async function handleAuthProfile(request) {
+  if (request.method !== "POST") return json({ error: "仅支持 POST 请求。" }, 405);
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+  const payload = await readJson(request);
+  if (!payload) return json({ error: "请求格式不正确。" }, 400);
+  const result = updateNickname(auth.accountId, payload.nickname);
+  if (result.error) return json({ error: result.error }, 400);
+  return json({ profile: publicProfile(result.record) });
+}
+
+export async function handleAuthPassword(request) {
+  if (request.method !== "POST") return json({ error: "仅支持 POST 请求。" }, 405);
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+  const payload = await readJson(request);
+  if (!payload) return json({ error: "请求格式不正确。" }, 400);
+  // 与登录同款限速：旧密码猜错也计数（5 次/15 分钟锁 10 分钟），防止持有
+  // 有效令牌的一方通过本端点无限试当前密码。
+  const rateKey = `pw|${auth.accountId}`;
+  const locked = lockedRemaining(rateKey);
+  if (locked > 0) return json({ error: `尝试次数过多，请约 ${locked} 分钟后再试` }, 429);
+  const result = await updatePassword(auth.accountId, payload.oldPassword, payload.newPassword);
+  if (result.error) {
+    if (result.error === "当前密码不正确") recordFailure(rateKey);
+    return json({ error: result.error }, 400);
+  }
+  clearFailures(rateKey);
+  return json({ ok: true });
 }
 
 export function bearerToken(request) {

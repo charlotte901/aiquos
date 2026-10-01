@@ -104,6 +104,30 @@ export async function apiLogin(account, password) {
   return payload.profile;
 }
 
+/** 改昵称（已登录）：成功后本地会话的 profile 同步刷新。 */
+export async function apiUpdateNickname(nickname) {
+  const response = await authFetch("/api/auth/profile", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ nickname }),
+  });
+  if (!response.ok) throw await parseError(response, `昵称保存失败（${response.status}）`);
+  const payload = await response.json();
+  session = { ...session, profile: payload.profile };
+  store.write(session);
+  return payload.profile;
+}
+
+/** 改密码（已登录）：服务端验旧密码后重哈希。 */
+export async function apiChangePassword(oldPassword, newPassword) {
+  const response = await authFetch("/api/auth/password", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+  if (!response.ok) throw await parseError(response, `密码修改失败（${response.status}）`);
+  return true;
+}
 /** 会话有效性探针：401 时清掉本地会话（过期/服务端重启）。 */
 export async function apiMe() {
   if (!session) return null;

@@ -918,9 +918,17 @@
   font-size: 13px;
 }
 
+.profile-detail-screen[data-screen="favorites"] {
+  display: flex;
+  flex-direction: column;
+  padding: 36px 0;
+}
+
 .profile-favorites {
   width: min(1440px, calc(100% - 64px));
-  margin: 104px auto 52px;
+  /* 垂直居中：少量收藏不再挤在顶部、下方留一大片空底。auto 外边距在
+     内容超高时自动归零（滚动安全）。 */
+  margin: auto;
 }
 
 .profile-detail-screen.is-image-view {
@@ -1285,6 +1293,9 @@
 }
 
 .profile-records .records-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
   padding-left: 44px;
   border-left: 1px solid #e7e9f4;
 }
@@ -1301,8 +1312,10 @@
 
 .account-panel-host {
   width: min(1440px, calc(100% - 64px));
-  height: calc(calc(100 * var(--dvh, 1dvh)) - 112px);
-  margin: 84px auto 28px;
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 140px);
+  /* 底部留白 28→56px：白卡下缘与视口底明显分离，「清除本机测评数据」
+     等末尾 CTA 不再视觉上贴着裁切线。 */
+  margin: 84px auto 56px;
 }
 
 .account-panel-host .account-settings-card {
@@ -1493,6 +1506,8 @@
    * 贴着上边缘可见。 */
   justify-content: safe center;
   padding: clamp(18px, calc(2.5 * var(--dvh, 1dvh)), 64px) clamp(36px, calc(4 * var(--vw, 1vw)), 64px);
+  /* 滚动到底时末尾内容与裁切线之间保留呼吸（数据与隐私区很长）。 */
+  padding-bottom: clamp(44px, calc(7 * var(--dvh, 1dvh)), 96px);
   overflow-y: auto;
   background: #fff;
 }

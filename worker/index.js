@@ -4,7 +4,18 @@ import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./practical-tasks.js
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./comprehensive-quiz.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./admin.js";
-import { AUTH_LOGIN_PATH, AUTH_ME_PATH, AUTH_REGISTER_PATH, handleAuthLogin, handleAuthMe, handleAuthRegister } from "./auth.js";
+import {
+  AUTH_LOGIN_PATH,
+  AUTH_ME_PATH,
+  AUTH_PASSWORD_PATH,
+  AUTH_PROFILE_PATH,
+  AUTH_REGISTER_PATH,
+  handleAuthLogin,
+  handleAuthMe,
+  handleAuthPassword,
+  handleAuthProfile,
+  handleAuthRegister,
+} from "./auth.js";
 import {
   DATA_ASSIGNMENTS_PATH,
   DATA_ASSIGNMENT_STATUS_PATH,
@@ -46,6 +57,12 @@ export default {
     }
     if (new URL(request.url).pathname === AUTH_ME_PATH) {
       return handleAuthMe(request);
+    }
+    if (new URL(request.url).pathname === AUTH_PROFILE_PATH) {
+      return handleAuthProfile(request);
+    }
+    if (new URL(request.url).pathname === AUTH_PASSWORD_PATH) {
+      return handleAuthPassword(request);
     }
     if (new URL(request.url).pathname === DATA_RUNS_PATH) {
       return handleDataRuns(request);

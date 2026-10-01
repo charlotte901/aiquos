@@ -9,7 +9,18 @@ import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./worker/practical-t
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./worker/practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./worker/comprehensive-quiz.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./worker/admin.js";
-import { AUTH_LOGIN_PATH, AUTH_ME_PATH, AUTH_REGISTER_PATH, handleAuthLogin, handleAuthMe, handleAuthRegister } from "./worker/auth.js";
+import {
+  AUTH_LOGIN_PATH,
+  AUTH_ME_PATH,
+  AUTH_PASSWORD_PATH,
+  AUTH_PROFILE_PATH,
+  AUTH_REGISTER_PATH,
+  handleAuthLogin,
+  handleAuthMe,
+  handleAuthPassword,
+  handleAuthProfile,
+  handleAuthRegister,
+} from "./worker/auth.js";
 import {
   DATA_ASSIGNMENTS_PATH,
   DATA_ASSIGNMENT_STATUS_PATH,
@@ -241,6 +252,8 @@ export default defineConfig(({ mode }) => {
             if (!response.body) return res.end();
             Readable.fromWeb(response.body).pipe(res);
           };
+          server.middlewares.use(AUTH_PROFILE_PATH, jsonHandler(handleAuthProfile, AUTH_PROFILE_PATH, { authorization: true }));
+          server.middlewares.use(AUTH_PASSWORD_PATH, jsonHandler(handleAuthPassword, AUTH_PASSWORD_PATH, { authorization: true }));
           server.middlewares.use(DATA_RUNS_PATH, jsonHandler(handleDataRuns, DATA_RUNS_PATH));
           server.middlewares.use(DATA_ME_PATH, jsonHandler(handleDataMe, DATA_ME_PATH));
           server.middlewares.use(DATA_ASSIGNMENTS_PATH, jsonHandler(handleDataAssignments, DATA_ASSIGNMENTS_PATH));
