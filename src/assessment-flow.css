@@ -19,7 +19,9 @@
 .flow-back {
   position: absolute;
   left: clamp(20px, calc(2.6 * var(--vw, 1vw)), 46px);
-  bottom: clamp(24px, calc(3.3 * var(--vh, 1vh)), 38px);
+  /* 上移一档（原 24–38px 贴视口底，用户要求适当上移）：与面板底部
+     留出明显间隔，也不再压任务栏区。 */
+  bottom: clamp(44px, calc(5.6 * var(--vh, 1vh)), 64px);
   z-index: 4;
   display: inline-flex;
   align-items: center;

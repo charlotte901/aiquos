@@ -173,23 +173,34 @@ const GRADING_TEMPERATURE = 0;
 const GRADING_OPTIONS = { temperature: GRADING_TEMPERATURE, thinking: { type: "disabled" } };
 
 async function chatOnce({ messages, temperature, thinking }) {
-  const response = await fetch("/api/deepseek/chat", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      messages,
-      stream: false,
-      ...(temperature != null ? { temperature } : {}),
-      ...(thinking ? { thinking } : {}),
-    }),
-  });
-  if (!response.ok) {
-    const detail = await response.json().catch(() => null);
-    throw new Error(detail?.error || "AI 服务暂时不可用。");
+  // 断链自愈：连接被中途掐断（AbortError，dev 长链路偶发实测）时静默补一发；
+  // 服务端明确返回的业务错误（4xx/5xx 已转 Error）不重试，浪费且无意义。
+  const request = async () => {
+    const response = await fetch("/api/deepseek/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        messages,
+        stream: false,
+        ...(temperature != null ? { temperature } : {}),
+        ...(thinking ? { thinking } : {}),
+      }),
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(detail?.error || "AI 服务暂时不可用。");
+    }
+    const payload = await response.json();
+    if (typeof payload.message !== "string") throw new Error("AI 服务未返回内容。");
+    return payload.message;
+  };
+  try {
+    return await request();
+  } catch (error) {
+    if (error?.name !== "AbortError" && error?.name !== "TypeError") throw error;
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    return request();
   }
-  const payload = await response.json();
-  if (typeof payload.message !== "string") throw new Error("AI 服务未返回内容。");
-  return payload.message;
 }
 
 function pick(list) {
@@ -279,7 +290,7 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
   return (
     <main className="assessment-flow map-flow" style={{ "--assessment-color": theme.color, "--assessment-soft": theme.soft, "--assessment-glow": theme.glow, "--assessment-deep": theme.deep }}>
       <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
-        <ArrowLeft weight="bold" /> 返回测评选择
+        <ArrowLeft weight="bold" /> 返回
       </button>
       <h1 className="flow-wordmark" aria-label="TEST! 闯关地图"><TestWordmark /></h1>
       <Progress current={current} complete={complete} onPick={onOpenStage} disabled={busy} total={total} />
@@ -1793,6 +1804,7 @@ function PracticalWorkbenchPhase({
             // 学员一个字的比例都没写 → 用服务端默认方形，由评分标准扣分。
             size: taskImageSize(prompt, task),
           });
+          setOffline(false); // 真实生成成功即复位离线态（此前永不复位）。
         } catch (error) {
           // 生成失败要**说出来**，不能悄悄换成演示图。
           // 学员拿不到真图时，若只看得到一张"看着像成品"的占位图，
@@ -1826,6 +1838,11 @@ function PracticalWorkbenchPhase({
           setOffline(true);
           output = offlineAgentOutput(task, prompt);
           entry.offline = true;
+        } else {
+          // 一次瞬时失败不该把整个阶段永久钉在离线态：本轮真实生成成功
+          // 即摘除离线 chip（此前只有 setOffline(true) 没有复位，用户重试
+          // 成功后界面仍显示「离线演示模式」）。
+          setOffline(false);
         }
         entry.output = output;
       }
@@ -1846,6 +1863,7 @@ function PracticalWorkbenchPhase({
     let report = null;
     try {
       report = await requestPracticalScore({ task, generations, finalGeneration, isImageTask });
+      setOffline(false); // 权威评分可达即在线，覆盖旧失败标记。
     } catch {
       setOffline(true);
     }
@@ -2327,7 +2345,7 @@ export function AssessmentTask({
       }}
     >
       <button className="flow-back" type="button" onClick={onBack} disabled={busy}>
-        <ArrowLeft weight="bold" /> {comprehensive ? "返回关卡地图" : "返回测评选择"}
+        <ArrowLeft weight="bold" /> 返回
       </button>
       <Progress current={stage} complete={complete} onPick={onPick} disabled={busy} total={total} />
 
