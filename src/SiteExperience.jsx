@@ -916,10 +916,6 @@ export function SiteExperience() {
           <AssessmentHub
             onBack={() => go("choose")}
             onStart={startAssessment}
-            onAssign={(assignment) => startAssessment("comprehensive", {
-              assignmentId: assignment.id,
-              edition: assignment.edition,
-            })}
             busy={moving}
             active={view === "assessments"}
           />

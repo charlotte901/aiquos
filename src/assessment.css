@@ -13,15 +13,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* 与 CENTER 同款处理：上下 auto 边距吸收多余高度实现垂直居中，短视口下先
-   * 让出边距而不是把卡片挤出屏幕。此前固定 padding + 顶部对齐，1920x1080
-   * 会在底部留下 270px 空白。 */
+  /* 与 CHOOSE 页同一条顶部锚定公式（choose.css 的 122×unit）：两页字标
+   * 顶边恒等——此前本页用 auto 边距垂直居中，视口越高 TEST 字标比 CHOOSE
+   * 低得越多（2000×1155 实测低 23px）。顶部锚定后短视口富余落到底部。 */
   min-height: calc(100 * var(--dvh, 1dvh));
-  padding-top: calc(96px * var(--assessment-unit));
+  padding-top: calc(122px * var(--assessment-unit));
   padding-bottom: calc(96px * var(--assessment-unit));
   box-sizing: border-box;
 }
-.assessment-layout > *:first-child { margin-top: auto; }
+.assessment-layout > *:first-child { margin-top: 0; }
 .assessment-layout > *:last-child { margin-bottom: auto; }
 .assessment-wordmark {
   margin: 0;
