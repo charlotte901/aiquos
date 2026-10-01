@@ -2,19 +2,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  ChalkboardTeacher,
   Check,
   ChatCircleDots,
   ClipboardText,
+  ClockCountdown,
   CircleNotch,
   ImageSquare,
   ListChecks,
   PaperPlaneTilt,
+  SealCheck,
   Sparkle,
   Target,
   Timer,
   X,
 } from "@phosphor-icons/react";
 import { TestWordmark } from "./TestWordmark";
+import { authFetch, readProfile } from "./auth-client";
 import {
   COMPREHENSIVE_LEVELS,
   COMPREHENSIVE_TYPE_LABELS,
@@ -38,7 +42,7 @@ import {
 } from "./assessment-timing";
 import { abilityStandardError, shouldStopCat } from "./comprehensive-adaptive";
 import { answerCredit } from "./assessment-attempt";
-import { readEdition } from "./bank-editions";
+import { EDITIONS, readEdition } from "./bank-editions";
 import { generateArkImage, streamDeepSeek } from "./deepseek";
 import {
   INTERVIEW_LADDER,
@@ -264,12 +268,95 @@ function PhaseTimer({ remainingMs, className = "" }) {
   );
 }
 
-export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy, resume = null }) {
+function formatDue(dueAt) {
+  if (!dueAt) return null;
+  const date = new Date(dueAt);
+  if (Number.isNaN(date.getTime())) return null;
+  return `${date.getMonth() + 1} 月 ${date.getDate()} 日前完成`;
+}
+
+/**
+ * 教师推送的组卷作业（自 TEST 页迁入综合测评地图）：老师从管理端
+ * 「组卷中心」下发，学员进入综合测评后在闯关地图直接看到并开始作答；
+ * 完成后（成绩上报）这里会显示已完成与得分。
+ */
+function AssignmentBoard({ assignments, onAssign, busy }) {
+  if (assignments.length === 0) return null;
+  const pending = assignments.filter((item) => !item.myRun);
+  const done = assignments.filter((item) => item.myRun);
+  return (
+    <section className="assessment-assignments is-in-map" aria-label="教师推送的测评试卷">
+      <header className="assessment-assignments-head">
+        <ChalkboardTeacher size={20} weight="duotone" aria-hidden="true" />
+        <div>
+          <strong>老师推送的综合能力测评</strong>
+          <span>按老师指定的题库作答，完成后成绩会同步给老师</span>
+        </div>
+        <em>{pending.length > 0 ? `${pending.length} 份待完成` : "全部完成"}</em>
+      </header>
+      <ul className="assessment-assignments-list">
+        {[...pending, ...done].map((item) => (
+          <li key={item.id} className={`assignment-card${item.myRun ? " is-done" : ""}${item.status === "closed" ? " is-closed" : ""}`}>
+            <div className="assignment-card-main">
+              <strong>{item.title}</strong>
+              {item.note && <p>{item.note}</p>}
+              <div className="assignment-card-meta">
+                <span>{item.createdBy} 下发</span>
+                <span>{EDITIONS[item.edition]?.label ?? "精选版"}题库</span>
+                {item.dueAt && (
+                  <span className="assignment-due"><ClockCountdown size={13} aria-hidden="true" /> {formatDue(item.dueAt)}</span>
+                )}
+              </div>
+            </div>
+            {item.myRun ? (
+              <div className="assignment-card-status" aria-label="已完成">
+                <SealCheck size={22} weight="fill" aria-hidden="true" />
+                <strong>{Math.round(item.myRun.overallScore)} 分</strong>
+                <span>{item.myRun.grade ? `${item.myRun.grade} 级` : "已完成"}</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="assignment-start"
+                onClick={() => onAssign(item)}
+                disabled={busy || item.status === "closed"}
+              >
+                {item.status === "closed" ? "已截止" : "开始作答"}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy, onAssign, resume = null }) {
   const theme = ASSESSMENT_THEMES[id];
   const total = phaseCount(id);
   const stageLabels = id === "comprehensive"
     ? COMPREHENSIVE_PHASES.map((phase) => phase.label)
     : STAGE_LABELS;
+  // 教师推送（自 TEST 页迁入）：登录才有；未登录/离线时静默隐藏。地图
+  // 挂载即拉取——从闯关返回地图时会重新挂载，刚下发的作业无需刷新可见。
+  const [assignments, setAssignments] = useState([]);
+  useEffect(() => {
+    if (id !== "comprehensive") return undefined;
+    if (!readProfile()) {
+      setAssignments([]);
+      return undefined;
+    }
+    let alive = true;
+    authFetch("/api/data/assignments")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (alive && Array.isArray(payload?.assignments)) setAssignments(payload.assignments);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [id]);
   const resumeStarted = resume?.startedAt
     ? new Date(resume.startedAt)
     : null;
@@ -287,6 +374,9 @@ export function AssessmentMap({ id, current, complete, onBack, onOpenStage, busy
         <p className="map-kicker">{theme.title}</p>
         <h2>从这一关开始</h2>
         <p>{theme.description}</p>
+        {/* 教师推送的作业：置于闯关节点与续答横幅之前——进入综合测评，
+            老师布置的优先于自主练习。 */}
+        <AssignmentBoard assignments={assignments} onAssign={onAssign} busy={busy} />
         {resume && (
           <div className="map-resume" role="status">
             <div>
