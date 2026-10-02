@@ -132,7 +132,10 @@ export function practicalImageRefs(uploads = [], previousTurn = null, turnNumber
   const refs = (Array.isArray(uploads) ? uploads : [])
     .filter((item) => item?.src)
     .map((item) => ({ src: item.src, name: item.name || "参考图" }));
-  if (previousTurn?.imageUrl && !previousTurn.offline) {
+  const previousIsMounted = (Array.isArray(uploads) ? uploads : []).some((item) => (
+    item?.src === previousTurn?.imageUrl || item?.sourceId === previousTurn?.imageUrl
+  ));
+  if (previousTurn?.imageUrl && !previousTurn.offline && !previousIsMounted) {
     refs.push({ src: previousTurn.imageUrl, name: `上一轮产物（第 ${turnNumber - 1} 轮）` });
   }
   return refs;

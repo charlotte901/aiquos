@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { scopedKey } from "./account-scope.js";
 import {
   ArrowLeft,
   ArrowRight,
+  Brain,
+  CaretLeft,
+  CaretRight,
+  ChalkboardTeacher,
   Check,
   ChatCircleDots,
   ClipboardText,
+  ClockCountdown,
   CircleNotch,
   ImageSquare,
   ListChecks,
+  MagnifyingGlassPlus,
   PaperPlaneTilt,
   Sparkle,
   Target,
@@ -26,7 +33,6 @@ import {
 import {
   ASSESSMENT_THEMES,
   PHASE_MODE_NAMES,
-  PHASE_STORIES,
   STAGE_LABELS,
   getStageMode,
 } from "./assessment-flow";
@@ -66,6 +72,7 @@ import { useStageConfetti } from "./use-stage-confetti";
 import { DIMENSIONS as SCORING_DIMENSIONS } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
 const GUIDES = "/assets/crops/assessment-guides-crop.png";
+const IMAGE_DRAG_TYPE = "application/x-aiquos-image";
 
 /**
  * 任务素材里，哪些是**学员该看到的输入**。
@@ -80,6 +87,35 @@ const GUIDES = "/assets/crops/assessment-guides-crop.png";
 function inputAssets(task) {
   const list = Array.isArray(task?.assets) ? task.assets : [];
   return list.filter((asset) => asset && asset.src && asset.role !== "product");
+}
+
+function PracticalImageLightbox({ image, onClose }) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={image.caption || "图片预览"}>
+      <button className="image-lightbox-backdrop" type="button" aria-label="关闭图片预览" onClick={onClose} />
+      <figure className="image-lightbox-card">
+        <button className="image-lightbox-close" type="button" aria-label="关闭图片预览" onClick={onClose}>
+          <X weight="bold" />
+        </button>
+        <img className="image-lightbox-media" src={image.src} alt={image.alt || image.caption || "图片预览"} draggable={false} />
+        {image.caption && <figcaption>{image.caption}</figcaption>}
+      </figure>
+    </div>,
+    document.body,
+  );
 }
 
 /**
@@ -364,60 +400,12 @@ function TaskHeader({ id, stage, mode }) {
   return <div className="task-heading"><Icon weight="fill" /><span>{phase ? `${phase.label} · 约 5 分钟` : `${theme.title}`}</span><strong>{name}</strong></div>;
 }
 
-function getStorySpeaker(guardian, who) {
-  return who === "guardian" ? guardian : who === "xiao" ? "AI 导师 · 小源" : "你";
-}
-
-function TaskStoryDialogue({ guardian, phase, lines, lineIndex, onAdvance, onSkip }) {
-  if (!lines || lines.length === 0) return null;
-  const line = lines[Math.min(lineIndex, lines.length - 1)];
-  return (
-    <div
-      className="comprehensive-dialogue-screen"
-      role="button"
-      tabIndex={0}
-      aria-label={phase === "opening" ? "继续下一句对话" : "继续结尾对话"}
-      onClick={onAdvance}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onAdvance();
-        }
-      }}
-    >
-      <div className="story-line">
-        <div className="story-eyebrow">
-          <span>{getStorySpeaker(guardian, line.who)}</span>
-          <strong>{lineIndex + 1} / {lines.length}</strong>
-        </div>
-        <p>{line.text}</p>
-        <span className="story-hint">
-          {phase === "ending" && lineIndex === lines.length - 1 ? "点击完成本关 ▾" : "点击继续 ▾"}
-        </span>
-        {onSkip && lineIndex < lines.length - 1 && (
-          <button
-            type="button"
-            className="story-skip"
-            onClick={(event) => {
-              event.stopPropagation();
-              onSkip();
-            }}
-          >
-            跳过对话
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function useStorySequencer({ hasStory, story, phase, onCompletePhase }) {
   const [lineIndex, setLineIndex] = useState(0);
   const storyPhase = hasStory ? phase : "quiz";
   const lines = storyPhase === "ending" ? story?.ending ?? [] : storyPhase === "opening" ? story?.opening ?? [] : [];
   // Opening and ending have different line counts; entering a new story act
   // must restart at its first line or lines[lineIndex] goes out of bounds and
-  // the whole panel crashes (TaskStoryDialogue reads line.who).
   useEffect(() => {
     setLineIndex(0);
   }, [storyPhase]);
@@ -921,27 +909,9 @@ function InterviewPhase({
   const finishSummary = () => {
     // 本关交卷后清掉对话存档，下一次进入是全新采访。
     clearInterviewState();
-    if (hasStory) {
-      setPhase("ending");
-      return;
-    }
     onComplete();
   };
 
-  if (storyPhase === "opening" || storyPhase === "ending") {
-    return (
-      <div className="task-body conversation-task" data-phase={storyPhase}>
-        <TaskStoryDialogue
-          guardian={guardian}
-          phase={storyPhase}
-          lines={lines}
-          lineIndex={lineIndex}
-          onAdvance={advanceStory}
-          onSkip={skipStory}
-        />
-      </div>
-    );
-  }
 
   return <div className="task-body conversation-task interview-task" data-phase={phase}>
     <div className="interview-head">
@@ -1241,21 +1211,6 @@ function AdaptiveObjectivePhase({
     return () => window.removeEventListener("keydown", handleKey);
   });
 
-  if (storyPhase === "opening" || storyPhase === "ending") {
-    return (
-      <div className="task-body objective-task comprehensive-task" data-phase={storyPhase}>
-        <TaskStoryDialogue
-          guardian={guardian}
-          phase={storyPhase}
-          lines={lines}
-          lineIndex={lineIndex}
-          onAdvance={advanceStory}
-          onSkip={skipStory}
-        />
-      </div>
-    );
-  }
-
   if (phase === "summary") {
     // 关卡完成页。只报「答了多少题、覆盖了哪些维度、下一步去哪」——
     // 不报正确率与答对数：这是阶段性小结，提前摊开成绩会让学员据此推断
@@ -1275,7 +1230,7 @@ function AdaptiveObjectivePhase({
       thisLevel={thisLevel}
       nextLevel={nextLevel}
       isFinalStage={isFinalStage}
-      onContinue={() => (hasStory ? setPhase("ending") : onComplete())}
+      onContinue={onComplete}
     />;
   }
 
@@ -1514,6 +1469,9 @@ function PracticalWorkbenchPhase({
   const [draft, setDraft] = useState("");
   const [generations, setGenerations] = useState([]);
   const [liveOutput, setLiveOutput] = useState("");
+  // DeepSeek 的流式思考内容（reasoning_content）与最终产物分开展示；
+  // 它只服务作答时的过程可视化，不进入评分请求。
+  const [liveThinking, setLiveThinking] = useState("");
   // 正在生成的那一轮指令：先把它作为一条"我"的气泡放进线程，
   // 学员才不会在等待时觉得自己的输入消失了（旧版要等整轮结束才出现）。
   const [livePrompt, setLivePrompt] = useState("");
@@ -1526,6 +1484,11 @@ function PracticalWorkbenchPhase({
   // 没有上传就只能靠文字描述，很多任务没法做。
   const [uploads, setUploads] = useState([]);
   const uploadInputRef = useRef(null);
+  // 点击任何实操图片后进入全屏预览；Esc 或点遮罩关闭。
+  const [imagePreview, setImagePreview] = useState(null);
+  // 图片拖到 AI 工作台时的落点反馈。计数能避免进入子元素时的闪烁。
+  const [dragOverComposer, setDragOverComposer] = useState(false);
+  const dragDepthRef = useRef(0);
   // 线程滚动容器：新气泡出现时滚到底，保持最新一轮可见。
   const threadRef = useRef(null);
   // 评分报告（/api/practical-score 的返回；离线兜底时只有总档位分）。
@@ -1533,7 +1496,12 @@ function PracticalWorkbenchPhase({
   // 两步态：先只呈现任务与交付标准（大字、留白充足），确认后再进入作答界面。
   // 一屏同时塞下标准+素材+画布+输入框，只能把字号压到 12–15px，反而看不清。
   const [briefAcknowledged, setBriefAcknowledged] = useState(false);
+  // 作答页内的两个视图都保持挂载；切换只控制可见性，避免丢失草稿、上传和生成状态。
+  const [workbenchView, setWorkbenchView] = useState("task");
   const finalGeneration = generations[generations.length - 1];
+  const threadFollowRef = useRef(true);
+  const thinkingFollowRef = useRef(true);
+  const liveThinkingBodyRef = useRef(null);
 
   const { storyPhase, lines, lineIndex, advanceStory, skipStory } = useStorySequencer({
     hasStory,
@@ -1573,12 +1541,14 @@ function PracticalWorkbenchPhase({
     });
   }, [phase, storyPhase, running, generations.length, lineIndex, lines, guardian, onCharacterFeedback]);
 
-  // 新气泡出现或流式输出增长时，把线程滚到底 —— 连续迭代时最新一轮
-  // 必须在视野里，否则学员会以为"没反应"。
+  // 新气泡出现或流式思考/输出增长时，把线程滚到底 —— 连续迭代时最新一轮
+  // 必须在视野里，否则学员会以为"没反应"。若学员主动上翻，暂停跟随。
   useEffect(() => {
     const node = threadRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
-  }, [generations.length, running, liveOutput]);
+    const thought = liveThinkingBodyRef.current;
+    if (node && threadFollowRef.current) node.scrollTop = node.scrollHeight;
+    if (thought && thinkingFollowRef.current) thought.scrollTop = thought.scrollHeight;
+  }, [generations.length, running, liveOutput, liveThinking]);
 
   // 能力知情选任务（实验 3 R1）：用当前（客观题 CAT 已收敛的）能力估计
   // 提示服务端挑难度匹配的实操任务。θ̂ = logit(维度分均值)，无结果时不带
@@ -1638,20 +1608,6 @@ function PracticalWorkbenchPhase({
     // （仍限定 brief 态：学员还没开始作答，重取无副作用）。
   }, [levelId, taskId, reloadToken, hasStory, abilityHint, phase, generations.length, briefAcknowledged]);
 
-  if (storyPhase === "opening" || storyPhase === "ending") {
-    return (
-      <div className="task-body practical-task" data-phase={storyPhase}>
-        <TaskStoryDialogue
-          guardian={guardian}
-          phase={storyPhase}
-          lines={lines}
-          lineIndex={lineIndex}
-          onAdvance={advanceStory}
-          onSkip={skipStory}
-        />
-      </div>
-    );
-  }
 
   if (!task) {
     return <div className="task-body practical-task">
@@ -1683,12 +1639,14 @@ function PracticalWorkbenchPhase({
    * 任务自带的素材（/tasks/*.jpg）也走这条路径 —— 它们同样是几 MB 的图，
    * 直接原样内联进请求会显著拖慢每轮生成。
    */
-  async function toUploadItem(source, fallbackName = "参考图") {
+  async function toUploadItem(source, fallbackName = "参考图", explicitSourceId = null) {
     let dataUrl;
     let name = fallbackName;
+    let sourceId = explicitSourceId;
     if (typeof source === "string") {
       dataUrl = source;
       name = source.split("/").pop() || fallbackName;
+      sourceId = source;
     } else {
       if (!source.type?.startsWith("image/")) throw new Error("只支持图片文件。");
       name = source.name || fallbackName;
@@ -1713,7 +1671,7 @@ function PracticalWorkbenchPhase({
     canvas.width = width;
     canvas.height = height;
     canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-    return { src: canvas.toDataURL("image/jpeg", 0.82), name, width, height };
+    return { src: canvas.toDataURL("image/jpeg", 0.82), name, width, height, sourceId };
   }
 
   /**
@@ -1739,7 +1697,7 @@ function PracticalWorkbenchPhase({
     const items = [];
     for (const seed of seeds) {
       try {
-        const item = await toUploadItem(seed.src, seed.name);
+        const item = await toUploadItem(seed.src, seed.name, seed.src);
         items.push({ ...item, name: seed.name, fromTask: true });
       } catch { /* 单张失败跳过 */ }
     }
@@ -1757,6 +1715,103 @@ function PracticalWorkbenchPhase({
       setError("");
     } catch (uploadError) {
       setError(uploadError.message || "图片上传失败。");
+    }
+  }
+
+  /** 拖拽进来的图复用现有压缩与挂载流程，并按来源去重。 */
+  async function appendDroppedImages(items) {
+    if (running) {
+      setError("Agent 生成中暂时不能调整参考图。");
+      return;
+    }
+    const usable = items.filter((item) => item?.src && !item.offline);
+    if (!usable.length) {
+      setError("离线占位图不能作为参考图。");
+      return;
+    }
+
+    const ownedIds = new Set(uploads.map((item) => item.sourceId).filter(Boolean));
+    const accepted = [];
+    let overflow = false;
+    for (const candidate of usable) {
+      if (candidate.sourceId && ownedIds.has(candidate.sourceId)) continue;
+      if (accepted.length + uploads.length >= 4) {
+        overflow = true;
+        continue;
+      }
+      try {
+        const item = await toUploadItem(candidate.src, candidate.name || "参考图", candidate.sourceId || null);
+        accepted.push({ ...item, fromTask: Boolean(candidate.fromTask) });
+        if (candidate.sourceId) ownedIds.add(candidate.sourceId);
+      } catch {
+        setError("拖入的图片无法读取。");
+      }
+    }
+
+    if (accepted.length) {
+      setUploads((current) => [...current, ...accepted].slice(0, 4));
+      setError("");
+    }
+    if (overflow) setError("最多挂载 4 张参考图。");
+  }
+
+  function handleImageDragStart(payload) {
+    return (event) => {
+      event.dataTransfer.setData(IMAGE_DRAG_TYPE, JSON.stringify(payload));
+      event.dataTransfer.setData("text/uri-list", payload.src);
+      event.dataTransfer.setData("text/plain", payload.src);
+      event.dataTransfer.effectAllowed = "copy";
+    };
+  }
+
+  function hasImageDrag(event) {
+    const types = Array.from(event.dataTransfer?.types ?? []);
+    return types.includes(IMAGE_DRAG_TYPE) || types.includes("Files") || types.includes("text/uri-list");
+  }
+
+  function handleDragEnter(event) {
+    if (!hasImageDrag(event)) return;
+    event.preventDefault();
+    dragDepthRef.current += 1;
+    setDragOverComposer(true);
+  }
+
+  function handleDragOver(event) {
+    if (!hasImageDrag(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  }
+
+  function handleDragLeave() {
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) setDragOverComposer(false);
+  }
+
+  async function handleImageDrop(event) {
+    if (!hasImageDrag(event)) return;
+    event.preventDefault();
+    dragDepthRef.current = 0;
+    setDragOverComposer(false);
+
+    const customData = event.dataTransfer.getData(IMAGE_DRAG_TYPE);
+    if (customData) {
+      try {
+        await appendDroppedImages([JSON.parse(customData)]);
+      } catch {
+        setError("拖入的图片无法读取。");
+      }
+      return;
+    }
+
+    const uri = event.dataTransfer.getData("text/uri-list") || event.dataTransfer.getData("text/plain");
+    if (uri && /^(data:image\/|https?:\/\/)/i.test(uri)) {
+      await appendDroppedImages([{ src: uri, name: "拖入的图" }]);
+      return;
+    }
+
+    const files = [...(event.dataTransfer.files ?? [])].filter((file) => file.type.startsWith("image/"));
+    if (files.length) {
+      await appendDroppedImages(files.map((file) => ({ src: file, name: file.name || "拖入的图" })));
     }
   }
 
@@ -1793,12 +1848,17 @@ function PracticalWorkbenchPhase({
     // started writing — the time budget gates new iterations, not this one.
     const expiredButStarted = expired && prompt.length > 0 && generations.length === 0;
     if (!prompt || running || atGenerationCap || (expired && !expiredButStarted)) return;
+    threadFollowRef.current = true;
+    thinkingFollowRef.current = true;
     setError("");
     setIsRunning(true);
     setLiveOutput("");
+    setLiveThinking("");
     // 先把本轮指令放上屏：等待期间学员能看见"我说了什么"，
     // 而不是输入框清空后只剩一个转圈。
     setLivePrompt(prompt);
+    // 发送即清空草稿；原文已进入线程记录，等待期间不继续占住输入框。
+    setDraft("");
     // 本轮之前已完成的轮次：文本任务作为对话历史，图片任务作为修订底图。
     const history = generations;
     const previous = history[history.length - 1] ?? null;
@@ -1834,6 +1894,7 @@ function PracticalWorkbenchPhase({
         }
       } else {
         let output = "";
+        let reasoning = "";
         let failed = false;
         try {
           // 多轮：把已完成的轮次一并交给 Agent，支持"在上一版上再改"。
@@ -1842,6 +1903,10 @@ function PracticalWorkbenchPhase({
             onDelta: (message) => {
               output = message;
               setLiveOutput(message);
+            },
+            onReasoning: (message) => {
+              reasoning = message;
+              setLiveThinking(message);
             },
           });
         } catch {
@@ -1858,14 +1923,15 @@ function PracticalWorkbenchPhase({
           setOffline(false);
         }
         entry.output = output;
+        entry.reasoning = reasoning;
       }
       setGenerations((current) => [...current, entry]);
-      setDraft("");
     } catch (requestError) {
       setError(requestError.message || "运行失败，请重试。");
     } finally {
       setIsRunning(false);
       setLiveOutput("");
+      setLiveThinking("");
       setLivePrompt("");
     }
   };
@@ -1928,7 +1994,22 @@ function PracticalWorkbenchPhase({
             <figure className="wb-reference wb-brief-refs" aria-label="任务参考素材">
               {inputAssets(task).map((asset) => (
                 <figure className="wb-reference-item" key={asset.src}>
-                  <img src={asset.src} alt={assetLabel(asset)} />
+                  <button
+                    type="button"
+                    className="wb-image-button"
+                    draggable
+                    onDragStart={handleImageDragStart({
+                      src: asset.src,
+                      name: assetLabel(asset),
+                      sourceId: asset.src,
+                      fromTask: true,
+                    })}
+                    onClick={() => setImagePreview({ src: asset.src, alt: assetLabel(asset), caption: assetLabel(asset) })}
+                    title="点击放大，拖到 AI 工作台可挂载参考图"
+                  >
+                    <img src={asset.src} alt={assetLabel(asset)} draggable={false} />
+                    <span className="wb-image-action"><MagnifyingGlassPlus weight="bold" /><span>放大</span></span>
+                  </button>
                   <figcaption>{assetLabel(asset)}</figcaption>
                 </figure>
               ))}
@@ -1957,12 +2038,14 @@ function PracticalWorkbenchPhase({
             onClick={() => {
               setBriefAcknowledged(true);
               setPhase("work");
+              setWorkbenchView("agent");
             }}
           >
             我已了解任务，开始作答
             <ArrowRight weight="bold" />
           </button>
         </div>
+        {imagePreview && <PracticalImageLightbox image={imagePreview} onClose={() => setImagePreview(null)} />}
       </div>
     );
   }
@@ -2016,7 +2099,7 @@ function PracticalWorkbenchPhase({
           <button
             type="button"
             className="wb-brief-start"
-            onClick={() => (hasStory ? setPhase("ending") : onComplete())}
+            onClick={onComplete}
           >
             完成本关
             <ArrowRight weight="bold" />
@@ -2030,17 +2113,60 @@ function PracticalWorkbenchPhase({
   return (
     <div className="task-body practical-task workbench" data-phase="work">
       <div className="workbench-head">
-        <h2>{task.title}</h2>
+        <div className="wb-view-switch" role="tablist" aria-label="实操任务内容切换">
+          <button
+            type="button"
+            className="wb-view-arrow"
+            onClick={() => setWorkbenchView("task")}
+            disabled={workbenchView === "task"}
+            aria-label="查看任务说明"
+          >
+            <CaretLeft weight="bold" />
+          </button>
+          <button
+            type="button"
+            className={`wb-view-tab${workbenchView === "task" ? " is-active" : ""}`}
+            role="tab"
+            aria-selected={workbenchView === "task"}
+            aria-controls="practical-task-panel"
+            onClick={() => setWorkbenchView("task")}
+          >
+            任务说明
+          </button>
+          <button
+            type="button"
+            className={`wb-view-tab${workbenchView === "agent" ? " is-active" : ""}`}
+            role="tab"
+            aria-selected={workbenchView === "agent"}
+            aria-controls="practical-agent-panel"
+            onClick={() => setWorkbenchView("agent")}
+          >
+            AI 工作台
+          </button>
+          <button
+            type="button"
+            className="wb-view-arrow"
+            onClick={() => setWorkbenchView("agent")}
+            disabled={workbenchView === "agent"}
+            aria-label="查看 AI 工作台"
+          >
+            <CaretRight weight="bold" />
+          </button>
+        </div>
         <div className="workbench-meta">
           <span className="wb-chip">{isImageTask ? "图片生成任务" : "文本生成任务"}</span>
-          <span className={`wb-chip${generations.length ? " is-active" : ""}`}>第 {Math.max(1, generations.length)} / {MAX_GENERATIONS} 轮迭代</span>
           {offline && <span className="offline-chip">离线演示模式</span>}
           <PhaseTimer remainingMs={clock.remainingMs} />
         </div>
       </div>
-      <div className="agent-workspace workbench-grid">
-        {/* 左侧：题目展示与交付标准、参考素材 */}
-        <section className="agent-checklist wb-brief wb-task-panel" aria-label="任务要求与交付标准">
+      <div className="agent-workspace workbench-grid" data-view={workbenchView}>
+        {/* 任务说明视图：题目展示与交付标准、参考素材 */}
+        <section
+          id="practical-task-panel"
+          className={`agent-checklist wb-brief wb-task-panel${workbenchView === "task" ? "" : " is-hidden"}`}
+          aria-label="任务要求与交付标准"
+          aria-hidden={workbenchView !== "task"}
+        >
           <div className="wb-task-scroll">
             <div className="wb-task-card wb-goal-card">
               <div className="agent-section-heading">
@@ -2077,7 +2203,22 @@ function PracticalWorkbenchPhase({
                 <figure className="wb-reference" aria-label="任务参考素材">
                   {inputAssets(task).map((asset) => (
                     <figure className="wb-reference-item" key={asset.src}>
-                      <img src={asset.src} alt={assetLabel(asset)} />
+                      <button
+                        type="button"
+                        className="wb-image-button"
+                        draggable
+                        onDragStart={handleImageDragStart({
+                          src: asset.src,
+                          name: assetLabel(asset),
+                          sourceId: asset.src,
+                          fromTask: true,
+                        })}
+                        onClick={() => setImagePreview({ src: asset.src, alt: assetLabel(asset), caption: assetLabel(asset) })}
+                        title="点击放大，拖到 AI 工作台可挂载参考图"
+                      >
+                        <img src={asset.src} alt={assetLabel(asset)} draggable={false} />
+                        <span className="wb-image-action"><MagnifyingGlassPlus weight="bold" /><span>放大</span></span>
+                      </button>
                       <figcaption>{assetLabel(asset)}</figcaption>
                     </figure>
                   ))}
@@ -2108,8 +2249,18 @@ function PracticalWorkbenchPhase({
           </div>
         </section>
 
-        {/* 右侧：Codex / 豆包式 AI 对话工作台 */}
-        <section className="agent-canvas wb-canvas wb-chat-panel" aria-live="polite" aria-label="AI 对话工作区域">
+        {/* AI 工作台视图：Codex / 豆包式 AI 对话工作台 */}
+        <section
+          id="practical-agent-panel"
+          className={`agent-canvas wb-canvas wb-chat-panel${workbenchView === "agent" ? "" : " is-hidden"}`}
+          aria-live="polite"
+          aria-label="AI 对话工作区域"
+          aria-hidden={workbenchView !== "agent"}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleImageDrop}
+        >
           {/* 对话窗口顶部 Agent 状态栏 */}
           <header className="wb-chat-header">
             <div className="wb-chat-agent-info">
@@ -2124,22 +2275,21 @@ function PracticalWorkbenchPhase({
                 </span>
               </div>
             </div>
-            <div className="wb-chat-meta">
-              <span className="wb-chat-iter-badge">
-                第 <b>{Math.max(1, generations.length)}</b> / {MAX_GENERATIONS} 轮
-              </span>
-            </div>
           </header>
 
           {/* 对话消息流（中间自适应滚动） */}
-          <div className="wb-thread" ref={threadRef}>
+          <div
+            className="wb-thread"
+            ref={threadRef}
+            onScroll={(event) => {
+              const node = event.currentTarget;
+              threadFollowRef.current = node.scrollHeight - node.scrollTop - node.clientHeight < 90;
+            }}
+          >
             {generations.length === 0 && !running && (
               <div className="agent-empty wb-chat-welcome">
-                <div className="wb-welcome-badge">
-                  <Sparkle weight="fill" size={26} />
-                </div>
                 <h3>实操对话工作台已就绪</h3>
-                <p>请对照左侧任务目标与交付标准，在下方输入提示词驱动我完成交付。</p>
+                <p>请对照任务说明与交付标准，在下方输入提示词驱动我完成交付。</p>
                 <div className="wb-welcome-tips">
                   <span>💡 支持直接截图粘贴或上传图片</span>
                   <span>⚡️ 快捷键 ⌘+Enter 快速运行</span>
@@ -2155,9 +2305,39 @@ function PracticalWorkbenchPhase({
                 </div>
                 <div className="wb-turn-line wb-turn-agent">
                   <span className="wb-turn-who">Agent</span>
+                  {generation.reasoning && (
+                    <details className="wb-thinking is-record">
+                      <summary>
+                        <Brain weight="fill" />
+                        <span>思考过程</span>
+                      </summary>
+                      <div className="wb-thinking-body">
+                        <MarkdownLite text={generation.reasoning} />
+                      </div>
+                    </details>
+                  )}
                   {generation.imageUrl ? (
                     <figure className="wb-image-wrap">
-                      <img className="agent-image wb-image" src={generation.imageUrl} alt={`第 ${index + 1} 轮生成结果`} />
+                      <button
+                        type="button"
+                        className="wb-image-button wb-generated-image-button"
+                        draggable
+                        onDragStart={handleImageDragStart({
+                          src: generation.imageUrl,
+                          name: `第 ${index + 1} 轮生成结果`,
+                          sourceId: generation.imageUrl,
+                          offline: Boolean(generation.offline),
+                        })}
+                        onClick={() => setImagePreview({
+                          src: generation.imageUrl,
+                          alt: `第 ${index + 1} 轮生成结果`,
+                          caption: `第 ${index + 1} 轮生成结果`,
+                        })}
+                        title="点击放大，拖到 AI 工作台可挂载参考图"
+                      >
+                        <img className="agent-image wb-image" src={generation.imageUrl} alt={`第 ${index + 1} 轮生成结果`} draggable={false} />
+                        <span className="wb-image-action"><MagnifyingGlassPlus weight="bold" /><span>放大</span></span>
+                      </button>
                       {generation.offline && <figcaption>离线演示图</figcaption>}
                     </figure>
                   ) : (
@@ -2174,18 +2354,42 @@ function PracticalWorkbenchPhase({
                 </div>
                 <div className="wb-turn-line wb-turn-agent">
                   <span className="wb-turn-who">Agent</span>
+                  {liveThinking && (
+                    <details
+                      className={`wb-thinking${liveOutput ? " is-complete" : " is-live"}`}
+                      open={!liveOutput}
+                    >
+                      <summary className="wb-thinking-head">
+                        <Brain weight="fill" />
+                        <span>{liveOutput ? "思考完成" : "正在思考…"}</span>
+                        {!liveOutput && <CircleNotch className="reply-spinner" weight="bold" />}
+                      </summary>
+                      <div
+                        ref={liveThinkingBodyRef}
+                        className="wb-thinking-body"
+                        onScroll={(event) => {
+                          const node = event.currentTarget;
+                          thinkingFollowRef.current = node.scrollHeight - node.scrollTop - node.clientHeight < 60;
+                        }}
+                      >
+                        <MarkdownLite text={liveThinking} />
+                      </div>
+                    </details>
+                  )}
                   {liveOutput ? (
                     <div className="agent-output wb-output is-streaming"><MarkdownLite text={liveOutput} /></div>
-                  ) : (
+                  ) : !liveThinking ? (
                     <div className="agent-empty wb-turn-pending">
                       <CircleNotch className="reply-spinner" weight="bold" />
                       <span>{isImageTask ? "正在根据提示词生成主视觉…" : "正在整理材料并生成产出…"}</span>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             )}
           </div>
+
+          {dragOverComposer && <div className="wb-drag-overlay">松开图片，挂载为参考图</div>}
 
           {/* 底部输入与操作区：直接集成在右侧对话窗口底部 */}
           <div className="workbench-actions wb-chat-bottom">
@@ -2198,8 +2402,26 @@ function PracticalWorkbenchPhase({
                     className={`wb-upload${item.fromTask ? " is-task-asset" : ""}`}
                     key={`${item.name}-${index}`}
                     title={item.fromTask ? `任务素材：${item.name}` : `我上传的：${item.name}`}
+                    draggable
+                    onDragStart={handleImageDragStart({
+                      src: item.src,
+                      name: item.name,
+                      sourceId: item.sourceId,
+                      fromTask: Boolean(item.fromTask),
+                    })}
                   >
-                    <img src={item.src} alt={item.name} />
+                    <button
+                      type="button"
+                      className="wb-upload-preview"
+                      onClick={() => setImagePreview({
+                        src: item.src,
+                        alt: item.name,
+                        caption: item.fromTask ? `任务素材：${item.name}` : `我上传的：${item.name}`,
+                      })}
+                      aria-label={`放大 ${item.name}`}
+                    >
+                      <img src={item.src} alt={item.name} draggable={false} />
+                    </button>
                     <button
                       type="button"
                       className="wb-upload-remove"
@@ -2227,7 +2449,7 @@ function PracticalWorkbenchPhase({
                   onKeyDown={onEnterSubmit(run, { withMeta: true, when: () => !running })}
                   placeholder={
                     atGenerationCap
-                      ? `已达 ${MAX_GENERATIONS} 轮迭代上限，可点击下方「交卷评分」`
+                      ? "已达迭代上限，可点击下方「交卷评分」"
                       : expired
                         ? "时间到——可继续提交已写好的要求，或点击下方「交卷评分」"
                         : generations.length
@@ -2236,7 +2458,7 @@ function PracticalWorkbenchPhase({
                             ? "写下画面提示词（主体/场景/风格/构图/色彩），可粘贴参考图，⌘+Enter 生成…"
                             : "写下你的提示词（角色/任务/约束/格式），可粘贴图片，⌘+Enter 运行…"
                   }
-                  rows={2}
+                  rows={1}
                 />
                 <div className="wb-composer-toolbar">
                   <div className="wb-composer-tools">
@@ -2278,7 +2500,7 @@ function PracticalWorkbenchPhase({
               <div className="wb-complete-row">
                 <span className="wb-hint">
                   {generations.length > 1
-                    ? `已迭代 ${generations.length} 轮——会评估、会优化，正是高分信号`
+                    ? "已多轮迭代——会评估、会优化，正是高分信号"
                     : "可以继续提要求让 Agent 改，满意后再交卷"}
                 </span>
                 <TaskAction
@@ -2292,6 +2514,7 @@ function PracticalWorkbenchPhase({
           </div>
         </section>
       </div>
+      {imagePreview && <PracticalImageLightbox image={imagePreview} onClose={() => setImagePreview(null)} />}
     </div>
   );
 }
@@ -2334,13 +2557,12 @@ export function AssessmentTask({
   const total = phaseCount(id);
   const phaseDef = comprehensive ? COMPREHENSIVE_PHASES[stage - 1] : null;
   const mode = phaseDef ? phaseDef.mode : getStageMode(id, 1);
-  const story = phaseDef ? PHASE_STORIES[phaseDef.id] : null;
   const guardian = phaseDef?.guardian
     ?? { conversation: "苏记者", objective: "林教授", practical: "陈创客" }[mode]
     ?? "导师";
   const taskKey = `${id}-${stage}-${mode}`;
   const props = {
-    hasStory: comprehensive,
+    hasStory: false,
     story,
     guardian,
     onComplete: () => onComplete(stage),

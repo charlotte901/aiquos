@@ -98,6 +98,16 @@ test("图片任务第二轮把上一轮产物作为参考图送回（否则等�
   assert.match(second[1].name, /上一轮产物/);
 });
 
+test("学员已拖入的上一轮产物不再作为额外参考图重复发送", () => {
+  const previous = { imageUrl: "data:image/png;base64,PREV" };
+  const uploads = [
+    { src: "data:image/jpeg;base64,COMPRESSED", sourceId: previous.imageUrl, name: "生成结果" },
+  ];
+  const refs = practicalImageRefs(uploads, previous, 2);
+  assert.equal(refs.length, 1);
+  assert.equal(refs[0].src, "data:image/jpeg;base64,COMPRESSED");
+});
+
 test("离线占位图不作为下一轮底图（避免在假图上迭代）", () => {
   const refs = practicalImageRefs([], { imageUrl: "data:image/svg+xml,PLACEHOLDER", offline: true }, 2);
   assert.equal(refs.length, 0);
