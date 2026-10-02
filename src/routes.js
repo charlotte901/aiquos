@@ -10,7 +10,7 @@ export function assessmentHash(id, stage) {
 }
 
 export function parseAssessmentRoute(hash = location.hash) {
-  const match = /^#assessment\/([a-z]+)(?:\/level\/(\d))?$/.exec(hash);
+  const match = /^#\/?assessment\/([a-z]+)(?:\/level\/(\d))?$/.exec(hash);
   if (!match || !ASSESSMENT_IDS.has(match[1])) return null;
   return {
     id: match[1],
@@ -24,7 +24,7 @@ export function profileDetailHash(id) {
 }
 
 export function parseProfileDetailRoute(hash = location.hash) {
-  const match = /^#center\/([a-z-]+)$/.exec(hash);
+  const match = /^#\/?center\/([a-z-]+)$/.exec(hash);
   if (!match || !PROFILE_IDS.has(match[1])) return null;
   return match[1];
 }
