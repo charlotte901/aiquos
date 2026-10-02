@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { scopedKey } from "./account-scope.js";
+import { downloadTaskMaterialDocx } from "./task-material-docx";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,6 +14,8 @@ import {
   ClipboardText,
   ClockCountdown,
   CircleNotch,
+  Download,
+  FileDoc,
   ImageSquare,
   ListChecks,
   MagnifyingGlassPlus,
@@ -2235,12 +2238,30 @@ function PracticalWorkbenchPhase({
                   <ListChecks weight="fill" />
                   <span>原始素材</span>
                 </div>
+                <div className="material-doc-row">
+                  <span className="material-doc-icon" aria-hidden="true">
+                    <FileDoc size={22} weight="duotone" />
+                  </span>
+                  <span className="material-doc-meta">
+                    <strong>任务素材文档</strong>
+                    <small>Word 文档 · 内含本任务所需的全部原始材料</small>
+                  </span>
+                  <button
+                    type="button"
+                    className="material-doc-download"
+                    onClick={() => downloadTaskMaterialDocx(task)}
+                    aria-label="下载素材 Word 文档"
+                    title="下载 Word 文档"
+                  >
+                    <Download size={17} weight="bold" /> 下载 .docx
+                  </button>
+                </div>
                 <button
                   className="source-toggle"
                   type="button"
                   onClick={() => setShowMaterial((value) => !value)}
                 >
-                  {showMaterial ? "收起原始素材" : "展开查看原始素材"}
+                  {showMaterial ? "收起原始素材" : "在页面中预览素材"}
                 </button>
                 {showMaterial && (
                   <div className="source-copy wb-material">
