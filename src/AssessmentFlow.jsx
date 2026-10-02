@@ -2310,25 +2310,6 @@ function PracticalWorkbenchPhase({
               threadFollowRef.current = node.scrollHeight - node.scrollTop - node.clientHeight < 90;
             }}
           >
-            {task.source && (
-              <div className="wb-thread-material">
-                <span className="material-doc-icon" aria-hidden="true">
-                  <FileDoc size={20} weight="duotone" />
-                </span>
-                <span className="material-doc-meta">
-                  <strong>任务素材 · Word 文档</strong>
-                  <small>本任务所需的原始材料已随附（Agent 已读取）</small>
-                </span>
-                <button
-                  type="button"
-                  className="material-doc-mini is-primary"
-                  onClick={() => downloadTaskMaterialDocx(task)}
-                  aria-label="下载素材 Word 文档"
-                >
-                  下载
-                </button>
-              </div>
-            )}
 
             {generations.length === 0 && !running && (
               <div className="agent-empty wb-chat-welcome">
@@ -2437,6 +2418,25 @@ function PracticalWorkbenchPhase({
 
           {/* 底部输入与操作区：直接集成在右侧对话窗口底部 */}
           <div className="workbench-actions wb-chat-bottom">
+            {task.source && (
+              <div className="wb-material-doc-chip">
+                <span className="material-doc-icon" aria-hidden="true">
+                  <FileDoc size={20} weight="duotone" />
+                </span>
+                <span className="material-doc-meta">
+                  <strong>任务素材 · Word 文档</strong>
+                  <small>原始材料已随附（Agent 已读取）</small>
+                </span>
+                <button
+                  type="button"
+                  className="material-doc-mini is-primary"
+                  onClick={() => downloadTaskMaterialDocx(task)}
+                  aria-label="下载素材 Word 文档"
+                >
+                  下载
+                </button>
+              </div>
+            )}
             {error && <p className="agent-error" role="alert">{error}</p>}
 
             {uploads.length > 0 && (

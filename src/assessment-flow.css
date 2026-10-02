@@ -1615,30 +1615,6 @@
 
 .workbench-grid > .wb-canvas .wb-thread { flex: 1 1 auto; min-height: 0; }
 
-/* 线程顶部的任务素材条：Word 附件观感（图标 + 说明 + 预览/下载）。 */
-.wb-thread-material {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 14px;
-  padding: 9px 12px;
-  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 22%, #dbe3ee);
-  border-radius: 14px;
-  background: linear-gradient(175deg, #ffffff 0%, color-mix(in srgb, var(--assessment-soft) 45%, #fff) 100%);
-}
-.wb-thread-material .material-doc-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--assessment-color) 12%, #fff);
-  color: var(--assessment-color);
-  flex: 0 0 auto;
-}
-.wb-thread-material .material-doc-meta { display: grid; gap: 1px; flex: 1; min-width: 0; }
-.wb-thread-material .material-doc-meta strong { color: #17233a; font-size: 12.5px; font-weight: 800; }
-.wb-thread-material .material-doc-meta small { color: #7a8496; font-size: 10.5px; font-weight: 600; }
 .material-doc-mini {
   min-height: 30px;
   padding: 0 12px;
@@ -3236,6 +3212,31 @@
 /* ── 实操任务：参考图上传 ──────────────────────────────────────────────────
    图片类任务常需要"我有一张图，请按它来"。上传的图会随提示词一起发给
    Agent（多模态消息），并在输入框上方以缩略图列出，可逐张移除。 */
+
+/* 挂载区里的任务素材 Word 文档 chip（与图片缩略图同排）。 */
+.wb-material-doc-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1.5px dashed color-mix(in srgb, var(--assessment-color) 34%, #c7d2e3);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--assessment-color) 5%, #fff);
+}
+.wb-material-doc-chip .material-doc-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--assessment-color) 12%, #fff);
+  color: var(--assessment-color);
+  flex: 0 0 auto;
+}
+.wb-material-doc-chip .material-doc-meta { display: grid; gap: 1px; min-width: 0; }
+.wb-material-doc-chip .material-doc-meta strong { color: #17233a; font-size: 12.5px; font-weight: 800; }
+.wb-material-doc-chip .material-doc-meta small { color: #7a8496; font-size: 10.5px; font-weight: 600; }
+
 .wb-uploads {
   display: flex;
   flex-wrap: wrap;
