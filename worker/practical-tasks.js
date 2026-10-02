@@ -20,7 +20,9 @@ function publicTask(task) {
     title: task.title,
     goal: task.goal,
     requirements: task.requirements,
-    source: task.material,
+    // 素材字段双轨：显式 source 优先（如 lite-007 的报告节选）；docx 导入的
+    // 旧任务素材存在 material 里，回退取用——39 个旧任务行为不变。
+    source: task.source ?? task.material,
     // 难度元数据随任务下发：前端把真实难度写进实操证据，融合层据此做
     // IRT 等值校准（见 src/comprehensive-weighting.js 的 practicalChannel）。
     ...(task.difficulty ? { difficulty: task.difficulty } : {}),
