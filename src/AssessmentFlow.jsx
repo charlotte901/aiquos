@@ -2072,6 +2072,7 @@ function PracticalWorkbenchPhase({
                   <em>{Number.isFinite(Number(report.totalScore)) ? ` / ${report.maxScore} 分` : " / 100"}</em>
                 </strong>
                 <span>{Number.isFinite(Number(report.totalScore)) ? `按 20 分制折算 ${Math.round(report.credit * 100)}%` : "任务综合档位分"}</span>
+                <small className="wb-score-bridge">报告中的实操能力分按任务难度做测量校准，与得分率不同：满分任务在中档难度下折算约 83 分。</small>
               </div>
               <ul className="wb-score-parts">
                 {report.prompt && (

@@ -20,9 +20,15 @@
 //                                          （与 cat-seeding 的定档映射同一条）
 //   实操  θ = credit 锚点曲线的逆      —— work/scoring-study 90 次真实打分锚定
 //                                          （credit .312/.555/.934 ↔ θ −1/0/+1）
-// θ 均值映射回 100·σ(θ̄) 展示。缺失通道按维度重新归一化（对话不覆盖 D6：
+// θ 均值映射回展示分。缺失通道按维度重新归一化（对话不覆盖 D6：
 // D6 由客观+实操决定，不把没发生的观测算进权重）。反演值钳制 ±1.6，
 // 单通道满分不会把融合分拖到无穷——线性融合的饱和稳健性保留。
+//
+// 展示映射（1.3.0）：线性定标 score = 50 + θ̄·(50/1.6)，θ 钳制界 ±1.6
+// 恰好对应 0/100 分。此前的 100·σ(θ̄) 把天花板压在 σ(1.6)=83——三通道
+// 全满分也只有 82-83 分，S 级（≥90）在任何表现下都不可达，等级阶梯名存
+// 实亡。线性定标下：θ=0→50（中等）、θ≈1.28→90（S 线）、θ=1.6→100
+// （全通道满分的理论上限），全距斜率恒定 31.25 分/θ，区分度均匀。
 //
 // 权重默认值 {objective 0.6, interview 0.25, practical 0.15} 来自实验 2
 // （work/weighting-study）：效度优先（合成 RMSE 4.41，r=0.981）+ 两条防线
@@ -37,12 +43,19 @@ import {
   scoreAssessment,
 } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
-export const WEIGHTING_VERSION = "1.2.0"; // 1.2.0: 实操通道反演改吃 rawScore(credit 口径)
+export const WEIGHTING_VERSION = "1.3.0"; // 1.3.0: 融合展示改线性定标（±1.6θ ↔ 0/100 分，满分可达）
 export const CHANNEL_KEYS = ["objective", "interview", "practical"];
 export const DEFAULT_WEIGHTS = Object.freeze({ objective: 0.6, interview: 0.25, practical: 0.15 });
 
 const THETA_LIMIT = 1.6;
 const sigmoid = (value) => 1 / (1 + Math.exp(-value));
+
+/** 融合 θ̄ → 展示分：线性定标，θ 钳制界 ±1.6 对应 0/100（见文件头）。 */
+export function thetaToDisplayScore(theta) {
+  if (!Number.isFinite(Number(theta))) return null;
+  const linear = 50 + (Number(theta) / THETA_LIMIT) * 50;
+  return Math.max(0, Math.min(100, Math.round(linear)));
+}
 
 // 实操 credit → θ 的逆锚点曲线（与 work/scoring-study 的校准锚点一致）。
 const PRACTICAL_INVERSE = [[-1, 0.312], [0, 0.555], [1, 0.934]];
@@ -234,7 +247,7 @@ export function fuseChannels(channels, weights = DEFAULT_WEIGHTS) {
       key,
       name,
       short,
-      score: Math.round(100 * sigmoid(thetaMean)),
+      score: thetaToDisplayScore(thetaMean),
       channels: channelScores,
       evidenceCount: evidenceByDim.get(key) ?? 0,
     };

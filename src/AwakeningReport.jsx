@@ -75,9 +75,9 @@ function channelCell(score) {
   return score === null || score === undefined ? "—" : String(score);
 }
 
-function channelOverallText(score, count, unit) {
+function channelOverallText(score, count, unit, note = "") {
   if (score === null || score === undefined) return count > 0 ? `完成 ${count} ${unit}` : "未参加";
-  return `${score} 分 · ${count > 0 ? `${count} ${unit}` : "无记录"}`;
+  return `${score} 分${note ? `（${note}）` : ""} · ${count > 0 ? `${count} ${unit}` : "无记录"}`;
 }
 
 const gradeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
@@ -282,6 +282,9 @@ export function AwakeningReportContent({ snapshot = null }) {
             <p className="report-channels-note">
               同一维度由三个通道分别测量后加权融合（客观 {Math.round((model.composite.weights.objective ?? 0) * 100)}% · 对话 {Math.round((model.composite.weights.interview ?? 0) * 100)}% · 实操 {Math.round((model.composite.weights.practical ?? 0) * 100)}%）。落差大的维度会在下方建议里单独解释。
             </p>
+            <p className="report-channels-note">
+              实操通道是测量模型校准分，不是任务得分率直译：一次满分在中档难度任务上折算约 83（单次观测不足以证明更高能力），难题更高、易题更低——任务原始得分率见上方「实操任务」一行。
+            </p>
             <table className="report-channel-table">
               <thead>
                 <tr>
@@ -307,7 +310,14 @@ export function AwakeningReportContent({ snapshot = null }) {
             <ul className="report-channel-overalls">
               <li><span>客观题阶段</span><b>{channelOverallText(model.channelOveralls?.objective, model.composite.channels.objective.answeredCount, "题")}</b></li>
               <li><span>对话式采访</span><b>{channelOverallText(model.channelOveralls?.interview, model.composite.channels.interview.answeredSlots, "话题")}</b></li>
-              <li><span>实操任务</span><b>{channelOverallText(model.channelOveralls?.practical, model.composite.channels.practical.taskCount, "题")}</b></li>
+              <li><span>实操任务</span><b>{channelOverallText(
+              model.channelOveralls?.practical,
+              model.composite.channels.practical.taskCount,
+              "题",
+              Number.isFinite(Number(model.composite.channels.practical.credit))
+                ? `任务得分率 ${Math.round(model.composite.channels.practical.credit * 100)}% · 难度校准后`
+                : "难度校准后",
+            )}</b></li>
             </ul>
           </section>
         )}

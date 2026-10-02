@@ -95,10 +95,12 @@ test("latent fusion inverts each channel to the common theta scale", () => {
   const creditInv = (c) => -1 + (c - 0.312) / (0.555 - 0.312); // 0.50 落在 (−1,0) 段
   const thetaD1 = 0.5 * logit(0.7) + 0.25 * 1 + 0.25 * creditInv(0.5);
   const d1 = fused.dimensions.find((dimension) => dimension.key === "D1");
-  assert.equal(d1.score, Math.round(100 / (1 + Math.exp(-thetaD1))));
-  // D6 缺两个通道 → 权重归一化到只剩客观；高分被 θ 钳制压缩（90 → 83）。
+  // 1.3.0 线性定标：score = 50 + θ·(50/1.6)。
+  assert.equal(d1.score, Math.round(50 + (thetaD1 / 1.6) * 50));
+  // D6 缺两个通道 → 权重归一化到只剩客观；θ 钳制界 1.6 恰为 100 分
+  // （满分可达——1.3.0 修掉的「S 级不可达」标定缺陷）。
   const d6 = fused.dimensions.find((dimension) => dimension.key === "D6");
-  assert.equal(d6.score, Math.round(100 / (1 + Math.exp(-1.6))));
+  assert.equal(d6.score, 100);
   assert.deepEqual(d6.channels, { objective: 90, interview: null, practical: null });
   // 旧快照兼容：无 rawScore 的 practical score 按 logit 反演（σ 的逆），
   // 而不是误走 credit 曲线——50 分展示分应给出 θ=0，而非 credit(0.5)≈−0.23。
@@ -108,7 +110,7 @@ test("latent fusion inverts each channel to the common theta scale", () => {
     practical: { dimensions: [{ key: "D2", score: 50 }] },
   }, { objective: 0.6, interview: 0.25, practical: 0.15 });
   const d2 = legacy.dimensions.find((dimension) => dimension.key === "D2");
-  assert.equal(d2.score, 50); // θ=0 → σ(0)=0.5
+  assert.equal(d2.score, 50); // θ=0 → 定标中点 50
 });
 
 test("latent fusion removes the channel scale offset and stays bounded", () => {
@@ -121,8 +123,8 @@ test("latent fusion removes the channel scale offset and stays bounded", () => {
   };
   const fused = fuseChannels(channels).dimensions[0].score;
   assert.ok(fused > 60 && fused < 85, `fused ${fused} reflects the scale disagreement, not a blind 80`);
-  // 单通道满分（θ 钳制 1.6）不会把融合分拖到无穷：70 客观 + 100 对话各半
-  // → θ̄ = (1.6·? ) 由钳制决定，融合分有界且显著低于 100。
+  // 单通道满分（θ 钳制 1.6）不会把融合分拖出界：70 客观 + 100 对话各半，
+  // 融合分有界（线性定标下 100 仅在全部在场通道同时触顶时取到）。
   const extreme = fuseChannels({
     objective: { dimensions: [{ key: "D1", score: 70 }] },
     interview: { dimensions: [{ key: "D1", score: 100 }] },
