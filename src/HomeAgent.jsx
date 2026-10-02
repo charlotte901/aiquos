@@ -138,21 +138,24 @@ export function HomeAgent({ leaving = false }) {
           </header>
 
           <div className="home-agent-log" ref={listRef}>
-            {messages.map((message, index) => {
-              const isUser = message.role === "user";
-              const isEmptyTail = !isUser && index === messages.length - 1 && !message.content;
-              return (
-                <div key={index} className={`home-agent-msg ${isUser ? "is-user" : "is-agent"}`}>
-                  {isEmptyTail ? (
-                    <span className="home-agent-typing" aria-label="小Q正在备课">
-                      <i /><i /><i />
-                    </span>
-                  ) : (
-                    message.content
-                  )}
-                </div>
-              );
-            })}
+            {/* 对话流只保留小Q的台词：用户的问题不落气泡（仍会随历史
+                发给模型，保证上下文连续）。 */}
+            {messages
+              .filter((message) => message.role === "assistant")
+              .map((message, index, visible) => {
+                const isEmptyTail = index === visible.length - 1 && !message.content;
+                return (
+                  <div key={index} className="home-agent-msg is-agent">
+                    {isEmptyTail ? (
+                      <span className="home-agent-typing" aria-label="小Q正在备课">
+                        <i /><i /><i />
+                      </span>
+                    ) : (
+                      message.content
+                    )}
+                  </div>
+                );
+              })}
             {messages.length <= 1 && (
               <div className="home-agent-quicks">
                 {QUICK_ASKS.map((ask) => (
@@ -180,7 +183,8 @@ export function HomeAgent({ leaving = false }) {
 
       {teaser && !open && (
         <div className="home-agent-teaser" aria-hidden="true">
-          我是学习导师小Q，有 AI 问题尽管问~
+          <strong>小Q</strong>
+          我是你的 AI 学习导师，有问题尽管问~
         </div>
       )}
 

@@ -437,15 +437,6 @@
   margin: 7px 0 0;
   line-height: 1.55;
 }
-.story-eyebrow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--assessment-deep);
-  font-size: 12px;
-  font-weight: 800;
-}
 .story-line p {
   min-height: 0;
   max-height: 4.6em;
@@ -466,70 +457,6 @@
   margin-top: auto;
   padding-top: 16px;
   min-height: 62px;
-}
-/* 剧情模式：把对话框变成面板的正内容并垂直居中。
-   旧实现用 position:fixed 贴在视口底部，面板本体因此只剩一大片空白——
-   学员看到的是一个空白框加一行小字。现在剧情框占据面板的可用高度，
-   文字居中、面板不再留空。 */
-.comprehensive-dialogue-screen {
-  --assessment-color: #247cf1;
-  --assessment-soft: #e9f2ff;
-  --assessment-deep: #155cca;
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  z-index: 7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(18px, calc(2 * var(--vh, 1vh)), 30px) clamp(24px, calc(2.4 * var(--vw, 1vw)), 40px);
-  background: transparent;
-  cursor: pointer;
-}
-
-.comprehensive-dialogue-screen .story-line {
-  width: min(100%, 860px);
-  margin-top: 0;
-  padding: clamp(20px, calc(2.2 * var(--vh, 1vh)), 30px) clamp(22px, calc(2 * var(--vw, 1vw)), 34px);
-}
-
-/* 剧情态：说话人给一个头像位，长台词读起来像对话而不是弹窗文案。 */
-.comprehensive-dialogue-screen .story-eyebrow { gap: 10px; }
-.comprehensive-dialogue-screen .story-eyebrow > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.comprehensive-dialogue-screen .story-eyebrow > span:first-child::before {
-  content: "苏";
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(140deg, var(--assessment-color), var(--assessment-deep));
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.comprehensive-dialogue-screen .story-line p {
-  margin-top: 12px;
-  font-size: clamp(18px, calc(1.32 * var(--vw, 1vw)), 22px);
-  line-height: 1.7;
-}
-.comprehensive-dialogue-screen .story-line {
-  background: #fff;
-  box-shadow: 0 10px 22px #0000001a, 0 26px 64px color-mix(in srgb, var(--assessment-color) 26%, #00000026);
-}
-.story-hint {
-  display: block;
-  width: fit-content;
-  color: var(--assessment-deep);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  animation: comprehensive-hint 1.4s ease-in-out infinite;
 }
 .task-action { display: inline-flex; align-items: center; justify-content: center; width: 56px; min-width: 56px; height: 56px; margin: auto 0 0 auto; padding: 0; border-radius: 50%; color: #fff; background: var(--assessment-color); font-size: 0; box-shadow: 0 8px 0 #00000012; }
 .task-action svg { width: 26px; height: 26px; }
@@ -776,9 +703,8 @@
   60% { transform: translateX(7px); }
   80% { transform: translateX(-4px); }
 }
-@keyframes comprehensive-hint { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .map-stage.is-active .map-stage-number, .map-flow .level-map, .task-flow .task-panel, .map-stage, .task-body, .quiz-feedback, .story-hint { animation: none; }
+  .map-stage.is-active .map-stage-number, .map-flow .level-map, .task-flow .task-panel, .map-stage, .task-body, .quiz-feedback { animation: none; }
 }
 @media (max-width: 840px) {
   .assessment-flow { padding: 27px 22px 76px; overflow: auto; }
@@ -804,7 +730,6 @@
     animation: none;
     transform: none;
   }
-  .comprehensive-dialogue-screen { width: 100%; padding: 0 22px 34px; }
   .level-map { padding: 38px 24px 52px; }
   .map-path { grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 0; margin-top: 54px; }
   .map-path::before { left: 7%; right: 7%; }
@@ -852,25 +777,6 @@
 }
 
 /* 综合测评剧情对话（开头/结尾）：按 data-phase 触发 */
-.assessment-flow:has(.task-body[data-phase="opening"]) .flow-wordmark,
-.assessment-flow:has(.task-body[data-phase="ending"]) .flow-wordmark,
-.assessment-flow:has(.task-body[data-phase="opening"]) .level-progress,
-.assessment-flow:has(.task-body[data-phase="ending"]) .level-progress,
-.assessment-flow:has(.task-body[data-phase="opening"]) .task-panel .assessment-guides,
-.assessment-flow:has(.task-body[data-phase="ending"]) .task-panel .assessment-guides,
-.assessment-flow:has(.task-body[data-phase="opening"]) .task-heading,
-.assessment-flow:has(.task-body[data-phase="ending"]) .task-heading,
-.assessment-flow:has(.task-body[data-phase="opening"]) .task-body > :not(.comprehensive-dialogue-screen),
-.assessment-flow:has(.task-body[data-phase="ending"]) .task-body > :not(.comprehensive-dialogue-screen) {
-  /* Focus the story beat without destroying readability: at blur(7px)/.75 the
-     background text was unreadable, which reads as a rendering fault rather
-     than as depth. A trace of softness keeps the spotlight while the student
-     can still read what sits behind the dialogue box. */
-  filter: blur(2.5px) saturate(.94);
-  opacity: .92;
-  pointer-events: none;
-  user-select: none;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .task-flow .flow-wordmark,
@@ -883,18 +789,7 @@
 }
 
 /* === v2：剧情答题框本体也虚化（磨砂玻璃），向导图滤镜组合修正 === */
-.assessment-flow:has(.task-body[data-phase="opening"]) .task-panel .assessment-guides,
-.assessment-flow:has(.task-body[data-phase="ending"]) .task-panel .assessment-guides {
-  filter: blur(6px) saturate(.85) brightness(0) invert(1);
-}
 
-.assessment-flow:has(.task-body[data-phase="opening"]) .task-panel,
-.assessment-flow:has(.task-body[data-phase="ending"]) .task-panel {
-  background: color-mix(in srgb, #ffffff 45%, transparent);
-  -webkit-backdrop-filter: blur(12px) saturate(.9);
-  backdrop-filter: blur(12px) saturate(.9);
-  box-shadow: 0 18px 44px color-mix(in srgb, var(--assessment-color) 16%, #00000018);
-}
 
 /* === 对话框字体放大 ===
  * 只作用于气泡正文（.chat-text 的直接子元素），不再命中头像 <span> 内部的
@@ -907,8 +802,6 @@
 .conversation-task .chat-bubble > span { font-size: 14px; }
 .conversation-task .task-composer input { font-size: 20px; }
 .story-line p { font-size: 19px; line-height: 1.75; }
-.story-eyebrow { font-size: 14px; }
-.story-hint { font-size: 14px; }
 .adaptive-telemetry {
   margin: 0 0 8px;
   color: #9369d8;

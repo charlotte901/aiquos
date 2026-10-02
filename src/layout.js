@@ -43,13 +43,27 @@ export function getViewportLayout(width, viewportHeight) {
     ? Math.min((width - 32) / 1300, (height * 0.17) / 345)
     : Math.min(width / 1536, (height / 1024) * 1.05);
   const brandTop = compact ? 114 : (height * 100) / 1024;
+  // 底部块（轮播点 + 文案 + AI测评按钮）的气口钳制：按钮底缘比 dots-top
+  // 低 96 设计像素，钳 dots-top ≤ 视口 − 73（任务栏近似 + 观感气口）−
+  // 96×unit，保证按钮底缘距视口底至少 ~73px；下限不低于立方体底缘上方
+  // 24px，避免盖住机身。高视口下自然值更小，钳制不触发。
+  const dotsTop = compact
+    ? cubeBottom + 3
+    : Math.max(
+        cubeBottom - 24,
+        Math.min(
+          cubeBottom + 2 * cubeScale,
+          viewportHeight - 73 - 96 * unit,
+        ),
+      );
   const introTop = compact
     ? Math.max(cubeBottom + 88, height * 0.535)
     : // Align the explore button's center with the carousel toggle's center:
       // the button sits 275.5 design px into the intro block (h2 3x42x1.15
       // + 18 gap + p 2x17x1.65 + 31 gap + 51/2 button half), the toggle's
-      // center sits 17.5 design px below dots-top (cubeBottom + 2*cubeScale).
-      cubeBottom + 2 * cubeScale + (17.5 - 275.5) * unit;
+      // center sits 17.5 design px below dots-top——钳制生效时以收缩后的
+      // dotsTop 为基准，按钮与轮播暂停键的对齐关系保持不变。
+      dotsTop + (17.5 - 275.5) * unit;
   const introLeft = compact
     ? clamp(width * 0.07, 22, 48)
     : Math.max(36, (width * 72) / 1536);
@@ -84,7 +98,7 @@ export function getViewportLayout(width, viewportHeight) {
       "--intro-left": `${introLeft}px`,
       "--intro-right": `${introRight}px`,
       "--dots-left": `${cubeCenterX - (compact ? 41 : 75 * cubeScale)}px`,
-      "--dots-top": `${cubeBottom + (compact ? 3 : 2 * cubeScale)}px`,
+      "--dots-top": `${dotsTop}px`,
       "--cube-center": `${cubeCenterX}px`,
       "--hint-top": `${cubeBottom + 28}px`,
       "--stats-width": compact ? `${width - 36}px` : `${842 * unit}px`,

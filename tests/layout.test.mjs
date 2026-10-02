@@ -52,5 +52,8 @@ test("reference viewport keeps the calibrated asset and copy coordinates", () =>
   assert.equal(layout.cubeY, 0);
   assert.equal(layout.introLeft, 72);
   assert.equal(layout.introRight, 72);
-  assert.equal(layout.introTop, 621);
+  // 底部块气口钳制：dots-top ≤ 1024 − 73 − 96×1 = 855（自然值 877 被收），
+  // introTop = 855 − 258 = 597，AI测评按钮底缘 951，距视口底 73px。
+  assert.equal(layout.introTop, 597);
+  assert.equal(layout.variables["--dots-top"], "855px");
 });

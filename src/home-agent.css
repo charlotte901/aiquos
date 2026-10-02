@@ -5,7 +5,8 @@
 .home-agent {
   position: fixed;
   left: clamp(16px, 2.6vw, 42px);
-  bottom: clamp(14px, 3.4vh, 34px);
+  /* 用户反馈贴底：从 3.4vh 上移到 5.6vh（903 视口约 50px）。 */
+  bottom: clamp(28px, 5.6vh, 56px);
   z-index: 30;
   transition: opacity 260ms ease, transform 260ms ease;
 }
@@ -142,23 +143,53 @@
 
 /* ── Teaser bubble ───────────────────────────────────────────────────────── */
 
+/* 邀请气泡悬在小Q头顶：白粉渐变底 + 粉描边 + 旋转方块尖角指向天线。
+ * 机器人贴着屏幕左缘，气泡向屏幕内侧展开，尖角落在气泡左端对准头顶。 */
 .home-agent-teaser {
   position: absolute;
-  left: 6px;
-  bottom: 116px;
+  left: -10px;
+  bottom: 128px;
   width: max-content;
-  max-width: 220px;
-  padding: 9px 14px;
-  border-radius: 14px 14px 14px 4px;
-  background: #fffdfb;
-  color: #6b3550;
+  max-width: 216px;
+  padding: 11px 16px 11px 13px;
+  border-radius: 18px 18px 18px 6px;
+  background: linear-gradient(175deg, #ffffff 0%, #fff4f9 100%);
+  border: 1.5px solid #ffd0e4;
+  color: #a04a72;
   font-size: 12.5px;
   font-weight: 700;
-  box-shadow: 0 10px 26px rgba(76, 26, 56, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  box-shadow:
+    0 14px 32px rgba(76, 26, 56, 0.18),
+    0 3px 8px rgba(76, 26, 56, 0.08);
   animation: agent-teaser-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.home-agent-teaser strong {
+  display: inline-block;
+  margin-right: 7px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff7cb7, #f568a3);
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+}
+.home-agent-teaser::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: -7px;
+  width: 13px;
+  height: 13px;
+  background: #fff4f9;
+  border-right: 1.5px solid #ffd0e4;
+  border-bottom: 1.5px solid #ffd0e4;
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
 @keyframes agent-teaser-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -291,14 +322,6 @@
   background: #ffffff;
   color: #4a2537;
   box-shadow: 0 2px 8px rgba(76, 26, 56, 0.08), inset 0 0 0 1px #f6d7e6;
-}
-.home-agent-msg.is-user {
-  align-self: flex-end;
-  border-radius: 14px 14px 4px 14px;
-  background: linear-gradient(135deg, #ff7cb7, #f568a3);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(245, 104, 163, 0.35);
 }
 
 .home-agent-typing {
