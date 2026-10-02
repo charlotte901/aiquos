@@ -666,6 +666,10 @@ export function SiteExperience() {
           edition: readEdition(),
           ...(interviewSeed ? { interviewSeed } : {}),
           ...(outcome ? { outcome } : {}),
+          // 复现调试：URL 带 ?qid=<题目id> 时强制出该题（见 worker 端说明）。
+          ...(new URLSearchParams(location.search).get("qid")
+            ? { forceQuestionId: new URLSearchParams(location.search).get("qid") }
+            : {}),
           debug: isAdaptiveDebugOn(),
         }),
       });

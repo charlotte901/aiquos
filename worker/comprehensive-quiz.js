@@ -184,6 +184,22 @@ export async function handleComprehensiveQuestion(request) {
   const exposure = payload.exposure && typeof payload.exposure === "object" && !Array.isArray(payload.exposure)
     ? payload.exposure
     : {};
+  // 复现调试：payload.forceQuestionId（客户端从 URL ?qid= 透传）直接指定
+  // 题目——命中时原样返回该题，session/exposure 不推进（纯查看，不影响
+  // 自适应路由与曝光均衡）；未命中按正常出题继续。
+  const forcedId = typeof payload?.forceQuestionId === "string" && payload.forceQuestionId
+    ? payload.forceQuestionId
+    : null;
+  if (forcedId && bank.byId.has(forcedId)) {
+    return json({
+      question: bank.byId.get(forcedId),
+      session,
+      exposure,
+      bankVersion: bank.bankVersion,
+      edition,
+      ...(payload.debug ? { debug: debugSnapshot(session) } : {}),
+    });
+  }
   const picked = selectComprehensive({
     levelId,
     stage,
