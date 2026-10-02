@@ -2563,7 +2563,6 @@ export function AssessmentTask({
   const taskKey = `${id}-${stage}-${mode}`;
   const props = {
     hasStory: false,
-    story,
     guardian,
     onComplete: () => onComplete(stage),
   };

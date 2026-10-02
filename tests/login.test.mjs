@@ -27,15 +27,19 @@ const { LoginForm } = compiled.exports;
 
 test("form contains labeled account/password controls and a working submit affordance", () => {
   const html = renderToStaticMarkup(createElement(LoginForm, { onLogin() {} }));
-  assert.match(html, /欢迎回来/);
-  assert.match(html, /aria-label="账号"/);
+  // 设计稿版式：品牌标题 + 可见字段标签 + 账号密码主按钮。
+  assert.match(html, /AIQUOS 登录/);
+  assert.match(html, /认证你的智能，解锁全部能力/);
+  assert.match(html, /class="login-field-label"[^>]*>账号</);
+  assert.match(html, /class="login-field-label"[^>]*>密码</);
   assert.match(html, /type="password"/);
-  assert.match(html, /type="submit"/);
+  assert.match(html, /账号密码登录/);
   assert.match(html, /aria-label="显示密码"/);
   assert.match(html, /novalidate=""/i);
-  // 严格校验时代的表单必须提供登录/注册两个模式。
-  assert.match(html, /登录/);
-  assert.match(html, /注册/);
+  // 注册切换链接与占位次要登录（暂未开通）。
+  assert.match(html, /还没有账号？注册一个/);
+  assert.match(html, /验证码登录/);
+  assert.match(html, /二维码登录/);
 });
 
 test("strict submission never navigates without validation — no credential persistence in the form module", () => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { ArrowLeft } from "@phosphor-icons/react";
+import { ArrowLeft, Fingerprint, SealCheck } from "@phosphor-icons/react";
 import { App } from "./App";
 import { AssessmentHub } from "./AssessmentHub";
 import { AssessmentMap, AssessmentTask } from "./AssessmentFlow";
@@ -867,10 +867,15 @@ export function SiteExperience() {
                 <div className="login-word" aria-hidden="true">PLAYGROUND</div>
                 <div className="login-ink-ring" aria-hidden="true" />
                 <aside className="login-stub" aria-hidden="true">
-                  <span className="login-stub-brand">AIQUOS · ASSESSMENT</span>
-                  <strong className="login-stub-no">№ 2026-0919</strong>
-                  <span className="login-stub-barcode" />
-                  <span className="login-stub-stamp">ADMIT ONE</span>
+                  <span className="login-stub-brand">AWAKEN YOUR INTELLIGENCE</span>
+                  <strong className="login-stub-title">智核域通行证</strong>
+                  <span className="login-stub-print">
+                    <Fingerprint size={72} weight="duotone" />
+                  </span>
+                  <span className="login-stub-verified">
+                    <SealCheck size={15} weight="fill" /> 已认证
+                  </span>
+                  <span className="login-stub-stamp">AIQUOS</span>
                 </aside>
                 <div className="login-surface">
                   <LoginForm onLogin={(profile) => {
