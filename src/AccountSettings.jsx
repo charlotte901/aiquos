@@ -11,7 +11,6 @@ import {
 import { useRef, useState } from "react";
 import { setAccount, useAccount } from "./account-store";
 import { useFavorites } from "./favorites-store";
-import { clearAllAssessmentData } from "./assessment-attempt";
 import { apiChangePassword, apiUpdateNickname, clearSession, readProfile } from "./auth-client";
 import { writeActiveAssignmentId } from "./run-report";
 
@@ -21,7 +20,6 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [dataCleared, setDataCleared] = useState(false);
   const avatarInputRef = useRef(null);
   const favorites = useFavorites();
   // 已登录：以服务端档案展示身份；未登录：保留本地演示资料卡。
@@ -32,12 +30,6 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
     // 完成记录上。
     writeActiveAssignmentId(null);
     onLogout();
-  };
-
-  const clearLocalData = () => {
-    clearAllAssessmentData();
-    setDataCleared(true);
-    window.setTimeout(() => setDataCleared(false), 2600);
   };
 
   // 头像存进账号（data URL）而不是组件状态：这样头部右上角的圆形头像、
@@ -122,7 +114,6 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
       <div className="account-editor">
         <header>
           <div>
-            <p className="account-kicker">AIQUOS / ACCOUNT</p>
             <h2>账号设置</h2>
           </div>
           <span>{authProfile ? "已登录 · 服务端账号" : "本地资料 · 未登录"}</span>
@@ -237,27 +228,6 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
           </div>
         </form>
         )}
-        <section className="account-privacy" aria-label="数据与隐私">
-          <h3>数据与隐私</h3>
-          <p>
-            综合测评的答题草稿、历史报告（最多 12 份）与自适应出题的选题记录全部保存在本机浏览器
-            （localStorage）。{authProfile
-              ? "登录状态下，每次完成综合测评会把成绩摘要（总分、六维得分、题库版本）上报到教师端，供老师查看班级与个人报告。"
-              : "未登录时不向服务器上报任何数据。"}
-            本机数据可随时一键清除：
-          </p>
-          <ul>
-            <li><code>aiquos.comprehensive-attempt.v1</code> 未完成测评的续答草稿</li>
-            <li><code>aiquos.comprehensive-history.v1</code> 已完成的觉醒报告快照</li>
-            <li><code>aiquos.adaptive-exposure.v1</code> 题目曝光均衡计数</li>
-          </ul>
-          <div className="account-privacy-actions">
-            <span>{dataCleared ? "已清除本机测评数据。" : "清除后无法恢复，报告与草稿将被删除。"}</span>
-            <button type="button" className="logout-button" onClick={clearLocalData}>
-              清除本机测评数据
-            </button>
-          </div>
-        </section>
       </div>
     </section>
   );

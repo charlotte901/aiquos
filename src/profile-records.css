@@ -74,7 +74,7 @@
 }
 
 .calendar-week {
-  margin: 26px 0 8px;
+  margin: 18px 0 6px;
   color: #94a3b8;
   font-size: 13px;
   font-weight: 700;
@@ -251,7 +251,7 @@
 
 .record-composer {
   margin-top: auto;
-  padding: 18px;
+  padding: 15px;
   border: 1.5px solid #e5dff5;
   border-radius: 20px;
   background: #f7f5fd;
@@ -266,7 +266,7 @@
 
 .record-composer textarea {
   width: 100%;
-  min-height: 122px;
+  min-height: 96px;
   margin-top: 12px;
   padding: 14px 16px;
   border: 1.5px solid #ddd5f1;

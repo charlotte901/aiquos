@@ -53,7 +53,9 @@
 .profile-detail-panel {
   position: relative;
   width: min(1120px, calc(100% - 88px));
-  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 168px);
+  /* 108px 顶距 + (100dvh − 208px) 高度 = 底缘固定留在视口上方 100px，
+   * 矮窗口时内容自会撑破 min-height，不会被裁。 */
+  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 208px);
   margin: 108px auto 48px;
   padding: clamp(30px, calc(4 * var(--vw, 1vw)), 52px);
   border-radius: 42px;
@@ -1279,7 +1281,7 @@
   gap: 44px;
   align-items: stretch;
   width: min(1560px, calc(100% - 64px));
-  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 150px);
+  min-height: calc(calc(100 * var(--dvh, 1dvh)) - 204px);
   margin: 104px auto 48px;
   padding: clamp(30px, calc(3.4 * var(--vw, 1vw)), 50px);
 }
@@ -1534,14 +1536,6 @@
   color: color-mix(in srgb, var(--detail-color, #7a98e2) 76%, #17233a);
   font-size: 14px;
   font-weight: 800;
-}
-
-.account-kicker {
-  margin: 0;
-  color: var(--detail-color, #7a98e2);
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: .18em;
 }
 
 .account-editor form {
