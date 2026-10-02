@@ -11,8 +11,13 @@ import {
 import { useRef, useState } from "react";
 import { setAccount, useAccount } from "./account-store";
 import { useFavorites } from "./favorites-store";
-import { apiChangePassword, apiUpdateNickname, clearSession, readProfile } from "./auth-client";
+import { loadAttemptHistory } from "./assessment-attempt";
+import { apiUpdateNickname, clearSession, readProfile } from "./auth-client";
 import { writeActiveAssignmentId } from "./run-report";
+import { scopedKey } from "./account-scope.js";
+
+// 与 ProfileDetail 共用同一存储：我的记录按日期分桶（账号隔离）。
+const RECORD_ENTRIES_KEY = "aiquos.record-entries.v1";
 
 export function AccountSettings({ onBack, onLogout, busy, source = "home", variant = "screen" }) {
   const { nickname, accountId, avatar: accountAvatar } = useAccount();
@@ -22,6 +27,19 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
   const [showPassword, setShowPassword] = useState(false);
   const avatarInputRef = useRef(null);
   const favorites = useFavorites();
+  // 左侧统计全部取真实数据：完成的测评历史、本机写的记录条数、收藏数。
+  // 挂载时读一次即可——进入本页时数据已是最新。
+  const [attemptCount] = useState(() => loadAttemptHistory().length);
+  const [recordCount] = useState(() => {
+    try {
+      const raw = localStorage.getItem(scopedKey(RECORD_ENTRIES_KEY));
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || typeof parsed !== "object") return 0;
+      return Object.values(parsed).reduce((sum, list) => sum + (Array.isArray(list) ? list.length : 0), 0);
+    } catch {
+      return 0;
+    }
+  });
   // 已登录：以服务端档案展示身份；未登录：保留本地演示资料卡。
   const authProfile = readProfile();
   const logout = () => {
@@ -45,33 +63,27 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
     event.target.value = "";
   };
 
-  const [currentPassword, setCurrentPassword] = useState("");
   const [saveState, setSaveState] = useState(""); // "" | "saving" | "saved" | 错误文案
-  const saveProfile = async (event) => {
-    event.preventDefault();
-    const loggedIn = Boolean(readProfile());
+  // 自动保存：昵称失焦即存（与上次已保存值相同则跳过，避免每次失焦
+  // 都打一次接口）。密码修改入口在底部按钮区，具体界面暂未实现。
+  const savedNicknameRef = useRef(nickname);
+  const saveNickname = async () => {
+    const next = nickname.trim();
+    if (!next || next === savedNicknameRef.current || saveState === "saving") return;
     setSaveState("saving");
     try {
-      if (loggedIn) {
-        if (nickname.trim()) await apiUpdateNickname(nickname.trim());
-        if (password) {
-          if (!currentPassword) { setSaveState("请输入当前密码以确认修改"); return; }
-          await apiChangePassword(currentPassword, password);
-        }
-        setAccount({ nickname: nickname.trim() });
-        setPassword("");
-        setCurrentPassword("");
-        setSaveState("saved");
-      } else {
-        // 未登录：昵称仅存本机（历史行为）。
-        setAccount({ nickname: nickname.trim() });
-        setSaveState("saved");
-      }
-      setPassword("");
+      if (readProfile()) await apiUpdateNickname(next);
+      setAccount({ nickname: next });
+      savedNicknameRef.current = next;
+      setSaveState("saved");
     } catch (error) {
       setSaveState(error.message || "保存失败");
     }
     window.setTimeout(() => setSaveState(""), 2600);
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    saveNickname();
   };
 
   const card = (
@@ -102,8 +114,8 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
           <span>{accountId}</span>
         </div>
         <dl className="account-side-stats">
-          <div><dt>测评</dt><dd>23 次</dd></div>
-          <div><dt>作品</dt><dd>4 项</dd></div>
+          <div><dt>测评</dt><dd>{attemptCount} 次</dd></div>
+          <div><dt>记录</dt><dd>{recordCount} 条</dd></div>
           <div><dt>收藏</dt><dd>{favorites.length} 条</dd></div>
         </dl>
         <p className="account-note">{authProfile
@@ -119,10 +131,10 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
           <span>{authProfile ? "已登录 · 服务端账号" : "本地资料 · 未登录"}</span>
         </header>
         {authProfile ? (
-          <form onSubmit={saveProfile}>
+          <form onSubmit={handleSubmit}>
             <label className="settings-field">
               <span><User size={18} weight="bold" /> 昵称</span>
-              <input type="text" value={nickname} onChange={(event) => setAccount({ nickname: event.target.value })} autoComplete="nickname" />
+              <input type="text" value={nickname} onChange={(event) => setAccount({ nickname: event.target.value })} onBlur={saveNickname} autoComplete="nickname" />
             </label>
             <label className="settings-field">
               <span><User size={18} weight="bold" /> 登录账号</span>
@@ -138,39 +150,12 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             </label>
             <label className="settings-field">
               <span><User size={18} weight="bold" /> 班级</span>
-            <label className="settings-field">
-              <span><LockKey size={18} weight="bold" /> 当前密码</span>
-              <span className="password-box">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={currentPassword}
-                  placeholder="修改密码需先输入当前密码"
-                  onChange={(event) => setCurrentPassword(event.target.value)}
-                  autoComplete="current-password"
-                />
-              </span>
-            </label>
-            <label className="settings-field">
-              <span><LockKey size={18} weight="bold" /> 新密码</span>
-              <span className="password-box">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  placeholder="留空则不修改密码"
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete="new-password"
-                />
-                <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "隐藏密码" : "显示密码"}>
-                  {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
-                </button>
-              </span>
-            </label>
               <input type="text" value={authProfile.className || "未加入班级"} readOnly disabled title="班级在注册时填写" />
             </label>
             <div className="account-actions">
-              <p>{saveState === "saved" ? "资料已保存。" : saveState === "saving" ? "正在保存…" : saveState || "登录账号与角色由服务端管理；密码修改需输入当前密码确认。"}</p>
+              <p>{saveState === "saved" ? "已保存。" : saveState === "saving" ? "正在保存…" : saveState || "资料修改后自动保存。"}</p>
               <div>
-                <button type="submit" className="save-button" disabled={saveState === "saving"}>{saveState === "saving" ? "保存中…" : "保存资料"}</button>
+                <button type="button" className="save-button">修改密码</button>
                 <button type="button" className="logout-button" onClick={logout} disabled={busy}>
                   <SignOut size={18} weight="bold" /> 退出登录
                 </button>
@@ -178,10 +163,10 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             </div>
           </form>
         ) : (
-        <form onSubmit={saveProfile}>
+        <form onSubmit={handleSubmit}>
           <label className="settings-field">
             <span><User size={18} weight="bold" /> 昵称</span>
-            <input type="text" value={nickname} onChange={(event) => setAccount({ nickname: event.target.value })} autoComplete="nickname" />
+            <input type="text" value={nickname} onChange={(event) => setAccount({ nickname: event.target.value })} onBlur={saveNickname} autoComplete="nickname" />
           </label>
           <label className="settings-field">
             <span><User size={18} weight="bold" /> 账号</span>
@@ -218,9 +203,8 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             <input type="tel" value={phone} placeholder="填写手机号" onChange={(event) => setPhone(event.target.value)} autoComplete="tel" />
           </label>
           <div className="account-actions">
-            <p>{saveState === "saved" ? "资料已保存。" : saveState || "修改后点击保存；未登录时资料仅存本机。"}</p>
+            <p>{saveState === "saved" ? "已保存。" : saveState === "saving" ? "正在保存…" : saveState || "昵称修改后自动保存；未登录时资料仅存本机。"}</p>
             <div>
-              <button type="submit" className="save-button" disabled={saveState === "saving"}>{saveState === "saving" ? "保存中…" : "保存资料"}</button>
               <button type="button" className="logout-button" onClick={logout} disabled={busy}>
                 <SignOut size={18} weight="bold" /> 退出登录
               </button>

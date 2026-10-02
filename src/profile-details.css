@@ -122,7 +122,9 @@
 
 .organization-panel {
   width: min(1560px, calc(100% - 64px));
-  height: calc(calc(100 * var(--dvh, 1dvh)) - 100px);
+  /* 高度扣 156 = 顶距 84 + 底部留白 72：白卡底缘与 works 画布同一条
+   * 视口上方 72px 的线，不再贴住屏幕底边。 */
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 156px);
   min-height: 0;
   padding-top: clamp(46px, calc(5 * var(--vw, 1vw)), 68px);
   margin: 84px auto 24px;
@@ -341,7 +343,8 @@
   display: flex;
   flex-direction: column;
   z-index: 1;
-  padding: clamp(42px, calc(5 * var(--vh, 1vh)), 56px) clamp(34px, calc(4 * var(--vw, 1vw)), 48px) clamp(30px, calc(4 * var(--vh, 1vh)), 40px);
+  /* 卡片高度收进「视口 − 156px」后，这里随之收紧，避免底部标记被裁。 */
+  padding: clamp(30px, calc(4 * var(--vh, 1vh)), 44px) clamp(34px, calc(4 * var(--vw, 1vw)), 48px) clamp(22px, calc(3.5 * var(--vh, 1vh)), 32px);
   border: 1.5px solid #e4e9f3;
   border-radius: 34px;
   color: #687382;
@@ -375,7 +378,7 @@
   grid-auto-columns: 1fr;
   align-items: end;
   flex: 1 1 auto;
-  min-height: clamp(150px, calc(24 * var(--vh, 1vh)), 230px);
+  min-height: clamp(140px, calc(16 * var(--vh, 1vh)), 210px);
   height: auto;
   gap: 14px;
 }
@@ -444,7 +447,7 @@
 .rank-track {
   position: relative;
   height: 10px;
-  margin-top: 26px;
+  margin-top: 16px;
   border-radius: 999px;
   background: #e7ebf4;
 }
@@ -686,7 +689,9 @@
 
 .works-canvas {
   min-width: 0;
-  height: calc(calc(100 * var(--dvh, 1dvh)) - 48px);
+  /* 高度扣 96 = 顶部 24 + 底部留白 48 + 自身缓冲 24：白框底缘悬在视口
+   * 上方 48px，不再贴住屏幕底边。 */
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 96px);
   margin: 24px 24px 24px 4px;
   padding: clamp(18px, calc(2.4 * var(--vw, 1vw)), 32px);
   border-radius: 34px;
@@ -1314,9 +1319,9 @@
 
 .account-panel-host {
   width: min(1440px, calc(100% - 64px));
-  height: calc(calc(100 * var(--dvh, 1dvh)) - 140px);
-  /* 底部留白 28→56px：白卡下缘与视口底明显分离，「清除本机测评数据」
-     等末尾 CTA 不再视觉上贴着裁切线。 */
+  /* 高度扣 156 = 顶距 84 + 底部留白 72：与 works / 我的组织同一条线，
+   * 白卡底缘悬在视口上方 72px。 */
+  height: calc(calc(100 * var(--dvh, 1dvh)) - 156px);
   margin: 84px auto 56px;
 }
 
