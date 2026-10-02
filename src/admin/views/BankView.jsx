@@ -4,6 +4,8 @@ import {
   CheckCircle,
   MagnifyingGlass,
   PencilSimple,
+  Plus,
+  Trash,
   WarningCircle,
   X,
 } from "@phosphor-icons/react";
@@ -16,8 +18,32 @@ const DIFFICULTY_LABELS = { low: "低", medium: "中", high: "高" };
 const TYPE_LABELS = { single: "单选", multi: "多选", judge: "判断" };
 const PAGE_SIZE = 10;
 
+function blankQuestion(questions) {
+  // 新题 id：q-new-NNN，教师手改 id 的口子不堵（唯一性由服务端校验兜底）。
+  let seq = 1;
+  while (questions.some((item) => item.id === `q-new-${String(seq).padStart(3, "0")}`)) seq += 1;
+  return {
+    id: `q-new-${String(seq).padStart(3, "0")}`,
+    levelId: "academy",
+    difficulty: "medium",
+    type: "single",
+    q: "",
+    options: [
+      { key: "A", text: "" },
+      { key: "B", text: "" },
+      { key: "C", text: "" },
+      { key: "D", text: "" },
+    ],
+    answer: ["A"],
+    analysis: "",
+    dimKeys: ["D1"],
+  };
+}
+
 function EditDialog({ question, questions, onClose, onSaved }) {
-  const [draft, setDraft] = useState(() => structuredClone(question));
+  const creating = question === null;
+  const [draft, setDraft] = useState(() => (creating ? blankQuestion(questions) : structuredClone(question)));
+  const [customId, setCustomId] = useState(() => (creating ? "" : ""));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -40,6 +66,11 @@ function EditDialog({ question, questions, onClose, onSaved }) {
   };
 
   const validate = () => {
+    if (creating) {
+      const id = (customId || draft.id).trim();
+      if (!id) return "请填写题目 id";
+      if (questions.some((item) => item.id === id)) return `题目 id ${id} 已存在`;
+    }
     if (!draft.q.trim()) return "题干不能为空";
     if (draft.options.some((option) => !option.text.trim())) return "选项文本不能为空";
     if (draft.answer.length === 0) return "至少选择一个正确答案";
@@ -57,7 +88,11 @@ function EditDialog({ question, questions, onClose, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      const nextQuestions = questions.map((item) => (item.id === draft.id ? draft : item));
+      const finalId = creating ? (customId || draft.id).trim() : draft.id;
+      const saved = { ...draft, id: finalId };
+      const nextQuestions = creating
+        ? [...questions, saved]
+        : questions.map((item) => (item.id === draft.id ? saved : item));
       const state = await saveBank(nextQuestions);
       onSaved(state);
     } catch (saveError) {
@@ -69,15 +104,21 @@ function EditDialog({ question, questions, onClose, onSaved }) {
 
   return (
     <div className="drawer-overlay" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="edit-dialog" role="dialog" aria-modal="true" aria-label={`编辑题目 ${question.id}`}>
+      <div className="edit-dialog" role="dialog" aria-modal="true" aria-label={creating ? "新增题目" : `编辑题目 ${question.id}`}>
         <header>
           <div>
-            <h2>编辑题目</h2>
-            <p>{question.id} · 保存后将发布新题库版本，学生端下一次出题即生效</p>
+            <h2>{creating ? "新增题目" : "编辑题目"}</h2>
+            <p>{creating ? "新题将进入题库，保存后发布新版本，学生端下一次出题即生效" : `${question.id} · 保存后将发布新题库版本，学生端下一次出题即生效`}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="关闭编辑"><X size={18} weight="bold" /></button>
         </header>
         <div className="edit-body">
+          {creating && (
+            <label className="edit-field">
+              <span>题目 id</span>
+              <input value={customId} placeholder={draft.id} onChange={(event) => setCustomId(event.target.value)} aria-label="题目 id，留空使用默认" />
+            </label>
+          )}
           <label className="edit-field">
             <span>题干</span>
             <textarea rows={3} value={draft.q} onChange={(event) => update({ q: event.target.value })} />
@@ -109,7 +150,7 @@ function EditDialog({ question, questions, onClose, onSaved }) {
                 <label className={`answer-pick ${draft.answer.includes(option.key) ? "is-on" : ""}`}>
                   <input
                     type={draft.type === "multi" ? "checkbox" : "radio"}
-                    name={`answer-${question.id}`}
+                    name={`answer-${draft.id}`}
                     checked={draft.answer.includes(option.key)}
                     onChange={() => toggleAnswer(option.key)}
                   />
@@ -156,8 +197,10 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
   const [difficulty, setDifficulty] = useState("all");
   const [type, setType] = useState("all");
   const [page, setPage] = useState(0);
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(null);       // 题目对象 = 编辑；null = 关闭
+  const [creating, setCreating] = useState(false);     // 新增对话框开关
   const [resetting, setResetting] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
 
   const audit = useMemo(() => (bankState ? bankAudit(bankState.questions) : null), [bankState]);
   const filtered = useMemo(() => {
@@ -187,6 +230,22 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
       onNotice(resetError.message);
     } finally {
       setResetting(false);
+    }
+  };
+
+  const removeQuestion = async (question) => {
+    if (!window.confirm(`确认删除题目 ${question.id}？
+「${question.q.slice(0, 24)}…」
+保存后将发布新题库版本。`)) return;
+    setDeletingId(question.id);
+    try {
+      const state = await saveBank(bankState.questions.filter((item) => item.id !== question.id));
+      onReload();
+      onNotice(`已删除 ${question.id}，发布 ${state.bankVersion}`);
+    } catch (deleteError) {
+      onNotice(deleteError.message);
+    } finally {
+      setDeletingId("");
     }
   };
 
@@ -241,6 +300,9 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
           {Object.entries(TYPE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
         </select>
         <span className="toolbar-count">{filtered.length} 题</span>
+        <button type="button" className="toolbar-add" onClick={() => setCreating(true)}>
+          <Plus size={15} weight="bold" /> 新增题目
+        </button>
         <button type="button" className="is-ghost toolbar-reset" onClick={reset} disabled={resetting || bankState.source === "bundled"}>
           <ArrowCounterClockwise size={15} weight="bold" /> 恢复内置题库
         </button>
@@ -263,6 +325,9 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
                 <button type="button" className="row-edit" onClick={() => setEditing(question)}>
                   <PencilSimple size={14} weight="bold" /> 编辑
                 </button>
+                <button type="button" className="row-delete" onClick={() => removeQuestion(question)} disabled={deletingId === question.id}>
+                  <Trash size={14} weight="bold" /> {deletingId === question.id ? "删除中…" : "删除"}
+                </button>
               </td>
             </tr>
           ))}
@@ -284,6 +349,18 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
             setEditing(null);
             onReload();
             onNotice(`已发布 ${state.bankVersion}，学生端下一次出题生效`);
+          }}
+        />
+      )}
+      {creating && (
+        <EditDialog
+          question={null}
+          questions={bankState.questions}
+          onClose={() => setCreating(false)}
+          onSaved={(state) => {
+            setCreating(false);
+            onReload();
+            onNotice(`新题已加入，发布 ${state.bankVersion}，学生端下一次出题生效`);
           }}
         />
       )}

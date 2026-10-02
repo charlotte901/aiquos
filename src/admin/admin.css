@@ -742,3 +742,45 @@ h1, h2, h3 { margin: 0; }
 .assignment-note { margin: 12px 0; padding: 9px 13px; border-radius: 9px; background: #fff; color: #3d475a; font-size: 12.5px; line-height: 1.6; }
 .assignment-admin-actions { display: flex; gap: 8px; margin-top: 12px; }
 .is-muted { display: inline-flex; align-items: center; gap: 4px; color: #97a0b2; }
+
+/* 题库行删除 / 工具栏新增 */
+.row-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #fdecef;
+  color: #c73049;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+.row-delete:hover { background: #fbd6dd; }
+.row-delete:disabled { opacity: 0.55; cursor: default; }
+.toolbar-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 140ms ease;
+}
+.toolbar-add:hover { filter: brightness(1.08); }
+.edit-field input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #dbe3ee;
+  border-radius: 10px;
+  font: inherit;
+}

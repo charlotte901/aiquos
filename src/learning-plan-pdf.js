@@ -177,11 +177,18 @@ function createDocument() {
     if (page.cursor - height < PAGE.marginBottom + 26) startPage();
   };
 
+  const lineX = (line, x, width, align, size, bold) => {
+    if (align === "center") return x + Math.max(0, (width - textWidth(line, size, bold)) / 2);
+    if (align === "right") return x + Math.max(0, width - textWidth(line, size, bold));
+    return x;
+  };
+
   const text = (value, {
     x = PAGE.margin,
     size = 10.5,
     color = COLORS.ink,
     bold = false,
+    align = "left",
     lineHeight = Math.round(size * 1.58 * 10) / 10,
     width = STYLE.space.contentWidth,
     blockGap = 0,
@@ -193,14 +200,22 @@ function createDocument() {
     }
     lines.forEach((line) => {
       ensure(lineHeight);
-      page.operations.push({ kind: "text", x, y: page.cursor, size, color, bold, text: line });
+      page.operations.push({
+        kind: "text",
+        x: lineX(line, x, width, align, size, bold),
+        y: page.cursor,
+        size,
+        color,
+        bold,
+        text: line,
+      });
       page.cursor -= lineHeight;
     });
     if (lines.length && blockGap) page.cursor -= blockGap;
     return lines.length;
   };
 
-  const rule = (gapBefore = 14, gapAfter = 16) => {
+  const rule = (gapBefore = 14, gapAfter = 16, color = COLORS.border) => {
     ensure(1);
     page.cursor -= gapBefore;
     page.operations.push({
@@ -208,11 +223,44 @@ function createDocument() {
       x: PAGE.margin,
       y: page.cursor,
       width: STYLE.space.contentWidth,
+      color,
     });
     page.cursor -= gapAfter;
   };
 
-  const card = (render, padding = 9) => {
+  // Parameterized rectangle for report furniture (accent bars, badges, panels).
+  const shape = ({ x, y, width, height, fill = null, stroke = null, lineWidth = 0.5, anchor = "cursor", gapAfter = 0 }) => {
+    if (anchor === "cursor") {
+      ensure(height);
+      page.operations.push({
+        kind: "shape", x, y: page.cursor - height, width, height, fill, stroke, lineWidth,
+      });
+      page.cursor -= height + gapAfter;
+      return;
+    }
+    page.operations.push({ kind: "shape", x, y, width, height, fill, stroke, lineWidth });
+  };
+
+  // Embeds a pre-encoded JPEG ({ width, height, bytes }) as a block image.
+  // Height defaults from the bitmap ratio; width defaults to the content width.
+  const image = (bitmap, { x = PAGE.margin, width = STYLE.space.contentWidth, height = null, align = "center", gapAfter = 12 } = {}) => {
+    if (!bitmap || !bitmap.bytes || !bitmap.width || !bitmap.height) return;
+    const drawHeight = height ?? Math.round((width * bitmap.height) / bitmap.width);
+    const drawWidth = height ? Math.round((height * bitmap.width) / bitmap.height) : width;
+    ensure(drawHeight);
+    const left = align === "center" ? x + Math.max(0, (width - drawWidth) / 2) : x;
+    page.operations.push({
+      kind: "image",
+      x: left,
+      y: page.cursor - drawHeight,
+      width: drawWidth,
+      height: drawHeight,
+      image: bitmap,
+    });
+    page.cursor -= drawHeight + gapAfter;
+  };
+
+  const card = (render, padding = 9, panel = {}) => {
     const panelFor = (target) => ({
       ensure: target.ensure,
       text: (value, options = {}) => target.text(value, {
@@ -235,6 +283,8 @@ function createDocument() {
       y: top - height,
       width: PAGE.width - PAGE.margin * 2,
       height,
+      fill: panel.fill ?? COLORS.card,
+      stroke: panel.stroke ?? COLORS.border,
     });
     page.cursor -= padding;
     render(panelFor(api));
@@ -247,6 +297,8 @@ function createDocument() {
     ensure,
     text,
     card,
+    image,
+    shape,
     heading(value, size = STYLE.type.headingSize) {
       this.ensure(size * 2.2);
       this.text("", { size: 1, lineHeight: 18 });

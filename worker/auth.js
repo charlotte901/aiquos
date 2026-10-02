@@ -123,11 +123,6 @@ export async function handleAuthRegister(request, env) {
     nickname: payload.nickname,
     role: payload.role,
     className: payload.className,
-    teacherInviteCode: payload.teacherInviteCode,
-    expectedInviteCode: env?.AIQUOS_TEACHER_INVITE_CODE
-      ?? (typeof globalThis.process !== "undefined"
-        ? globalThis.process.env?.AIQUOS_TEACHER_INVITE_CODE
-        : undefined),
   });
   if (result.error) {
     return json({ error: result.error }, result.duplicate ? 409 : 400);

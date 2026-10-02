@@ -97,23 +97,20 @@ test("duplicate registration is rejected with 409", async () => {
   assert.equal(second.status, 409);
 });
 
-test("teacher registration requires the deployment invite code", async () => {
+test("teacher registration no longer requires an invite code", async () => {
+  // 邀请码机制已按产品要求移除：教师账号与学员同一注册口，直接可注册。
+  // 旧字段 teacherInviteCode 即使被带上也被忽略（不校验、不影响结果）。
   freshStore();
-  const noCode = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
+  const plain = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
     body: { account: "teacher@example.com", password: STRONG, role: "teacher" },
-  }), { AIQUOS_TEACHER_INVITE_CODE: "AIQUOS-TEACHER-2026" });
-  assert.equal(noCode.status, 400);
+  }));
+  assert.equal(plain.status, 201);
+  assert.equal((await plain.json()).profile.role, "teacher");
 
-  const wrong = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
-    body: { account: "teacher@example.com", password: STRONG, role: "teacher", teacherInviteCode: "nope" },
-  }), { AIQUOS_TEACHER_INVITE_CODE: "AIQUOS-TEACHER-2026" });
-  assert.equal(wrong.status, 400);
-
-  const right = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
-    body: { account: "teacher@example.com", password: STRONG, role: "teacher", teacherInviteCode: "AIQUOS-TEACHER-2026" },
-  }), { AIQUOS_TEACHER_INVITE_CODE: "AIQUOS-TEACHER-2026" });
-  assert.equal(right.status, 201);
-  assert.equal((await right.json()).profile.role, "teacher");
+  const legacy = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
+    body: { account: "teacher2@example.com", password: STRONG, role: "teacher", teacherInviteCode: "whatever" },
+  }));
+  assert.equal(legacy.status, 201);
 });
 
 test("login rejects wrong credentials with one uniform message", async () => {

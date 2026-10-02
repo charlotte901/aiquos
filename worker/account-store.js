@@ -133,7 +133,7 @@ export function publicProfile(record) {
 }
 
 /** 注册：全部入参走严格校验；账号已存在返回 null（由调用方决定 409）。 */
-export async function createAccount({ account, password, nickname, role, className, teacherInviteCode, expectedInviteCode }) {
+export async function createAccount({ account, password, nickname, role, className }) {
   const accountCheck = validateAccount(account);
   if (!accountCheck.ok) return { error: accountCheck.error };
   const passwordCheck = validatePassword(password, account);
@@ -146,14 +146,6 @@ export async function createAccount({ account, password, nickname, role, classNa
   if (!roleCheck.ok) return { error: roleCheck.error };
 
   const normalized = normalizeAccount(account);
-  if (roleCheck.value === "teacher") {
-    // 教师账号不开放自由注册：需要部署方配置的邀请码。
-    if (typeof expectedInviteCode !== "string" || !expectedInviteCode
-      || teacherInviteCode !== expectedInviteCode) {
-      return { error: "教师注册邀请码不正确，请向部署方索取" };
-    }
-  }
-
   const current = loadState();
   if (current.accounts.has(normalized)) {
     return { error: "该账号已注册，请直接登录", duplicate: true };

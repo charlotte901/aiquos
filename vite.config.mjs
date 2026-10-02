@@ -176,7 +176,12 @@ export default defineConfig(({ mode }) => {
             const base = `http://${req.headers.host || "127.0.0.1"}`;
             const response = await handleAdminBank(new Request(new URL(ADMIN_BANK_PATH, base), {
               method: req.method,
-              headers: { "content-type": req.headers["content-type"] || "application/json" },
+              // authorization 必须透传：管理端写操作（PUT/DELETE）验教师令牌，
+              // 此前只带 content-type，dev 下永远 401（生产 worker 不经此层）。
+              headers: {
+                "content-type": req.headers["content-type"] || "application/json",
+                ...(req.headers.authorization ? { authorization: req.headers.authorization } : {}),
+              },
               body: ["GET", "HEAD", "DELETE"].includes(req.method) ? undefined : Buffer.concat(chunks),
             }));
             res.statusCode = response.status;
@@ -206,7 +211,7 @@ export default defineConfig(({ mode }) => {
               method: req.method,
               headers: { "content-type": req.headers["content-type"] || "application/json" },
               body: req.method === "POST" ? Buffer.concat(chunks) : undefined,
-            }), { AIQUOS_TEACHER_INVITE_CODE: env.AIQUOS_TEACHER_INVITE_CODE });
+            }));
             res.statusCode = response.status;
             response.headers.forEach((value, key) => res.setHeader(key, value));
             if (!response.body) return res.end();
