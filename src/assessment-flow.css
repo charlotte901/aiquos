@@ -574,7 +574,7 @@
 .task-action.comprehensive {
   width: auto;
   min-width: 134px;
-  height: 46px;
+  height: 42px;
   gap: 8px;
   padding: 0 22px;
   border: 0;
@@ -584,10 +584,10 @@
   font-size: 13px;
   font-weight: 800;
   letter-spacing: .04em;
-  box-shadow: 0 8px 0 #00000012;
+  box-shadow: 0 6px 0 #00000012;
 }
 .task-action.comprehensive svg { width: 17px; height: 17px; }
-.task-action.comprehensive:not(:disabled):hover { transform: translateY(-3px); box-shadow: 0 11px 0 #00000012; }
+.task-action.comprehensive:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 0 #00000012; }
 .task-action.comprehensive:disabled {
   color: #fff;
   background: #edf0f2;
@@ -1474,6 +1474,64 @@
 
 .workbench-head h2 { margin: 0; font-size: 21px; line-height: 1.3; }
 
+.wb-view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  border: 2px solid color-mix(in srgb, var(--assessment-color) 25%, #fff);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.wb-view-tab {
+  min-width: 0;
+  padding: 8px 17px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.wb-view-tab:hover { color: var(--assessment-deep); }
+
+.wb-view-tab.is-active {
+  background: var(--assessment-color);
+  color: #fff;
+}
+
+.wb-view-arrow {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--assessment-color) 8%, #fff);
+  color: var(--assessment-deep);
+  cursor: pointer;
+}
+
+.wb-view-arrow:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--assessment-color) 16%, #fff);
+}
+
+.wb-view-arrow:disabled {
+  color: color-mix(in srgb, var(--assessment-color) 35%, #fff);
+  cursor: default;
+}
+
+.wb-view-switch :is(button, [role="tab"]):focus-visible {
+  outline: 2px solid var(--assessment-deep);
+  outline-offset: 2px;
+}
+
 .workbench-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; justify-content: flex-end; }
 
 .wb-chip {
@@ -1528,7 +1586,7 @@
 }
 
 .workbench-grid {
-  grid-template-columns: minmax(310px, .72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   margin-top: 12px;
   flex: 1 1 auto;
@@ -1600,6 +1658,8 @@
 
 .workbench-grid > .wb-canvas .wb-thread { flex: 1 1 auto; min-height: 0; }
 
+.workbench-grid > .is-hidden { display: none; }
+
 /* Both columns scroll; give them a visible thin scrollbar so the student can
    tell there is more content instead of reading a clipped list as broken. */
 .workbench-grid > .wb-brief::-webkit-scrollbar,
@@ -1670,6 +1730,50 @@
   width: fit-content;
   max-width: 100%;
 }
+
+.wb-image-button {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+
+.wb-image-button:hover { transform: translateY(-1px); filter: brightness(.99); }
+
+.wb-image-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--assessment-color) 55%, transparent);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+.wb-image-action {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(20, 24, 34, .78);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.wb-image-action svg { width: 13px; height: 13px; }
+
+.wb-image-button:hover .wb-image-action,
+.wb-image-button:focus-visible .wb-image-action { opacity: 1; }
 
 /* 参考图的框必须贴住位图，不能先撑满整列再把图画小。
    原来 width:100% + max-height：竖版原图（945×1253）在 722px 宽的列里
@@ -1748,6 +1852,8 @@
 
 .wb-image-wrap figcaption { color: #a08349; font-size: 13px; font-weight: 700; text-align: center; }
 
+.wb-image-wrap { cursor: grab; }
+
 /* 画布内的生成图：外框保留棋盘底（透明区可见），图片本身等比居中。 */
 .wb-image {
   border-radius: 16px;
@@ -1824,6 +1930,65 @@
 .wb-turn-agent .wb-turn-who { background: #eef1f6; color: #4d5a6c; }
 
 .wb-turn-agent .wb-output { flex: 0 1 auto; }
+
+.wb-thinking {
+  width: 100%;
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color) 16%, #e5eaf1);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--assessment-color) 3.5%, #fff);
+  overflow: hidden;
+}
+
+.wb-thinking.is-live {
+  border-color: color-mix(in srgb, var(--assessment-color) 32%, #fff);
+  box-shadow: 0 3px 14px color-mix(in srgb, var(--assessment-color) 9%, transparent);
+}
+
+.wb-thinking-head,
+.wb-thinking summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 8px 13px;
+  color: var(--assessment-deep);
+  font-size: 13.5px;
+  font-weight: 800;
+  background: color-mix(in srgb, var(--assessment-color) 7%, #fff);
+}
+
+.wb-thinking-head svg,
+.wb-thinking summary svg { width: 16px; height: 16px; flex: 0 0 auto; }
+
+.wb-thinking-head .reply-spinner { margin-left: auto; }
+
+.wb-thinking summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.wb-thinking summary::-webkit-details-marker { display: none; }
+
+.wb-thinking.is-record[open] summary {
+  border-bottom: 1px solid color-mix(in srgb, var(--assessment-color) 14%, #fff);
+}
+
+.wb-thinking-body {
+  max-height: min(260px, 34vh);
+  padding: 11px 14px 12px;
+  overflow: auto;
+  color: #667386;
+  font-size: 12.8px;
+  line-height: 1.58;
+  font-weight: 550;
+  scrollbar-width: thin;
+}
+
+.wb-thinking-body::-webkit-scrollbar { width: 7px; }
+.wb-thinking-body::-webkit-scrollbar-thumb { border-radius: 999px; background: #d9e0e9; }
+.wb-thinking-body::-webkit-scrollbar-track { background: transparent; }
+
+.wb-thinking.is-complete .wb-thinking-body { color: #75818f; }
 
 /* 等待本轮产物时的占位：紧贴气泡下方，不占满整屏。 */
 .wb-turn-pending { min-height: 76px; padding: 14px; }
@@ -1932,27 +2097,16 @@
   gap: 6px;
 }
 
-.wb-welcome-badge {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--assessment-color) 14%, #fff);
-  color: var(--assessment-color);
-  margin-bottom: 2px;
-}
-
 .wb-chat-welcome h3 {
   margin: 0;
-  font-size: 16.5px;
+  font-size: 21px;
   font-weight: 800;
   color: #1e293b;
 }
 
 .wb-chat-welcome p {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 16px;
   color: #64748b;
   max-width: 440px;
   line-height: 1.55;
@@ -1960,28 +2114,39 @@
 
 .wb-welcome-tips {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 9px;
   justify-content: center;
+  width: fit-content;
+  max-width: 100%;
   margin-top: 8px;
 }
 
 .wb-welcome-tips span {
-  padding: 4px 10px;
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
   background: #fff;
   border-radius: 999px;
   border: 1px solid #e2e8f0;
-  font-size: 12px;
+  font-size: 15.5px;
   font-weight: 600;
   color: #475569;
+}
+
+@media (max-width: 720px) {
+  .wb-welcome-tips {
+    flex-wrap: wrap;
+  }
 }
 
 /* 对话窗口底部操作区 */
 .workbench-actions.wb-chat-bottom {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  padding: 12px 18px 14px;
+  gap: 7px;
+  padding: 9px 16px 10px;
   border-top: 1.5px solid color-mix(in srgb, var(--assessment-color) 12%, #edf2f7);
   background: #fff;
   border-radius: 0 0 20px 20px;
@@ -2011,14 +2176,15 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 10px 14px 8px;
+  padding: 7px 13px 5px;
 }
 
 .wb-composer textarea {
   width: 100%;
   height: auto;
-  min-height: 48px;
+  min-height: 26px;
   max-height: 120px;
+  field-sizing: content;
   resize: none;
   border: 0;
   outline: 0;
@@ -2034,9 +2200,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 6px;
+  padding-top: 5px;
   border-top: 1px solid #f1f5f9;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .wb-composer-tools {
@@ -2118,7 +2284,7 @@
 }
 
 @media (max-width: 900px) {
-  .workbench-grid { grid-template-columns: 1fr; min-height: 470px; }
+  .workbench-grid { min-height: 470px; }
   .workbench-meta { justify-content: flex-start; }
 }
 
@@ -2725,11 +2891,11 @@
   }
 
   /* 表单类内容不再需要为窄栏折行，用更舒展的行高与字号。 */
-  .workbench-grid { grid-template-columns: minmax(300px, .82fr) minmax(0, 1.3fr); gap: 20px; }
+  .workbench-grid { gap: 20px; }
 
   /* 正文与列表整体上调一档：宽度释放后这些字号才站得住。 */
-  .wb-requirements li { font-size: 17px; line-height: 1.55; }
-  .wb-brief-criteria .wb-requirements li { font-size: 17.5px; }
+  .wb-requirements li { font-size: 15.5px; line-height: 1.55; }
+  .wb-brief-criteria .wb-requirements li { font-size: 15.5px; }
   .task-body.practical-task .agent-brief { font-size: 17px; }
   .wb-output { font-size: 17px; }
   .wb-material { font-size: 16.5px; }
@@ -2853,7 +3019,7 @@
 
 .workbench-actions { gap: 9px; margin-top: 10px; }
 
-.wb-composer { min-height: 88px; padding: 9px 9px 9px 17px; border-radius: 18px; }
+.wb-composer { min-height: 66px; padding: 5px 5px 5px 13px; border-radius: 18px; }
 
 /* 矮视口（1280×720 这类）里，对话线程是主要阅读区，但栅格分给它的
    高度只有 170px 左右，一轮问答就占满，回看历史要频繁滚动。
@@ -2868,7 +3034,7 @@
 
 .wb-turn-pending { min-height: 60px; padding: 12px; }
 
-.wb-composer textarea { min-height: 54px; }
+.wb-composer textarea { min-height: 26px; }
 
 .wb-complete-row { margin-top: 0; }
 
@@ -3057,7 +3223,7 @@
 
 /* ── 桌面（≥900px）：画布列进一步加宽，评分卡保持双列 ── */
 @media (min-width: 900px) {
-  .workbench-grid { grid-template-columns: minmax(264px, .68fr) minmax(0, 1.42fr); gap: 14px; }
+  .workbench-grid { gap: 14px; }
   .wb-score-tables { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .wb-score-parts li { min-width: 140px; }
 }
@@ -3086,6 +3252,23 @@
   overflow: hidden;
   background: #fff;
   box-shadow: 0 2px 8px #e7a4c233;
+}
+
+.wb-upload { cursor: grab; }
+
+.wb-upload-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.wb-upload-preview:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--assessment-color) 70%, transparent);
+  outline-offset: 1px;
 }
 
 .wb-upload img {
@@ -3118,6 +3301,102 @@
 .wb-uploads-note {
   font-size: 12px;
   color: #a5738c;
+}
+
+.wb-chat-panel { position: relative; }
+
+.wb-drag-overlay {
+  position: absolute;
+  inset: 8px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  border: 2px dashed color-mix(in srgb, var(--assessment-color) 62%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--assessment-color) 9%, rgba(255, 255, 255, .92));
+  color: var(--assessment-deep);
+  font-size: 16px;
+  font-weight: 850;
+  pointer-events: none;
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 4vw, 36px);
+}
+
+.image-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(14, 18, 28, .86);
+  cursor: zoom-out;
+}
+
+.image-lightbox-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: min(1200px, 96vw);
+  max-height: min(88dvh, 920px);
+  margin: 0;
+  padding: clamp(10px, 2vw, 16px);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .28);
+}
+
+.image-lightbox-media {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(1120px, calc(96vw - 36px));
+  max-height: calc(88dvh - 82px);
+  object-fit: contain;
+  border-radius: 12px;
+  background: #f4f6f8;
+}
+
+.image-lightbox-card figcaption {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.image-lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, .82);
+  color: #fff;
+  cursor: pointer;
+}
+
+.image-lightbox-close svg { width: 16px; height: 16px; }
+
+.image-lightbox-close:focus-visible,
+.image-lightbox-backdrop:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }
 
 /* 输入框内的上传按钮：与发送按钮同尺寸，靠左放置 */

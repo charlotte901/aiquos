@@ -4,7 +4,7 @@ function readError(response) {
   return response.json().then((payload) => payload?.error || "DeepSeek 暂时无法完成回应。").catch(() => "DeepSeek 暂时无法完成回应。");
 }
 
-export async function streamDeepSeek({ messages, onDelta, signal }) {
+export async function streamDeepSeek({ messages, onDelta, onReasoning, signal }) {
   const response = await fetch("/api/deepseek/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -18,6 +18,7 @@ export async function streamDeepSeek({ messages, onDelta, signal }) {
   const decoder = new TextDecoder();
   let buffer = "";
   let complete = "";
+  let reasoning = "";
 
   const consume = (chunk) => {
     for (const line of chunk.split("\n")) {
@@ -25,9 +26,15 @@ export async function streamDeepSeek({ messages, onDelta, signal }) {
       const data = line.slice(5).trim();
       if (!data || data === END_EVENT) continue;
       try {
-        const delta = JSON.parse(data)?.choices?.[0]?.delta?.content;
-        if (delta) {
-          complete += delta;
+        const delta = JSON.parse(data)?.choices?.[0]?.delta;
+        const reasoningDelta = delta?.reasoning_content ?? delta?.reasoning;
+        if (reasoningDelta) {
+          reasoning += reasoningDelta;
+          onReasoning?.(reasoning);
+        }
+        const contentDelta = delta?.content;
+        if (contentDelta) {
+          complete += contentDelta;
           onDelta(complete);
         }
       } catch {

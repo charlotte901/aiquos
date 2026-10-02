@@ -241,6 +241,9 @@ body:has(.site-experience[data-view="reports"])::-webkit-scrollbar {
 
 .report-actions button:last-child { background: var(--report-blue); }
 .report-actions button:hover { filter: brightness(1.08); }
+.report-actions button.learning-plan-download {
+  background: #0f766e;
+}
 
 .report-details section + section {
   margin-top: 28px;

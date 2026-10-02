@@ -693,6 +693,10 @@ export function ForumBoard({ onDetailChange }) {
     board.activeMember,
     board.sort,
     board.query,
+    // Returning from a detail or composer remounts the wall while these board
+    // filters stay unchanged. The reveal effect must re-arm against the new DOM.
+    Boolean(activePost),
+    isComposing,
   ]);
 
   // The field's ink has to reach the shell so the header's own labels can flip

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Download, Printer, X } from "@phosphor-icons/react";
+import { ArrowLeft, FileDoc, FilePdf, X } from "@phosphor-icons/react";
 import {
   exportAttemptHistory,
   historyAtCapacity,
   latestCompletedSnapshot,
 } from "./assessment-attempt";
 import { buildRecommendations } from "./report-recommendations";
+import { downloadLearningPlan } from "./learning-plan-docx";
+import { downloadLearningPlanPdf } from "./learning-plan-pdf";
 
 // Demo scores shown when no completed comprehensive attempt exists yet. Real
 // reports always come from a stored history snapshot produced by the vendored
@@ -157,29 +159,6 @@ function ringPoints(radius) {
   }).join(" ");
 }
 
-function saveReportImage(model) {
-  const labels = model.dimensions.map((item, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    return `<text x="${300 + 180 * Math.cos(angle)}" y="${300 + 180 * Math.sin(angle)}" fill="#5b6473" font-size="24" font-weight="700" text-anchor="middle">${item.short} ${item.score}</text>`;
-  }).join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680"><rect width="1200" height="680" fill="#f7f8ff"/><circle cx="940" cy="120" r="230" fill="#4ff0d822"/><circle cx="180" cy="620" r="180" fill="#ff5d8f22"/><text x="72" y="102" fill="#121826" font-size="52" font-weight="900">智核觉醒报告</text><text x="72" y="152" fill="#667085" font-size="28">综合评级 ${model.grade} · 六维能力画像 · ${model.meta}</text><g transform="translate(0 40)"><polygon points="${ringPoints(175)}" fill="#635bff11" stroke="#aab0c0" stroke-width="2"/><polygon points="${ringPoints(132)}" fill="none" stroke="#cfd4de" stroke-width="2"/><polygon points="${ringPoints(88)}" fill="none" stroke="#cfd4de" stroke-width="2"/><polygon points="${radarPoints(model.dimensions, 175)}" fill="#4f7cff33" stroke="#2f5cff" stroke-width="5" stroke-linejoin="round"/>${labels}</g><text x="72" y="628" fill="#3d4657" font-size="26">AIQUOS · 智核域</text></svg>`;
-  const image = new Image();
-  image.onload = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1200;
-    canvas.height = 680;
-    const context = canvas.getContext("2d");
-    context.fillStyle = "#f7f8ff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0);
-    const link = document.createElement("a");
-    link.download = "aiquos-awakening-report.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
-  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 const DIALOGUE_LINES = [
   { who: "xiao", text: "觉醒完成！这是你的智核觉醒报告。" },
   { who: "xiao", text: "看，这就是你在AI六大维度上的真实能力画像。每一道你做过的题目，都同时影响了多个维度的得分——这正是智核域综合测评的意义。你的强项和待提升的方面都清晰可见。" },
@@ -189,7 +168,22 @@ const DIALOGUE_LINES = [
 export function AwakeningReportContent({ snapshot = null }) {
   const model = reportModel(snapshot);
   const [methodOpen, setMethodOpen] = useState(false);
+  const [learningPlanAction, setLearningPlanAction] = useState(null);
   const capNotice = !model.isDemo && historyAtCapacity();
+
+  const handleLearningPlanPdf = async () => {
+    let failed = false;
+    setLearningPlanAction("pdf");
+    try {
+      await downloadLearningPlanPdf(model);
+    } catch {
+      failed = true;
+      setLearningPlanAction("error");
+      setTimeout(() => setLearningPlanAction(null), 2400);
+    } finally {
+      if (!failed) setLearningPlanAction(null);
+    }
+  };
 
   return (
     <section className="awakening-report-card" aria-label="智核觉醒报告结果">
@@ -221,11 +215,23 @@ export function AwakeningReportContent({ snapshot = null }) {
           })}
         </svg>
         <div className="report-actions">
-          <button type="button" onClick={() => saveReportImage(model)}>
-            <Download size={17} weight="bold" /> 保存截图
+          <button
+            type="button"
+            className="learning-plan-download"
+            onClick={() => downloadLearningPlan(model)}
+            disabled={learningPlanAction === "pdf"}
+            aria-label="下载与当前分数对应的个性化学习方案 Word 文档"
+          >
+            <FileDoc size={17} weight="bold" /> 方案 Word
           </button>
-          <button type="button" onClick={() => window.print()}>
-            <Printer size={17} weight="bold" /> 保存 PDF
+          <button
+            type="button"
+            className="learning-plan-download"
+            onClick={handleLearningPlanPdf}
+            disabled={learningPlanAction === "pdf"}
+            aria-label="导出与当前分数对应的个性化学习方案 PDF 文档"
+          >
+            <FilePdf size={17} weight="bold" /> {learningPlanAction === "pdf" ? "生成中…" : learningPlanAction === "error" ? "生成失败" : "方案 PDF"}
           </button>
         </div>
       </div>
