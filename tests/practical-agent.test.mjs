@@ -166,3 +166,19 @@ test("系统提示词带测评纪律：执行 Agent 拒绝代写提示词（防�
   // 正常迭代仍放行（纪律不误伤合法流程）。
   assert.match(system, /属于正常迭代/);
 });
+
+
+test("Agent 上下文隔离：只含素材与学员提示词，题干一概不给", () => {
+  const messages = practicalAgentMessages(TASK, [], "你能读到这个文档吗", []);
+  const userContent = messages[1].content;
+  // 题干三要素绝不进入用户消息（防元问题套取组稿——实测泄题口）。
+  assert.ok(!userContent.includes(TASK.title), "title 不得进入 Agent 上下文");
+  assert.ok(!userContent.includes(TASK.goal), "goal 不得进入 Agent 上下文");
+  assert.ok(!userContent.includes("分三段") && !userContent.includes("要求"), "requirements 不得进入 Agent 上下文");
+  // 素材与学员提示词保留。
+  assert.match(messages[1].content, /原始素材/);
+  assert.match(messages[1].content, /你能读到这个文档吗/);
+  // 无素材任务：首轮就是纯提示词。
+  const bare = practicalAgentMessages({ title: "T", goal: "G", requirements: ["R"] }, [], "画一张海报", []);
+  assert.equal(bare[1].content, "画一张海报");
+});

@@ -22,15 +22,17 @@ const SYSTEM_BASE = `你是 AIQUOS 实操测评的执行 Agent。请严格根据
 const SYSTEM_REVISION = `${SYSTEM_BASE} 用户可能在前几轮之后要求局部修改——此时只需给出修改后的完整交付内容，保持与上一版一致的其余部分。输出仅包含最终交付内容，不解释你的推理。`;
 const SYSTEM_FIRST = `${SYSTEM_BASE} 输出仅包含最终交付内容，不解释你的推理。`;
 
-/** 任务简报：只在首条用户消息里出现一次。 */
+/**
+ * 首条用户消息：**只有**学员附带的素材与学员写好的提示词。
+ *
+ * 题干（title/goal/requirements）绝不能进入 Agent 上下文——测评考核的
+ * 正是学员把任务约束写进提示词的能力；Agent 看得到约束，就会在元问题下
+ * 替学员组稿（实测泄题口）。Agent 的角色等同于一个「只收到你粘贴的
+ * 内容」的空白对话，约束是否传达，全看学员的提示词本事。
+ */
 function taskBrief(task, firstPrompt) {
-  return [
-    `任务：${task.title}`,
-    `目标：${task.goal}`,
-    `要求：\n${(task.requirements ?? []).map((item, index) => `${index + 1}. ${item}`).join("\n")}`,
-    `原始素材：\n${task.source}`,
-    `用户提示词：\n${firstPrompt}`,
-  ].join("\n\n");
+  if (!task.source) return firstPrompt;
+  return [`【原始素材】\n${task.source}`, `【提示词】\n${firstPrompt}`].join("\n\n");
 }
 
 /**
