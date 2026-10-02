@@ -666,8 +666,10 @@ export function SiteExperience() {
           edition: readEdition(),
           ...(interviewSeed ? { interviewSeed } : {}),
           ...(outcome ? { outcome } : {}),
-          // 复现调试：URL 带 ?qid=<题目id> 时强制出该题（见 worker 端说明）。
-          ...(new URLSearchParams(location.search).get("qid")
+          // 复现调试（仅 dev 构建）：URL 带 ?qid=<题目id> 时强制出该题。
+          // 生产构建 import.meta.env.DEV 为 false，该分支被静态消除——
+          // 线上出题永远走自适应路由，指定题目只是本地测试入口。
+          ...(import.meta.env.DEV && new URLSearchParams(location.search).get("qid")
             ? { forceQuestionId: new URLSearchParams(location.search).get("qid") }
             : {}),
           debug: isAdaptiveDebugOn(),
