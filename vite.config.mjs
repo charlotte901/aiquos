@@ -107,6 +107,8 @@ export default defineConfig(({ mode }) => {
     include: ["react", "react-dom/client"],
   },
   server: {
+    // 全量 no-store：内嵌 webview 对模块做启发式缓存，改码后刷新仍见旧界面（回滚时丢失本修复，2026-10-02 恢复）。
+    headers: { "cache-control": "no-store, must-revalidate" },
     host: "0.0.0.0",
     allowedHosts: ["terminal.local"],
     warmup: {

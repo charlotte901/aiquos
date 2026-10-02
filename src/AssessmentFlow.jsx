@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { scopedKey } from "./account-scope.js";
 import {
   ArrowLeft,
   ArrowRight,
@@ -136,12 +137,13 @@ function assetLabel(asset) {
 //
 // 代价是中途刷新会重来，这是刻意的：面试类对话本身是一次完整的 5 分钟过程，
 // 刷新后续上一段断裂的历史，比重新开始更让人困惑。
-const INTERVIEW_KEY = "aiquos.interview-thread.v1";
+// 注意：不能在此处固化账号域键（模块加载时求值会把后缀冻结成当时的账号）。
+// 使用点每次现取：scopedKey("aiquos.interview-thread.v1")。
 
 /** 清掉历史版本可能留下的存档，避免旧数据在新逻辑下被误读。 */
 function clearInterviewState() {
   try {
-    localStorage.removeItem(INTERVIEW_KEY);
+    localStorage.removeItem(scopedKey("aiquos.interview-thread.v1"));
   } catch {
     /* 存储不可用时无从清理 */
   }

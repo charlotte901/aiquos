@@ -10,6 +10,7 @@ import {
   scoreAssessment,
   validateQuestionBank,
 } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
+import { scopedKey } from "./account-scope.js";
 import { clearExposureStore } from "./comprehensive-adaptive.js";
 import { buildComposite } from "./comprehensive-weighting.js";
 
@@ -261,7 +262,7 @@ function migrate(value, steps) {
 }
 
 export function saveAttemptDraft(attempt) {
-  storageSet(DRAFT_KEY, JSON.stringify(attempt));
+  storageSet(scopedKey(DRAFT_KEY), JSON.stringify(attempt));
 }
 
 export function readCurrentBankVersion() {
@@ -281,7 +282,7 @@ export function writeCurrentBankVersion(bankVersion) {
 }
 
 export function loadAttemptDraft(expectedBankVersion = null) {
-  const attempt = migrate(safeParse(storageGet(DRAFT_KEY)), DRAFT_MIGRATORS);
+  const attempt = migrate(safeParse(storageGet(scopedKey(DRAFT_KEY))), DRAFT_MIGRATORS);
   if (!attempt || !Array.isArray(attempt.evidence)) return null;
   if (attempt.scoringVersion !== SCORING_VERSION) return null;
   if (attempt.questionBankVersion !== (expectedBankVersion ?? QUESTION_BANK_VERSION)) return null;
@@ -298,7 +299,7 @@ export function withBankVersion(attempt, bankVersion) {
 }
 
 export function clearAttemptDraft() {
-  storageRemove(DRAFT_KEY);
+  storageRemove(scopedKey(DRAFT_KEY));
 }
 
 export function appendHistorySnapshot(snapshot) {
@@ -306,12 +307,12 @@ export function appendHistorySnapshot(snapshot) {
   const history = loadAttemptHistory();
   if (history.some((item) => item.completedAt === snapshot.completedAt)) return history;
   const next = [...history, snapshot].slice(-HISTORY_LIMIT);
-  storageSet(HISTORY_KEY, JSON.stringify(next));
+  storageSet(scopedKey(HISTORY_KEY), JSON.stringify(next));
   return next;
 }
 
 export function loadAttemptHistory() {
-  const history = migrate(safeParse(storageGet(HISTORY_KEY)), HISTORY_MIGRATORS);
+  const history = migrate(safeParse(storageGet(scopedKey(HISTORY_KEY))), HISTORY_MIGRATORS);
   if (!Array.isArray(history)) return [];
   // Scoring-model mismatches are hard-incompatible; bank-version differences
   // are NOT — snapshots keep their recorded version so old reports stay
@@ -332,8 +333,8 @@ export function historyAtCapacity() {
 
 // Wipes every locally stored assessment artifact (privacy panel in settings).
 export function clearAllAssessmentData() {
-  storageRemove(DRAFT_KEY);
-  storageRemove(HISTORY_KEY);
+  storageRemove(scopedKey(DRAFT_KEY));
+  storageRemove(scopedKey(HISTORY_KEY));
   clearExposureStore();
 }
 

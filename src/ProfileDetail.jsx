@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { scopedKey } from "./account-scope.js";
 import {
   ArrowLeft,
   ArrowRight,
@@ -556,7 +557,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   // 我的记录：localStorage 持久化（此前是纯 useState，刷新即丢——保存按钮形同虚设）。
   const [recordEntries, setRecordEntries] = useState(() => {
     try {
-      const raw = localStorage.getItem(RECORD_ENTRIES_KEY);
+      const raw = localStorage.getItem(scopedKey(RECORD_ENTRIES_KEY));
       const parsed = raw ? JSON.parse(raw) : null;
       return parsed && typeof parsed === "object" ? parsed : {};
     } catch {
@@ -650,7 +651,10 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
     setFavoriteLayouts(loadBoardLayout(favoriteLayoutKey));
   }, [favoriteLayoutKey]);
   const selectedKey = dateKey(selected);
-  const records = [...(realRecordsByDay[selectedKey] ?? []), ...(ASSESSMENT_RECORDS[selectedKey] ?? [])];
+  // 演示日历记录只给未登录的匿名探索：已登录学员（尤其新注册）看到演示
+  // 记录会误以为自己「凭空多了测评记录」——与报告页演示雷达同源问题。
+  const demoRecords = readProfile() ? [] : (ASSESSMENT_RECORDS[selectedKey] ?? []);
+  const records = [...(realRecordsByDay[selectedKey] ?? []), ...demoRecords];
   const recordDraft = recordDrafts[selectedKey] ?? "";
   const selectedRecordEntries = recordEntries[selectedKey] ?? [];
   const cells = getCalendarCells(cursor.year, cursor.month);
@@ -682,7 +686,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
         ...current,
         [selectedKey]: [entry, ...(current[selectedKey] ?? [])],
       };
-      try { localStorage.setItem(RECORD_ENTRIES_KEY, JSON.stringify(next)); } catch { /* 存储满时放弃持久化，本次会话仍可见 */ }
+      try { localStorage.setItem(scopedKey(RECORD_ENTRIES_KEY), JSON.stringify(next)); } catch { /* 存储满时放弃持久化，本次会话仍可见 */ }
       return next;
     });
     updateRecordDraft("");
@@ -1279,7 +1283,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
                     onClick={() => setSelected(date)}
                   >
                     <span>{date.getDate()}</span>
-                    {(ASSESSMENT_RECORDS[key] || realRecordsByDay[key]?.length || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
+                    {((!readProfile() && ASSESSMENT_RECORDS[key]) || realRecordsByDay[key]?.length || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
                   </button>
                 );
               })}

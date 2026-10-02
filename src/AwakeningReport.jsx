@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Download, Printer, X } from "@phosphor-icons/react";
 import {
   exportAttemptHistory,
-  historyAtCapacity,
-  latestCompletedSnapshot,
+  historyAtCapacity,  latestCompletedSnapshot,
 } from "./assessment-attempt";
+import { readProfile } from "./auth-client";
 import { buildRecommendations } from "./report-recommendations";
 
 // Demo scores shown when no completed comprehensive attempt exists yet. Real
@@ -94,6 +94,12 @@ function formatCompletedAt(iso) {
 }
 
 function reportModel(snapshot) {
+  // 已登录且没有自己的快照：绝不给演示报告——新注册学员会把演示雷达误
+  // 认为自己「凭空多出的报告」（2026-10-02 实测反馈）。改出空状态+去测评
+  // CTA。演示数据只保留给未登录的匿名探索场景。
+  if ((!snapshot || !snapshot.result) && readProfile()) {
+    return { isEmpty: true };
+  }
   // A snapshot without a usable result (corrupt or hand-edited storage) falls
   // back to the labelled demo view instead of crashing the reports panel.
   if (!snapshot || !snapshot.result || !Array.isArray(snapshot.result.dimensions)) {
@@ -189,7 +195,21 @@ const DIALOGUE_LINES = [
 export function AwakeningReportContent({ snapshot = null }) {
   const model = reportModel(snapshot);
   const [methodOpen, setMethodOpen] = useState(false);
-  const capNotice = !model.isDemo && historyAtCapacity();
+  const capNotice = !model.isDemo && !model.isEmpty && historyAtCapacity();
+
+
+  // 已登录但没有自己的快照：空状态 + 去测评入口。不出雷达、不出演示分——
+  // 新注册学员此前会把这里的演示雷达误认为自己「凭空多出的报告」。
+  if (model.isEmpty) {
+    return (
+      <section className="awakening-report-card is-empty" aria-label="暂无觉醒报告">
+        <div className="report-empty report-empty-cta">
+          <h2>还没有你的觉醒报告</h2>
+          <p>完成一次综合能力测评（对话 · 客观 · 实操三阶段）后，这里会生成你的六维能力画像。</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="awakening-report-card" aria-label="智核觉醒报告结果">

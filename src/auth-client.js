@@ -101,6 +101,8 @@ export async function apiLogin(account, password) {
   if (!response.ok) throw await parseError(response, `登录失败（${response.status}）`);
   const payload = await response.json();
   saveSession(payload.token, payload.profile);
+  // 登录（非注册）：本设备匿名时期的成果类数据一次性迁入该账号命名空间。
+  migrateLegacyDataForAccount();
   return payload.profile;
 }
 

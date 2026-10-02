@@ -9,12 +9,15 @@
  * 时带上，服务端据此把这次完成计入该推送的完成名单。
  */
 import { authFetch, readProfile } from "./auth-client";
+import { scopedKey } from "./account-scope.js";
 
-const ACTIVE_ASSIGNMENT_KEY = "aiquos.active-assignment.v1";
+// 作业记账属个人数据：按账号命名空间存取。不能在模块加载时固化
+// scopedKey 的结果——登录/登出后账号变了，必须每个使用点现取。
+const ASSIGNMENT_BASE_KEY = "aiquos.active-assignment.v1";
 
 export function readActiveAssignmentId() {
   try {
-    return localStorage.getItem(ACTIVE_ASSIGNMENT_KEY) || null;
+    return localStorage.getItem(scopedKey(ASSIGNMENT_BASE_KEY)) || null;
   } catch {
     return null;
   }
@@ -22,8 +25,8 @@ export function readActiveAssignmentId() {
 
 export function writeActiveAssignmentId(id) {
   try {
-    if (id) localStorage.setItem(ACTIVE_ASSIGNMENT_KEY, id);
-    else localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY);
+    if (id) localStorage.setItem(scopedKey(ASSIGNMENT_BASE_KEY), id);
+    else localStorage.removeItem(scopedKey(ASSIGNMENT_BASE_KEY));
   } catch {
     /* 存储不可用时作业关联仅本次会话有效 */
   }

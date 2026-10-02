@@ -227,7 +227,7 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
             <input type="tel" value={phone} placeholder="填写手机号" onChange={(event) => setPhone(event.target.value)} autoComplete="tel" />
           </label>
           <div className="account-actions">
-            <p>{saved ? "资料已在本地演示中更新。" : "修改后点击保存，密码不会被上传。"}</p>
+            <p>{saveState === "saved" ? "资料已保存。" : saveState || "修改后点击保存；未登录时资料仅存本机。"}</p>
             <div>
               <button type="submit" className="save-button" disabled={saveState === "saving"}>{saveState === "saving" ? "保存中…" : "保存资料"}</button>
               <button type="button" className="logout-button" onClick={logout} disabled={busy}>

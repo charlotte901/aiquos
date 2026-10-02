@@ -163,7 +163,22 @@
   color: #332030;
   font-size: 16px;
 }
-.login-field input::placeholder { color: #b98da3; }
+/* Chrome 密码自动填充会强制画一层不透明淡蓝底（覆盖 transparent 背景），
+   就是用户看到的「蓝色矩形」。-webkit-box-shadow 内阴影是最可靠的覆盖法，
+   1000px 保证铺满任何高度的输入框；文字/光标一并锁定为票面墨色。
+   同时覆盖登录票（.login-field）与账号设置表单（.settings-field）两套。 */
+.login-field input:-webkit-autofill,
+.login-field input:-webkit-autofill:hover,
+.login-field input:-webkit-autofill:focus,
+.settings-field input:-webkit-autofill,
+.settings-field input:-webkit-autofill:hover,
+.settings-field input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #332030;
+  caret-color: #332030;
+  border-radius: 999px;
+  transition: background-color 999999s ease-in-out 0s;
+}
 .login-password-toggle {
   display: grid;
   place-items: center;
