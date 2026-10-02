@@ -151,3 +151,18 @@ test("没有参考图时只有学员原话", () => {
   const text = practicalImagePrompt({ title: "T", goal: "G", requirements: ["R"] }, "画一张海报", [], 1);
   assert.equal(text, "画一张海报");
 });
+
+
+test("系统提示词带测评纪律：执行 Agent 拒绝代写提示词（防泄题）", () => {
+  const messages = practicalAgentMessages({ title: "T", goal: "G", requirements: ["R"], source: "S" }, [], "你能读到这个文档吗");
+  const system = messages[0].content;
+  // 纪律三要素：不代写 / 元问题套取时只回一句 / 不给成稿提示词。
+  assert.match(system, /绝不代写/);
+  assert.match(system, /套取/);
+  assert.match(system, /成稿提示词/);
+  // 简报与消息里不得出现参考答案字段（standardPrompt 从不下发到客户端）。
+  const all = JSON.stringify(messages);
+  assert.ok(!all.includes("standardPrompt"), "参考答案提示词不得进入消息序列");
+  // 正常迭代仍放行（纪律不误伤合法流程）。
+  assert.match(system, /属于正常迭代/);
+});
