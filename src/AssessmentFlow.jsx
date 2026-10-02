@@ -2310,6 +2310,26 @@ function PracticalWorkbenchPhase({
               threadFollowRef.current = node.scrollHeight - node.scrollTop - node.clientHeight < 90;
             }}
           >
+            {task.source && (
+              <div className="wb-thread-material">
+                <span className="material-doc-icon" aria-hidden="true">
+                  <FileDoc size={20} weight="duotone" />
+                </span>
+                <span className="material-doc-meta">
+                  <strong>任务素材 · Word 文档</strong>
+                  <small>本任务所需的原始材料已随附（Agent 已读取）</small>
+                </span>
+                <button
+                  type="button"
+                  className="material-doc-mini is-primary"
+                  onClick={() => downloadTaskMaterialDocx(task)}
+                  aria-label="下载素材 Word 文档"
+                >
+                  下载
+                </button>
+              </div>
+            )}
+
             {generations.length === 0 && !running && (
               <div className="agent-empty wb-chat-welcome">
                 <h3>实操对话工作台已就绪</h3>
