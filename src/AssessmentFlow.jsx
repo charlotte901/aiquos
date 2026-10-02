@@ -1057,16 +1057,16 @@ function AdaptiveObjectivePhase({
 
   useEffect(() => {
     onCharacterFeedback?.({
-      phase: storyPhase === "opening" || storyPhase === "ending" ? storyPhase : phase,
+      phase,
       // The summary view has no single right/wrong answer to celebrate, and
       // it must not keep showing the previous question's verdict either.
       result: phase === "summary" ? null : result,
       reaction: phase === "summary"
         ? `本轮共作答 ${evidenceMirror.length} 题。题目难度一路跟着你的表现调整；成绩会在全部阶段结束后统一给出。`
-        : reaction || (storyPhase === "opening" || storyPhase === "ending" ? lines[lineIndex]?.text : null),
-      speakerName: storyPhase === "opening" || storyPhase === "ending" ? getStorySpeaker(guardian, lines[lineIndex]?.who) : guardian,
+        : reaction || null,
+      speakerName: guardian,
     });
-  }, [phase, storyPhase, result, reaction, lineIndex, lines, guardian, onCharacterFeedback]);
+  }, [phase, result, reaction, guardian, onCharacterFeedback]);
 
   useEffect(() => {
     if (phase !== "quiz" || stopInfo) return undefined;
@@ -1536,10 +1536,10 @@ function PracticalWorkbenchPhase({
           ? "评分出炉：每个维度都有档位、得分和评语，对照看看还能从哪里加分。"
           : generations.length
             ? "生成完成！可以继续提要求让 Agent 改，直到满意再交卷。"
-            : (storyPhase === "opening" || storyPhase === "ending" ? lines[lineIndex]?.text : "在下方撰写提示词并点击发送，驱动 Agent 完成任务。"),
+            : "在下方撰写提示词并点击发送，驱动 Agent 完成任务。",
       speakerName: guardian,
     });
-  }, [phase, storyPhase, running, generations.length, lineIndex, lines, guardian, onCharacterFeedback]);
+  }, [phase, running, generations.length, guardian, onCharacterFeedback]);
 
   // 新气泡出现或流式思考/输出增长时，把线程滚到底 —— 连续迭代时最新一轮
   // 必须在视野里，否则学员会以为"没反应"。若学员主动上翻，暂停跟随。
