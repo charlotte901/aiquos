@@ -41,3 +41,24 @@ export function onEnterSubmit(submit, { withMeta = false, when = null } = {}) {
     submit(event);
   };
 }
+
+/**
+ * textarea 自动伸缩：内容变化时把高度调成内容高，封顶后内部滚动。
+ * field-sizing: content 的 JS 兜底——不支持该 CSS 的浏览器（旧 Edge/火狐）
+ * 也能自动长高；发送后草稿清空，高度自动缩回。
+ *
+ * @param {number} max 高度上限（px），约 3 行
+ * @returns {(el: HTMLTextAreaElement|null) => void} ref 回调，每次渲染重挂
+ */
+export function autoResizeRef(max = 96) {
+  return (el) => {
+    if (!el) return;
+    const resize = () => {
+      el.style.height = "auto";
+      el.style.height = `${Math.min(el.scrollHeight, max)}px`;
+    };
+    el.addEventListener("input", resize);
+    // 初次挂载与草稿清空（value 变化不触发 input）时也校正一次。
+    resize();
+  };
+}

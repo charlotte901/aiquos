@@ -551,7 +551,7 @@
   box-shadow: 0 8px 18px color-mix(in srgb, var(--assessment-color) 10%, transparent);
   line-height: 1.68;
 }
-.conversation-task .task-composer { height: 64px; margin-top: 14px; padding-left: 23px; }
+.conversation-task .task-composer { min-height: 64px; margin-top: 14px; padding: 8px 0 8px 23px; }
 .conversation-done {
   display: flex;
   flex: 0 0 auto;
@@ -568,8 +568,8 @@
 .conversation-done > span { color: color-mix(in srgb, var(--assessment-deep) 82%, #26324a); font-size: 14px; font-weight: 800; }
 .conversation-done .task-action { margin: 0; }
 @keyframes conversation-done-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.conversation-task .task-composer input { color: #202b3e; font-size: 17px; font-weight: 500; }
-.conversation-task .task-composer input::placeholder { color: #687489; opacity: 1; }
+.conversation-task .task-composer :is(input, textarea) { color: #202b3e; font-size: 17px; font-weight: 500; }
+.conversation-task .task-composer textarea::placeholder { color: #687489; opacity: 1; }
 .conversation-task .task-composer button { width: 52px; height: 52px; }
 @media (min-width: 841px) {
   /* 桌面端：舞台与字标的定位全部来自 store 推导的 px 变量
@@ -638,8 +638,26 @@
 }
 .reply-spinner { animation: reply-spin 800ms linear infinite; }
 .task-composer, .agent-composer { position: relative; display: flex; align-items: center; border: 2px solid var(--assessment-color); border-radius: 28px; }
-.task-composer { width: 100%; height: 70px; margin-top: auto; padding-left: 24px; }
+.task-composer { width: 100%; min-height: 70px; margin-top: auto; padding: 10px 0 10px 24px; align-items: flex-end; }
 .task-composer input { min-width: 0; flex: 1; border: 0; outline: 0; color: #263243; background: transparent; }
+/* 回答输入：随内容自动长高（1 行起步，约 3 行封顶后内部滚动）。
+ * field-sizing 与 wb-composer 的 textarea 同一方案；发送后草稿清空自动缩回。 */
+.task-composer textarea {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  resize: none;
+  color: #263243;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.5;
+  min-height: 34px;
+  max-height: 96px;
+  overflow-y: auto;
+  field-sizing: content;
+  padding: 6px 0;
+}
 .task-composer button, .agent-send { display: grid; place-items: center; width: 56px; height: 56px; margin-right: 7px; border-radius: 50%; color: #fff; background: var(--assessment-color); }
 .task-composer button svg, .agent-send svg { width: 25px; height: 25px; }
 .agent-brief { max-width: 720px; margin: 7px 0 0; color: #687382; font-size: 16px; line-height: 1.45; }
@@ -800,7 +818,7 @@
 }
 .conversation-task .chat-bubble.is-feedback .chat-text :is(p, li) { font-size: clamp(17px, calc(1.25 * var(--vw, 1vw)), 21px); }
 .conversation-task .chat-bubble > span { font-size: 14px; }
-.conversation-task .task-composer input { font-size: 20px; }
+.conversation-task .task-composer textarea { font-size: 20px; }
 .story-line p { font-size: 19px; line-height: 1.75; }
 .adaptive-telemetry {
   margin: 0 0 8px;
@@ -2816,8 +2834,8 @@
   .conversation-task .chat-bubble .chat-text > * + * { margin-top: 9px; }
 
   /* 输入框同步放大：作答区与正文同档，避免"读大写字、打小字"。 */
-  .conversation-task .task-composer input { font-size: 18px; }
-  .conversation-task .task-composer { height: 76px; border-radius: 30px; }
+  .conversation-task .task-composer textarea { font-size: 18px; }
+  .conversation-task .task-composer { min-height: 76px; border-radius: 30px; }
 
   /* 采访页头（人名与进度）也上调，形成三级层次而不是一片小字。 */
   .interview-who strong { font-size: 19px; }

@@ -60,7 +60,7 @@ import {
 import { heuristicSlotCredit } from "./interview-scoring";
 import { scoreInterview } from "./interview-scoring-model";
 import { parseScoreJson } from "./interview-score-parse";
-import { onEnterSubmit } from "./ime";
+import { autoResizeRef, onEnterSubmit } from "./ime";
 import { MarkdownLite } from "./markdown-lite";
 import { deliveryRequirements, scoringSchemeRows, taskImageSize } from "./practical-scoring";
 import { practicalAgentMessages, practicalImagePrompt, practicalImageRefs } from "./practical-agent";
@@ -974,12 +974,14 @@ function InterviewPhase({
     ) : (
       <label className="task-composer interview-composer">
         <span className="sr-only">输入你的回答</span>
-        <input
+        <textarea
+          rows={1}
+          ref={autoResizeRef(96)}
           disabled={judging || interviewerBusy || clock.remainingMs <= 0}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onEnterSubmit(send, { when: () => !judging && !interviewerBusy })}
-          placeholder={interviewerBusy ? "苏记者正在说话…" : judging ? "苏记者正在斟酌…" : "写下你的回答，Enter 发送…"}
+          placeholder={interviewerBusy ? "苏记者正在说话…" : judging ? "苏记者正在斟酌…" : "写下你的回答，Enter 发送 · Shift+Enter 换行…"}
         />
         <button type="button" disabled={judging || interviewerBusy || !draft.trim()} onClick={send} aria-label="发送回答">
           {judging || interviewerBusy ? <CircleNotch className="reply-spinner" weight="bold" /> : <PaperPlaneTilt weight="fill" />}
@@ -2443,6 +2445,7 @@ function PracticalWorkbenchPhase({
               <span className="sr-only">给 Agent 的提示词</span>
               <div className="wb-composer-main">
                 <textarea
+                  ref={autoResizeRef(120)}
                   disabled={running || (expired && generations.length > 0) || atGenerationCap}
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
