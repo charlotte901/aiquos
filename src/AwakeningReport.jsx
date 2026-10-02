@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, FileDoc, FilePdf, X } from "@phosphor-icons/react";
-import { downloadLearningPlan } from "./learning-plan-docx";
+import { ArrowLeft, DownloadSimple, X } from "@phosphor-icons/react";
+import { AbilityGlyph } from "./AbilityGlyph";
+import { glyphScore } from "./ability-glyph";
 import { downloadLearningPlanPdf } from "./learning-plan-pdf";
 import {
-  exportAttemptHistory,
-  historyAtCapacity,
   latestCompletedSnapshot,
 } from "./assessment-attempt";
 import { readProfile } from "./auth-client";
@@ -20,12 +19,6 @@ const DEMO_DIMENSIONS = [
   { key: "D4", name: "AI结果评估与优化", short: "评估", score: 86, advice: "为关键输出建立核查清单，主动追问依据、风险和反例。" },
   { key: "D5", name: "人机协同解决问题", short: "协同", score: 80, advice: "把复杂任务拆成AI可执行步骤，并在关键节点保留人工判断。" },
   { key: "D6", name: "AI伦理与合规", short: "伦理", score: 75, advice: "重点练习隐私脱敏、版权检查、偏见识别和高风险决策复核。" },
-];
-
-const RESOURCES = [
-  { tag: "模型通识", title: "AI能力边界速览工作坊", result: "补强基础认知 · 预计 25 分钟" },
-  { tag: "工具实战", title: "联网检索与文件分析挑战", result: "提升工具使用 · 预计 35 分钟" },
-  { tag: "伦理案例", title: "偏见、隐私与版权审查实验室", result: "强化伦理合规 · 预计 30 分钟" },
 ];
 
 // Advice bands per dimension for real reports: strong (80+), developing
@@ -67,21 +60,6 @@ function bandOf(score) {
   return score >= 80 ? "strong" : score >= 60 ? "developing" : "focus";
 }
 
-function bandLabel(band) {
-  return band === "strong" ? "优势" : band === "developing" ? "发展中" : "待提升";
-}
-
-function channelCell(score) {
-  return score === null || score === undefined ? "—" : String(score);
-}
-
-function channelOverallText(score, count, unit, note = "") {
-  if (score === null || score === undefined) return count > 0 ? `完成 ${count} ${unit}` : "未参加";
-  return `${score} 分${note ? `（${note}）` : ""} · ${count > 0 ? `${count} ${unit}` : "无记录"}`;
-}
-
-const gradeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
-
 function grade(score) {
   if (score >= 90) return "S";
   if (score >= 80) return "A";
@@ -96,22 +74,22 @@ function formatCompletedAt(iso) {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-function reportModel(snapshot) {
+function reportModel(snapshot, demoPreview = false) {
   // 已登录且没有自己的快照：绝不给演示报告——新注册学员会把演示雷达误
   // 认为自己「凭空多出的报告」（2026-10-02 实测反馈）。改出空状态+去测评
   // CTA。演示数据只保留给未登录的匿名探索场景。
-  if ((!snapshot || !snapshot.result) && readProfile()) {
+  if (!demoPreview && (!snapshot || !snapshot.result) && readProfile()) {
     return { isEmpty: true };
   }
   // A snapshot without a usable result (corrupt or hand-edited storage) falls
   // back to the labelled demo view instead of crashing the reports panel.
-  if (!snapshot || !snapshot.result || !Array.isArray(snapshot.result.dimensions)) {
+  if (demoPreview || !snapshot || !snapshot.result || !Array.isArray(snapshot.result.dimensions)) {
     const average = Math.round(DEMO_DIMENSIONS.reduce((sum, item) => sum + item.score, 0) / DEMO_DIMENSIONS.length);
     return {
       dimensions: DEMO_DIMENSIONS,
       overallScore: average,
       grade: grade(average),
-      meta: "本地演示数据 · 完成一次综合测评后展示真实画像",
+      meta: demoPreview ? "测试预览 · 演示分数，不计入测评记录" : "本地演示数据 · 完成一次综合测评后展示真实画像",
       isDemo: true,
     };
   }
@@ -150,255 +128,53 @@ function reportModel(snapshot) {
   };
 }
 
-function radarPoints(dimensions, radius) {
-  return dimensions.map((item, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    const x = 220 + radius * (item.score / 100) * Math.cos(angle);
-    const y = 220 + radius * (item.score / 100) * Math.sin(angle);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
-}
-
-function ringPoints(radius) {
-  return Array.from({ length: 6 }, (_, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    return `${220 + radius * Math.cos(angle)},${220 + radius * Math.sin(angle)}`;
-  }).join(" ");
-}
-
-
-const DIALOGUE_LINES = [
-  { who: "xiao", text: "觉醒完成！这是你的智核觉醒报告。" },
-  { who: "xiao", text: "看，这就是你在AI六大维度上的真实能力画像。每一道你做过的题目，都同时影响了多个维度的得分——这正是智核域综合测评的意义。你的强项和待提升的方面都清晰可见。" },
-  { who: "xiao", text: "根据你的测评结果，我为你推荐了这些学习资源，帮助你在薄弱维度上提升。记住，AI能力不是一成不变的——你可以随时回来重新测评，看看自己是否有所进步。智核域的大门永远为你敞开！" },
-];
-
-export function AwakeningReportContent({ snapshot = null }) {
-  const model = reportModel(snapshot);
-  const [methodOpen, setMethodOpen] = useState(false);
-  const [learningPlanAction, setLearningPlanAction] = useState(null);
-  const handleLearningPlanPdf = async () => {
-    let failed = false;
-    setLearningPlanAction("pdf");
+export function AwakeningReportContent({ snapshot = null, demoPreview = false }) {
+  const model = reportModel(snapshot, demoPreview);
+  const [downloadState, setDownloadState] = useState("idle");
+  useEffect(() => setDownloadState("idle"), [snapshot, demoPreview]);
+  const handleDownload = async () => {
+    if (downloadState === "loading") return;
+    setDownloadState("loading");
     try {
       await downloadLearningPlanPdf(model);
+      setDownloadState("done");
     } catch {
-      failed = true;
-      setLearningPlanAction("error");
-      setTimeout(() => setLearningPlanAction(null), 2400);
-    } finally {
-      if (!failed) setLearningPlanAction(null);
+      setDownloadState("error");
     }
   };
-  const capNotice = !model.isDemo && !model.isEmpty && historyAtCapacity();
-
-
-  // 已登录但没有自己的快照：空状态 + 去测评入口。不出雷达、不出演示分——
-  // 新注册学员此前会把这里的演示雷达误认为自己「凭空多出的报告」。
-  if (model.isEmpty) {
-    return (
-      <section className="awakening-report-card is-empty" aria-label="暂无觉醒报告">
-        <div className="report-empty report-empty-cta">
-          <h2>还没有你的觉醒报告</h2>
-          <p>完成一次综合能力测评（对话 · 客观 · 实操三阶段）后，这里会生成你的六维能力画像。</p>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="awakening-report-card" aria-label="智核觉醒报告结果">
-      <div className="report-radar">
-        <header className="radar-head">
-          <h2>六维能力雷达</h2>
-          <div className={`awakening-rating ${gradeClass(model.grade)}`} aria-label={`综合评级 ${model.grade}`}>
-            <strong>{model.grade}</strong>
-            <span>综合评级</span>
-          </div>
-        </header>
-        <p className={`report-meta${model.isDemo ? " is-demo" : ""}`}>{model.meta}</p>
-        <svg viewBox="0 0 440 440" role="img" aria-label="六维能力雷达图">
-          {[44, 88, 132, 176].map((radius) => (
-            <polygon key={radius} points={ringPoints(radius)} className="radar-ring" />
-          ))}
-          <polygon points={ringPoints(176)} className="radar-ring radar-edge" />
-          <polygon points={radarPoints(model.dimensions, 176)} className="radar-value" />
-          {model.dimensions.map((item, index) => {
-            const angle = (-90 + index * 60) * Math.PI / 180;
-            const x = 220 + 206 * Math.cos(angle);
-            const y = 220 + 206 * Math.sin(angle);
-            return (
-              <text key={item.key} x={x} y={y} className="radar-label" textAnchor="middle">
-                <tspan x={x} y={y}>{item.short}</tspan>
-                <tspan x={x} y={y + 22}>{item.score}</tspan>
-              </text>
-            );
-          })}
-        </svg>
-        <div className="report-actions">
-          <button
-            type="button"
-            className="learning-plan-download"
-            onClick={() => downloadLearningPlan(model)}
-            disabled={learningPlanAction === "pdf"}
-            aria-label="下载与当前分数对应的个性化学习方案 Word 文档"
-          >
-            <FileDoc size={17} weight="bold" /> 方案 Word
-          </button>
-          <button
-            type="button"
-            className="learning-plan-download"
-            onClick={handleLearningPlanPdf}
-            disabled={learningPlanAction === "pdf"}
-            aria-label="导出与当前分数对应的个性化学习方案 PDF 文档"
-          >
-            <FilePdf size={17} weight="bold" /> {learningPlanAction === "pdf" ? "生成中…" : learningPlanAction === "error" ? "生成失败" : "方案 PDF"}
-          </button>
-        </div>
+  if (model.isEmpty) return (
+    <section className="awakening-report-card is-empty" aria-label="暂无觉醒报告">
+      <div className="report-empty-cta">
+        <h2>你的能力，等待发现。</h2>
+        <p>完成一次综合测评，生成属于你的六维能力画像。</p>
       </div>
-
-      <div className="report-details">
-        <section className="report-scores">
-          <h2>各维度得分</h2>
-          <ul>
-            {model.dimensions.map((item) => (
-              <li key={item.key}>
-                <div>
-                  <strong>{item.name}</strong>
-                  <span>{item.score} 分</span>
-                </div>
-                <div className="score-track" role="img" aria-label={`${item.name} ${item.score}分`}>
-                  <i style={{ width: `${item.score}%` }} />
-                </div>
-                <b className={gradeClass(grade(item.score))}>{grade(item.score)}</b>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {model.composite && (
-          <section className="report-channels" aria-label="三通道得分分解">
-            <h2>三个阶段各测出了什么</h2>
-            <p className="report-channels-note">
-              同一维度由三个通道分别测量后加权融合（客观 {Math.round((model.composite.weights.objective ?? 0) * 100)}% · 对话 {Math.round((model.composite.weights.interview ?? 0) * 100)}% · 实操 {Math.round((model.composite.weights.practical ?? 0) * 100)}%）。落差大的维度会在下方建议里单独解释。
-            </p>
-            <p className="report-channels-note">
-              实操通道是测量模型校准分，不是任务得分率直译：一次满分在中档难度任务上折算约 83（单次观测不足以证明更高能力），难题更高、易题更低——任务原始得分率见上方「实操任务」一行。
-            </p>
-            <table className="report-channel-table">
-              <thead>
-                <tr>
-                  <th>维度</th>
-                  <th>客观题</th>
-                  <th>对话</th>
-                  <th>实操</th>
-                  <th>融合</th>
-                </tr>
-              </thead>
-              <tbody>
-                {model.dimensions.map((item) => (
-                  <tr key={item.key}>
-                    <th scope="row">{item.name}</th>
-                    <td>{channelCell(item.channels?.objective)}</td>
-                    <td>{channelCell(item.channels?.interview)}</td>
-                    <td>{channelCell(item.channels?.practical)}</td>
-                    <td><b>{item.score}</b></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <ul className="report-channel-overalls">
-              <li><span>客观题阶段</span><b>{channelOverallText(model.channelOveralls?.objective, model.composite.channels.objective.answeredCount, "题")}</b></li>
-              <li><span>对话式采访</span><b>{channelOverallText(model.channelOveralls?.interview, model.composite.channels.interview.answeredSlots, "话题")}</b></li>
-              <li><span>实操任务</span><b>{channelOverallText(
-              model.channelOveralls?.practical,
-              model.composite.channels.practical.taskCount,
-              "题",
-              Number.isFinite(Number(model.composite.channels.practical.credit))
-                ? `任务得分率 ${Math.round(model.composite.channels.practical.credit * 100)}% · 难度校准后`
-                : "难度校准后",
-            )}</b></li>
-            </ul>
-          </section>
-        )}
-
-        <section className="report-guidance">
-          <div className="report-method">
-            <button
-              type="button"
-              className="report-method-toggle"
-              aria-expanded={methodOpen}
-              onClick={() => setMethodOpen((current) => !current)}
-            >
-              分数如何得出？{methodOpen ? "收起" : "展开"}
-            </button>
-            {methodOpen && (
-              <ul className="report-method-list">
-                <li>流程：先对话式采访定档（约 5 分钟）→ 客观题按定档自适应出题（约 5 分钟）→ 实操任务（约 5 分钟）。</li>
-                <li>客观题阶段以对话分数为初始先验定档出题，先验只影响「出哪道题、何时停」，不进评分；题目难度锚点：低 = −1、中 = 0、高 = +1，维度估计采用 N(0,1) 先验的能力估计（与官方评分核心一致）。</li>
-                <li>多选题部分得分：命中率 − 0.6 × 误选率，限制在 0 到 1；单选与判断题须完全正确；实操按逐维评分标准折算 20 分制得分率。</li>
-                <li>三通道分数先各自反演到共同的能力潜变量（客观题 IRT 量表的逆映射、对话评分模型的逆映射、实操锚点曲线的逆映射），再按权重融合后映射回 0–100（当前客观 {Math.round((model.composite?.weights.objective ?? 0.5) * 100)}% · 对话 {Math.round((model.composite?.weights.interview ?? 0.25) * 100)}% · 实操 {Math.round((model.composite?.weights.practical ?? 0.25) * 100)}%），缺失通道按维度重新归一化权重；总分 = 六维融合分的平均值四舍五入；等级 S ≥ 90、A ≥ 80、B ≥ 70、C ≥ 60、D &lt; 60。</li>
-                <li>进行中只显示已有作答维度的估计，不产生总分与等级。</li>
-              </ul>
-            )}
-          </div>
-          {capNotice && (
-            <p className="report-cap-note" role="status">
-              本机最多保留最近 12 份报告，新的完成会替换最旧的一份。
-              <button type="button" onClick={() => exportAttemptHistory()}>导出全部记录</button>
-            </p>
-          )}
-          <div>
-            <h2>个性化学习建议</h2>
-            {model.recommendations ? (
-              <>
-                {model.recommendations.summary && <p className="advice-summary">{model.recommendations.summary}</p>}
-                {model.recommendations.consistency?.flag && (
-                  <p className="advice-consistency" role="note">{model.recommendations.consistency.note}</p>
-                )}
-                <ol className="advice-priority-list">
-                  {model.recommendations.priorities.map((item) => (
-                    <li key={item.key} className={`is-${item.band}`}>
-                      <div className="advice-priority-head">
-                        <strong>{item.name}</strong>
-                        <span className={`advice-band is-${item.band}`}>{bandLabel(item.band)} · {item.score} 分</span>
-                      </div>
-                      <p>{item.advice}</p>
-                      {item.gap && (
-                        <div className="advice-gap">
-                          <em>{item.gap.title}</em>
-                          <p>{item.gap.note}</p>
-                          {item.gap.actions.map((action) => <p key={action} className="advice-action">{action}</p>)}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </>
-            ) : (
-              <ul className="advice-list">
-                {model.dimensions.map((item) => <li key={item.key}>{item.advice}</li>)}
-              </ul>
-            )}
-          </div>
-          <div>
-            <h2>推荐学习资源</h2>
-            <ul className="resource-list">
-              {(model.recommendations?.resources ?? RESOURCES).map((item) => (
-                <li key={item.title}>
-                  <em>{item.tag}</em>
-                  <strong>{item.title}</strong>
-                  <span>{item.result}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-        <footer className="report-footnote">
-          {model.versions
-            ? `基于 ${model.versions.bank} 题库 · 评分模型 v${model.versions.scoring}${model.versions.weighting ? ` · 加权方案 v${model.versions.weighting}` : ""} · 结果保存在本机`
-            : "演示数据 · 完成一次综合测评后展示真实画像"}
-        </footer>
+    </section>
+  );
+  return (
+    <section className="awakening-report-card ability-report" aria-label="智核觉醒报告结果">
+      <header className="ability-report-heading">
+        <div>
+          <h2>六维能力画像</h2>
+          <p>看见优势，也看见下一步。</p>
+        </div>
+        <div className="ability-report-summary" aria-label={`综合能力 ${glyphScore(model.overallScore) ?? "暂无"} 分，${model.grade}级`}>
+          {model.isDemo && <span className="ability-demo-label">{demoPreview ? "测试预览 · 演示数据" : "演示画像"}</span>}
+          <div className="ability-total"><span>综合能力</span><strong>{glyphScore(model.overallScore) ?? "—"}<small>/100</small></strong></div>
+          <b className={`grade-badge is-${String(model.grade).toLowerCase()}`}>{model.grade}</b>
+        </div>
+      </header>
+      <AbilityGlyph dimensions={model.dimensions} isDemo={model.isDemo} />
+      <div className="ability-download-area">
+        <button type="button" className="ability-download" onClick={handleDownload} disabled={downloadState === "loading"}>
+          <span>{downloadState === "loading" ? "正在生成报告…" : downloadState === "error" ? "重新下载个性化报告" : "下载个性化报告"}</span>
+          <DownloadSimple size={21} weight="bold" aria-hidden="true" />
+        </button>
+        <div className="ability-download-meta">
+          <p className="ability-download-note" role="status" aria-live="polite">
+            {downloadState === "error" ? "报告生成失败，请重试。" : downloadState === "done" ? "报告已生成 · PDF 包含能力解读与专属学习方案" : "PDF · 能力解读 / 成长建议 / 专属学习方案"}
+          </p>
+          <p className="ability-report-meta">{model.meta}</p>
+        </div>
       </div>
     </section>
   );
@@ -459,87 +235,22 @@ export function AwakeningReportModal({ open, onClose, snapshot = null }) {
 }
 
 export function AwakeningReport({ onBack, onStartAssessment, busy, active = false }) {
-  const [lineIndex, setLineIndex] = useState(0);
-  const [dialogueVisible, setDialogueVisible] = useState(true);
+  // Explicit local design-preview link. Production reports still require a
+  // completed account-scoped snapshot; this never creates or persists a run.
+  const demoPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("report-preview") === "demo";
   const [snapshot, setSnapshot] = useState(() => latestCompletedSnapshot());
-
   useEffect(() => {
-    if (!active) {
-      setLineIndex(0);
-      setDialogueVisible(true);
-      return;
-    }
-    // This panel stays mounted while hidden, so the initializer ran before any
-    // attempt existed. History is written before the page opens: re-read on
-    // arrival (integration guide: the latest report points at the latest
-    // completed snapshot).
-    setSnapshot(latestCompletedSnapshot());
+    if (active) setSnapshot(latestCompletedSnapshot());
   }, [active]);
-
-  const advanceDialogue = () => {
-    if (lineIndex < DIALOGUE_LINES.length - 1) {
-      setLineIndex((current) => current + 1);
-    }
-  };
-
-  const dialogueLine = DIALOGUE_LINES[lineIndex];
-
   return (
     <main className="awakening-screen" aria-label="智核觉醒报告">
       <button className="report-back" type="button" onClick={onBack} disabled={busy}>
         <ArrowLeft size={18} /> 返回选择
       </button>
-
-      {dialogueVisible && dialogueLine && (
-        <div
-          className="awakening-dialogue"
-          role="button"
-          tabIndex={0}
-          aria-label={lineIndex === DIALOGUE_LINES.length - 1 ? "小源对话已完成" : "继续下一句小源对话"}
-          onClick={advanceDialogue}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              advanceDialogue();
-            }
-          }}
-        >
-          <article className="awakening-story">
-            <div className="awakening-story-head">
-              <span>小源</span>
-              <strong>{lineIndex + 1} / {DIALOGUE_LINES.length}</strong>
-            </div>
-            <p>{dialogueLine.text}</p>
-            <small>
-              {lineIndex === DIALOGUE_LINES.length - 1 ? "对话完成" : "点击继续 ▾"}
-            </small>
-            {lineIndex < DIALOGUE_LINES.length - 1 && (
-              <button
-                type="button"
-                className="story-skip"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setLineIndex(DIALOGUE_LINES.length - 1);
-                }}
-              >
-                跳过对话
-              </button>
-            )}
-          </article>
-        </div>
+      <AwakeningReportContent snapshot={snapshot} demoPreview={demoPreview} />
+      {!demoPreview && !snapshot && readProfile() && (
+        <div className="ability-start"><button type="button" onClick={onStartAssessment}>开始综合测评</button></div>
       )}
-
-      {snapshot
-        ? <AwakeningReportContent snapshot={snapshot} />
-        : (
-          <div className="report-empty">
-            <AwakeningReportContent snapshot={null} />
-            <div className="report-empty-cta">
-              <p>还没有真实报告——完成一次 25 题的综合测评，这里会展示你的六维能力画像。</p>
-              <button type="button" onClick={onStartAssessment}>去完成综合测评</button>
-            </div>
-          </div>
-        )}
     </main>
   );
 }
