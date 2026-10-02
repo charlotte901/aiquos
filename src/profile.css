@@ -12,15 +12,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* 用 auto 上下边距吸收多余高度：内容在视口里垂直居中，短视口下又会先让出
-   * 边距而不是把卡片挤出屏幕（justify-content: center 在溢出时会把顶部裁掉）。
-   * 上下留同一个小边距，居中的对称性交给 auto 边距，避免固定 padding 把内容压低。 */
+  /* 与 CHOOSE/TEST 同一条顶部锚定：三黑底页字标顶边恒等。本页 unit 带
+   * 0.88 缩放（五卡横排），所以锚定值用 122×0.88≈107.4——字标顶边与其
+   * 他两页视觉等高（2000×1155 实测：此前垂直居中低 94px）。短视口的
+   * 富余空间落到底部（末元素 auto 下边距），不会再出现顶部裁切。 */
   min-height: calc(100 * var(--dvh, 1dvh));
-  padding-top: calc(96px * var(--profile-unit));
-  padding-bottom: calc(96px * var(--profile-unit));
+  /* 换算：choose-unit = profile-unit / 0.88，故 122×choose-unit = 
+   * 138.6×profile-unit——顶边与其他两页像素级相等。 */
+  padding-top: calc(138.6px * var(--profile-unit));
+  padding-bottom: calc(60px * var(--profile-unit));
   box-sizing: border-box;
 }
-.profile-layout > *:first-child { margin-top: auto; }
+.profile-layout > *:first-child { margin-top: 0; }
 .profile-layout > *:last-child { margin-bottom: auto; }
 /* Center the lettering like TEST!: height 188 at y=122, aspect kept from
  * the source crop, no optical offset. */

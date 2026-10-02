@@ -65,14 +65,13 @@ test("the choose screen routes the personal-center card into the profile view", 
 
 test("profile aligns to the TEST rhythm: lettering 188@122, uniform cards 420@343", async () => {
   const css = await readFile(new URL("../src/profile.css", import.meta.url), "utf8");
-  // The vertical rhythm is now set by centring rather than a fixed 122px top
-  // padding: top-aligning left 442px of dead space under the row at 1920x1080.
-  // Symmetric padding plus auto margins keeps the lettering/cards relationship
-  // while letting the block sit in the middle of the viewport.
+  // 2026-10-02: 顶部锚定与 CHOOSE/TEST 对齐——三黑底页字标顶边恒等
+  // （choose-unit = profile-unit / 0.88，故 122×choose-unit = 138.6×profile-unit）。
+  // 富余空间落到底部（末元素 auto 下边距），不再垂直居中。
   assert.match(css, /min-height: calc\(100 \* var\(--dvh, 1dvh\)\)/);
-  assert.match(css, /padding-top: calc\(96px \* var\(--profile-unit\)\)/);
-  assert.match(css, /padding-bottom: calc\(96px \* var\(--profile-unit\)\)/);
-  assert.match(css, /> \*:first-child \{ margin-top: auto; \}/);
+  assert.match(css, /padding-top: calc\(138\.6px \* var\(--profile-unit\)\)/);
+  assert.match(css, /padding-bottom: calc\(60px \* var\(--profile-unit\)\)/);
+  assert.match(css, /> \*:first-child \{ margin-top: 0; \}/);
   assert.match(css, /> \*:last-child \{ margin-bottom: auto; \}/);
   assert.match(css, /height: calc\(188px \* var\(--profile-unit\)\)/);
   assert.match(css, /margin-top: calc\(33px \* var\(--profile-unit\)\)/);
