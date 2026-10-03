@@ -420,3 +420,73 @@
   gap: 12px;
 }
 .assessment-screen[data-compact="true"] .assignment-start { width: 100%; }
+
+/* ── 老师的试卷（hub 常驻区）──────────────────────────────────────
+   第一张为主卡（虚线高亮 + 「常驻」徽标），其余小卡并列；空态给一行
+   提示让区域形态稳定。 */
+.hub-assignments {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--assessment-soft, #eef2ff) 55%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color, #247cf1) 16%, #fff);
+}
+.hub-assignments.is-empty {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.hub-assignments.is-empty p { margin: 0; color: #7a8496; font-size: 12.5px; font-weight: 600; }
+.hub-assignments-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--assessment-color, #247cf1) 72%, #17233a);
+  font-size: 13px;
+  font-weight: 800;
+}
+.hub-assignment-card {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  min-width: 200px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1.5px solid color-mix(in srgb, var(--assessment-color, #247cf1) 24%, #dfe6f2);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.hub-assignment-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px #17233a1f; }
+.hub-assignment-card.is-featured {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--assessment-color, #247cf1) 52%, #c9d6ee);
+  background: linear-gradient(175deg, #ffffff 0%, color-mix(in srgb, var(--assessment-soft, #eef2ff) 40%, #fff) 100%);
+}
+.hub-assignment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--assessment-color, #247cf1) 12%, #fff);
+  color: color-mix(in srgb, var(--assessment-color, #247cf1) 78%, #17233a);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.hub-assignment-card strong { color: #17233a; font-size: 15px; font-weight: 800; }
+.hub-assignment-card small { color: #7a8496; font-size: 11.5px; font-weight: 600; }
+.hub-assignment-card em {
+  margin-top: 4px;
+  color: var(--assessment-color, #247cf1);
+  font-size: 12.5px;
+  font-style: normal;
+  font-weight: 800;
+}
+.hub-assignment-card em.is-done { color: #2fa96e; }

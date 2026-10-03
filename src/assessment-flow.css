@@ -164,6 +164,82 @@
   user-select: none;
 }
 .level-map .assessment-guides { right: 4.5%; bottom: 3%; filter: invert(17%) sepia(13%) saturate(1210%) hue-rotate(176deg) brightness(95%) contrast(93%); opacity: .92; }
+/* ── 综合测评选卷首屏（2026-10-03 替换关卡地图）────────────────────
+   布局：标题 → （续答横幅）→「老师推送」卡片网格 → 标准卷入口。
+   卡面刻意精简（用户要求）：只有卷名、截止（若有）与状态/动作三项，
+   下发范围与题库版本等教师端信息不上学生端。卡片样式直接挂在
+   .hub-assignment-card 上，这里只覆盖选卷语境的排版。 */
+/* 顶部间距收窄（默认地图版是 104–154px）：选卷屏比关卡地图内容高，沿用
+   原间距会让面板底部超出视口、蓝色留白被切掉（1440×900 实测溢出 57px）。
+   特异性 (0,2,0) 与 `.map-flow .level-map` 持平且位置在后，覆盖生效。 */
+.map-flow .papers-map { margin-top: clamp(36px, calc(5.6 * var(--vh, 1vh)), 88px); }
+.papers-map .map-resume { margin-top: 26px; }
+.papers-block { margin-top: 30px; }
+.papers-block.is-empty { display: grid; gap: 10px; }
+.papers-block-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  color: color-mix(in srgb, var(--assessment-color, #247cf1) 74%, #17233a);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+.papers-block-title svg { flex: 0 0 auto; }
+.papers-empty-note {
+  max-width: 560px;
+  margin: 0;
+  color: #7a8496;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+/* 均匀网格：卡片同宽同行高；列宽落在 240–340px 区间，1440 视口 3 列。 */
+.papers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 14px;
+}
+.papers-grid .hub-assignment-card {
+  min-width: 0;
+  align-content: start;
+  padding: 18px 20px;
+}
+.papers-grid .hub-assignment-card strong { font-size: 18px; line-height: 1.35; }
+.papers-grid .hub-assignment-card small { font-size: 13px; }
+.papers-grid .hub-assignment-card em { margin-top: 8px; font-size: 14px; }
+/* 标准卷入口：整行，右侧动作，视觉上区别于老师推送的卡片网格。 */
+.papers-standard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  margin-top: 26px;
+  padding: 20px 22px;
+  padding-right: clamp(22px, calc(15 * var(--vw, 1vw)), 250px);
+  border-radius: 20px;
+  border: 1.5px dashed color-mix(in srgb, var(--assessment-color, #247cf1) 34%, #c9d6ee);
+  background: color-mix(in srgb, var(--assessment-soft, #e9f2ff) 42%, #fff);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.papers-standard:hover { transform: translateY(-2px); box-shadow: 0 10px 24px #17233a1f; border-color: color-mix(in srgb, var(--assessment-color, #247cf1) 55%, #c9d6ee); }
+.papers-standard:disabled { cursor: default; opacity: .72; transform: none; box-shadow: none; }
+.papers-standard-main { display: grid; gap: 2px; justify-items: start; }
+.papers-standard-main strong { color: #17233a; font-size: 18px; font-weight: 800; }
+.papers-standard-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  color: var(--assessment-color, #247cf1);
+  font-size: 15px;
+  font-weight: 800;
+}
+.papers-standard-go svg { width: 17px; height: 17px; }
 /* ── Task Stage Layout（三元素锚定布局）─────────────────────────────────────
    规则（stage-layout-store.js 推导，输出 px 变量）：
    ① TEST! 字标在左上角（--lo-mark-left/top/width）；
@@ -770,6 +846,7 @@
 @media (max-width: 450px) {
   .level-progress { top: 92px; right: 20px; }
   .level-map, .task-panel { margin-top: 74px; }
+  .papers-standard { flex-direction: column; align-items: flex-start; gap: 12px; padding-right: 22px; }
 }
 .thinking-hint {
   display: inline-flex;

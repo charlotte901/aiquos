@@ -35,7 +35,8 @@ export function AssessmentHub({ onBack, onStart, busy, active = true }) {
   const size = useStageSize();
   const [selected, setSelected] = useState(null);
   // 题库版本：默认精选版，界面不再提供切换入口（2026-10-01 用户移除
-  // 全量版/精选版按钮与教师推送区，测试页只保留四张测评卡）。
+  // 全量版/精选版按钮，测试页只保留四张测评卡）。老师推送的试卷区也已
+  // 移入综合测评的第一屏（ComprehensivePapers，2026-10-03）。
   const [edition] = useState(() => readEdition());
   const layout = getAssessmentLayout(size.width, size.height);
   return (

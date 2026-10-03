@@ -42,13 +42,14 @@ const NAV = [
   { id: "settings", label: "系统设置", icon: ChartPieSlice },
 ];
 
-/** 管理端登录/注册教师：真实服务端校验（/api/auth/*），仅教师角色可进入。 */
+/** 管理端登录/注册教师：真实服务端校验（/api/auth/*），仅教师角色可进入。
+ *  注册不再需要邀请码（2026-10-03 产品要求）：教师与学员同一注册口、直接
+ *  可注册；服务端同样忽略该旧字段（见 auth-worker 测试）。 */
 function Gate({ onEnter }) {
   const [mode, setMode] = useState("login");
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -62,7 +63,6 @@ function Gate({ onEnter }) {
     if (mode === "register") {
       const nicknameCheck = validateNickname(nickname);
       if (!nicknameCheck.ok) next.nickname = nicknameCheck.error;
-      if (!inviteCode.trim()) next.inviteCode = "请填写教师邀请码";
     }
     setFieldErrors(next);
     return Object.keys(next).length === 0;
@@ -80,7 +80,6 @@ function Gate({ onEnter }) {
           account: account.trim(),
           password,
           nickname: nickname.trim(),
-          inviteCode: inviteCode.trim(),
         });
       } else {
         await adminLogin(account.trim(), password);
@@ -139,31 +138,18 @@ function Gate({ onEnter }) {
           {fieldErrors.password && <em className="gate-field-error" role="alert">{fieldErrors.password}</em>}
         </label>
         {mode === "register" && (
-          <>
-            <label>
-              <span>姓名（昵称）</span>
-              <input
-                type="text"
-                value={nickname}
-                maxLength={24}
-                autoComplete="nickname"
-                {...field("nickname")}
-                onChange={(event) => { setNickname(event.target.value); setFieldErrors((current) => ({ ...current, nickname: undefined })); }}
-              />
-              {fieldErrors.nickname && <em className="gate-field-error" role="alert">{fieldErrors.nickname}</em>}
-            </label>
-            <label>
-              <span>教师邀请码</span>
-              <input
-                type="password"
-                value={inviteCode}
-                autoComplete="off"
-                {...field("inviteCode")}
-                onChange={(event) => { setInviteCode(event.target.value); setFieldErrors((current) => ({ ...current, inviteCode: undefined })); }}
-              />
-              {fieldErrors.inviteCode && <em className="gate-field-error" role="alert">{fieldErrors.inviteCode}</em>}
-            </label>
-          </>
+          <label>
+            <span>姓名（昵称）</span>
+            <input
+              type="text"
+              value={nickname}
+              maxLength={24}
+              autoComplete="nickname"
+              {...field("nickname")}
+              onChange={(event) => { setNickname(event.target.value); setFieldErrors((current) => ({ ...current, nickname: undefined })); }}
+            />
+            {fieldErrors.nickname && <em className="gate-field-error" role="alert">{fieldErrors.nickname}</em>}
+          </label>
         )}
         {error && <p className="gate-error" role="alert">{error}</p>}
         <button type="submit" disabled={pending}>

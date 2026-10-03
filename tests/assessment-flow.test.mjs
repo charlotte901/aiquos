@@ -54,6 +54,44 @@ test("assessment cards now open their working five-stage flow", async () => {
   assert.match(experience, /assessmentHash\(assessmentRoute\.id, stage\)/);
 });
 
+test("comprehensive opens the paper picker instead of the stage map", async () => {
+  // 2026-10-03 用户决策：试卷选择从 TEST hub 移入综合测评，作为进入综合
+  // 测评的第一个界面，替换原关卡地图；阶段间改为任务页顶部节点直接推进。
+  // 这条测试钉住关键契约，防止无声回退。
+  const [experience, flow, hub] = await Promise.all([
+    readFile(new URL("../src/SiteExperience.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/AssessmentHub.jsx", import.meta.url), "utf8"),
+  ]);
+  // 选卷首屏组件存在，且由 assessment-map 视图在 comprehensive 下渲染。
+  assert.match(flow, /export function ComprehensivePapers\(/);
+  assert.match(experience, /view === "assessment-map" && assessmentRoute\.id === "comprehensive"[\s\S]{0,200}<ComprehensivePapers/);
+  // 综合测评卡片不再直接开考：startAssessment 只导航到选卷屏，真正的
+  // 开考动作在 startComprehensivePaper（选定试卷之后）。
+  assert.match(experience, /function startComprehensivePaper\(assignment\)/);
+  assert.match(experience, /writeActiveAssignmentId\(assignment\.id\)/);
+  // 标准卷必须清作业上下文，否则一次中途放弃的作业会被误记成完成。
+  assert.match(experience, /writeActiveAssignmentId\(null\)/);
+  // 阶段完成直接进入下一阶段任务，不再回地图。
+  assert.match(experience, /setAssessmentRoute\(\{ id, stage: nextStage, mode: "task" \}\)/);
+  // 选卷屏保留官方标准卷兜底入口与续答横幅。
+  assert.match(flow, /className="papers-standard"/);
+  assert.match(flow, /检测到未完成的综合测评/);
+  // 卡面精简（用户要求）：只保留卷名/截止/状态，教师端的下发口径与题库
+  // 版本不上学生端。范围限定在 ComprehensivePapers 组件内检查，避免误伤
+  // 文件其他区域的相近字样。
+  const papersBlock = flow.slice(
+    flow.indexOf("export function ComprehensivePapers("),
+    flow.indexOf("function TaskHeader("),
+  );
+  assert.ok(papersBlock.length > 0, "ComprehensivePapers body not found");
+  assert.doesNotMatch(papersBlock, /assignmentScopeLabel/);
+  assert.doesNotMatch(papersBlock, /全部学员|指定学员|精选版题库|全量版题库/);
+  assert.doesNotMatch(papersBlock, /三阶段约 20 分钟/);
+  // TEST hub 不再承载老师推送区（该区已移入综合测评首屏）。
+  assert.doesNotMatch(hub, /hub-assignments/);
+});
+
 
 test("every primary action button shows its label", async () => {
   const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");

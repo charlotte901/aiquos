@@ -68,20 +68,20 @@ function GlyphDrawing({ word, score, ready, amber, index }) {
     </defs>
     {!paths ? <text x="140" y="122" textAnchor="middle" className="glyph-fallback">{word}</text> : <>
       <path d={paths.empty} className="glyph-vacancies" />
-      {paths.cohorts.map((group, band) => <g key={band} className="glyph-fragment" style={{ "--from-x": `${(band - 8.5) * 1.6}px`, "--from-y": `${16 + (band % 3) * 9}px`, "--from-angle": `${(band % 2 ? 1 : -1) * 4}deg`, "--fragment-delay": `${index * 70 + band * 27}ms` }}>
+      {paths.cohorts.map((group, band) => <g key={band} className="glyph-fragment" style={{ "--from-x": `${(band - 8.5) * 3.4}px`, "--from-y": `${26 + (band % 3) * 16}px`, "--from-angle": `${(band % 2 ? 1 : -1) * 9}deg`, "--fragment-delay": `${index * 90 + band * 22}ms` }}>
         <path d={group.faces} transform="translate(.65 1.65)" fill={amber ? "#614218" : "#153f26"} opacity=".8" />
         <path d={group.faces} fill={`url(#${id}-ink)`} />
         <path d={group.edges} className="glyph-bevel" />
       </g>)}
       <g clipPath={`url(#${id}-solid)`}>
         <rect className="glyph-light" width="280" height="148" fill={`url(#${id}-light)`} />
-        <path className="glyph-shimmer" d="M-90 -15H-64L-10 165H-36Z" style={{ "--shine-delay": `${1200 + index * 70}ms` }} />
+        <path className="glyph-shimmer" d="M-90 -15H-64L-10 165H-36Z" style={{ "--shine-delay": `${520 + index * 90}ms` }} />
       </g>
     </>}
   </svg>;
 }
 
-export function AbilityGlyph({ dimensions, isDemo }) {
+export function AbilityGlyph({ dimensions, isDemo, active = true }) {
   const host = useRef(null);
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -102,12 +102,22 @@ export function AbilityGlyph({ dimensions, isDemo }) {
     }).catch(() => { if (!disposed) setReady(true); });
     return () => { disposed = true; };
   }, []);
+  // 入场编排的触发条件（2026-10-03）：必须同时满足「面板可见」与「视口内」。
+  //
+  // 为什么不能只看 IntersectionObserver：报告页是常驻挂载的（SiteExperience
+  // 用 hidden 切换），挂载时面板隐藏 —— 观察器在隐藏态就会报告 isIntersecting
+  // = true 并把动画放完，等学员真正切到报告页时字像早已是终态，看起来「没有
+  // 动效」（用户反馈）。active 让它只在面板真正可见时才能进入 entered；
+  // 离开时清除，使每次重新进入都能重播。嵌入式 webview 被遮挡时不派发渲染帧，
+  // 观察器可能永不回调 —— 因此 active 本身也直接构成可见性判据（面板可见即
+  // 视为在视口内，报告页本来就是满屏单页），两者取或。
   useEffect(() => {
+    if (!active) { setEntered(false); return undefined; }
     if (!window.IntersectionObserver) { setEntered(true); return undefined; }
     const observer = new IntersectionObserver(([entry]) => setEntered(entry.isIntersecting), { threshold: .08 });
     observer.observe(host.current);
     return () => observer.disconnect();
-  }, []);
+  }, [active]);
   useEffect(() => { setSelectedKey(null); setPreviewKey(null); }, [scoreKey]);
 
   const summary = priorities.length

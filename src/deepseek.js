@@ -68,6 +68,40 @@ async function streamDeepSeekOnce({ messages, onDelta, onReasoning, signal }) {
   return complete;
 }
 
+/**
+ * 非流式对话：一次拿完整回复。
+ *
+ * 报告文案生成用（src/report-text.js）——那段文字要整体作为 JSON 解析，
+ * 流式的增量片段没有意义；关闭思考模式并取 temperature 0，让同一份测评
+ * 数据生成稳定的文案（报告是可存档的正式文档，不该每次措辞都漂）。
+ */
+export async function chatDeepSeek({ messages, timeoutMs = 60_000 } = {}) {
+  const request = async () => {
+    const response = await fetch("/api/deepseek/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        messages,
+        stream: false,
+        temperature: 0,
+        thinking: { type: "disabled" },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!response.ok) throw new Error(await readError(response));
+    const payload = await response.json();
+    if (typeof payload?.message !== "string") throw new Error("DeepSeek 未返回内容。");
+    return payload.message;
+  };
+  try {
+    return await request();
+  } catch (error) {
+    if (!isTransientError(error)) throw error;
+    await sleep(RETRY_DELAY_MS);
+    return request();
+  }
+}
+
 /** 带一次重试的流式对话：仅当**一字未收**就断链时才重试（已流出部分
  * 内容无法安全重来）。聊天/采访调用方因此对瞬时断链自愈，不再闪离线。 */
 export async function streamDeepSeek(options) {

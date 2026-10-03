@@ -30,3 +30,31 @@ test('cell ranking is deterministic so increasing scores preserves filled units'
   assert.deepEqual(cells, Array.from({length: 200}, (_,i) => glyphCellOrder(i % 20, Math.floor(i/20))));
   assert.equal(new Set(cells).size, cells.length);
 });
+
+test('report entrance motion is gated on panel visibility and never leaves a transform behind', async () => {
+  // 2026-10-03 用户反馈「动效不明显」，根因有两个，两处都必须钉住：
+  const { readFileSync } = await import('node:fs');
+  const [glyph, css, report] = await Promise.all([
+    readFileSync(new URL('../src/AbilityGlyph.jsx', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/awakening-report.css', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/AwakeningReport.jsx', import.meta.url), 'utf8'),
+  ]);
+  // (1) 报告页在 SiteExperience 里是常驻挂载的（hidden 切换），若入场只看
+  // IntersectionObserver，挂载时就播完了，学员切过去看到的是终态。入口必须
+  // 接受 active（面板可见性）并在离开时复位，动画才有机会重播。
+  assert.match(glyph, /active\s*=\s*true/);
+  assert.match(glyph, /if \(!active\) \{ setEntered\(false\); return undefined; \}/);
+  assert.match(report, /<AbilityGlyph[^>]*active=\{active\}/);
+  assert.match(report, /<AwakeningReportContent[^>]*active=\{active\}/);
+  // (2) fill-mode both 会把关键帧终态（被解析为单位矩阵的 transform: none）
+  // 永久留在计算样式里，而非 none 的矩阵会成为 fixed 后代的 containing
+  // block（项目既有教训）。卡片与轨道必须用 backwards，动画结束后回到基础
+  // 样式的真正 none。碎片相反——基础态 opacity:0，必须 both 才能留在终态。
+  assert.match(css, /\.awakening-report-card:has\(\.ability-glyph\.glyph-entered\) \{ animation: report-card-in 560ms var\(--report-ease\) backwards; \}/);
+  assert.match(css, /\.glyph-entered \.glyph-grid \.glyph-tile \{ animation: glyph-tile-in 620ms var\(--report-ease\) backwards; \}/);
+  assert.match(css, /\.glyph-entered \.glyph-fragment \{ animation: glyph-assemble 1100ms var\(--report-ease\) var\(--fragment-delay\) both; \}/);
+  // (3) 中等窗口高度必须有紧凑档，否则卡片会顶掉底部绿色呼吸空间
+  // （781–920px 曾是死区：1440×848 实测溢出）。
+  assert.match(css, /@media \(min-width: 721px\) and \(max-height: 960px\)/);
+  assert.match(css, /\.glyph-drawing \{ height: clamp\(104px,/);
+});

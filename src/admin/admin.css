@@ -22,12 +22,16 @@ button { font: inherit; cursor: pointer; }
 h1, h2, h3 { margin: 0; }
 
 /* ---- Gate ---- */
+/* 背景用品牌粉（2026-10-03 用户要求「底下的颜色也要粉色」）：与首页
+   首页画布/CHOOSE/TEST 同一块 #f568a3 地面，教师端网关不再是深色底。
+   保留轻微径向提亮，避免整块纯色显得死板（与学生端 pink 画布同法）。 */
 .admin-gate {
   display: grid;
   place-items: center;
   min-height: 100dvh;
   padding: 24px;
-  background: linear-gradient(160deg, #171d2b 0%, #232a3d 100%);
+  background:
+    radial-gradient(ellipse at 50% 42%, #fb86b6 0%, var(--admin-pink) 52%, #d94f88 100%);
 }
 .gate-card {
   display: grid;

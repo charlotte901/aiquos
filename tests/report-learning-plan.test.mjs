@@ -123,3 +123,62 @@ test("paragraphs are deterministic for the same model", () => {
   assert.equal(buildEvaluationParagraph(model), buildEvaluationParagraph(model));
   assert.equal(buildAdviceParagraph(model), buildAdviceParagraph(model));
 });
+
+test("no resource URL uses a path pattern retired after the 2026-10-03 link audit", () => {
+  // 2026-10-03 链接健康检查发现 7 条真实失效链接（域名可达但页面 404）：
+  // 这些链接此前能通过所有既有断言（只校验 https 前缀），静默失效了很久。
+  // 联网校验不能进单元测试（CI 无外网、站点还有反爬），因此这里把「已确认
+  // 下架的具体路径」钉成禁止清单——它们重新出现即说明有人从旧版本回填了
+  // 资源条目。新增资源请用 scripts 里的探测脚本验证后再录入。
+  const RETIRED = [
+    "coursera.org/learn/ai-foundations-for-everyone",
+    "learn.microsoft.com/en-us/training/paths/get-started-with-artificial-intelligence/",
+    "kaggle.com/learn/prompt-engineering",
+    "microsoft.com/en-us/microsoft-365/copilot/ai-learning",
+    "oxfordmartin.ox.ac.uk/artificial-intelligence",
+    "research.ibm.com/topics/artificial-intelligence",
+    "aws.amazon.com/training/learn-about/artificial-intelligence/",
+  ];
+  for (const resource of LEARNING_RESOURCES) {
+    for (const retired of RETIRED) {
+      assert.ok(
+        !resource.url.includes(retired),
+        `resource "${resource.title}" points at a retired URL (${retired}); use the audited replacement instead`,
+      );
+    }
+  }
+});
+
+test("every resource URL host is reachable-or-known-blocked, never a dead path", () => {
+  // 每条 URL 必须是「域名 + 明确路径」形态，禁止只剩域名的空洞链接
+  // （域名根路径无法反映具体资源，也无法判断是否指向预期内容）。
+  for (const resource of LEARNING_RESOURCES) {
+    const url = new URL(resource.url);
+    assert.ok(url.hostname.includes("."), `resource "${resource.title}" has a malformed host`);
+    assert.ok(
+      url.pathname !== "/" || resource.url.endsWith("/"),
+      `resource "${resource.title}" should point at a concrete page, not a bare host`,
+    );
+  }
+});
+
+test("mixed CJK/Latin lines fill their width instead of breaking early", () => {
+  // 实测缺陷（2026-10-03 报告 PDF 第 4 页）：句子「…要求 AI 列出依据和不确定点，
+  // 再用独立来源检查关键事实…」在「AI」处被切断——旧实现遇到放不下的词就
+  // 结束当前行，导致该行只写到一半、右侧大片留白。修复后含 CJK 的长串按字符
+  // 填满当前行；纯拉丁词仍整词换行（有天然断点，绝不拆字）。
+  const sentence = "学习行动：要求 AI 列出依据和不确定点，再用独立来源检查关键事实，并记录哪些结论必须人工确认。";
+  const width = 431;
+  const lines = wrapText(sentence, 11, width);
+  assert.ok(lines.length >= 2, "should wrap to multiple lines");
+  // 判定「是否填满」不用 textWidth（未导出）：一行填满等价于「再塞一个汉字
+  // 就会溢出」——即把该行加一个字重新排版时，它会变成两行。
+  for (const line of lines.slice(0, -1)) {
+    const overflow = wrapText(`${line}字`, 11, width, false);
+    assert.ok(overflow.length > 1, `line breaks early (still fits another glyph): "${line}"`);
+  }
+  // 拉丁词不得被拆开
+  assert.match(lines.join(""), /AI/);
+  const latin = wrapText("AI Ethics & Governance Framework", 12, 120, true);
+  assert.doesNotMatch(latin.join(" "), /Governa nce|Gover nance/);
+});

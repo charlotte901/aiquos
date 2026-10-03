@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, DownloadSimple, X } from "@phosphor-icons/react";
 import { AbilityGlyph } from "./AbilityGlyph";
 import { glyphScore } from "./ability-glyph";
-import { downloadLearningPlanPdf } from "./learning-plan-pdf";
+import { downloadAbilityReportPdf } from "./report-pdf";
+import { chatDeepSeek } from "./deepseek";
 import {
   latestCompletedSnapshot,
 } from "./assessment-attempt";
@@ -115,6 +116,14 @@ function reportModel(snapshot, demoPreview = false) {
       bank: snapshot.questionBankVersion,
       ...(composite ? { weighting: composite.weightingVersion } : {}),
     },
+    // 封面信息栏用的结构化元数据（meta 是面向 UI 的拼好的字符串）。
+    detail: {
+      completedAtText: formatCompletedAt(snapshot.completedAt),
+      questionCountText: `${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题`,
+      modelText: composite
+        ? `六维评分模型 v${snapshot.scoringVersion} · 三通道加权 v${composite.weightingVersion}`
+        : `六维评分模型 v${snapshot.scoringVersion}`,
+    },
     composite,
     channelOveralls: composite
       ? {
@@ -128,7 +137,7 @@ function reportModel(snapshot, demoPreview = false) {
   };
 }
 
-export function AwakeningReportContent({ snapshot = null, demoPreview = false }) {
+export function AwakeningReportContent({ snapshot = null, demoPreview = false, active = true }) {
   const model = reportModel(snapshot, demoPreview);
   const [downloadState, setDownloadState] = useState("idle");
   useEffect(() => setDownloadState("idle"), [snapshot, demoPreview]);
@@ -136,7 +145,9 @@ export function AwakeningReportContent({ snapshot = null, demoPreview = false })
     if (downloadState === "loading") return;
     setDownloadState("loading");
     try {
-      await downloadLearningPlanPdf(model);
+      // 报告文字由接入的模型撰写（规则见 report-text.js）；账号信息取当前
+      // 登录档案写进页脚。两者都是真实数据，模型失败时自动降级到模板。
+      await downloadAbilityReportPdf(model, readProfile(), chatDeepSeek);
       setDownloadState("done");
     } catch {
       setDownloadState("error");
@@ -163,7 +174,7 @@ export function AwakeningReportContent({ snapshot = null, demoPreview = false })
           <b className={`grade-badge is-${String(model.grade).toLowerCase()}`}>{model.grade}</b>
         </div>
       </header>
-      <AbilityGlyph dimensions={model.dimensions} isDemo={model.isDemo} />
+      <AbilityGlyph dimensions={model.dimensions} isDemo={model.isDemo} active={active} />
       <div className="ability-download-area">
         <button type="button" className="ability-download" onClick={handleDownload} disabled={downloadState === "loading"}>
           <span>{downloadState === "loading" ? "正在生成报告…" : downloadState === "error" ? "重新下载个性化报告" : "下载个性化报告"}</span>
@@ -171,7 +182,7 @@ export function AwakeningReportContent({ snapshot = null, demoPreview = false })
         </button>
         <div className="ability-download-meta">
           <p className="ability-download-note" role="status" aria-live="polite">
-            {downloadState === "error" ? "报告生成失败，请重试。" : downloadState === "done" ? "报告已生成 · PDF 包含能力解读与专属学习方案" : "PDF · 能力解读 / 成长建议 / 专属学习方案"}
+            {downloadState === "error" ? "报告生成失败，请重试。" : downloadState === "done" ? "报告已生成 · PDF 包含能力评价、学习建议与学习资源" : "PDF · 能力评价 / 学习建议 / 推荐学习资源"}
           </p>
           <p className="ability-report-meta">{model.meta}</p>
         </div>
@@ -247,7 +258,7 @@ export function AwakeningReport({ onBack, onStartAssessment, busy, active = fals
       <button className="report-back" type="button" onClick={onBack} disabled={busy}>
         <ArrowLeft size={18} /> 返回选择
       </button>
-      <AwakeningReportContent snapshot={snapshot} demoPreview={demoPreview} />
+      <AwakeningReportContent snapshot={snapshot} demoPreview={demoPreview} active={active} />
       {!demoPreview && !snapshot && readProfile() && (
         <div className="ability-start"><button type="button" onClick={onStartAssessment}>开始综合测评</button></div>
       )}

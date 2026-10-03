@@ -46,7 +46,9 @@ export async function adminLogin(account, password) {
   return payload.profile;
 }
 
-export async function adminRegisterTeacher({ account, password, nickname, inviteCode }) {
+/** 注册教师并进入管理端。注册不再需要邀请码（2026-10-03 产品要求），请求
+ *  不再携带该字段；服务端同样忽略它。 */
+export async function adminRegisterTeacher({ account, password, nickname }) {
   const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -55,7 +57,6 @@ export async function adminRegisterTeacher({ account, password, nickname, invite
       password,
       nickname,
       role: "teacher",
-      teacherInviteCode: inviteCode,
     }),
   });
   if (!response.ok) throw await errorMessage(response, `注册失败（${response.status}）`);

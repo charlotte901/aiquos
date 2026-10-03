@@ -272,3 +272,20 @@ test("buildServerRoster groups server students+runs into the local roster shape"
   assert.equal(roster[1].runs.length, 0); // 注册未作答：零 run 不炸
   assert.equal(roster[1].className, "未分班");
 });
+
+test("teacher gate registers without an invite code anywhere in the UI or API client", async () => {
+  // 2026-10-03 产品要求：教师端保留严格登录验证，但取消邀请码。三处必须
+  // 同时干净——只改一处会留下"界面还在要、服务端已忽略"的错位（或反之，
+  // 界面不显示但请求仍带字段），这条测试把三处一起钉住。
+  const [gate, api] = await Promise.all([
+    readFileSync(new URL("../src/admin/AdminApp.jsx", import.meta.url), "utf8"),
+    readFileSync(new URL("../src/admin/api.js", import.meta.url), "utf8"),
+  ]);
+  // 注释里提到"邀请码已移除"是允许的，只禁止真正的 UI 与请求字段。
+  for (const [name, source] of [["AdminApp.jsx", gate], ["admin/api.js", api]]) {
+    assert.doesNotMatch(source, /inviteCode|teacherInviteCode|教师邀请码/, `${name} still references the invite code`);
+  }
+  // 教师端仍必须是真实服务端登录，且仅接受教师角色。
+  assert.match(api, /payload\.profile\?\.role !== "teacher"/);
+  assert.match(api, /role: "teacher"/);
+});

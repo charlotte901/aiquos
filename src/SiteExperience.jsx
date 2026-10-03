@@ -3,7 +3,7 @@ import { flushSync } from "react-dom";
 import { ArrowLeft, Fingerprint, SealCheck } from "@phosphor-icons/react";
 import { App } from "./App";
 import { AssessmentHub } from "./AssessmentHub";
-import { AssessmentMap, AssessmentTask } from "./AssessmentFlow";
+import { AssessmentMap, AssessmentTask, ComprehensivePapers } from "./AssessmentFlow";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { AccountSettings } from "./AccountSettings";
 import { ChooseHub } from "./ChooseHub";
@@ -12,7 +12,7 @@ import { ProfileHub } from "./ProfileHub";
 import { ProfileDetail } from "./ProfileDetail";
 import { LoginForm } from "./LoginForm";
 import { adoptAuthenticatedProfile } from "./account-store";
-import { apiMe } from "./auth-client";
+import { apiListAssignments, apiMe, readProfile } from "./auth-client";
 import {
   readActiveAssignmentId,
   reportRunSnapshot,
@@ -166,6 +166,29 @@ export function SiteExperience() {
     () => getAssessmentRoute() ?? { id: "comprehensive", stage: 1, mode: "map" },
   );
   const [profileDetailRoute, setProfileDetailRoute] = useState(() => getProfileDetailRoute());
+  // 学生收件箱：老师推送的组卷作业（测评选择页常驻展示）。登录态变化与
+  // 每次完成上报后刷新；未登录保持空（收件箱本来就是登录功能）。
+  const [hubAssignments, setHubAssignments] = useState([]);
+  const refreshHubAssignments = useCallback(async () => {
+    if (!readProfile()) {
+      setHubAssignments([]);
+      return;
+    }
+    try {
+      setHubAssignments(await apiListAssignments());
+    } catch {
+      setHubAssignments([]); // 拉取失败静默：hub 的空态提示已覆盖
+    }
+  }, []);
+  useEffect(() => {
+    refreshHubAssignments();
+  }, [refreshHubAssignments]);
+  // 完成一次综合测评后收件箱的 myRun 会变（已完成+分数），上报后刷新。
+  useEffect(() => {
+    if (view === "assessments" || (view === "assessment-map" && assessmentRoute.id === "comprehensive")) {
+      refreshHubAssignments();
+    }
+  }, [view, assessmentRoute.id, refreshHubAssignments]);
   const [progress, setProgress] = useState(() => {
     const base = {
       comprehensive: 1,
@@ -590,35 +613,12 @@ export function SiteExperience() {
 
   function startAssessment(id, options = {}) {
     if (id === "comprehensive") {
-      // 教师推送的组卷作业：记住 assignmentId（完成上报时带上），并切换到
-      // 作业指定的题库版本——作业以哪个题池下发，就以哪个题池作答。
-      // 学员进入前的自选题库版本记在 ref 里，作业完成后还原，避免一次
-      // 作业永久改写学员的自主练习偏好。
-      if (options.assignmentId) {
-        writeActiveAssignmentId(options.assignmentId);
-        if (options.edition) {
-          editionBeforeAssignmentRef.current = readEdition();
-          writeEdition(options.edition);
-        }
-      }
-      // Card click always starts a clean run: fresh routing session, fresh
-      // attempt, draft cleared so no earlier unfinished run can bleed in.
-      // The budget is an upper bound — a time-based run finalises to the
-      // evidence actually collected (see finalizeComprehensive).
-      const attempt = createAttempt({ totalQuestions: EVIDENCE_BUDGET });
-      clearAttemptDraft();
-      routingRef.current = null;
-      pendingOutcomeRef.current = null;
-      phasesDoneRef.current = [];
-      interviewRef.current = null;
-      setAdaptiveTelemetry(null);
-      setAdaptivePrior(null);
-      setAttemptState({ attempt, result: null });
-      // A fresh card click starts from phase 1: without this reset a previous
-      // finished run would leave every node unlocked and let a student skip
-      // straight into the practical phase.
-      setProgress((current) => ({ ...current, comprehensive: 1 }));
-      openAssessmentMap(id);
+      // 综合测评的第一屏是「老师的试卷」选卷界面（2026-10-03 用户决策，
+      // 替换原关卡地图）。真正的开考动作发生在选定试卷之后
+      // （startComprehensivePaper），卡片点击不再静默清空未完成的草稿——
+      // 是否继续由选卷屏上的续答横幅决定。
+      setAssessmentRoute({ id, stage: 1, mode: "map" });
+      go("assessment-map", assessmentHash(id));
       return;
     }
     // Standalone channels run one timed phase straight away — no stage map.
@@ -626,6 +626,49 @@ export function SiteExperience() {
     setAssessmentRoute({ id, stage: 1, mode: "task" });
     setTaskEntryId((current) => current + 1);
     go("assessment-task", assessmentHash(id, 1));
+  }
+
+  // 选卷开考：assignment 为老师推送的组卷作业对象，null 表示官方标准卷。
+  function startComprehensivePaper(assignment) {
+    if (assignment) {
+      // 教师推送的组卷作业：记住 assignmentId（完成上报时带上），并切换到
+      // 作业指定的题库版本——作业以哪个题池下发，就以哪个题池作答。
+      // 学员进入前的自选题库版本记在 ref 里，作业完成后还原，避免一次
+      // 作业永久改写学员的自主练习偏好。
+      writeActiveAssignmentId(assignment.id);
+      if (assignment.edition) {
+        editionBeforeAssignmentRef.current = readEdition();
+        writeEdition(assignment.edition);
+      }
+    } else {
+      // 标准卷开考必须清掉遗留的作业上下文：否则一个被中途放弃的作业
+      // 会在标准卷完成时被误报为该作业的完成记录。
+      writeActiveAssignmentId(null);
+      if (editionBeforeAssignmentRef.current !== null) {
+        writeEdition(editionBeforeAssignmentRef.current);
+        editionBeforeAssignmentRef.current = null;
+      }
+    }
+    // 选定试卷 = 干净开考：全新路由 session 与 attempt，草稿清掉，
+    // 上一次未完成的作答不会渗进这一次（时间制跑到收口时按实际证据
+    // 定稿，见 finalizeComprehensive）。
+    const attempt = createAttempt({ totalQuestions: EVIDENCE_BUDGET });
+    clearAttemptDraft();
+    routingRef.current = null;
+    pendingOutcomeRef.current = null;
+    phasesDoneRef.current = [];
+    interviewRef.current = null;
+    setAdaptiveTelemetry(null);
+    setAdaptivePrior(null);
+    setAttemptState({ attempt, result: null });
+    // A fresh run starts from phase 1: without this reset a previous
+    // finished run would leave every node unlocked and let a student skip
+    // straight into the practical phase.
+    setProgress((current) => ({ ...current, comprehensive: 1 }));
+    // 选卷界面取代了关卡地图：选定后直达第一阶段任务。
+    setAssessmentRoute({ id: "comprehensive", stage: 1, mode: "task" });
+    setTaskEntryId((current) => current + 1);
+    go("assessment-task", assessmentHash("comprehensive", 1));
   }
 
   function leaveAssessmentMap() {
@@ -814,8 +857,11 @@ export function SiteExperience() {
         phasesDone: phasesDoneRef.current,
       });
     }
-    setAssessmentRoute({ id, stage: nextStage, mode: "map" });
-    go("assessment-map", assessmentHash(id));
+    // 关卡地图已被选卷界面取代：阶段完成后直接进入下一阶段任务，
+    // 三阶段进度由任务页顶部节点展示。
+    setAssessmentRoute({ id, stage: nextStage, mode: "task" });
+    setTaskEntryId((current) => current + 1);
+    go("assessment-task", assessmentHash(id, nextStage));
   }
 
   return (
@@ -888,6 +934,7 @@ export function SiteExperience() {
                     // 严格登录成功（或注册即登录）后：本机身份换成服务端账号，
                     // 教师端名册与后续完成上报都以这个身份配对。
                     adoptAuthenticatedProfile(profile);
+                    refreshHubAssignments();
                     go("choose");
                   }} />
                 </div>
@@ -984,7 +1031,25 @@ export function SiteExperience() {
         hidden={view !== "assessment-map" && view !== "assessment-task"}
       >
         <ErrorBoundary>
-          {view === "assessment-map" ? (
+          {view === "assessment-map" && assessmentRoute.id === "comprehensive" ? (
+            <ComprehensivePapers
+              assignments={hubAssignments}
+              busy={moving}
+              onBack={leaveAssessmentMap}
+              onStartPaper={startComprehensivePaper}
+              onResume={() => openAssessmentStage(progress.comprehensive ?? 1)}
+              resume={attemptState.result?.status === "in_progress"
+                ? {
+                  answered: attemptState.result.answeredCount,
+                  phasesDone: phasesDoneRef.current.length,
+                  currentStage: progress.comprehensive ?? 1,
+                  currentStageLabel: (COMPREHENSIVE_PHASES[(progress.comprehensive ?? 1) - 1] ?? {}).short ?? "对话",
+                  startedAt: attemptState.attempt?.startedAt ?? null,
+                  onRestart: restartComprehensiveAttempt,
+                }
+                : null}
+            />
+          ) : view === "assessment-map" ? (
             <AssessmentMap
               id={assessmentRoute.id}
               current={progress[assessmentRoute.id] ?? 1}

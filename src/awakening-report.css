@@ -45,10 +45,30 @@ html:has(.site-experience[data-view="reports"])::-webkit-scrollbar, body:has(.si
 .is-priority .glyph-vacancies { stroke: #a17a3b; }
 .glyph-bevel { fill: none; stroke: #f4ffd9; stroke-width: .6; opacity: .42; }
 .glyph-fragment { transform-box: view-box; transform-origin: center; opacity: 0; }
-.glyph-entered .glyph-fragment { animation: glyph-assemble 1000ms var(--report-ease) var(--fragment-delay) both; }
+.glyph-entered .glyph-fragment { animation: glyph-assemble 1100ms var(--report-ease) var(--fragment-delay) both; }
 .glyph-light { opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
 .glyph-shimmer { fill: #fffce2; opacity: 0; pointer-events: none; }
-.glyph-entered .glyph-shimmer { animation: glyph-shine 1200ms var(--report-ease) var(--shine-delay) both; }
+.glyph-entered .glyph-shimmer { animation: glyph-shine 1400ms var(--report-ease) var(--shine-delay) both; }
+/* 入场编排（2026-10-03 用户反馈「动效不明显」）：卡片整体先落位，六块
+   字像轨道随后依次升起，轨道内碎片再逐带拼装，最后流光扫过。
+   触发器复用 .glyph-entered：面板每次重新可见都会移除/添加该类，动效
+   因此可以重播（报告页常驻挂载，挂载时机上动画会播在隐藏态、白费）。
+   卡片用 :has() 关联——不支持的引擎整条规则被忽略，只是没有卡片动效，
+   布局不受影响。
+   卡片与轨道用 backwards（不是 both）：关键帧里的 `transform: none` 在
+   动画期间会被解析成单位矩阵，both 会把它永久留在计算样式里，而「非 none
+   的单位矩阵也会成为 fixed 后代的 containing block」（项目既有教训）。
+   backwards 让动画结束后计算值回到基础样式，恰好就是真正的 none；
+   延迟期间仍由起始帧压住（不会先闪一下终态）。碎片则必须 both——它们
+   基础态是 opacity:0，不 forwards 就永远看不见。 */
+.awakening-report-card:has(.ability-glyph.glyph-entered) { animation: report-card-in 560ms var(--report-ease) backwards; }
+.glyph-entered .glyph-grid .glyph-tile { animation: glyph-tile-in 620ms var(--report-ease) backwards; }
+.glyph-entered .glyph-grid .glyph-tile:nth-child(1) { animation-delay: 110ms; }
+.glyph-entered .glyph-grid .glyph-tile:nth-child(2) { animation-delay: 170ms; }
+.glyph-entered .glyph-grid .glyph-tile:nth-child(3) { animation-delay: 230ms; }
+.glyph-entered .glyph-grid .glyph-tile:nth-child(4) { animation-delay: 290ms; }
+.glyph-entered .glyph-grid .glyph-tile:nth-child(5) { animation-delay: 350ms; }
+.glyph-entered .glyph-grid .glyph-tile:nth-child(6) { animation-delay: 410ms; }
 .glyph-tile-foot { display: flex; justify-content: space-between; gap: 6px; color: #738468; font-size: 10px; line-height: 1.6; }
 .glyph-tile-foot > span:first-child { display: flex; align-items: center; gap: 5px; }
 .glyph-tile-foot i { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
@@ -75,6 +95,9 @@ html:has(.site-experience[data-view="reports"])::-webkit-scrollbar, body:has(.si
 .report-empty-cta p { color: #64745c; line-height: 1.8; }
 @keyframes glyph-assemble { from { opacity: 0; transform: translate(var(--from-x),var(--from-y)) rotate(var(--from-angle)); } 40% { opacity: .8; } to { opacity: 1; transform: translate(0,0) rotate(0deg); } }
 @keyframes glyph-shine { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: .65; } 85% { opacity: .18; } 100% { opacity: 0; transform: translateX(440px); } }
+/* 卡片与轨道入场：结束态统一为 none（见上方 containing-block 注释）。 */
+@keyframes report-card-in { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes glyph-tile-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 /* Shared profile-record badges preserve existing grade semantics. */
 .grade-badge { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 7px; margin-left: 8px; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 900; vertical-align: middle; }
 .grade-badge.is-s { background: var(--grade-s); }
@@ -96,7 +119,11 @@ html:has(.site-experience[data-view="reports"])::-webkit-scrollbar, body:has(.si
   .glyph-tile:hover .glyph-light { opacity: .75; }
   .glyph-tile:hover .glyph-vacancies { opacity: .85; }
 }
-@media (min-width: 721px) and (max-height: 780px) {
+/* 中等高度（721–960px）：原先只在 ≤780px 收紧凑档，781–920 这段是死区——
+   1440×900 实测卡片底部只剩 13px、848 直接溢出（用户反馈「下方没有绿色
+   呼吸空间」）。现在整段收紧纵向节奏，字像高度随视口平滑收放：矮窗保住
+   底部留白，高窗回到 143px 全尺寸。完整档需要 961px 才放得下。 */
+@media (min-width: 721px) and (max-height: 960px) {
   .awakening-screen { padding-top: 82px; padding-bottom: 22px; }
   .awakening-report-card { padding: 21px 29px 19px; }
   .ability-report-heading { padding-bottom: 13px; }
@@ -104,7 +131,7 @@ html:has(.site-experience[data-view="reports"])::-webkit-scrollbar, body:has(.si
   .ability-total strong { font-size: 42px; }
   .glyph-overview { padding: 7px 0; }
   .glyph-tile { padding: 11px 22px 10px; }
-  .glyph-drawing { height: 106px; margin-top: 2px; margin-bottom: 2px; }
+  .glyph-drawing { height: clamp(104px, calc(0.5 * 100dvh - 296px), 143px); margin-top: 2px; margin-bottom: 2px; }
   .glyph-tile-head > strong { font-size: 25px; }
   .glyph-caption { min-height: 48px; padding-top: 8px; }
   .ability-download-area { padding-top: 10px; }

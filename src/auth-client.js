@@ -5,6 +5,7 @@
  * 严格校验的口径在 src/auth-validation.js（与 worker 同一模块）；这里只
  * 负责传输与会话状态。
  */
+import { migrateLegacyDataForAccount } from "./account-scope.js";
 
 const SESSION_KEY = "aiquos.auth.v1";
 
@@ -143,4 +144,14 @@ export async function apiMe() {
   session = { ...session, profile: payload.profile };
   store.write(session);
   return payload.profile;
+}
+
+/** 学生收件箱：老师推送的组卷作业（含自己的完成情况 myRun）。 */
+export async function apiListAssignments() {
+  const response = await authFetch("/api/data/assignments");
+  if (!response.ok) {
+    throw new Error((await response.json().catch(() => ({}))).error || "作业列表获取失败");
+  }
+  const payload = await response.json();
+  return Array.isArray(payload.assignments) ? payload.assignments : [];
 }
