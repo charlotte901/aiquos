@@ -192,18 +192,30 @@ export function isAttemptComplete(result) {
 // `result` 保持纯 vendor IRT 视图（证据分），`composite` 是三通道加权视图
 // （客观/对话/实操，见 src/comprehensive-weighting.js），`interview` 是对话
 // 通道的原始档位记录。旧快照没有这两个字段：报告层按缺失降级渲染。
-export function snapshotAttempt(attempt, result) {
+/**
+ * @param {object} attempt
+ * @param {object} result vendor IRT 结果（isAttemptComplete 必须为真）
+ * @param {object} [overrides] 服务端计分收口（/api/comprehensive-score）时传入：
+ *   { composite, scoredBy, evidence, interview } —— 服务端重推导的证据与
+ *   算好的融合视图直接入快照，本地不再重复计算；缺省回退本地计算
+ *   （scoredBy: "local"，离线测评不受影响）。
+ */
+export function snapshotAttempt(attempt, result, overrides = null) {
   if (!isAttemptComplete(result)) return null;
-  const composite = buildComposite(attempt);
+  const evidence = Array.isArray(overrides?.evidence) && overrides.evidence.length
+    ? overrides.evidence.map((item) => ({ ...item }))
+    : attempt.evidence.map((item) => ({ ...item }));
+  const composite = overrides?.composite ?? buildComposite(attempt);
   return {
     assessmentId: attempt.assessmentId,
     startedAt: attempt.startedAt,
     completedAt: new Date().toISOString(),
     totalQuestions: attempt.totalQuestions,
-    questionIds: [...attempt.questionIds],
-    evidence: attempt.evidence.map((item) => ({ ...item })),
+    questionIds: evidence.map((item) => item.questionId),
+    evidence,
     result,
     ...(composite ? { composite } : {}),
+    scoredBy: overrides?.scoredBy ?? "local",
     ...(attempt.interview ? { interview: attempt.interview } : {}),
     scoringVersion: attempt.scoringVersion,
     questionBankVersion: attempt.questionBankVersion,
@@ -261,8 +273,30 @@ function migrate(value, steps) {
   return steps.reduce((current, step) => current ?? null, value ?? null);
 }
 
+// 草稿同步监听（src/draft-sync.js 注入）：saveAttemptDraft 每答一题都会
+// 调用，本地写盘始终同步完成；服务端推送交给监听器自己防抖。保持本模块
+// 无网络依赖（纯 localStorage + 纯函数），测试可直接跑。
+let draftSavedListener = null;
+let draftClearedListener = null;
+
+export function setDraftListeners({ onSaved, onCleared } = {}) {
+  draftSavedListener = typeof onSaved === "function" ? onSaved : null;
+  draftClearedListener = typeof onCleared === "function" ? onCleared : null;
+}
+
 export function saveAttemptDraft(attempt) {
-  storageSet(scopedKey(DRAFT_KEY), JSON.stringify(attempt));
+  // savedAt 是跨设备合并的依据（draft-sync.mergeDraftChoice 按 ISO 时间取新）。
+  const draft = { ...attempt, savedAt: new Date().toISOString() };
+  storageSet(scopedKey(DRAFT_KEY), JSON.stringify(draft));
+  draftSavedListener?.(draft);
+}
+
+/** 采纳服务端草稿（拉取合并胜出时）：写入本地并返回规范化草稿。 */
+export function adoptServerDraft(draft) {
+  if (!draft || !Array.isArray(draft.evidence)) return null;
+  const adopted = { ...draft, savedAt: draft.savedAt ?? new Date().toISOString() };
+  storageSet(scopedKey(DRAFT_KEY), JSON.stringify(adopted));
+  return adopted;
 }
 
 export function readCurrentBankVersion() {
@@ -300,6 +334,7 @@ export function withBankVersion(attempt, bankVersion) {
 
 export function clearAttemptDraft() {
   storageRemove(scopedKey(DRAFT_KEY));
+  draftClearedListener?.();
 }
 
 export function appendHistorySnapshot(snapshot) {

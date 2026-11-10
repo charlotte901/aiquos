@@ -1,8 +1,8 @@
 import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat } from "./deepseek.js";
-import { OBJECTIVE_QUESTIONS_PATH, handleObjectiveQuestions } from "./objective-quiz.js";
 import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./practical-tasks.js";
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./practical-score.js";
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./comprehensive-quiz.js";
+import { COMPREHENSIVE_SCORE_PATH, handleComprehensiveScore } from "./comprehensive-score.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./admin.js";
 import {
   AUTH_LOGIN_PATH,
@@ -19,68 +19,103 @@ import {
 import {
   DATA_ASSIGNMENTS_PATH,
   DATA_ASSIGNMENT_STATUS_PATH,
+  DATA_DRAFT_PATH,
   DATA_ME_PATH,
   DATA_RUNS_PATH,
   DATA_TEACHER_OVERVIEW_PATH,
   handleDataAssignments,
   handleDataAssignmentStatus,
+  handleDataDraft,
   handleDataMe,
   handleDataRuns,
   handleDataTeacherOverview,
 } from "./data.js";
+import { ensureFilePersistence } from "./storage.js";
+import { setBankPersistence } from "./bank-store.js";
+import { setAccountPersistence } from "./account-store.js";
+import { setSharedDataPersistence } from "./data-store.js";
+
+// 生产持久化接线（一次性）：AIQUOS_DATA_DIR 指向可写目录时，账号/共享
+// 数据/题库覆盖三个 store 从 per-isolate 内存态切到该目录下的 JSON 文件
+// （原子写，见 worker/storage.js）。未配置或运行时无 node:fs（如 CF）时
+// 保持内存态——与历史行为一致。打包产物是纯 Node 模块（dist/server），
+// 单进程部署下这同时解决重启丢数据与跨 isolate 分叉两个问题。
+let persistenceResolved = false;
+async function resolvePersistence(env) {
+  if (persistenceResolved) return;
+  persistenceResolved = true;
+  await ensureFilePersistence(env, ({ account, shared, bank }) => {
+    setAccountPersistence(account);
+    setSharedDataPersistence(shared);
+    setBankPersistence(bank);
+  });
+}
 
 export default {
   async fetch(request, env) {
-    if (new URL(request.url).pathname === DEEPSEEK_CHAT_PATH) {
+    await resolvePersistence(env);
+    const { pathname } = new URL(request.url);
+    if (pathname === DEEPSEEK_CHAT_PATH) {
       return handleDeepSeekChat(request, env.DEEPSEEK_API_KEY);
     }
-    if (new URL(request.url).pathname === OBJECTIVE_QUESTIONS_PATH) {
-      return handleObjectiveQuestions(request);
-    }
-    if (new URL(request.url).pathname === PRACTICAL_TASKS_PATH) {
+    if (pathname === PRACTICAL_TASKS_PATH) {
       return handlePracticalTasks(request);
     }
-    if (new URL(request.url).pathname === PRACTICAL_SCORE_PATH) {
+    if (pathname === PRACTICAL_SCORE_PATH) {
       return handlePracticalScore(request, env.DEEPSEEK_API_KEY);
     }
-    if (new URL(request.url).pathname === COMPREHENSIVE_QUESTION_PATH) {
+    if (pathname === COMPREHENSIVE_QUESTION_PATH) {
       return handleComprehensiveQuestion(request);
     }
-    if (new URL(request.url).pathname === ADMIN_BANK_PATH) {
+    if (pathname === COMPREHENSIVE_SCORE_PATH) {
+      return handleComprehensiveScore(request);
+    }
+    if (pathname === ADMIN_BANK_PATH) {
       return handleAdminBank(request);
     }
-    if (new URL(request.url).pathname === AUTH_REGISTER_PATH) {
+    if (pathname === AUTH_REGISTER_PATH) {
       return handleAuthRegister(request, env);
     }
-    if (new URL(request.url).pathname === AUTH_LOGIN_PATH) {
+    if (pathname === AUTH_LOGIN_PATH) {
       return handleAuthLogin(request);
     }
-    if (new URL(request.url).pathname === AUTH_ME_PATH) {
+    if (pathname === AUTH_ME_PATH) {
       return handleAuthMe(request);
     }
-    if (new URL(request.url).pathname === AUTH_PROFILE_PATH) {
+    if (pathname === AUTH_PROFILE_PATH) {
       return handleAuthProfile(request);
     }
-    if (new URL(request.url).pathname === AUTH_PASSWORD_PATH) {
+    if (pathname === AUTH_PASSWORD_PATH) {
       return handleAuthPassword(request);
     }
-    if (new URL(request.url).pathname === DATA_RUNS_PATH) {
+    if (pathname === DATA_RUNS_PATH) {
       return handleDataRuns(request);
     }
-    if (new URL(request.url).pathname === DATA_ME_PATH) {
+    if (pathname === DATA_ME_PATH) {
       return handleDataMe(request);
     }
-    if (new URL(request.url).pathname === DATA_ASSIGNMENTS_PATH) {
+    if (pathname === DATA_ASSIGNMENTS_PATH) {
       return handleDataAssignments(request);
     }
-    if (new URL(request.url).pathname === DATA_ASSIGNMENT_STATUS_PATH) {
+    if (pathname === DATA_ASSIGNMENT_STATUS_PATH) {
       return handleDataAssignmentStatus(request);
     }
-    if (new URL(request.url).pathname === DATA_TEACHER_OVERVIEW_PATH) {
+    if (pathname === DATA_TEACHER_OVERVIEW_PATH) {
       return handleDataTeacherOverview(request);
     }
-    if (new URL(request.url).pathname === ARK_IMAGE_PATH) {
+    if (pathname === DATA_DRAFT_PATH) {
+      return handleDataDraft(request);
+    }
+    if (pathname === ARK_IMAGE_PATH) {
       return handleArkImage(request, env.ARK_API_KEY);
+    }
+    // 未匹配的 /api/* 返回明确的 404 JSON，而不是落进 SPA 回退
+    // （那会给出 200 + index.html，调用方只能拿到一坨 HTML）。
+    if (pathname.startsWith("/api/")) {
+      return new Response(JSON.stringify({ error: "not found" }), {
+        status: 404,
+        headers: { "content-type": "application/json; charset=utf-8" },
+      });
     }
     const response = await env.ASSETS.fetch(request);
     const acceptsHtml = request.headers.get("accept")?.includes("text/html");

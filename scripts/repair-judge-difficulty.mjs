@@ -32,8 +32,9 @@ const LEVEL_DIFFICULTY = {
   station: "medium",
 };
 
+// 题库归一（2026-11）：880 导入题唯一存放于 comprehensive-880，
+// 原 worker/objective-questions.json 并集文件已退役。
 const BANKS = [
-  join(here, "../worker/objective-questions.json"),
   join(here, "../src/banks/comprehensive-880.json"),
 ];
 

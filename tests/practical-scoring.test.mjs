@@ -430,3 +430,69 @@ test("scoringRequirements excludes rubric-derived meta rows that display keeps",
   assert.ok(!joined.includes("达到评分标准"));
   assert.ok(!joined.includes("评分标准一："));
 });
+
+// ── 多票并行与限速（2026-11 优化） ──────────────────────────────────────────
+
+test("practical score route: 2 of 3 votes still aggregate instead of falling back", async () => {
+  // 第一票上游 500、后两票正常：不得丢弃已成功的票退到启发式。
+  let calls = 0;
+  const flaky = async () => {
+    calls += 1;
+    if (calls === 1) return new Response("boom", { status: 500 });
+    return okDeepSeek();
+  };
+  const response = await handlePracticalScore(post({
+    taskId: task.id,
+    edition: "A",
+    prompt: "最终提示词",
+    product: "最终产物",
+  }), "test-key", flaky);
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.judged, "llm");
+  assert.equal(payload.prompt.awarded, 10);
+});
+
+test("practical score route: median comment falls back to a vote that has one", async () => {
+  // 中位下标那票缺评语时，评语取第一份非空的，而不是静默为空。
+  const bare = JSON.parse(judgeJson);
+  for (const row of bare.prompt) row.comment = "";
+  const bareContent = JSON.stringify(bare);
+  const fullContent = judgeJson;
+  // 三票轮转：0/2 正常带评语，1（恰好是中位下标）prompt 侧全空评语。
+  const contents = [fullContent, bareContent, fullContent];
+  let call = 0;
+  const rotate = async () => new Response(JSON.stringify({
+    choices: [{ message: { content: contents[call++ % contents.length] } }],
+  }), { status: 200 });
+  const response = await handlePracticalScore(post({
+    taskId: task.id,
+    edition: "A",
+    prompt: "提示词",
+    product: "产物",
+  }), "test-key", rotate);
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.judged, "llm");
+  for (const row of payload.prompt.rows) {
+    assert.ok(row.comment.length > 0, `维度 ${row.dimension} 的评语不应为空`);
+  }
+});
+
+test("practical score route: rate-limits repeat scoring per IP", async () => {
+  // 8 次/5 分钟：第 9 次同 IP POST 返回 429。用独立 XFF 头隔离模块级计数器，
+  // 不污染同文件的其它用例（它们走 "local"）。
+  const headers = { "content-type": "application/json", "x-forwarded-for": "203.0.113.9" };
+  const makePost = () => new Request(`https://example.test${PRACTICAL_SCORE_PATH}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ taskId: task.id, prompt: "x" }),
+  });
+  let last;
+  for (let i = 0; i < 9; i += 1) {
+    last = await handlePracticalScore(makePost(), undefined);
+  }
+  assert.equal(last.status, 429);
+  const payload = await last.json();
+  assert.ok(payload.error.includes("频繁"));
+});

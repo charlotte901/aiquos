@@ -189,3 +189,75 @@ test("register and me reject wrong methods; login body must be JSON", async () =
   const rejected = await handleAuthLogin(badBody);
   assert.equal(rejected.status, 400);
 });
+
+test("changing the password revokes previously issued tokens", async () => {
+  freshStore();
+  const register = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
+    body: { account: "13800138111", password: STRONG, nickname: "小卷", role: "student" },
+  }));
+  assert.equal(register.status, 201);
+  const oldToken = (await register.json()).token;
+
+  // 改密（需要登录态 + 旧密码正确）。
+  const { handleAuthPassword } = await import("../worker/auth.js");
+  const change = await handleAuthPassword(request("/api/auth/password", {
+    token: oldToken,
+    body: { oldPassword: STRONG, newPassword: `${STRONG}x` },
+  }));
+  assert.equal(change.status, 200);
+
+  // 改密前签发的令牌必须立即失效（泄露止损），新登录的令牌照常可用。
+  const stale = await handleAuthMe(request(AUTH_ME_PATH, { method: "GET", token: oldToken }));
+  assert.equal(stale.status, 401);
+
+  const relogin = await handleAuthLogin(request(AUTH_LOGIN_PATH, {
+    body: { account: "13800138111", password: `${STRONG}x` },
+  }));
+  assert.equal(relogin.status, 200);
+  const fresh = await handleAuthMe(request(AUTH_ME_PATH, {
+    method: "GET",
+    token: (await relogin.json()).token,
+  }));
+  assert.equal(fresh.status, 200);
+});
+
+test("an expired lock resets the failure counter (one stray failure must not re-lock)", async (t) => {
+  freshStore();
+  const account = "13800138222";
+  const register = await handleAuthRegister(request(AUTH_REGISTER_PATH, {
+    body: { account, password: STRONG, nickname: "小锁", role: "student" },
+  }));
+  assert.equal(register.status, 201);
+  const correct = { account, password: STRONG };
+
+  // 连续 5 次失败 → 锁定 10 分钟。
+  t.mock.timers.enable({ now: Date.now() });
+  for (let i = 0; i < 5; i += 1) {
+    await handleAuthLogin(request(AUTH_LOGIN_PATH, { body: { account, password: "wrong12345" } }));
+  }
+  const locked = await handleAuthLogin(request(AUTH_LOGIN_PATH, { body: correct }));
+  assert.equal(locked.status, 429);
+
+  // 时间快进 11 分钟：锁过期。此时一次手滑失败不得再次 429（旧行为：
+  // count 仍 ≥5，任意一次失败立刻再锁 10 分钟——「锁滚锁」）。
+  t.mock.timers.tick(11 * 60 * 1000);
+  const stray = await handleAuthLogin(request(AUTH_LOGIN_PATH, { body: { account, password: "wrong12345" } }));
+  assert.equal(stray.status, 401);
+  // 计数已随锁复位，正确密码可立即正常登录。
+  const ok = await handleAuthLogin(request(AUTH_LOGIN_PATH, { body: correct }));
+  assert.equal(ok.status, 200);
+});
+
+test("a single failure on a fresh account never locks", async () => {
+  freshStore();
+  const account = "13800138333";
+  await handleAuthRegister(request(AUTH_REGISTER_PATH, {
+    body: { account, password: STRONG, nickname: "小计", role: "student" },
+  }));
+  const one = await handleAuthLogin(request(AUTH_LOGIN_PATH, { body: { account, password: "wrong12345" } }));
+  assert.equal(one.status, 401);
+  const ok = await handleAuthLogin(request(AUTH_LOGIN_PATH, {
+    body: { account, password: STRONG },
+  }));
+  assert.equal(ok.status, 200);
+});

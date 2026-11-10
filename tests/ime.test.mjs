@@ -74,10 +74,21 @@ test("the `when` gate can suppress submission", () => {
 
 test("every text-submitting input in the app uses the IME-safe handler", async () => {
   // Only files with element-level text-field key handlers need the helper.
-  const files = ["../src/AssessmentFlow.jsx", "../src/ForumBoard.jsx"];
+  // 2026-11 拆分：AssessmentFlow 的阶段组件在 src/assessment-flow/ 下。
+  const files = [
+    "../src/AssessmentFlow.jsx",
+    "../src/assessment-flow/interview-phase.jsx",
+    "../src/assessment-flow/objective-phase.jsx",
+    "../src/assessment-flow/practical-phase.jsx",
+    "../src/ForumBoard.jsx",
+  ];
   for (const file of files) {
     const source = await readFile(new URL(file, import.meta.url), "utf8");
-    assert.match(source, /from "\.\/ime"/, `${file} must import the IME helper`);
+    // 拆分后编排器（AssessmentFlow.jsx）本身没有文本输入——只有真正带
+    // 输入框的文件才必须导入 IME 助手；所有文件都仍扫描裸 Enter 处理。
+    if (/onKeyDown=/.test(source)) {
+      assert.match(source, /from "\.\.?\/ime"|from "\.\/ime"/, `${file} must import the IME helper`);
+    }
     // The bug pattern is a raw `key === "Enter"` inside an onKeyDown prop on a
     // text field. A window-level key handler is legitimate (it drives A–D
     // answering) as long as it ignores events originating in an input, so the
@@ -96,7 +107,9 @@ test("every text-submitting input in the app uses the IME-safe handler", async (
 
   // The objective quiz listens on window for A–D answering; it must stand down
   // whenever the event comes from a text field (or an IME composition).
-  const quiz = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
+  // 2026-11 拆分：客观题的 window 键盘监听随 AdaptiveObjectivePhase 移入
+  // src/assessment-flow/objective-phase.jsx。
+  const quiz = await readFile(new URL("../src/assessment-flow/objective-phase.jsx", import.meta.url), "utf8");
   assert.match(quiz, /tag === "INPUT" \|\| tag === "TEXTAREA"/, "global key handler must ignore inputs");
   assert.match(quiz, /event\.isComposing \|\| event\.keyCode === 229/, "global key handler must ignore IME composition");
 });

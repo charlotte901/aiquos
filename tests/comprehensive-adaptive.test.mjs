@@ -3,10 +3,12 @@ import assert from "node:assert/strict";
 import questionBank from "../src/comprehensive-questions.json" with { type: "json" };
 import {
   applyAdaptiveOutcome,
-  createAdaptiveController,
+  clearExposureStore,
   createAdaptiveSession,
   estimateRunAbility,
+  loadExposureStore,
   nextTargetDifficulty,
+  saveExposureStore,
   selectAdaptiveQuestion,
   startAdaptiveStage,
 } from "../src/comprehensive-adaptive.js";
@@ -143,7 +145,30 @@ test("selection clamps invalid random values to a valid shortlist index", () => 
   );
 });
 
-test("the controller carries routing across stages and reset starts a new medium route", () => {
+// 服务端出题是显式会话线程（worker/comprehensive-quiz.js 同款）；
+// 原客户端控制器 createAdaptiveController 已随客户端选题一并退役，
+// 这里的不变量（跨阶段路由延续、复位回 medium）由纯引擎承担。
+function threadSelect(questions, session, levelId, stage, outcome = null, credit = null) {
+  let next = startAdaptiveStage(session, stage);
+  if (outcome && next.lastDifficulty) {
+    next = {
+      ...applyAdaptiveOutcome(next, outcome),
+      evidence: [...next.evidence, { credit, difficulty: next.lastDifficulty, dimKeys: [...next.lastDimKeys] }],
+    };
+  } else if (outcome) {
+    next = applyAdaptiveOutcome(next, outcome);
+  }
+  const picked = selectAdaptiveQuestion({ questions, levelId, session: next, rng: () => 0 });
+  const question = picked.question;
+  const updated = {
+    ...picked.session,
+    lastDifficulty: question?.difficulty ?? null,
+    lastDimKeys: question ? [...question.dimKeys] : [],
+  };
+  return { question, session: updated };
+}
+
+test("session threading carries routing across stages and a fresh session starts at medium", () => {
   const questions = [
     candidate("academy-medium-1", "medium", ["D1", "D2"], "single", "academy"),
     candidate("academy-medium-2", "medium", ["D3", "D4"], "judge", "academy"),
@@ -151,18 +176,18 @@ test("the controller carries routing across stages and reset starts a new medium
     candidate("labyrinth-medium", "medium", ["D1", "D3"], "single", "labyrinth"),
     candidate("labyrinth-high", "high", ["D2", "D4"], "judge", "labyrinth"),
   ];
-  const controller = createAdaptiveController(questions, { rng: () => 0 });
 
-  assert.equal(controller.select("academy", 1).difficulty, "medium");
-  controller.record("correct");
-  assert.equal(controller.select("academy", 1).difficulty, "medium");
-  controller.record("correct");
-  assert.equal(controller.select("academy", 1).difficulty, "high");
-  controller.record("correct");
-  assert.equal(controller.select("labyrinth", 2).difficulty, "high");
+  let step = threadSelect(questions, createAdaptiveSession(), "academy", 1);
+  assert.equal(step.question.difficulty, "medium");
+  step = threadSelect(questions, step.session, "academy", 1, "correct", 1);
+  assert.equal(step.question.difficulty, "medium");
+  step = threadSelect(questions, step.session, "academy", 1, "correct", 1);
+  assert.equal(step.question.difficulty, "high");
+  step = threadSelect(questions, step.session, "labyrinth", 2, "correct", 1);
+  assert.equal(step.question.difficulty, "high");
 
-  controller.reset();
-  assert.equal(controller.select("labyrinth", 2).difficulty, "medium");
+  const fresh = threadSelect(questions, createAdaptiveSession(), "labyrinth", 2);
+  assert.equal(fresh.question.difficulty, "medium");
 });
 
 test("v2 ability estimation reads credited evidence and stays null without it", () => {
@@ -235,32 +260,53 @@ test("no question type repeats three times in a credited full run", () => {
   try {
     for (const start of [0.05, 0.45, 0.85]) {
       let rngValue = start;
-      const controller = createAdaptiveController(questionBank.questions, {
-        rng: () => {
-          rngValue = (rngValue * 9301 + 49297) % 233280;
-          return rngValue / 233280;
-        },
-      });
-      controller.clearExposure();
+      const rng = () => {
+        rngValue = (rngValue * 9301 + 49297) % 233280;
+        return rngValue / 233280;
+      };
+      clearExposureStore();
+      let session = createAdaptiveSession();
+      let exposure = loadExposureStore();
       let streak = { type: null, count: 0 };
       let lastDimCounts = null;
       for (let stage = 1; stage <= 5; stage += 1) {
         for (let index = 0; index < 5; index += 1) {
-          const question = controller.select(LEVELS[stage - 1], stage);
+          const outcome = index % 2 === 0 ? "correct" : "wrong";
+          const credit = index % 2 === 0 ? 1 : 0;
+          let next = startAdaptiveStage(session, stage);
+          if (session.lastDifficulty) {
+            next = {
+              ...applyAdaptiveOutcome(next, outcome),
+              evidence: [...next.evidence, { credit, difficulty: session.lastDifficulty, dimKeys: [...session.lastDimKeys] }],
+            };
+          }
+          const picked = selectAdaptiveQuestion({
+            questions: questionBank.questions,
+            levelId: LEVELS[stage - 1],
+            session: next,
+            rng,
+            exposure,
+          });
+          const question = picked.question;
           assert.ok(question);
+          session = {
+            ...picked.session,
+            lastDifficulty: question.difficulty,
+            lastDimKeys: [...question.dimKeys],
+          };
+          exposure = picked.exposure;
           if (question.type === streak.type) {
             streak.count += 1;
             assert.ok(streak.count < 3, `three in a row of ${question.type}`);
           } else {
             streak = { type: question.type, count: 1 };
           }
-          // Alternating credit keeps the router hunting across difficulties.
-          controller.record(index % 2 === 0 ? "correct" : "wrong", index % 2 === 0 ? 1 : 0);
         }
-        lastDimCounts = controller.getSession().dimensionCounts;
+        lastDimCounts = session.dimensionCounts;
       }
-      assert.equal(controller.getSession().usedQuestionIds.length, 25);
-      assert.equal(new Set(controller.getSession().usedQuestionIds).size, 25);
+      saveExposureStore(exposure);
+      assert.equal(session.usedQuestionIds.length, 25);
+      assert.equal(new Set(session.usedQuestionIds).size, 25);
       // Coverage stays balanced: no dimension starved to zero during the run.
       for (const [key, count] of Object.entries(lastDimCounts)) {
         assert.ok(count >= 2, `dimension ${key} covered (${count})`);

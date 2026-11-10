@@ -9,11 +9,15 @@
 // 角色约束：teacher/* 与创建/关闭推送仅教师；runs/me/assignments 对学生
 // 与教师都开放（教师也可以自测）。
 import { bearerToken, verifyToken } from "./auth.js";
+import { json, readJson } from "./http.js";
 import {
+  clearDraft,
   closeAssignment,
   createAssignment,
   listAssignmentsFor,
+  loadDraft,
   reportRun,
+  saveDraft,
   storeStats,
   studentSummary,
   teacherData,
@@ -24,27 +28,12 @@ export const DATA_ME_PATH = "/api/data/me";
 export const DATA_ASSIGNMENTS_PATH = "/api/data/assignments";
 export const DATA_ASSIGNMENT_STATUS_PATH = "/api/data/assignment-status";
 export const DATA_TEACHER_OVERVIEW_PATH = "/api/data/teacher/overview";
-
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
+export const DATA_DRAFT_PATH = "/api/data/draft";
 
 async function authenticate(request) {
   const verified = await verifyToken(bearerToken(request));
   if (!verified) return { error: json({ error: "登录状态已失效，请重新登录" }, 401) };
   return { profile: verified.record };
-}
-
-async function readJson(request) {
-  try {
-    const payload = await request.json();
-    return payload && typeof payload === "object" ? payload : null;
-  } catch {
-    return null;
-  }
 }
 
 export async function handleDataRuns(request) {
@@ -55,6 +44,31 @@ export async function handleDataRuns(request) {
   const result = reportRun(auth.profile, payload);
   if (result.error) return json({ error: result.error }, 400);
   return json({ run: result.run }, 201);
+}
+
+/**
+ * 测评草稿同步（Bearer 必需）：PUT 推送最新草稿，GET 拉取，DELETE 清除。
+ * 每账号只保留一份最新（savedAt 比较），localStorage 仍是客户端的一级缓存。
+ */
+export async function handleDataDraft(request) {
+  const auth = await authenticate(request);
+  if (auth.error) return auth.error;
+  if (request.method === "GET") {
+    return json({ draft: loadDraft(auth.profile.accountId) });
+  }
+  if (request.method === "PUT") {
+    const payload = await readJson(request);
+    if (!payload || typeof payload !== "object" || !payload.draft) {
+      return json({ error: "请求格式不正确。" }, 400);
+    }
+    const result = saveDraft(auth.profile.accountId, payload.draft, payload.savedAt);
+    if (result.error) return json({ error: result.error }, 413);
+    return json({ ok: true });
+  }
+  if (request.method === "DELETE") {
+    return json(clearDraft(auth.profile.accountId));
+  }
+  return json({ error: "方法不允许" }, 405);
 }
 
 export async function handleDataMe(request) {

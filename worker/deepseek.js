@@ -1,3 +1,5 @@
+import { json } from "./http.js";
+
 export const DEEPSEEK_CHAT_PATH = "/api/deepseek/chat";
 export const ARK_IMAGE_PATH = "/api/ark/images";
 
@@ -23,13 +25,6 @@ const IMAGE_UPSTREAM_TIMEOUT_MS = 200_000;
 // 40 覆盖整场采访（5 槽 + 追问），同时保留防滥用意义。
 const MAX_MESSAGES = 40;
 const MAX_CONTENT_LENGTH = 12_000;
-
-function json(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
 
 /**
  * 归一化聊天消息。

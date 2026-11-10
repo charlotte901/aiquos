@@ -29,7 +29,6 @@ if (!DOCX) {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const BANK_PATH = join(here, "../worker/objective-questions.json");
 
 const CN_NUM = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
 
@@ -122,10 +121,9 @@ function tally(items, keyFn) {
 const skew = tally(repaired.flatMap((q) => q.answer.map((key) => ({ key }))), (item) => item.key);
 const byDifficulty = tally(repaired, (item) => item.difficulty);
 const byLevel = tally(repaired, (item) => item.levelId);
-writeFileSync(BANK_PATH, `${JSON.stringify({ questions }, null, 2)}\n`);
-
-// 全量版的综合题池：同样的 880 题，去掉 origin（综合测评不区分来源），
-// 供 bank-store 在 A 版下作为综合测评的题池。B 版继续用
+// 题库归一（2026-11）：导入器只写全量版综合题池——它是 880 导入题的
+// 唯一存放地（原 worker/objective-questions.json 并集文件已退役，
+// origin 由「来自哪个题库」隐式表达）。B 版继续用
 // src/comprehensive-questions.json 里的 120 道人工精选题。
 const comprehensive880 = repaired.map(({ origin, ...rest }) => rest);
 validateQuestionBank(comprehensive880);
@@ -133,7 +131,7 @@ const FULL_PATH = join(here, "..", "src", "banks", "comprehensive-880.json");
 writeFileSync(FULL_PATH, `${JSON.stringify({ questions: comprehensive880 }, null, 2)}\n`);
 console.log(`已写出全量版综合题池：src/banks/comprehensive-880.json（${comprehensive880.length} 题）`);
 
-console.log(`导入完成：${human.length} 精选 + ${repaired.length} 修复 = ${questions.length} 题`);
+console.log(`导入完成：${human.length} 精选（另行维护）+ ${repaired.length} 修复`);
 console.log("修复题答案分布（应近似均衡）:", skew);
 console.log("修复题难度分布:", byDifficulty);
 console.log("修复题关卡分布:", byLevel);

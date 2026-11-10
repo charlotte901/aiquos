@@ -18,7 +18,15 @@ test("every assessment has a five-stage journey and the blue route combines all 
 
 test("the selected task template has real local IP artwork and all task surfaces", async () => {
   await access(new URL("../public/assets/crops/assessment-guides-crop.png", import.meta.url));
-  const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
+  // 2026-11 拆分：阶段组件移入 src/assessment-flow/，守卫聚合读取编排器 + 四个子模块。
+  const sources = await Promise.all([
+    "../src/AssessmentFlow.jsx",
+    "../src/assessment-flow/flow-shared.jsx",
+    "../src/assessment-flow/interview-phase.jsx",
+    "../src/assessment-flow/objective-phase.jsx",
+    "../src/assessment-flow/practical-phase.jsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+  const source = sources.join("\n");
   for (const component of ["AdaptiveObjectivePhase", "InterviewPhase", "PracticalWorkbenchPhase", "AssessmentMap", "AssessmentTask"]) {
     assert.match(source, new RegExp(`function ${component}|export function ${component}`));
   }
@@ -94,7 +102,15 @@ test("comprehensive opens the paper picker instead of the stage map", async () =
 
 
 test("every primary action button shows its label", async () => {
-  const source = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
+  // 2026-11 拆分：阶段组件移入 src/assessment-flow/，守卫聚合读取编排器 + 四个子模块。
+  const sources = await Promise.all([
+    "../src/AssessmentFlow.jsx",
+    "../src/assessment-flow/flow-shared.jsx",
+    "../src/assessment-flow/interview-phase.jsx",
+    "../src/assessment-flow/objective-phase.jsx",
+    "../src/assessment-flow/practical-phase.jsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+  const source = sources.join("\n");
   // The base .task-action style is an icon-only circle (width 56px, font-size 0);
   // only the .comprehensive modifier renders the label. Any labelled action
   // must therefore carry the variant or the text disappears for the student.

@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import worker from "../worker/index.js";
-import { createObjectiveQuestions, handleObjectiveQuestions } from "../worker/objective-quiz.js";
+import { createObjectiveQuestions } from "./helpers/edition-pool.mjs";
 import { createPracticalTasks, handlePracticalTasks } from "../worker/practical-tasks.js";
 
 // Sites 打包产物（dist/）由 `npm run build` 生成，且其后置脚本还需要本地
@@ -51,41 +51,35 @@ test("falls back to index.html for an unknown app route", async () => {
 });
 
 test("does not turn missing API or write requests into the app shell", async () => {
-  for (const request of [
+  // 未匹配的 /api/* 由路由层直接 404 JSON，完全不触碰资产层。
+  let apiCalls = 0;
+  const apiResponse = await worker.fetch(
     new Request("https://example.test/api/missing", { headers: { accept: "application/json" } }),
-    new Request("https://example.test/flow", { method: "POST", headers: { accept: "text/html" } }),
-  ]) {
-    let calls = 0;
-    const response = await worker.fetch(request, {
-      ASSETS: {
-        fetch: async () => {
-          calls += 1;
-          return new Response("missing", { status: 404 });
-        },
-      },
-    });
+    { ASSETS: { fetch: async () => { apiCalls += 1; return new Response("missing", { status: 404 }); } } },
+  );
+  assert.equal(apiResponse.status, 404);
+  assert.equal(apiCalls, 0);
 
-    assert.equal(response.status, 404);
-    assert.equal(calls, 1);
-  }
+  let flowCalls = 0;
+  const flowResponse = await worker.fetch(
+    new Request("https://example.test/flow", { method: "POST", headers: { accept: "text/html" } }),
+    { ASSETS: { fetch: async () => { flowCalls += 1; return new Response("missing", { status: 404 }); } } },
+  );
+  assert.equal(flowResponse.status, 404);
+  assert.equal(flowCalls, 1);
 });
 
-test("serves objective questions from both marked banks without source metadata", async () => {
+test("splits the objective bank by edition and origin without source metadata", () => {
   // 两套版本共用一份题库文件，靠 origin 区分：全量版吃全部 1000 题，
-  // 精选版只吃 120 道人工精选题。
+  // 精选版只吃 120 道人工精选题。原 /api/objective-questions 端点已下线
+  // （前端零调用且公开答案），这里只校验题库切分本身。
   assert.equal(createObjectiveQuestions("academy", "human", () => .12, "A").length, 5);
   assert.equal(createObjectiveQuestions("academy", "ai", () => .2, "A").length, 5);
   assert.equal(createObjectiveQuestions("academy", "human", () => .12, "B").length, 5);
   // 精选版没有 ai 来源的题。
   assert.equal(createObjectiveQuestions("academy", "ai", () => .2, "B").length, 0);
 
-  const response = await handleObjectiveQuestions(
-    new Request("https://example.test/api/objective-questions?levelId=academy"),
-  );
-  const { questions } = await response.json();
-
-  assert.equal(response.status, 200);
-  assert.equal(questions.length, 5);
+  const questions = createObjectiveQuestions("academy", "human", () => .12, "A");
   assert.deepEqual(
     questions.map((question) => Object.keys(question).sort()),
     Array.from({ length: 5 }, () => ["analysis", "answer", "dims", "options", "q", "type"]),
@@ -121,15 +115,8 @@ test("serves practical tasks from both editions without source metadata", async 
 });
 
 test("routes direct assessment banks through the worker", async () => {
-  // 默认版本是精选版：court 的客观题来自 120 道精选题，workshop 的实操题
-  // 来自 10 题精选池——两处的题量都小于 5，所以断言「有题」而不是「必 5 题」。
-  const objectiveResponse = await worker.fetch(
-    new Request("https://example.test/api/objective-questions?levelId=court"),
-    { ASSETS: { fetch: async () => new Response("missing", { status: 404 }) } },
-  );
-  assert.equal(objectiveResponse.status, 200);
-  assert.equal((await objectiveResponse.json()).questions.length, 5);
-
+  // 默认版本是精选版：workshop 的实操题来自 10 题精选池——题量小于 5，
+  // 所以断言「有题」而不是「必 5 题」。客观题端点已下线，这里只走实操。
   const practicalResponse = await worker.fetch(
     new Request("https://example.test/api/practical-tasks?levelId=workshop"),
     { ASSETS: { fetch: async () => new Response("missing", { status: 404 }) } },
@@ -166,12 +153,12 @@ test("the packaged worker boots and serves both editions", { skip: !DIST_BUILT &
   const worker = mod.default;
   const env = { ASSETS: { fetch: async () => new Response("", { status: 404 }) } };
 
-  const objective = await worker.fetch(
+  // 已下线的端点必须给出 404 JSON（而不是 SPA 回退的 HTML 200）。
+  const gone = await worker.fetch(
     new Request("https://example.test/api/objective-questions?levelId=academy"),
     env,
   );
-  assert.equal(objective.status, 200);
-  assert.equal((await objective.json()).questions.length, 5);
+  assert.equal(gone.status, 404);
 
   const practical = await worker.fetch(
     new Request("https://example.test/api/practical-tasks?levelId=academy&edition=A"),

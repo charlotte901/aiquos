@@ -250,7 +250,7 @@ body {
      stage width, so full-bleed fields stay full-bleed. */
   scrollbar-width: none;
   /* The horizontal inset is a named token because a child that bleeds past it
-     (see `.forum-effect`) has to cancel exactly this much and no more. It was
+     has to cancel exactly this much and no more. It was
      written twice as a literal calc, so the bleed guessed 32px against a real
      76px and pushed the page 76px wide. */
   --tab-screen-inset-x: calc(72px * var(--ui-scale));

@@ -90,6 +90,7 @@ function emptyState() {
 function loadState() {
   if (state) return state;
   state = emptyState();
+  let loaded = false;
   if (persistence) {
     try {
       const raw = persistence.load();
@@ -103,13 +104,17 @@ function loadState() {
               state.accounts.set(record.account, record);
             }
           }
+          loaded = true;
         }
       }
     } catch {
       // 损坏的文件按空库处理：注册照常可用，旧数据不复活。
     }
   }
-  persist();
+  // 只在确实没有可用存档时回写（首次落盘 / 修复损坏文件）。
+  // 之前无条件 persist()：每次冷启动都重写一遍 auth-accounts.json，
+  // 且只读文件系统上会直接抛错把所有认证端点打成 500。
+  if (!loaded) persist();
   return state;
 }
 
@@ -205,6 +210,9 @@ export async function updatePassword(accountId, oldPassword, newPassword) {
   record.salt = b64url(randomBytes(16));
   record.iterations = PBKDF2_ITERATIONS;
   record.hash = await hashPassword(newPassword, fromB64url(record.salt));
+  // 令牌版本 +1：改密后旧令牌立即失效（verifyToken 比对版本）。
+  // 令牌是无状态 HMAC 串，否则泄露的旧令牌在 7 天 TTL 内改密也止不了损。
+  record.tokenVersion = (record.tokenVersion ?? 0) + 1;
   persist();
   return { ok: true, record };
 }
@@ -244,6 +252,7 @@ export async function issueToken(record) {
   const payload = {
     sub: record.accountId,
     role: record.role,
+    ver: record.tokenVersion ?? 0,
     iat: Date.now(),
     exp: Date.now() + TOKEN_TTL_MS,
   };
@@ -284,6 +293,9 @@ export async function verifyToken(token) {
   if (diff !== 0) return null;
   const record = findAccountById(payload.sub);
   if (!record) return null;
+  // 令牌版本比对：改密后 tokenVersion +1，改密前签发的令牌（含泄露的）
+  // 立即失效。老令牌/老记录没有 ver 字段，按 0 对齐，兼容存量会话。
+  if ((payload.ver ?? 0) !== (record.tokenVersion ?? 0)) return null;
   return { payload, record };
 }
 
@@ -293,10 +305,6 @@ export function findAccountById(accountId) {
     if (!record.pending && record.accountId === accountId) return record;
   }
   return null;
-}
-
-export function findAccountByLogin(account) {
-  return loadState().accounts.get(normalizeAccount(account)) ?? null;
 }
 
 /** 全部已注册的学员账号（供数据层把「注册即存在」的学员纳入组卷范围）。 */
@@ -310,12 +318,4 @@ export function listStudentRecords() {
       nickname: record.nickname,
       className: record.className ?? "",
     }));
-}
-
-export function storeInfo() {
-  const current = loadState();
-  return {
-    persistent: Boolean(persistence),
-    accountCount: current.accounts.size,
-  };
 }

@@ -10,7 +10,7 @@ import {
   validateQuestionBank,
 } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 import bank from "../src/comprehensive-questions.json" with { type: "json" };
-import { createAdaptiveController } from "../src/comprehensive-adaptive.js";
+import { applyAdaptiveOutcome, createAdaptiveSession, selectAdaptiveQuestion, startAdaptiveStage } from "../src/comprehensive-adaptive.js";
 import {
   QUESTION_BANK_VERSION,
   appendHistorySnapshot,
@@ -133,20 +133,27 @@ test("the adaptive product path always yields a completable attempt", () => {
   // must still reach completed with all six dimensions evidenced.
   for (const rngSeed of [0.1, 0.5, 0.9]) {
     let rngValue = rngSeed;
-    const controller = createAdaptiveController(questions, {
-      rng: () => {
-        rngValue = (rngValue * 9301 + 49297) % 233280;
-        return rngValue / 233280;
-      },
-    });
+    const rng = () => {
+      rngValue = (rngValue * 9301 + 49297) % 233280;
+      return rngValue / 233280;
+    };
+    // 与服务端出题同款：显式会话线程 + 纯引擎选题（原客户端控制器已退役）。
+    let session = createAdaptiveSession();
     let attempt = createAttempt({ questions, totalQuestions: TOTAL });
     let result = null;
     for (let stage = 1; stage <= LEVEL_IDS.length; stage += 1) {
       for (let index = 0; index < COMPREHENSIVE_QUESTION_COUNT; index += 1) {
-        const question = controller.select(LEVEL_IDS[stage - 1], stage);
+        const picked = selectAdaptiveQuestion({
+          questions,
+          levelId: LEVEL_IDS[stage - 1],
+          session: startAdaptiveStage(session, stage),
+          rng,
+        });
+        const question = picked.question;
         assert.ok(question, `a question must be available (stage ${stage} #${index + 1})`);
+        session = picked.session;
         const outcome = (stage + index) % 3 === 0 ? "wrong" : "correct";
-        controller.record(outcome);
+        session = applyAdaptiveOutcome(session, outcome);
         const next = recordAnswer(attempt, question, outcome === "correct" ? question.answer : []);
         attempt = next.attempt;
         result = next.result;
@@ -175,7 +182,11 @@ test("draft and history persistence round-trip through storage", () => {
       attempt = recordAnswer(attempt, question, question.answer).attempt;
     }
     saveAttemptDraft(attempt);
-    assert.deepEqual(loadAttemptDraft(), attempt);
+    // saveAttemptDraft 会打 savedAt 戳（跨设备草稿合并的依据，2026-11）。
+    const storedDraft = loadAttemptDraft();
+    const { savedAt, ...storedAttempt } = storedDraft;
+    assert.ok(Date.parse(savedAt) > 0, "草稿必须带可解析的 savedAt");
+    assert.deepEqual(storedAttempt, attempt);
 
     const result = scoreAssessment(attempt.evidence, { totalQuestions: TOTAL });
     // An in-progress attempt never snapshots.

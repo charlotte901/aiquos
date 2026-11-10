@@ -23,8 +23,6 @@ const worker = path.join(root, "worker", "index.js");
 const modules = [
   "worker/index.js",
   "worker/deepseek.js",
-  "worker/objective-quiz.js",
-  "worker/objective-questions.json",
   "worker/practical-tasks.js",
   "worker/practical-score.js",
   "worker/comprehensive-quiz.js",
