@@ -10,7 +10,7 @@ import {
   normalizeEdition,
 } from "../src/bank-editions.js";
 import { getBankState } from "../worker/bank-store.js";
-import { createObjectiveQuestions } from "../worker/objective-quiz.js";
+import { createObjectiveQuestions } from "./helpers/edition-pool.mjs";
 import { createPracticalTasks } from "../worker/practical-tasks.js";
 import { validateQuestionBank } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 
@@ -63,8 +63,9 @@ test("the full-edition comprehensive bank is complete and valid", () => {
 
 test("the imported 880 answers are balanced, not skewed to one letter", () => {
   // 源文档 88% 的单选题答案是 B；导入时按题号定种洗牌修正了这一偏斜。
-  const bank = read("../worker/objective-questions.json");
-  const singles = bank.questions.filter((question) => question.origin === "ai" && question.type === "single");
+  // 题库归一后 880 导入题唯一存放于 comprehensive-880（origin:ai 隐含于文件）。
+  const bank = read("../src/banks/comprehensive-880.json");
+  const singles = bank.questions.filter((question) => question.type === "single");
   const tally = {};
   for (const question of singles) {
     for (const key of question.answer) tally[key] = (tally[key] ?? 0) + 1;

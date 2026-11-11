@@ -1,6 +1,7 @@
 import practicalFull from "../src/banks/practical-80.json" with { type: "json" };
 import practicalLite from "../src/banks/practical-10.json" with { type: "json" };
 import { DEFAULT_EDITION, normalizeEdition } from "../src/bank-editions.js";
+import { createRateLimiter, json, clientIp } from "./http.js";
 import {
   heuristicPracticalScore,
   parsePracticalJudgeJson,
@@ -18,12 +19,11 @@ export const PRACTICAL_SCORE_PATH = "/api/practical-score";
  */
 const BANKS = { A: practicalFull.tasks, B: practicalLite.tasks };
 
-function json(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
+// 每次评分 = 3 次多模态 LLM 调用 + 最多 5 张参考/标准/产物图（单张上限
+// 6M 字符）。本端点无登录态（匿名可测评是产品设计），不加限速时公网上
+// 任何人都能脚本刷烧 API 配额：按 IP 固定窗口限 8 次 / 5 分钟。一次完整
+// 测评只有 1 次交卷，容错重试也绰绰有余；isolate 级内存计数（尽力而为）。
+const scoreLimiter = createRateLimiter({ max: 8, windowMs: 5 * 60 * 1000 });
 
 function readPayload(body) {
   const taskId = typeof body.taskId === "string" ? body.taskId : "";
@@ -34,13 +34,13 @@ function readPayload(body) {
   const prompts = Array.isArray(body.prompts) ? body.prompts.map(asText).filter(Boolean).slice(0, 8) : [];
   // 图片任务的产物图：评委必须看到图才能判「原图保真/边缘自然」这类维度。
   // 只接受 data URI，且限制体积（单张约 1.5–2.7 MB；data URI 约 2–3.6 MB）。
+  const DATA_URI = /^data:image\/(png|jpe?g|webp);base64,/i;
   const rawImage = typeof body.productImage === "string" ? body.productImage : "";
-  const productImage = /^data:image\/(png|jpe?g|webp);base64,/i.test(rawImage) && rawImage.length < 6_000_000
+  const productImage = DATA_URI.test(rawImage) && rawImage.length < 6_000_000
     ? rawImage
     : "";
   // 参考图（任务自带的输入素材）：判「原图保真」类维度时必须与原图比对。
   // 上限 3 张，单张同 productImage 的体积限制。
-  const DATA_URI = /^data:image\/(png|jpe?g|webp);base64,/i;
   const referenceImages = (Array.isArray(body.referenceImages) ? body.referenceImages : [])
     .filter((src) => typeof src === "string" && DATA_URI.test(src) && src.length < 6_000_000)
     .slice(0, 3);
@@ -63,6 +63,9 @@ function readPayload(body) {
 
 export async function handlePracticalScore(request, apiKey, fetcher = fetch) {
   if (request.method !== "POST") return json({ error: "仅支持 POST 请求。" }, 405);
+  if (!scoreLimiter.allow(`score|${clientIp(request)}`)) {
+    return json({ error: "评分请求过于频繁，请稍后再试。" }, 429);
+  }
 
   let body;
   try {
@@ -91,10 +94,14 @@ export async function handlePracticalScore(request, apiKey, fetcher = fetch) {
     // （高档一致率 70%、低档 50%、中档只有 20%）—— 因为中档落在「良好/待改进」
     // 的模糊地带，评委在两档之间摇摆。取 3 次的中位数后 10/10 题单调且跨档零重叠。
     // 成本：3 倍打分调用（deepseek-flash，本实验 90 次共约 3 分钟）。
+    //
+    // 三票**并行**发出（Promise.allSettled）：串行时单票 20–70s、三票叠加
+    // 轻松超过前端超时；且任一票失败就丢弃已成功的票、整体退到离线启发式，
+    // 已经付过钱的 2 票白白作废。现在：并行取时延最小值，≥2 票有效即按中位
+    // 聚合，只有 0 票有效才退离线规则。
     const VOTES = 3;
-    const judgedList = [];
-    for (let vote = 0; vote < VOTES; vote += 1) {
-      const upstream = await fetcher("https://api.deepseek.com/chat/completions", {
+    const voteResults = await Promise.allSettled(Array.from({ length: VOTES }, () =>
+      fetcher("https://api.deepseek.com/chat/completions", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -109,16 +116,21 @@ export async function handlePracticalScore(request, apiKey, fetcher = fetch) {
           thinking: { type: "disabled" },
           stream: false,
         }),
-      });
-      if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
-      const result = await upstream.json();
-      const content = result?.choices?.[0]?.message?.content;
-      const judged = parsePracticalJudgeJson(content);
-      if (!judged) throw new Error("unparsable judge payload");
-      judgedList.push(judged);
-    }
+      }).then(async (upstream) => {
+        if (!upstream.ok) throw new Error(`upstream ${upstream.status}`);
+        const judged = parsePracticalJudgeJson((await upstream.json())?.choices?.[0]?.message?.content);
+        if (!judged) throw new Error("unparsable judge payload");
+        return judged;
+      }),
+    ));
+    const judgedList = voteResults
+      .filter((result) => result.status === "fulfilled")
+      .map((result) => result.value);
+    if (judgedList.length === 0) return json(heuristicPracticalScore(task, payload));
 
-    // 逐维度取中位档：按 excellent > good > pass 排序后取中间票
+    // 逐维度取中位档：按 excellent > good > pass 排序后取中间票。
+    // 评语取「中位票之外第一份带评语的」——中位下标那票可能恰好缺该维度，
+    // 之前静默落空字符串，而另外两票明明写了评语。
     const LEVEL_ORDER = { excellent: 2, good: 1, pass: 0 };
     const medianLevel = (levels) => {
       const sorted = [...levels].sort((a, b) => (LEVEL_ORDER[a] ?? -1) - (LEVEL_ORDER[b] ?? -1));
@@ -131,10 +143,10 @@ export async function handlePracticalScore(request, apiKey, fetcher = fetch) {
       for (const dim of dims) {
         const levels = judgedList.map((j) => j[half]?.[dim]?.level).filter(Boolean);
         if (!levels.length) continue;
-        judged[half][dim] = {
-          level: medianLevel(levels),
-          comment: judgedList[Math.floor(judgedList.length / 2)][half]?.[dim]?.comment ?? "",
-        };
+        const comment = judgedList
+          .map((j) => (typeof j[half]?.[dim]?.comment === "string" ? j[half][dim].comment : ""))
+          .find((text) => text.trim());
+        judged[half][dim] = { level: medianLevel(levels), comment: comment ?? "" };
       }
     }
     return json(scorePracticalResult(task, judged, "llm"));

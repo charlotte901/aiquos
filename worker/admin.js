@@ -5,15 +5,9 @@
 import { getBankState, resetBank, setBank } from "./bank-store.js";
 import { DEFAULT_EDITION, normalizeEdition } from "../src/bank-editions.js";
 import { bearerToken, verifyToken } from "./auth.js";
+import { json } from "./http.js";
 
 export const ADMIN_BANK_PATH = "/api/admin/bank";
-
-function json(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
 
 /** 版本（edition）由查询参数指定；缺省为精选版。 */
 function editionOf(request) {

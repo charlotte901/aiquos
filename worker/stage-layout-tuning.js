@@ -23,7 +23,6 @@ const RANGES = {
   x: [0, 100],
   y: [0, 100],
   width: [10, 100],
-  widthMax: [600, 2400],
   height: [30, 100],
   scale: [0.4, 2.5],
 };
@@ -62,7 +61,10 @@ export function handleStageLayoutTuning(request, filePath) {
     return Response.json({ error: "仅支持 GET / POST。" }, { status: 405 });
   }
 
-  return request.json().then((payload) => {
+  // 非法 JSON 请求体必须回 400：不捕获的话 request.json() 会 reject，
+  // vite 中间件拿到一个没有 JSON 错误体的 500（GET 路径反而有 try/catch）。
+  return request.json()
+    .then((payload) => {
     const problem = validate(payload);
     if (problem) return Response.json({ error: problem }, { status: 400 });
     // 原样保留 _说明 字段（读旧文件；没有就用默认占位）。
@@ -80,7 +82,8 @@ export function handleStageLayoutTuning(request, filePath) {
     };
     writeFileSync(filePath, `${JSON.stringify(output, null, 2)}\n`);
     return Response.json({ ok: true, saved: output });
-  });
+    })
+    .catch(() => Response.json({ error: "请求体不是合法 JSON。" }, { status: 400 }));
 }
 
 /* ── 角色统一微调的保存通道（同一套 {scale, x, y} 应用于全部四个角色） ── */
@@ -110,34 +113,36 @@ export function handleCharacterTuning(request, filePath) {
     return Response.json({ error: "仅支持 GET / POST。" }, { status: 405 });
   }
 
-  return request.json().then((payload) => {
-    if (!payload || typeof payload !== "object") {
-      return Response.json({ error: "请求体必须是 JSON 对象。" }, { status: 400 });
-    }
-    const values = {};
-    for (const field of ["scale", "x", "y"]) {
-      const value = payload[field];
-      if (!Number.isFinite(Number(value))) {
-        return Response.json({ error: `${field} 必须是数字。` }, { status: 400 });
+  return request.json()
+    .then((payload) => {
+      if (!payload || typeof payload !== "object") {
+        return Response.json({ error: "请求体必须是 JSON 对象。" }, { status: 400 });
       }
-      const [min, max] = CHARACTER_RANGES[field];
-      const num = Number(value);
-      if (num < min || num > max) {
-        return Response.json({ error: `${field} 超出量程（${min}–${max}）。` }, { status: 400 });
+      const values = {};
+      for (const field of ["scale", "x", "y"]) {
+        const value = payload[field];
+        if (!Number.isFinite(Number(value))) {
+          return Response.json({ error: `${field} 必须是数字。` }, { status: 400 });
+        }
+        const [min, max] = CHARACTER_RANGES[field];
+        const num = Number(value);
+        if (num < min || num > max) {
+          return Response.json({ error: `${field} 超出量程（${min}–${max}）。` }, { status: 400 });
+        }
+        values[field] = num;
       }
-      values[field] = num;
-    }
-    let note;
-    try {
-      note = JSON.parse(readFileSync(filePath, "utf8"))?._说明;
-    } catch {
-      note = undefined;
-    }
-    const output = {
-      _说明: note ?? "伴学角色统一微调（?tune=1 可调）：一套 {scale,x,y} 应用于全部四个角色。",
-      ...values,
-    };
-    writeFileSync(filePath, `${JSON.stringify(output, null, 2)}\n`);
-    return Response.json({ ok: true, saved: output });
-  });
+      let note;
+      try {
+        note = JSON.parse(readFileSync(filePath, "utf8"))?._说明;
+      } catch {
+        note = undefined;
+      }
+      const output = {
+        _说明: note ?? "伴学角色统一微调（?tune=1 可调）：一套 {scale,x,y} 应用于全部四个角色。",
+        ...values,
+      };
+      writeFileSync(filePath, `${JSON.stringify(output, null, 2)}\n`);
+      return Response.json({ ok: true, saved: output });
+    })
+    .catch(() => Response.json({ error: "请求体不是合法 JSON。" }, { status: 400 }));
 }

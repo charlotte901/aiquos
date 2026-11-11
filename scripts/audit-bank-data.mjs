@@ -20,7 +20,7 @@ function tally(items, keyFn) {
 }
 
 // ── 客观题库 ──────────────────────────────────────────────
-for (const rel of ["../worker/objective-questions.json", "../src/banks/comprehensive-880.json", "../src/comprehensive-questions.json"]) {
+for (const rel of ["../src/banks/comprehensive-880.json", "../src/comprehensive-questions.json"]) {
   const file = rel.split("/").pop();
   const bank = JSON.parse(readFileSync(join(here, rel), "utf8"));
   const qs = bank.questions ?? bank;

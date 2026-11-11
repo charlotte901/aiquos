@@ -27,6 +27,7 @@ import {
   answerCredit,
   appendExternalEvidence,
   appendHistorySnapshot,
+  adoptServerDraft,
   clearAttemptDraft,
   createAttempt,
   currentResult,
@@ -37,10 +38,12 @@ import {
   recordAnswer,
   recordInterviewScore,
   saveAttemptDraft,
+  setDraftListeners,
   snapshotAttempt,
   withBankVersion,
   writeCurrentBankVersion,
 } from "./assessment-attempt";
+import { clearServerDraft, mergeDraftChoice, pullServerDraft, pushDraftToServer } from "./draft-sync";
 import { getProfileDetailId, getProfileDetailRoute } from "./profile-layout";
 import { animateCards } from "./card-transition";
 import { CUBE_TURN_DURATION } from "./cube-geometry";
@@ -90,6 +93,38 @@ const outcomeFromEvidence = (item) => {
     questionId: item.questionId,
   };
 };
+
+// 计分收口（2026-11）：完成时的最终分数优先由服务端计算——证据按题号
+// 反查题库重推导 credit，融合视图也在服务端算好（/api/comprehensive-score）。
+// 离线/超时/响应异常时静默回退本地计算，快照 scoredBy 标注来源。
+async function finalizeAttemptWithServer(localFinalized) {
+  try {
+    const response = await fetch("/api/comprehensive-score", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ attempt: localFinalized.attempt, edition: readEdition() }),
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data?.result?.status === "completed" && data.composite) {
+        const attempt = {
+          ...localFinalized.attempt,
+          evidence: data.attempt.evidence,
+          ...(data.attempt.interview ? { interview: data.attempt.interview } : {}),
+        };
+        return {
+          attempt,
+          result: data.result,
+          overrides: { composite: data.composite, scoredBy: "server", evidence: data.attempt.evidence },
+        };
+      }
+    }
+  } catch {
+    // 离线测评：本地计算兜底（overrides 为 null → snapshotAttempt 本地算）。
+  }
+  return { ...localFinalized, overrides: null };
+}
 
 const PANEL = {
   home: "cube",
@@ -209,25 +244,53 @@ export function SiteExperience() {
   // An unfinished draft survives reloads; a completed attempt becomes an
   // immutable history snapshot exactly once. The draft also carries the
   // server's routing session so a resumed run keeps its adaptive position.
-  const bootstrap = useRef(null);
-  if (!bootstrap.current) {
+  const draftBootstrapFrom = (draft) => ({
     // Drafts resume only against the bank version the server last served
     // (cached locally); falls back to the code constant before any fetch.
-    const draft = loadAttemptDraft(readCurrentBankVersion());
-    bootstrap.current = {
-      state: draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null },
-      routing: draft?.routing ?? null,
-      phasesDone: Array.isArray(draft?.phasesDone) ? draft.phasesDone : [],
-      pendingOutcome: draft?.evidence?.length
-        ? outcomeFromEvidence(draft.evidence[draft.evidence.length - 1])
-        : null,
-    };
+    state: draft ? { attempt: draft, result: currentResult(draft) } : { attempt: null, result: null },
+    routing: draft?.routing ?? null,
+    phasesDone: Array.isArray(draft?.phasesDone) ? draft.phasesDone : [],
+    pendingOutcome: draft?.evidence?.length
+      ? outcomeFromEvidence(draft.evidence[draft.evidence.length - 1])
+      : null,
+  });
+  const bootstrap = useRef(null);
+  if (!bootstrap.current) {
+    bootstrap.current = draftBootstrapFrom(loadAttemptDraft(readCurrentBankVersion()));
   }
   const [attemptState, setAttemptState] = useState(() => bootstrap.current.state);
+  // 草稿拉取合并需要读「当前」attempt 身份而不重跑 effect：ref 随渲染同步。
+  const attemptStateRef = useRef(attemptState);
+  attemptStateRef.current = attemptState;
   // Server-authoritative routing: this client only carries the opaque session
   // between requests. Selection lives in worker/comprehensive-quiz.js.
   const routingRef = useRef(bootstrap.current.routing);
   const pendingOutcomeRef = useRef(bootstrap.current.pendingOutcome);
+  // 草稿服务端同步（登录态）：本地每次保存/清除触发防抖推送；启动时拉一次，
+  // 服务端更新且本会话尚未开始作答（状态仍停在挂载点）时采纳，换设备登录
+  // 即可续做。离线/未登录全程静默，localStorage 仍是一级缓存。
+  useEffect(() => {
+    setDraftListeners({ onSaved: pushDraftToServer, onCleared: clearServerDraft });
+    let alive = true;
+    void (async () => {
+      const server = await pullServerDraft();
+      if (!alive || !server) return;
+      const chosen = mergeDraftChoice(loadAttemptDraft(readCurrentBankVersion()), server);
+      if (!chosen || chosen.source !== "server") return;
+      if (attemptStateRef.current.attempt !== bootstrap.current.state.attempt) return;
+      const next = draftBootstrapFrom(adoptServerDraft(chosen.draft));
+      if (!next.state.attempt) return;
+      bootstrap.current = next;
+      setAttemptState(next.state);
+      routingRef.current = next.routing;
+      pendingOutcomeRef.current = next.pendingOutcome;
+      phasesDoneRef.current = next.phasesDone;
+    })();
+    return () => {
+      alive = false;
+      setDraftListeners({});
+    };
+  }, []);
   // 对话通道的最新评分摘要（ref 版）：fetchComprehensiveQuestion 是
   // useCallback([])，读 state 会拿到旧闭包；客观题第一题请求要靠它带上
   // 定档输入。submitInterviewScore 每次判分后同步刷新。
@@ -828,25 +891,31 @@ export function SiteExperience() {
     // question budget to the evidence actually collected, then stores the
     // completed result as an immutable snapshot exactly once, drops the
     // draft, and opens the awakening report instead of the map.
+    // 完成性（六维是否全覆盖）由本地证据同步判定；最终分数异步走服务端
+    // 收口（/api/comprehensive-score），离线回退本地——两条路径产出同构
+    // 快照，scoredBy 标注计算方。
     if (stage === total) {
-      const finalized = finalizeAttempt(attemptState.attempt ?? createAttempt({ totalQuestions: 1 }));
-      if (isAttemptComplete(finalized.result)) {
-        const snapshot = snapshotAttempt(finalized.attempt, finalized.result);
-        appendHistorySnapshot(snapshot);
-        // 登录状态下把这次完成上报给教师端（得分/六维/题库版本）；同时若
-        // 这次是老师推送的作业，服务端会把它计入该作业的完成名单。
-        const assignmentId = readActiveAssignmentId();
-        reportRunSnapshot(snapshot, assignmentId);
-        writeActiveAssignmentId(null);
-        if (editionBeforeAssignmentRef.current !== null) {
-          writeEdition(editionBeforeAssignmentRef.current);
-          editionBeforeAssignmentRef.current = null;
-        }
-        clearAttemptDraft();
-        setAttemptState({ attempt: null, result: null });
-        phasesDoneRef.current = [];
-        setAssessmentRoute({ id, stage: total, mode: "map" });
-        go("reports");
+      const localFinalized = finalizeAttempt(attemptState.attempt ?? createAttempt({ totalQuestions: 1 }));
+      if (isAttemptComplete(localFinalized.result)) {
+        void (async () => {
+          const finalized = await finalizeAttemptWithServer(localFinalized);
+          const snapshot = snapshotAttempt(finalized.attempt, finalized.result, finalized.overrides);
+          appendHistorySnapshot(snapshot);
+          // 登录状态下把这次完成上报给教师端（得分/六维/题库版本）；同时若
+          // 这次是老师推送的作业，服务端会把它计入该作业的完成名单。
+          const assignmentId = readActiveAssignmentId();
+          reportRunSnapshot(snapshot, assignmentId);
+          writeActiveAssignmentId(null);
+          if (editionBeforeAssignmentRef.current !== null) {
+            writeEdition(editionBeforeAssignmentRef.current);
+            editionBeforeAssignmentRef.current = null;
+          }
+          clearAttemptDraft();
+          setAttemptState({ attempt: null, result: null });
+          phasesDoneRef.current = [];
+          setAssessmentRoute({ id, stage: total, mode: "map" });
+          go("reports");
+        })();
         return;
       }
     }

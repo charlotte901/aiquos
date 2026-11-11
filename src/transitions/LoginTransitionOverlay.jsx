@@ -123,7 +123,16 @@ export function prewarmLoginTransition() {
   if (typeof window === "undefined") return;
   const width = window.innerWidth;
   const height = window.innerHeight;
-  getSharedRenderer(width, height);
+  // WebGL 不可用（无 GPU / headless / 旧嵌入式 webview）时预热整体退化为
+  // no-op——转场自身有 DOM 回退路径，这里创建 renderer 失败绝不能把未捕获
+  // 异常甩进页面（2026-11 headless 冒烟实测：THREE.WebGLRenderer 构造
+  // 直接 throw，且该异常发生在应用的 WebGL 回退契约之外）。
+  try {
+    getSharedRenderer(width, height);
+  } catch {
+    shared.renderer = null;
+    return;
+  }
   sharedTexture("shadow", () => createCardShadowTexture());
   sharedTexture("back", () => createTicketBackTexture());
   // 真实资产（测量 + 幕布/票据纹理）一并构建；下面的预热渲染把纹理上传

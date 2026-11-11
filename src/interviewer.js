@@ -340,49 +340,6 @@ export function interviewScoreMessages({ slot, questionAsked, userAnswer, priorA
   ];
 }
 
-// 兼容导出：旧的合并式构造器（聊天+评分同一个提示词、同一次采样）。
-// 新代码一律用 interviewChatMessages / interviewScoreMessages。
-export function interviewMessages({ thread, slot, followUp, lastNote }) {
-  const rubric = rubricFor(slot.id);
-  const isAnchor = Boolean(slot.anchorPrompt);
-  const ask = followUp
-    ? `学员刚回答了你的问题但没答到位（评分备注：${lastNote || "不够具体"}）。请从另一个角度追问，语气自然，一到两句。`
-    : isAnchor
-      ? `请提出你的第 ${slot.index + 1} 个问题：请学员讲一段最近真实的 AI 使用经历。用你自己的话问，一到两句，别照抄提示。`
-      : `请提出你的第 ${slot.index + 1} 个采访问题。要求：这一问必须落在本话题考点上（${rubric?.intent ?? slot.rubric}），可参考问法（${slot.asks.join("／")}），用你自己的话问，一到两句，别照抄。`;
-  const history = thread
-    .filter((item) => !item.pending && item.content)
-    .slice(-24)
-    .map(({ role, content }) => ({ role: role === "user" ? "user" : "assistant", content }));
-  return [
-    {
-      role: "system",
-      content: [
-        `你是${INTERVIEWER.byline}，正在对一位学员做关于「如何与 AI 协作」的采访测评。`,
-        `人设要点：口语化、爱追问细节、偶尔用「${INTERVIEWER.tics.slice(0, 3).join("」「")}」这类口头语；消息短促（每段不超过 60 字），一次说 1–3 段；绝不用书面腔、绝不列大纲。`,
-        "输出的是聊天消息：不要用任何 markdown 记号（不要 ** 加粗、不要 # 标题、不要 - 或 * 开头的列表、不要 ` 反引号），就用普通中文句子。",
-        "【接话协议 · 最高优先级】每条回复的第一句必须先接住学员上一条回答：引用他话里的具体词（他说「用 AI 搭了网站」，你就从「搭网站」接起），给他一个明确的正面回应——承认难度、点出亮点、或表达好奇。不许用「哦？」「那」这类干问句开头，不许对学员的回答不置可否就直接抛下一个问题。",
-        "【一次只问一件事】一整条回复里最多一到两个问号，且必须围绕同一个点。不要把「做了什么+用了什么+结果如何」串成一句连问——学员一次只答得了一个问题，没答到的信息留给下一个话题。",
-        "【不重复、不施压】发问前先看历史：同一个信息已经问过、或学员已经说过的，不要换个说法再问。学员答「记不清了」就大方换话题；学员答得简短（「有」「没有」）也当成有效回答，顺着它展开，不要连追两次。",
-        isAnchor
-          ? "开场策略：先请学员讲他自己最近真实的 AI 使用经历（做了什么、用什么工具、结果如何），后续所有追问都围绕这段经历展开，不要派发虚构任务。"
-          : "追问策略：承接学员前面讲过的经历与工具，用「你刚才说的那件事」这类接续语，而不是另起一个假设场景。",
-        `【本话题的唯一评分考点】${rubric?.intent ?? slot.rubric}`,
-        "【分档锚点 · 只能选其中一档】",
-        formatAnchors(slot.id),
-        judgeDiscipline(),
-        '输出格式：只输出一个 JSON 对象（不要 markdown 代码块）：{"reply":"你对学员说的话，可用\\n分段","score":0到1的小数,"evidence":"从学员原话摘录的证据片段","note":"一句话档位判定依据"}。',
-        `reply 里可以有两三个自然段，每段像微信消息一样短；score 是学员上一个回答在该话题上的档位分（没有上一个回答时填 0.5，evidence 填空字符串）。`,
-      ].join("\n"),
-    },
-    ...history,
-    {
-      role: "user",
-      content: `${ask}\n（这是导演指令，不要念出来；你的输出仍然只是一个 JSON 对象）`,
-    },
-  ];
-}
-
 /** 解析模型返回的 JSON；失败返回 null 走离线话术。 */
 export function parseInterviewerJson(raw) {
   const text = String(raw ?? "").trim().replace(/^```(?:json)?|```$/g, "").trim();

@@ -27,7 +27,7 @@ export function setSharedDataPersistence(next) {
 }
 
 function emptyState() {
-  return { students: {}, runs: [], assignments: [], classes: [], counter: 0 };
+  return { students: {}, runs: [], assignments: [], classes: [], drafts: {}, counter: 0 };
 }
 
 function persist() {
@@ -48,6 +48,7 @@ function loadState() {
           if (Array.isArray(parsed.assignments)) state.assignments = parsed.assignments;
           if (Array.isArray(parsed.classes)) state.classes = parsed.classes;
           if (Number.isFinite(parsed.counter)) state.counter = parsed.counter;
+          if (parsed.drafts && typeof parsed.drafts === "object") state.drafts = parsed.drafts;
         }
       }
     } catch (error) {
@@ -56,6 +57,48 @@ function loadState() {
     }
   }
   return state;
+}
+
+// ── 测评草稿（服务端同步，每账号一份最新） ──────────────────────────────────
+// 草稿是客户端恢复进行中测评的状态 blob（evidence + routing + phasesDone）。
+// localStorage 仍是同步缓存与离线兜底；登录用户额外把最新草稿推到服务端，
+// 换设备/换浏览器登录后可拉回继续。服务端只存取、不解释内容，体积设上限。
+
+const MAX_DRAFT_ACCOUNTS = 500;
+const MAX_DRAFT_JSON = 262_144; // 256KB，一次完整测评草稿的实测余量
+
+export function saveDraft(accountId, payload, savedAt) {
+  if (!payload || typeof payload !== "object") return { error: "草稿必须是对象" };
+  const body = JSON.stringify(payload);
+  if (body.length > MAX_DRAFT_JSON) return { error: "草稿体积超出上限" };
+  const current = loadState();
+  current.drafts = current.drafts ?? {};
+  const entries = Object.entries(current.drafts);
+  if (entries.length >= MAX_DRAFT_ACCOUNTS && !current.drafts[accountId]) {
+    // 满员时丢最旧的（savedAt 升序第一个）。
+    entries.sort((left, right) => String(left[1]?.savedAt ?? "").localeCompare(String(right[1]?.savedAt ?? "")));
+    delete current.drafts[entries[0][0]];
+  }
+  current.drafts = {
+    ...current.drafts,
+    [accountId]: { savedAt: typeof savedAt === "string" ? savedAt.slice(0, 40) : new Date().toISOString(), draft: payload },
+  };
+  persist();
+  return { ok: true };
+}
+
+export function loadDraft(accountId) {
+  return loadState().drafts?.[accountId] ?? null;
+}
+
+export function clearDraft(accountId) {
+  const current = loadState();
+  if (!(accountId in (current.drafts ?? {}))) return { ok: true };
+  const next = { ...current.drafts };
+  delete next[accountId];
+  current.drafts = next;
+  persist();
+  return { ok: true };
 }
 
 function nextId(prefix) {
@@ -121,6 +164,10 @@ export function upsertStudent(profile) {
     lastActiveAt: now,
   };
   current.students[profile.accountId] = record;
+  // upsert 也会被 GET 路径（assignments / me）调用：这里不落盘的话，档案
+  // 变化只在下一次 POST 时才被顺带写盘，进程重启后口径漂移。GET 侧的
+  // 写频很低（每次页面加载一次），成本可忽略。
+  persist();
   return record;
 }
 
@@ -163,8 +210,14 @@ export function reportRun(profile, payload) {
 
   const student = upsertStudent(profile);
   const assessmentId = cleanString(payload.assessmentId, 40) || "comprehensive";
+  const current = loadState();
+  const duplicate = current.runs.find((item) =>
+    item.accountId === student.accountId
+    && item.completedAt === completedAt
+    && item.assessmentId === assessmentId);
   const run = {
-    id: nextId("run"),
+    // 幂等替换沿用原 id；只有新记录才消耗自增 id（重复上报不再让 counter 空转跳号）。
+    id: duplicate?.id ?? nextId("run"),
     accountId: student.accountId,
     studentName: student.nickname,
     className: student.className,
@@ -191,14 +244,9 @@ export function reportRun(profile, payload) {
     reportedAt: new Date().toISOString(),
   };
 
-  const current = loadState();
-  const duplicate = current.runs.find((item) =>
-    item.accountId === run.accountId
-    && item.completedAt === run.completedAt
-    && item.assessmentId === run.assessmentId);
   if (duplicate) {
     // 幂等：同一次完成重复上报时原位替换，不产生第二条记录。
-    Object.assign(duplicate, run, { id: duplicate.id });
+    Object.assign(duplicate, run);
   } else {
     current.runs.push(run);
     if (current.runs.length > MAX_RUNS) {
@@ -220,11 +268,14 @@ function assignmentMatches(assignment, student) {
 export function listAssignmentsFor(profile) {
   const current = loadState();
   const student = upsertStudent(profile);
+  // 我的完成记录索引一次：之前每个推送线性扫全部 runs（O(推送×runs)）。
+  const myRunByAssignment = new Map(current.runs
+    .filter((run) => run.accountId === student.accountId)
+    .map((run) => [run.assignmentId, run]));
   return current.assignments
     .filter((assignment) => assignmentMatches(assignment, student))
     .map((assignment) => {
-      const myRun = current.runs.find((run) =>
-        run.assignmentId === assignment.id && run.accountId === student.accountId) ?? null;
+      const myRun = myRunByAssignment.get(assignment.id) ?? null;
       return {
         ...assignment,
         createdBy: assignment.createdByName,
@@ -293,16 +344,19 @@ export function createAssignment(teacherProfile, payload) {
   return { assignment };
 }
 
-/** 教师侧列表：附每个推送的完成统计与逐人完成明细。 */
-export function listAssignmentsForTeacher(teacherProfile) {
+/** 教师侧列表：附每个推送的完成统计与逐人完成明细。
+ * knownStudents 可由调用方传入复用（teacherData 一次请求里已算过一遍）。 */
+export function listAssignmentsForTeacher(teacherProfile, knownStudents = null) {
   const current = loadState();
-  const students = allKnownStudents();
+  const students = knownStudents ?? allKnownStudents();
+  // run 索引建一次：之前每个推送 × 每个学员都线性扫全部 runs
+  // （500 推送 × N 学员 × 5000 runs 的三重扫描），教师概览一次请求
+  // 可达百万级比较。
+  const runByAssignmentAccount = new Map(current.runs.map((run) => [`${run.assignmentId}|${run.accountId}`, run]));
   return current.assignments.filter((assignment) => !teacherProfile || assignment.createdByAccountId === teacherProfile.accountId).map((assignment) => {
     const targeted = students.filter((student) => matchesIgnoringStatus(assignment, student));
-    const runsOf = (accountId) => current.runs.find((run) =>
-      run.assignmentId === assignment.id && run.accountId === accountId) ?? null;
     const rows = targeted.map((student) => {
-      const run = runsOf(student.accountId);
+      const run = runByAssignmentAccount.get(`${assignment.id}|${student.accountId}`) ?? null;
       return {
         accountId: student.accountId,
         nickname: student.nickname,

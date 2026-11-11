@@ -17,6 +17,7 @@ import {
 } from "../src/comprehensive-adaptive.js";
 import { normalizePrior, normalizeSeedPayload, seedSession } from "../src/cat-seeding.js";
 import { getBankState } from "./bank-store.js";
+import { json } from "./http.js";
 import { DEFAULT_EDITION, normalizeEdition } from "../src/bank-editions.js";
 
 export const COMPREHENSIVE_QUESTION_PATH = "/api/comprehensive-question";
@@ -39,13 +40,6 @@ function currentBank(editionInput) {
   };
   bankCaches.set(edition, next);
   return next;
-}
-
-function json(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
 }
 
 // ── 证据 sanitisation：session 会经客户端回传，绝不能直接信任 ──────────────
@@ -79,6 +73,32 @@ function sanitizeDimensionCounts(raw, base) {
   return out;
 }
 
+const QUESTION_TYPES = new Set(["single", "multi", "judge"]);
+
+function sanitizeTypeCounts(raw, base) {
+  const out = { ...base };
+  if (!raw || typeof raw !== "object") return out;
+  for (const [key, value] of Object.entries(raw)) {
+    if (QUESTION_TYPES.has(key) && Number.isFinite(value) && value >= 0) {
+      out[key] = Math.min(999, Math.floor(value));
+    }
+  }
+  return out;
+}
+
+// exposure 是题 id → 服务端计数（上次响应原样回传）。非数值计数会让
+// 排序分变成 NaN、字符串计数会在 +1 时无界拼串——只放行有限数并封顶。
+function sanitizeExposure(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out = {};
+  for (const [id, count] of Object.entries(raw).slice(0, 2000)) {
+    if (typeof id === "string" && id.length <= 64 && Number.isFinite(count) && count >= 0) {
+      out[id] = Math.min(999, Math.floor(count));
+    }
+  }
+  return out;
+}
+
 // Merge a client-supplied session over fresh defaults so partial or stale
 // shapes can never crash selection. Extra fields pass through harmlessly.
 function normalizeSession(raw) {
@@ -93,8 +113,10 @@ function normalizeSession(raw) {
       : [],
     evidence: sanitizeEvidence(raw.evidence).slice(0, 100),
     dimensionCounts: sanitizeDimensionCounts(raw.dimensionCounts, base.dimensionCounts),
-    typeCounts: { ...base.typeCounts, ...(raw.typeCounts ?? {}) },
-    typeStreak: Number.isFinite(raw.typeStreak) ? raw.typeStreak : 0,
+    typeCounts: sanitizeTypeCounts(raw.typeCounts, base.typeCounts),
+    typeStreak: Number.isFinite(raw.typeStreak) ? Math.max(0, Math.min(999, Math.floor(raw.typeStreak))) : 0,
+    lastType: QUESTION_TYPES.has(raw.lastType) ? raw.lastType : null,
+    activeStage: Number.isFinite(raw.activeStage) ? Math.max(1, Math.min(5, Math.floor(raw.activeStage))) : null,
     // 定档先验随 session 回传；损坏/越界的先验在这里被丢弃，不会报错。
     prior: normalizePrior(raw.prior),
   };
@@ -110,9 +132,11 @@ export function applyOutcomeToSession(session, { outcome, credit = null, questio
   if (Number.isFinite(credit) && questionId) {
     const question = currentBank(edition).byId.get(questionId);
     if (question) {
+      // append 之后再截断到 100：只截入站的话（normalizeSession slice 100 +
+      // 这里 append 1）会话可以涨到 101 条证据。
       next = {
         ...next,
-        evidence: [...next.evidence, { credit: Math.max(0, Math.min(1, credit)), difficulty: question.difficulty, dimKeys: [...question.dimKeys] }],
+        evidence: [...next.evidence, { credit: Math.max(0, Math.min(1, credit)), difficulty: question.difficulty, dimKeys: [...question.dimKeys] }].slice(0, 100),
       };
     }
   }
@@ -181,9 +205,7 @@ export async function handleComprehensiveQuestion(request) {
   if (payload.outcome && typeof payload.outcome === "object" && payload.outcome.questionId) {
     session = applyOutcomeToSession(session, payload.outcome, edition);
   }
-  const exposure = payload.exposure && typeof payload.exposure === "object" && !Array.isArray(payload.exposure)
-    ? payload.exposure
-    : {};
+  const exposure = sanitizeExposure(payload.exposure);
   // 复现调试：payload.forceQuestionId（客户端从 URL ?qid= 透传）直接指定
   // 题目——命中时原样返回该题，session/exposure 不推进（纯查看，不影响
   // 自适应路由与曝光均衡）；未命中按正常出题继续。

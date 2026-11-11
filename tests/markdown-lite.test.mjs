@@ -40,7 +40,12 @@ test("plain conversation text without markdown still renders as one paragraph", 
 });
 
 test("conversation bubbles and agent output both render through MarkdownLite", async () => {
-  const flow = await readFile(new URL("../src/AssessmentFlow.jsx", import.meta.url), "utf8");
+  // 2026-11 拆分：对话气泡在 interview-phase，实操产物在 practical-phase。
+  const sources = await Promise.all([
+    "../src/assessment-flow/interview-phase.jsx",
+    "../src/assessment-flow/practical-phase.jsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+  const flow = sources.join("\n");
   assert.match(flow, /<MarkdownLite text=\{item\.content\} \/>/);
   assert.match(flow, /<MarkdownLite text=\{liveOutput\} \/>/);
   // 实操产物按轮次渲染（多轮迭代后每轮各留一个气泡），不再是单一的

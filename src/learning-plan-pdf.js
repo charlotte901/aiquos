@@ -926,8 +926,3 @@ export function savePdfBytes(bytes, fileName) {
   URL.revokeObjectURL(url);
 }
 
-export async function downloadLearningPlanPdf(model) {
-  if (typeof document === "undefined" || typeof Blob === "undefined") return;
-  const plan = buildLearningPlan(model);
-  savePdfBytes(buildLearningPlanPdf(plan), learningPlanFileName(plan));
-}
