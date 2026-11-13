@@ -39,4 +39,5 @@ work/kb/**
 !work/kb/*.mjs
 !work/kb/*.sh
 !work/kb/PROGRESS.md
+!work/kb/audit-sample.md
 coverage/

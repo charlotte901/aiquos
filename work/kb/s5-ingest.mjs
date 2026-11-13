@@ -8,7 +8,7 @@
 import {
   admitKnowledgeEntry, BAND_OF_DIFFICULTY, findDuplicates, checkDimensionQuotas,
 } from "../../src/knowledge/schema.js";
-import { readJson, readJsonIfExists, appendJsonl, writeJson, today } from "./lib.mjs";
+import { readJsonIfExists, readJsonl, appendJsonl, writeJson, today } from "./lib.mjs";
 
 const args = process.argv.slice(2);
 const argOf = (name, fallback) => {
@@ -21,7 +21,23 @@ const minVideoViews = Number(argOf("min-video-views", "0"));
 const kb = new URL(".", import.meta.url).pathname;
 const repo = new URL("../../src/knowledge/", import.meta.url).pathname;
 const libPath = `${repo}knowledge-base.json`;
-const verified = readJson(`${kb}verified/${batch}.json`);
+// 以 checkpoint 为准源（batch.json 只是单轮快照，滚动管线多轮体检后不全）：
+// 视频 checkpoint + 网页 checkpoint + batch.json 三方并集，按 url 去重。
+const verifiedSnap = readJsonIfExists(`${kb}verified/${batch}.json`) ?? { videos: [], webs: [] };
+const seenKeys = new Set();
+const verified = { videos: [], webs: [] };
+for (const row of [
+  ...readJsonl(`${kb}verified/checkpoint-videos.jsonl`).map((row) => ({ ...row, kind: row.kind ?? "video" })),
+  ...readJsonl(`${kb}verified/checkpoint-webs.jsonl`),
+  ...verifiedSnap.videos,
+  ...verifiedSnap.webs,
+]) {
+  const dedupeKey = row.key ?? row.url;
+  if (seenKeys.has(dedupeKey)) continue;
+  seenKeys.add(dedupeKey);
+  if (row.kind === "video" || row.bvid) verified.videos.push(row);
+  else verified.webs.push(row);
+}
 const library = readJsonIfExists(libPath) ?? [];
 const existingUrls = new Set(library.map((entry) => entry.url));
 

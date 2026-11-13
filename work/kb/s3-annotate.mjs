@@ -55,6 +55,16 @@ dimPrior（主维度先验）：${priorDim} ${DIM_NAMES[priorDim]}
 subtopic 枚举域（只可从中选一个）：${enumDomain}
 可附加的第二维度候选：${Object.entries(DIM_NAMES).map(([key, name]) => `${key}=${name}`).join("、")}`;
   }
+  if (row.kind === "book") {
+    return `资源：开源教材/权威指南的章节页（教材已人工精选，链接即章节所在页；title 中《书名》为所属教材，其后为章节名）
+标题：${row.title}
+平台：${row.platform}
+教材：${row.author}
+难度下限：${row.minDifficulty ?? "（无）"}（difficulty 不得低于该档）
+dimPrior（主维度先验）：${row.dimPriors?.join("、") ?? ""}
+subtopic 枚举域（只可从中选一个）：${enumDomain}
+可附加的第二维度候选：${Object.entries(DIM_NAMES).map(([key, name]) => `${key}=${name}`).join("、")}`;
+  }
   return `资源：网络学习页面
 标题：${row.title}
 平台：${row.platform}（${row.typeLabel}）
@@ -162,3 +172,5 @@ console.log(`[s3] 本轮标注 ${fresh.length} 条（relevant ${relevant.length}
 console.log(`[s3] 主维度分布：${JSON.stringify(dimCount)}`);
 if (failures.length) console.log(`[s3] 失败样例：${JSON.stringify(failures.slice(0, 3).map((f) => ({ key: f.key, problems: f.problems })))}`);
 console.log(`[s3] 累计已标注 ${already.size + fresh.length} 条 → ${tagPath}`);
+// 与 s4 同因：批处理脚本产出已落盘，硬退出防 keep-alive socket 拖住事件循环。
+process.exit(0);

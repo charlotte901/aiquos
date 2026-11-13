@@ -8,6 +8,7 @@
 
 import { readJson, readJsonIfExists, readJsonl, appendJsonl, writeJson, writeJsonl, mapLimit, biliView, today } from "./lib.mjs";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 // checkpoint 兼容读取：历史上 writeJson（pretty 数组）与 readJsonl（逐行）格式
 // 不一致导致续跑崩溃。新版统一 JSONL；旧数组文件一次性迁移。
@@ -51,13 +52,15 @@ const kb = new URL(".", import.meta.url).pathname;
 const tagged = readJsonl(`${kb}tagged/annotations.jsonl`).filter((row) => row.relevant !== false);
 const checkpointPath = `${kb}verified/checkpoint-videos.jsonl`;
 const deadPath = `${kb}rejected/dead.jsonl`;
-const checkedBvids = new Set(readCheckpoint(checkpointPath).map((row) => row.bvid));
-const knownDead = new Set(readJsonl(deadPath).map((row) => row.key));
+// --recheck：全量复检（阶段 6），忽略视频/网页断点重新体检
+const recheck = args.includes("--recheck");
+const checkedBvids = recheck ? new Set() : new Set(readCheckpoint(checkpointPath).map((row) => row.bvid));
+const knownDead = recheck ? new Set() : new Set(readJsonl(deadPath).map((row) => row.key));
 
 const videos = tagged.filter((row) => row.kind === "video" && !checkedBvids.has(row.bvid) && !knownDead.has(row.key));
 // 网页体检断点：滚动管线会反复进入 s4，已检过的网页按 url 跳过
 const webCheckpointPath = `${kb}verified/checkpoint-webs.jsonl`;
-const checkedWebUrls = new Set(readJsonl(webCheckpointPath).map((row) => row.url));
+const checkedWebUrls = recheck ? new Set() : new Set(readJsonl(webCheckpointPath).map((row) => row.url));
 const webs = tagged.filter((row) => row.kind !== "video" && !knownDead.has(row.key) && !checkedWebUrls.has(row.url));
 const videoSlice = limit > 0 ? videos.slice(0, limit) : videos;
 
@@ -104,12 +107,18 @@ if (newDead.length) appendJsonl(deadPath, newDead);
 // ---- 网页并发体检 ----
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
 async function checkUrl(url) {
+  // node fetch 对 github.io 等域名 TLS 握手常失败（实测 316/316 不可达而 curl 可达），
+  // 失败时退 curl 再探一次，两次都失败才算网络不可达。
   const probe = async (target) => {
     try {
       const response = await fetch(target, { headers: { "user-agent": UA, accept: "text/html,*/*" }, redirect: "follow", signal: AbortSignal.timeout(12_000) });
       return { status: response.status };
-    } catch (error) {
-      return { error: String(error?.cause?.code ?? error?.message ?? error).slice(0, 80) };
+    } catch (fetchError) {
+      try {
+        const code = Number(execFileSync("curl", ["-sS", "-L", "--retry", "1", "-m", "15", "-A", UA, "-o", "/dev/null", "-w", "%{http_code}", target], { encoding: "utf8", timeout: 20_000 }).trim());
+        if (code > 0) return { status: code };
+      } catch { /* curl 也失败 */ }
+      return { error: String(fetchError?.cause?.code ?? fetchError?.message ?? fetchError).slice(0, 80) };
     }
   };
   const result = await probe(url);
@@ -150,3 +159,6 @@ const payload = {
 writeJson(`${kb}verified/${batch}.json`, payload);
 console.log(`[s4] 体检完成：视频有效 ${verifiedVideos.length} / 本轮失效 ${newDead.length}；网页有效 ${webVerified.length}（其中域名不可达 ${webVerified.filter((row) => row.unverifiedDomain).length}）/ 死链 ${deadWeb.length}`);
 console.log(`[s4] 产出 ${kb}verified/${batch}.json → 下一步 node work/kb/s5-ingest.mjs --batch ${batch}`);
+// 批处理脚本：防止未关的 keep-alive socket 拖住事件循环导致进程不退出（实测踩到，
+// roller 会无限等它）。所有产出已落盘，硬退出安全。
+process.exit(0);
