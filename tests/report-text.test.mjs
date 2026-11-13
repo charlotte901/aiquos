@@ -36,8 +36,10 @@ test("prompt payload carries only real measurement data, no invented context", (
   assert.deepEqual(payload.dimensions.map((d) => d.score), [84, 91, 58, 74, 66, 62]);
   assert.equal(payload.channelOveralls["客观题"], 80);
   assert.ok(payload.resourceTitles.length > 0);
-  // 不得夹带任何未提供的信息（经历、案例、时间等）
-  const serialized = JSON.stringify(payload);
+  // 不得夹带任何未提供的信息（经历、案例、时间等）。资源标题是知识库真实数据，
+  // 本身可能含「项目/example」等字样，因此守卫只覆盖标题以外的载荷。
+  const { resourceTitles, ...rest } = payload;
+  const serialized = JSON.stringify(rest);
   assert.doesNotMatch(serialized, /经历|案例|项目|story|example/iu);
 });
 
