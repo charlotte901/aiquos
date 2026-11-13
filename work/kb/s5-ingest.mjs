@@ -35,7 +35,7 @@ const toEntry = (row) => ({
   id: "kb-000000",
   title: String(row.title).trim().slice(0, 200),
   url: row.url,
-  source: row.kind === "video" ? "bilibili" : (row.platform ?? "web").slice(0, 80),
+  source: row.kind === "video" ? "bilibili" : row.kind === "book" ? String(row.author || row.platform || "web") : String(row.platform ?? "web"),
   type: row.type ?? (row.kind === "video" ? "video" : "doc"),
   dims: row.dims,
   subtopic: row.subtopic,

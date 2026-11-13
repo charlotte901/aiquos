@@ -6,7 +6,37 @@
 //
 // 用法：node work/kb/s4-verify.mjs --batch batch-001 [--limit 100]
 
-import { readJson, readJsonIfExists, readJsonl, appendJsonl, writeJson, mapLimit, biliView, today } from "./lib.mjs";
+import { readJson, readJsonIfExists, readJsonl, appendJsonl, writeJson, writeJsonl, mapLimit, biliView, today } from "./lib.mjs";
+import { readFileSync } from "node:fs";
+
+// checkpoint 兼容读取：历史上 writeJson（pretty 数组）与 readJsonl（逐行）格式
+// 不一致导致续跑崩溃。新版统一 JSONL；旧数组文件一次性迁移。
+function readCheckpoint(path) {
+  let text;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch {
+    return [];
+  }
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith("[")) {
+    // 旧格式：pretty JSON 数组（可能尾部截断）——截到最后一个完整对象
+    let data = trimmed;
+    try {
+      return JSON.parse(data);
+    } catch {
+      const lastBrace = data.lastIndexOf("}");
+      data = `${data.slice(0, lastBrace + 1)}]`;
+      try {
+        return JSON.parse(data);
+      } catch {
+        return [];
+      }
+    }
+  }
+  return readJsonl(path);
+}
 
 const args = process.argv.slice(2);
 const argOf = (name, fallback) => {
@@ -21,17 +51,20 @@ const kb = new URL(".", import.meta.url).pathname;
 const tagged = readJsonl(`${kb}tagged/annotations.jsonl`).filter((row) => row.relevant !== false);
 const checkpointPath = `${kb}verified/checkpoint-videos.jsonl`;
 const deadPath = `${kb}rejected/dead.jsonl`;
-const checkedBvids = new Set(readJsonl(checkpointPath).map((row) => row.bvid));
+const checkedBvids = new Set(readCheckpoint(checkpointPath).map((row) => row.bvid));
 const knownDead = new Set(readJsonl(deadPath).map((row) => row.key));
 
 const videos = tagged.filter((row) => row.kind === "video" && !checkedBvids.has(row.bvid) && !knownDead.has(row.key));
-const webs = tagged.filter((row) => row.kind === "web" && !knownDead.has(row.key));
+// 网页体检断点：滚动管线会反复进入 s4，已检过的网页按 url 跳过
+const webCheckpointPath = `${kb}verified/checkpoint-webs.jsonl`;
+const checkedWebUrls = new Set(readJsonl(webCheckpointPath).map((row) => row.url));
+const webs = tagged.filter((row) => row.kind !== "video" && !knownDead.has(row.key) && !checkedWebUrls.has(row.url));
 const videoSlice = limit > 0 ? videos.slice(0, limit) : videos;
 
 console.log(`[s4] 待体检：视频 ${videoSlice.length}（view API ~0.95s/条 → 约 ${Math.ceil((videoSlice.length * 0.95) / 60)} 分钟），网页 ${webs.length}`);
 
 // ---- 视频串行（view 限速），可被 limit 截断 ----
-const videoVerified = readJsonl(checkpointPath); // 已有 checkpoint 直接复用
+const videoVerified = readCheckpoint(checkpointPath); // 已有 checkpoint 直接复用（兼容旧数组格式）
 const newDead = [];
 let videoIndex = 0;
 for (const row of videoSlice) {
@@ -65,7 +98,7 @@ for (const row of videoSlice) {
   });
   if (videoIndex % 100 === 0) console.log(`[s4] 视频 ${videoIndex}/${videoSlice.length}（累计有效 ${videoVerified.length}）`);
 }
-writeJson(checkpointPath, videoVerified);
+writeJsonl(checkpointPath, videoVerified);
 if (newDead.length) appendJsonl(deadPath, newDead);
 
 // ---- 网页并发体检 ----
@@ -103,6 +136,7 @@ const webResults = await mapLimit(webs, webConcurrency, async (row) => {
   webVerified.push({ ...row, unverifiedDomain: verdict.unverifiedDomain ?? false, verifyNote: verdict.reason ?? "", verifiedAt: today() });
 });
 if (deadWeb.length) appendJsonl(deadPath, deadWeb);
+if (webVerified.length) appendJsonl(webCheckpointPath, webVerified.map(({ unverifiedDomain, verifyNote, ...rest }) => rest));
 
 // ---- 汇总产出 ----
 const verifiedVideos = videoVerified;

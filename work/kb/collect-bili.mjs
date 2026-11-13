@@ -56,11 +56,16 @@ for (const item of remaining) {
   searchIndex++;
   const prefix = `[collect ${searchIndex}/${remaining.length}]`;
   let results = [];
+  let failed = false;
   try {
     results = await biliSearch(item.keyword, item.page);
   } catch (error) {
-    console.log(`${prefix} 搜索失败（keyword=${item.keyword} page=${item.page}）：${error.message}，记录后继续`);
+    // 失败不标 done：断点续传重跑时会再次尝试（HTTP 412 反爬通常几分钟内解除）
+    failed = true;
+    console.log(`${prefix} 搜索失败（keyword=${item.keyword} page=${item.page}）：${error.message}，留待续跑重试`);
   }
+
+  if (failed) continue;
 
   const fresh = [];
   for (const row of results ?? []) {

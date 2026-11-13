@@ -37,5 +37,6 @@ work/temperature-study/assets/
 !work/kb/
 work/kb/**
 !work/kb/*.mjs
+!work/kb/*.sh
 !work/kb/PROGRESS.md
 coverage/

@@ -12,29 +12,38 @@
 入库 5000 条精选学习对象（B站视频 3500 / 书籍章节 800 / 官方文档 500 / 精选文章 200），
 六维各 ≥600；觉醒报告个性化推荐改为查知识库预计算表。
 
-## 当前阶段：阶段 2（推荐接入）
+## 当前阶段：阶段 3-5 滚动扩量（三路采集 + 滚动五层管线）
 
-- [x] 阶段 0：schema.js + 150 子主题词表 + 守卫测试（全套件 394 pass / 2 skip）
-- [x] 阶段 1：首批走通全管线（batch-001 入库 106 条，见下）
-- [ ] 阶段 2：build-knowledge-index.mjs 预计算表 + report-recommendations 查表 + 三画像 QA
-- [ ] 阶段 3：B站扩采（按 19.3% 总通过率反推需 ~18000 候选，目标量 22000 不变）
-- [ ] 阶段 4：书籍章节 800
-- [ ] 阶段 5：文档 500 + 文章 200
-- [ ] 阶段 6：终检交付
+- [x] 阶段 0：schema.js + 150 子主题词表 + 守卫测试（394/2 → 现 398/2）
+- [x] 阶段 1：首批五层管线入库 106 条（漏斗 19.3%）
+- [x] 阶段 2：90 槽位预计算表 + report-recommendations/report-learning-plan 查表 + 三画像 QA
+  （commit d052045）
+- [ ] 阶段 3：B站扩采（采集器后台跑 892 次搜索；滚动管线消化）
+- [ ] 阶段 4：书籍章节（编目完成 861 条，待标注体检入库）
+- [ ] 阶段 5：文档/文章（采集完成 601+ 条，待标注体检入库）
+- [ ] 阶段 6：终检（≥5000、六维≥600、404 复检、抽检 10%）+ push
+
+## 后台进程（中断后先查再重启，避免双跑）
+
+| 进程 | 状态 | 断点 |
+|---|---|---|
+| collect-bili.mjs（bili-001 全量 892 搜索） | 运行中（~10%/892，约 2h） | raw/bili-001-done.json |
+| roll-pipeline.sh（s2→s3 400→s4 400 循环） | 运行中 | tagged/annotations.jsonl + verified/checkpoint-*.jsonl |
+| books-crawl3 | 已完成（+436） | books.jsonl 按 url 去重 |
+
+⚠️ 只允许一个 roller 实例（此前双开导致并发追加风险，已清理）。
+重启命令：`nohup bash work/kb/roll-pipeline.sh 500 >> work/kb/roll-pipeline.log 2>&1 &`
 
 ## 来源进度对照（候选 → 入库）
 
-| 来源 | 采集候选 | 入库目标 | 已采集候选 | 已入库 | 状态 |
-|---|---|---|---|---|---|
-| B站视频 | ~22000 | 3500 | 448（300 CSV + 148 试采） | 79 | 阶段 3 扩采 |
-| 书籍章节 | ~3200 | 800 | 0 | 0 | 待阶段 4 |
-| 官方文档 | ~5000 | 500 | 0 | 0 | 待阶段 5 |
-| 精选文章 | ~2000 | 200 | 0 | 0 | 待阶段 5 |
-| LEARNING_RESOURCES（并入 doc 类） | 100 | — | 100 | 27 | 阶段 1 完成 |
+| 来源 | 目标 | 已采集候选 | 已入库 | 状态 |
+|---|---|---|---|---|
+| B站视频 | 3500 | 1486+（采集持续） | 106 | 采集/滚动管线 |
+| 书籍章节 | 800 | 861（18 本开源教材） | 0 | 已编目待管线 |
+| 官方文档 | 500 | 320（MS Learn 280 + 维基 25 + 厂商 28） | 0 | 已采集待管线 |
+| 精选文章 | 200 | 301（掘金，LLM 粗筛在 s3） | 0 | 已采集待管线 |
 
-全库当前 106 条：D1 67 / D2 15 / D3 36 / D4 20 / D5 19 / D6 10。
-
-## 淘汰率实测（batch-001：300 CSV 种子 + 100 资源 + 148 新采，2026-11-12）
+## 淘汰率实测（batch-001 种子批，2026-11-12）
 
 | 层 | 进入 | 淘汰 | 淘汰率 | 备注 |
 |---|---|---|---|---|
@@ -42,25 +51,37 @@
 | cleaned → tagged（不相关） | 490 | 57 | 11.6% | LLM 判 relevant=false |
 | tagged → verified（失效） | 433 | 6 | 1.4% | B站失效 6，网页 0 |
 | verified → 入库（质量门） | 427 | 321 | 75.2% | quality 3 分 273 + 2 分 29 + URL 非 https 具体页 19 |
-| **总通过率** | 548 | — | **19.3%** | 阶段 3 定量：3500 ÷ 0.193 ≈ 18100 候选 |
-
-⚠️ 种子 300 条的 quality 分布偏低（多数 3 分「信息稀薄」）——2021-2023 老视频为主。
-新采按 150 子主题精准搜索，预期质量分布更好；阶段 3 首个 500 批实测后校准。
+| **总通过率（种子）** | 548 | — | **19.3%** | 新采/书籍/文档预计显著更高（精准搜索+权威源） |
 
 ## 批次日志
 
-- batch-000（2026-11-12）：任务启动。基线 385/2 确认（含 schema 测试后 394/2）。
-- batch-001（2026-11-12）：五层管线全通。raw 548 → cleaned 490 → tagged 490（relevant 433）
-  → verified 427（失效 6）→ 入库 106。s3 修复两 bug：mapLimit 结果过滤（undefined 混入
-  jsonl 成空行）、subtopic/dims 脱节自动修正（救回 15/15，~3% 系统性损耗归零）。
-  s5 新建：三道门 + url 幂等 + 全库唯一性守卫；id 仅对入库条目分配（连续编号）。
+- batch-000：任务启动，基线确认。
+- batch-001：种子批五层全通，入库 106。s3 修 2 bug（mapLimit 空行、subtopic 自动归位）。
+- batch-001 扩量（进行中）：
+  - 采集器：150 子主题 × 3 词 × 2 页 = 900 搜索（断点续传，失败不标 done 待重试）。
+  - 书籍：books-crawl{,2,3}.mjs → 18 本开源教材 861 章（d2l 140 / self-llm 283 /
+    AI-System 81 / thorough-pytorch 70 / promptingguide 128 / llm-cookbook 36 /
+    easy-rl 32 / pumpkin 20 等）。GitHub node fetch 不稳 → 全部走 curl；
+    GitHub API 匿名限额 60/h → 限额窗口错峰跑。
+  - 文档/文章：docs-crawl.mjs（MS Learn catalog API zh 280 + 维基 API + 厂商清单 28）
+    + wiki-crawl.mjs（+19）+ 掘金搜索 301。维基仅 +19：部分分类被反爬限流，D6 配额
+    靠 MS Learn Responsible-AI 模块 + 掘金伦理文 + B站 D6 子主题补。
+  - s4 修 2 bug：checkpoint 写读格式不一致（writeJson 数组 vs readJsonl 行）导致
+    续跑全崩——新版统一 JSONL + 兼容读旧数组；网页体检加 url 断点（滚动管线必需）。
+  - 滚动管线 roll-pipeline.sh：每轮 s2 → s3 --limit 400 → s4 --limit 400，
+    断点安全重入。当前 annotations 1675 / checkpoint-videos 733。
 
 ## 阻塞与重试队列
 
-（无）
+- 维基百科部分分类请求被限流（HTTP 反爬页），阶段 6 复采补 D6。
+- prompt-engineering-for-developers / dive-into-cv-python / handy-multi-agents
+  三个仓库 tree API 失败（限额/网络），阶段 6 重试补爬。
 
 ## 下一步动作
 
-阶段 2：scripts/build-knowledge-index.mjs（6 维 × 3 档 × 落差诊断槽位预计算）→
-升级 src/report-recommendations.js 查表（同子主题 ≤2 打散 + 类型混排）→
-scripts/qa-knowledge-recs.mjs 三画像对比 → 测试 + build 绿 → AGENTS.md + commit。
+1. 等采集器跑完 892 搜索 + roller 消化完全部 cleaned（annotations ≈ cleaned 总数，
+   checkpoint-videos ≈ relevant 视频数）。
+2. node work/kb/s5-ingest.mjs --batch batch-001 入库 + 重建 rec-index + 跑
+   scripts/qa-knowledge-recs.mjs + 全量测试。
+3. 阶段 6 终检：404 全量复检、10% 分层抽检（audit-sample.md）、六维配额不足回补、
+   AGENTS.md 终版记录、git commit + push。

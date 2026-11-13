@@ -94,11 +94,34 @@ const cleanedWeb = readRaw("seeds-resources").map((row) => ({
   note: row.note,
 }));
 
+// 4) 书籍章节编目（books-crawl 产出；人工精选的开源教材，跳过三层过滤，
+//    仅做 https 校验 + URL 去重）
+const booksRaw = readdirSync(`${kb}raw`).includes("books.jsonl") ? readRaw("books") : [];
+let bookCount = 0;
+for (const row of booksRaw) {
+  if (!/^https:\/\//.test(row.url)) { stats.filtered["书籍非 https"] = (stats.filtered["书籍非 https"] ?? 0) + 1; continue; }
+  const key = `book:${row.url}`;
+  if (seenBvid.has(key)) { stats.duplicate++; continue; }
+  seenBvid.set(key, "books");
+  cleanedWeb.push({
+    key,
+    kind: "book",
+    origin: "book-catalog",
+    dimPriors: row.dimPriors ?? ["D1"],
+    minDifficulty: row.minDifficulty ?? null,
+    url: row.url,
+    title: row.title,
+    platform: row.platform,
+    bookId: row.bookId ?? "",
+  });
+  bookCount++;
+}
+
 const payload = { batch, videos: cleanedVideos, web: cleanedWeb };
 writeJson(`${kb}cleaned/${batch}.json`, payload);
 
 const byDim = {};
 for (const video of cleanedVideos) byDim[video.dimPrior] = (byDim[video.dimPrior] ?? 0) + 1;
-console.log(`[s2] cleaned: 视频 ${cleanedVideos.length}（种子 ${cleanedVideos.filter((v) => v.origin === "seed-csv").length} + 新采 ${cleanedVideos.length - cleanedVideos.filter((v) => v.origin === "seed-csv").length}），web ${cleanedWeb.length}`);
+console.log(`[s2] cleaned: 视频 ${cleanedVideos.length}（种子 ${cleanedVideos.filter((v) => v.origin === "seed-csv").length} + 新采 ${cleanedVideos.length - cleanedVideos.filter((v) => v.origin === "seed-csv").length}），web ${cleanedWeb.length}（资源种子 ${cleanedWeb.length - bookCount} + 书籍章节 ${bookCount}）`);
 console.log(`[s2] 维度分布: ${JSON.stringify(byDim)}`);
 console.log(`[s2] 淘汰: 重复 ${stats.duplicate}，${JSON.stringify(stats.filtered)}`);

@@ -121,6 +121,12 @@ const results = await mapLimit(slice, concurrency, async (row) => {
   done++;
   if (done % 50 === 0) console.log(`[s3] ${done}/${slice.length} 完成`);
 
+  // 书籍章节的难度下限（编目时人工认定教材起点难度，LLM 不得低估）
+  const RANK = { low: 0, medium: 1, high: 2 };
+  if (problems.length === 0 && tag && row.minDifficulty && RANK[tag.difficulty] < RANK[row.minDifficulty]) {
+    tag.difficulty = row.minDifficulty;
+  }
+
   if (problems.length > 0 || !tag) {
     failures.push({ key: row.key, title: row.title, problems, taggedAt: today() });
     return { key: row.key, ok: false };
@@ -134,7 +140,7 @@ const results = await mapLimit(slice, concurrency, async (row) => {
     url: row.url ?? (row.bvid ? `https://www.bilibili.com/video/${row.bvid}` : null),
     title: row.title,
     author: row.author ?? row.platform ?? "",
-    type: row.kind === "video" ? "video" : "doc",
+    type: row.kind === "video" ? "video" : row.kind === "book" ? "book_chapter" : row.kind === "article" ? "article" : "doc",
     platform: row.platform ?? "bilibili",
     durationMin: row.durationMin ?? null,
     views: row.views ?? null,
