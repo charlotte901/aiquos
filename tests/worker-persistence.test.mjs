@@ -116,10 +116,11 @@ test("worker persists accounts and drafts across a simulated restart (AIQUOS_DAT
   }
 });
 
-test("a truncated (crashed-mid-write legacy) file degrades to a fresh store, not a crash", async () => {
+test("a corrupted account file is preserved and registration fails closed", async () => {
   const dir = mkdtempSync(join(tmpdir(), "aiquos-store-bad-"));
   try {
     writeFileSync(join(dir, "auth-accounts.json"), '{"secret": "trunc'); // 旧实现写一半崩溃的现场
+    writeFileSync(join(dir, "aiquos-shared-data.json"), '{"students":{},"runs":[]}');
     const assets = { fetch: async () => new Response("missing", { status: 404 }) };
     const worker = (await import(`../worker/index.js?instance=badfile-${Date.now()}`)).default;
     const env = { AIQUOS_DATA_DIR: dir, ASSETS: assets };
@@ -128,9 +129,8 @@ test("a truncated (crashed-mid-write legacy) file degrades to a fresh store, not
       headers: { "content-type": "application/json" },
       body: jsonBody({ account: "13800139888", password: "aiquos2026play", nickname: "坏档", role: "student" }),
     }), env);
-    assert.equal(register.status, 201, "损坏存档按空库处理，注册照常可用");
-    // 且坏档被新写入覆盖为合法 JSON。
-    assert.ok(JSON.parse(readFileSync(join(dir, "auth-accounts.json"), "utf8")).secret);
+    assert.equal(register.status, 503, "损坏存档不得被空库覆盖");
+    assert.equal(readFileSync(join(dir, "auth-accounts.json"), "utf8"), '{"secret": "trunc');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -13,6 +13,7 @@ import {
 import { buildPdfBytes, createDocument, loadReportFonts, pdfColor, savePdfBytes } from "./learning-plan-pdf.js";
 import { generateReportText, reportTemplateText } from "./report-text.js";
 import { renderDimensionGlyphs } from "./report-charts.js";
+import { assessmentLabel } from "./server-records.js";
 
 const STYLE = LEARNING_PLAN_STYLE;
 const PAGE = {
@@ -98,7 +99,8 @@ function channelSentence(model) {
   const known = ["objective", "interview", "practical"].filter((key) => channels[key] != null);
   if (!known.length) return "";
   const labels = { objective: "客观题", interview: "对话采访", practical: "实操工作台" };
-  return `三个通道的证据融合结果为：${known.map((key) => `${labels[key]} ${Math.round(channels[key])} 分`).join("、")}，综合画像由三类证据互相校准。`;
+  const summary = known.map((key) => `${labels[key]} ${Math.round(channels[key])} 分`).join("、");
+  return known.length === 3 ? `三个通道的证据融合结果为：${summary}，综合画像由三类证据互相校准。` : `本次已有通道成绩为：${summary}。`;
 }
 
 // 第一部分正文：总体水平评价（总分 → 强弱项 → 分档结构 → 通道校准 → 阶段建议）。
@@ -113,7 +115,7 @@ function overallParagraph(model) {
   const strongest = dimensions[0];
   const weakest = dimensions[dimensions.length - 1];
   const counts = bandCounts(model?.dimensions);
-  const sentences = [`本次综合测评总分 ${score} 分，对应 ${grade} 档（${stage.label}）。`];
+  const sentences = [`本次${assessmentLabel(model.assessmentId || "comprehensive")}总分 ${score} 分，对应 ${grade} 档（${stage.label}）。`];
   if (strongest && weakest && strongest !== weakest) {
     sentences.push(`你在${strongest.name}上表现相对突出（${strongest.value} 分），${weakest.name}（${weakest.value} 分）是当前最值得优先补强的方向。`);
   }
@@ -287,7 +289,7 @@ export function reportFooter(model, profile = null) {
   return {
     // 一行放得下：页脚空间只够约 60 个半角字符（见 learning-plan-pdf 的
     // addFooter 截断逻辑），因此把三通道列表压成「三通道证据」四个字。
-    text: `本报告基于本次综合测评的三通道证据生成 · 生成时间 ${stamp} · ${who}`,
+    text: `本报告基于本次${model?.assessmentId && model.assessmentId !== "comprehensive" ? `${assessmentLabel(model.assessmentId)}的成绩` : "综合测评的三通道证据"}生成 · 生成时间 ${stamp} · ${who}`,
     generatedAt: stamp,
     account: who,
   };

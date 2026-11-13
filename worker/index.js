@@ -4,6 +4,8 @@ import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./practical-score.js
 import { COMPREHENSIVE_QUESTION_PATH, handleComprehensiveQuestion } from "./comprehensive-quiz.js";
 import { COMPREHENSIVE_SCORE_PATH, handleComprehensiveScore } from "./comprehensive-score.js";
 import { ADMIN_BANK_PATH, handleAdminBank } from "./admin.js";
+import { accountPersistenceEnabled } from "./account-store.js";
+import { sharedDataPersistenceEnabled } from "./data-store.js";
 import {
   AUTH_LOGIN_PATH,
   AUTH_ME_PATH,
@@ -17,6 +19,7 @@ import {
   handleAuthRegister,
 } from "./auth.js";
 import {
+  DATA_CLASSES_PATH, handleDataClasses,
   DATA_ASSIGNMENTS_PATH,
   DATA_ASSIGNMENT_STATUS_PATH,
   DATA_DRAFT_PATH,
@@ -37,24 +40,32 @@ import { setSharedDataPersistence } from "./data-store.js";
 
 // 生产持久化接线（一次性）：AIQUOS_DATA_DIR 指向可写目录时，账号/共享
 // 数据/题库覆盖三个 store 从 per-isolate 内存态切到该目录下的 JSON 文件
-// （原子写，见 worker/storage.js）。未配置或运行时无 node:fs（如 CF）时
-// 保持内存态——与历史行为一致。打包产物是纯 Node 模块（dist/server），
+// （原子写与备份，见 worker/storage.js）。账号/班级接口拒绝未配置存储的
+// 请求；配置目录却无法初始化时停止写入。打包产物是纯 Node 模块（dist/server），
 // 单进程部署下这同时解决重启丢数据与跨 isolate 分叉两个问题。
-let persistenceResolved = false;
+let persistencePromise = null;
 async function resolvePersistence(env) {
-  if (persistenceResolved) return;
-  persistenceResolved = true;
-  await ensureFilePersistence(env, ({ account, shared, bank }) => {
+  if (!persistencePromise) persistencePromise = ensureFilePersistence(env, ({ account, shared, bank }) => {
     setAccountPersistence(account);
     setSharedDataPersistence(shared);
     setBankPersistence(bank);
   });
+  return persistencePromise;
 }
 
 export default {
   async fetch(request, env) {
-    await resolvePersistence(env);
+    try { await resolvePersistence(env); } catch {
+      return new Response(JSON.stringify({ error: "服务端持久存储读取失败，已停止写入以保护已有数据" }), { status: 503, headers: { "content-type": "application/json; charset=utf-8" } });
+    }
     const { pathname } = new URL(request.url);
+    if ((pathname.startsWith("/api/auth/") || pathname.startsWith("/api/data/"))
+      && (!accountPersistenceEnabled() || !sharedDataPersistenceEnabled())) {
+      return new Response(JSON.stringify({ error: "服务端持久存储尚未配置，请完成存储配置后再使用账号和班级功能" }), {
+        status: 503, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+      });
+    }
+    if (pathname === DATA_CLASSES_PATH) return handleDataClasses(request);
     if (pathname === DEEPSEEK_CHAT_PATH) {
       return handleDeepSeekChat(request, env.DEEPSEEK_API_KEY);
     }
@@ -89,6 +100,7 @@ export default {
       return handleAuthPassword(request);
     }
     if (pathname === DATA_RUNS_PATH) {
+
       return handleDataRuns(request);
     }
     if (pathname === DATA_ME_PATH) {

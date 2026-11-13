@@ -51,7 +51,7 @@ export function snapshotToRunPayload(snapshot, assignmentId) {
     completedAt: snapshot.completedAt,
     overallScore: composite?.overallScore ?? result.overallScore,
     grade: composite?.grade ?? result.grade,
-    dimensions: result.dimensions?.map((dimension) => ({
+    dimensions: (composite?.dimensions ?? result.dimensions)?.map((dimension) => ({
       key: dimension.key,
       name: dimension.name,
       short: dimension.short,

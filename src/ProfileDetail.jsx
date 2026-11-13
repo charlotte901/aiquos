@@ -29,6 +29,8 @@ import { CaseDetail } from "./CaseArchive";
 import { ForumDetail } from "./ForumBoard";
 import { AwakeningReportModal } from "./AwakeningReport";
 import { loadAttemptHistory } from "./assessment-attempt";
+import { StudentClassPanel } from "./StudentClassPanel.jsx";
+import { serverRecordsByDay } from "./server-records.js";
 import { authFetch, readProfile } from "./auth-client";
 
 const gradeBadgeClass = (letter) => `grade-badge is-${String(letter ?? "D").toLowerCase()}`;
@@ -578,12 +580,14 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   // 登录时拉取服务端班级统计与自己的完成记录（教师端看到的同一份数据）；
   // 未登录/离线时保持演示班级视图，不打扰匿名体验。
   useEffect(() => {
-    if (!active || id !== "organizations" || !readProfile()) {
+    if (!active || id !== "records" || !readProfile()) {
       setServerClass(null);
       setServerRuns([]);
       return undefined;
     }
     let alive = true;
+    setServerRuns([]);
+    setServerClass(null);
     authFetch("/api/data/me")
       .then((response) => (response.ok ? response.json() : null))
       .then((payload) => {
@@ -595,7 +599,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
     return () => {
       alive = false;
     };
-  }, [active, id]);
+  }, [active, id, accountId]);
   const worksBoardRef = useRef(null);
   const favoriteBoardRef = useRef(null);
   const favorites = useFavorites();
@@ -654,7 +658,8 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
   // 演示日历记录只给未登录的匿名探索：已登录学员（尤其新注册）看到演示
   // 记录会误以为自己「凭空多了测评记录」——与报告页演示雷达同源问题。
   const demoRecords = readProfile() ? [] : (ASSESSMENT_RECORDS[selectedKey] ?? []);
-  const records = [...(realRecordsByDay[selectedKey] ?? []), ...demoRecords];
+  const cloudRecords = serverRecordsByDay(serverRuns, attemptHistory);
+  const records = [...(realRecordsByDay[selectedKey] ?? []), ...(cloudRecords[selectedKey] ?? []), ...demoRecords];
   const recordDraft = recordDrafts[selectedKey] ?? "";
   const selectedRecordEntries = recordEntries[selectedKey] ?? [];
   const cells = getCalendarCells(cursor.year, cursor.month);
@@ -828,7 +833,8 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
       >
         <ArrowLeft size={20} weight="bold" />
       </button>
-      {id === "organizations" && (
+      {id === "organizations" && readProfile() && <StudentClassPanel key={accountId} active={active} />}
+      {id === "organizations" && !readProfile() && (
         <section className="profile-detail-panel organization-panel" aria-label="我的组织">
           <header className="detail-panel-head organization-head">
             <div className="organization-title">
@@ -1283,7 +1289,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
                     onClick={() => setSelected(date)}
                   >
                     <span>{date.getDate()}</span>
-                    {((!readProfile() && ASSESSMENT_RECORDS[key]) || realRecordsByDay[key]?.length || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
+                    {((!readProfile() && ASSESSMENT_RECORDS[key]) || realRecordsByDay[key]?.length || cloudRecords[key]?.length || recordEntries[key]?.length) && <i className="has-record" aria-hidden="true" />}
                   </button>
                 );
               })}
@@ -1318,7 +1324,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
               )}
             </div>
           </div>
-          <div className="records-panel">
+          <div className={`records-panel${records.length ? " has-records" : ""}`}>
             <header>
               <p>测评记录 · {selected.getMonth() + 1}月{selected.getDate()}日</p>
               <strong>{records.length} 条记录</strong>
@@ -1338,7 +1344,7 @@ export function ProfileDetail({ id, onBack, onHome, busy, active = false }) {
                         )}
                         {" · "}{record.status}
                       </p>
-                      {record.type === "综合题" && record.status === "已完成" && (
+                      {record.snapshot && record.type === "综合题" && record.status === "已完成" && (
                         <button
                           type="button"
                           className="record-report-button"

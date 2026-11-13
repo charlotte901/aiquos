@@ -105,10 +105,11 @@ function loadState() {
             }
           }
           loaded = true;
-        }
+        } else { throw new Error("账号库存档格式无效"); }
       }
-    } catch {
-      // 损坏的文件按空库处理：注册照常可用，旧数据不复活。
+    } catch (error) {
+      state = null;
+      throw new Error("账号库读取失败，已停止写入以保护现有账号", { cause: error });
     }
   }
   // 只在确实没有可用存档时回写（首次落盘 / 修复损坏文件）。
@@ -192,6 +193,18 @@ export function updateNickname(accountId, nickname) {
   record.nickname = check.value;
   persist();
   return { ok: true, record };
+}
+
+export function accountPersistenceEnabled() { return Boolean(persistence); }
+
+export function updateClassName(accountId, className) {
+  const check = validateClassName(className);
+  if (!check.ok) return { error: check.error };
+  const record = findAccountById(accountId);
+  if (!record || record.role !== "student") return { error: "学员账号不存在" };
+  record.className = check.value;
+  persist();
+  return { record };
 }
 
 /** 改密码（已登录）：验证旧密码 → 新盐重哈希。旧密码错误返回 {error}。 */
@@ -318,4 +331,9 @@ export function listStudentRecords() {
       nickname: record.nickname,
       className: record.className ?? "",
     }));
+}
+
+/** Node seed and verification tools use the same normalized login lookup. */
+export function findAccountByLogin(account) {
+  return loadState().accounts.get(normalizeAccount(account)) ?? null;
 }

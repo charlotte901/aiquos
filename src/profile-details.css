@@ -1307,6 +1307,10 @@
   border-left: 1px solid #e7e9f4;
 }
 
+.profile-records .records-panel.has-records {
+  justify-content: flex-start;
+}
+
 /* Account settings uses a decorated profile side and a settings checklist. */
 .account-settings-card {
   display: grid;
@@ -1951,3 +1955,20 @@
   color: #33202f;
 }
 .class-server-runs tr:last-child td { border-bottom: 0; }
+
+/* 为柱图、刻度和底部排名分别保留空间，矮窗口允许面板滚动。 */
+.student-class-panel {
+  overflow-y: auto;
+}
+.student-class-panel .rank-chart {
+  flex: 1 0 250px;
+  min-height: 250px;
+}
+.student-class-panel .rank-chart .rank-bars {
+  min-height: 60px;
+}
+.student-class-panel .rank-scale,
+.student-class-panel .rank-track,
+.student-class-panel .rank-result {
+  flex-shrink: 0;
+}

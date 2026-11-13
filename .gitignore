@@ -18,6 +18,8 @@ worker/bank-overrides-full.json
 # 与 bank-overrides 同一模式：本地状态，不入库。
 worker/auth-accounts.json
 worker/aiquos-shared-data.json
+worker/auth-accounts.json.*
+worker/aiquos-shared-data.json.*
 
 # QA screenshots and review captures produced while iterating on the UI.
 # Regenerated on demand by scripts/shots.mjs and the qa-*.mjs harnesses;

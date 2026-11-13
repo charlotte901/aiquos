@@ -140,6 +140,8 @@ export function buildServerRoster(payload) {
       totalQuestions: run.totalQuestions ?? null,
       assignmentId: run.assignmentId ?? null,
       source: "server",
+      simulated: run.simulated === true,
+      assessmentId: run.assessmentId ?? "comprehensive",
       bankVersion: run.bankVersion ?? null,
     });
   }

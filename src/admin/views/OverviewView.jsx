@@ -34,8 +34,8 @@ export function OverviewView({ roster, bankMeta, dataSource }) {
     <div className="admin-view">
       <section className="kpi-grid" aria-label="关键指标">
         {[
-          { label: "在册学员", value: kpis.studentCount, hint: dataSource === "ready" ? "服务端注册学员（真实作答）" : "离线演示名册（服务不可达）" },
-          { label: "累计完成测评", value: kpis.runCount, hint: "综合测评完整通关" },
+          { label: "在册学员", value: kpis.studentCount, hint: dataSource === "ready" ? "服务端注册学员" : "离线演示名册（服务不可达）" },
+          { label: "累计完成测评", value: kpis.runCount, hint: "四种测评的完成记录" },
           { label: "平均总分", value: kpis.averageOverall, hint: "全部完成记录的均分" },
           { label: "近 7 天完成", value: kpis.weeklyCompletions, hint: "本周新增完成数" },
         ].map((item) => (

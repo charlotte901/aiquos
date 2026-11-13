@@ -10,6 +10,7 @@
 //   2. 三段结构固定（评价 / 建议 / 资源导语），每段有明确字数上限；
 //   3. 输出为纯 JSON，便于机器解析；任何解析失败一律回退模板。
 import { buildAdviceItems, buildAdvicePace, buildEvaluationParagraph } from "./report-learning-plan.js";
+import { assessmentLabel } from "./server-records.js";
 
 // 每段的字数上限：报告要压在两页内，文案必须短。
 export const REPORT_TEXT_LIMITS = Object.freeze({
@@ -35,18 +36,19 @@ const SYSTEM_PROMPT = `你是 AIQUOS 测评报告的文字撰写者。你要根�
 export function reportPromptPayload(model, plan) {
   const dimensions = (model?.dimensions ?? []).map((dimension) => ({
     name: dimension.name,
-    score: Number.isFinite(Number(dimension.score)) ? Math.round(Number(dimension.score)) : null,
+    score: dimension.score != null && Number.isFinite(Number(dimension.score)) ? Math.round(Number(dimension.score)) : null,
   }));
   return {
-    overallScore: Number.isFinite(Number(model?.overallScore)) ? Math.round(Number(model.overallScore)) : null,
+    assessmentType: assessmentLabel(model?.assessmentId || "comprehensive"),
+    overallScore: model?.overallScore != null && Number.isFinite(Number(model.overallScore)) ? Math.round(Number(model.overallScore)) : null,
     grade: model?.grade ?? null,
     gradeLabel: plan?.stage?.label ?? null,
     dimensions,
     channelOveralls: model?.channelOveralls
       ? {
-        客观题: Math.round(model.channelOveralls.objective ?? 0),
-        对话采访: Math.round(model.channelOveralls.interview ?? 0),
-        实操工作台: Math.round(model.channelOveralls.practical ?? 0),
+        客观题: model.channelOveralls.objective == null ? null : Math.round(model.channelOveralls.objective),
+        对话采访: model.channelOveralls.interview == null ? null : Math.round(model.channelOveralls.interview),
+        实操工作台: model.channelOveralls.practical == null ? null : Math.round(model.channelOveralls.practical),
       }
       : null,
     adviceOrder: (plan?.adviceItems ?? []).map((item) => ({ name: item.name, score: item.score, band: item.gradeLabel })),

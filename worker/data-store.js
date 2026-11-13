@@ -10,7 +10,8 @@
 // 模块内存态（per-isolate）。
 import { DIMENSIONS } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
 import { normalizeEdition } from "../src/bank-editions.js";
-import { listStudentRecords } from "./account-store.js";
+import { classRanking } from "../src/class-ranking.js";
+import { listStudentRecords, findAccountById, updateClassName } from "./account-store.js";
 
 const DIM_KEYS = new Set(DIMENSIONS.map((dimension) => dimension.key));
 const STRING_MAX = 120;
@@ -26,7 +27,7 @@ export function setSharedDataPersistence(next) {
 }
 
 function emptyState() {
-  return { students: {}, runs: [], assignments: [], drafts: {}, counter: 0 };
+  return { students: {}, runs: [], assignments: [], classes: [], drafts: {}, counter: 0 };
 }
 
 function persist() {
@@ -45,12 +46,14 @@ function loadState() {
           if (parsed.students && typeof parsed.students === "object") state.students = parsed.students;
           if (Array.isArray(parsed.runs)) state.runs = parsed.runs;
           if (Array.isArray(parsed.assignments)) state.assignments = parsed.assignments;
+          if (Array.isArray(parsed.classes)) state.classes = parsed.classes;
           if (Number.isFinite(parsed.counter)) state.counter = parsed.counter;
           if (parsed.drafts && typeof parsed.drafts === "object") state.drafts = parsed.drafts;
-        }
+        } else { throw new Error("班级库存档格式无效"); }
       }
-    } catch {
-      // 损坏文件按空库处理。
+    } catch (error) {
+      state = null;
+      throw new Error("班级数据读取失败，已停止写入以保护已有记录", { cause: error });
     }
   }
   return state;
@@ -156,7 +159,7 @@ export function upsertStudent(profile) {
     account: existing?.account ?? profile.account ?? "",
     nickname: cleanString(profile.nickname, 24) || existing?.nickname || "学员",
     role: profile.role === "teacher" ? "teacher" : "student",
-    className: cleanString(profile.className, 30) || existing?.className || "",
+    className: cleanString(profile.className, 30),
     firstSeenAt: existing?.firstSeenAt ?? now,
     lastActiveAt: now,
   };
@@ -186,7 +189,7 @@ function allKnownStudents() {
     });
   }
   for (const student of Object.values(loadState().students)) {
-    if (student.role === "student") merged.set(student.accountId, student);
+    if (student.role === "student") merged.set(student.accountId, { ...student, ...merged.get(student.accountId) });
   }
   return [...merged.values()];
 }
@@ -219,6 +222,7 @@ export function reportRun(profile, payload) {
     studentName: student.nickname,
     className: student.className,
     assessmentId,
+    simulated: payload.simulated === true,
     assignmentId: cleanString(payload.assignmentId, 40) || null,
     startedAt: cleanString(payload.startedAt, 40) || null,
     completedAt,
@@ -306,6 +310,15 @@ export function createAssignment(teacherProfile, payload) {
   if (!title) return { error: "请填写试卷标题" };
   const current = loadState();
   const scope = cleanScope(payload.scope, allKnownStudents());
+  const owned = current.classes.filter((item) => item.teacherAccountId === teacherProfile.accountId);
+  if (current.classes.length) {
+    const names = new Set(owned.map((item) => item.name));
+    const ids = new Set(allKnownStudents().filter((student) => names.has(student.className)).map((student) => student.accountId));
+    if (scope.classNames.some((name) => !names.has(name)) || scope.studentIds.some((id) => !ids.has(id))) {
+      return { error: "只能向自己班级的学员下发试卷" };
+    }
+    if (scope.all) { scope.all = false; scope.classNames = [...names]; }
+  }
   if (!scope.all && scope.classNames.length === 0 && scope.studentIds.length === 0) {
     return { error: "请至少选择一个班级或学员" };
   }
@@ -333,14 +346,15 @@ export function createAssignment(teacherProfile, payload) {
 
 /** 教师侧列表：附每个推送的完成统计与逐人完成明细。
  * knownStudents 可由调用方传入复用（teacherData 一次请求里已算过一遍）。 */
-export function listAssignmentsForTeacher(knownStudents = null) {
+export function listAssignmentsForTeacher(teacherProfile = null, knownStudents = null) {
   const current = loadState();
   const students = knownStudents ?? allKnownStudents();
   // run 索引建一次：之前每个推送 × 每个学员都线性扫全部 runs
   // （500 推送 × N 学员 × 5000 runs 的三重扫描），教师概览一次请求
   // 可达百万级比较。
   const runByAssignmentAccount = new Map(current.runs.map((run) => [`${run.assignmentId}|${run.accountId}`, run]));
-  return current.assignments.map((assignment) => {
+  return current.assignments.filter((assignment) => !teacherProfile || assignment.createdByAccountId === teacherProfile.accountId).map((assignment) => {
+
     const targeted = students.filter((student) => matchesIgnoringStatus(assignment, student));
     const rows = targeted.map((student) => {
       const run = runByAssignmentAccount.get(`${assignment.id}|${student.accountId}`) ?? null;
@@ -397,34 +411,21 @@ export function studentSummary(profile) {
   let classStats = null;
   if (student.className) {
     const classmates = allKnownStudents().filter((item) => item.className === student.className);
-    // 班级排名口径：每位学员的「最近一次完成记录」（含作业与自主测评）。
-    const latestByStudent = new Map();
-    for (const run of [...current.runs].sort((left, right) => left.completedAt.localeCompare(right.completedAt))) {
-      latestByStudent.set(run.accountId, run);
-    }
-    const latest = classmates
-      .map((mate) => latestByStudent.get(mate.accountId))
-      .filter(Boolean);
-    const myLatest = latestByStudent.get(student.accountId) ?? null;
-    const scores = latest.map((run) => run.overallScore);
     classStats = {
       className: student.className,
-      studentCount: classmates.length,
-      classAverage: scores.length > 0
-        ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 100) / 100
-        : null,
-      myRank: myLatest
-        ? scores.filter((score) => score > myLatest.overallScore).length + 1
-        : null,
+      ...classDetails(current.classes.find((item) => item.name === student.className)),
+      ...classRanking(classmates, current.runs, student.accountId),
     };
   }
   return { student, runs, classStats };
 }
 
 /** 教师侧原始数据：学员 + 全部 run（管理端自行聚合渲染）。 */
-export function teacherData() {
+export function teacherData(teacherProfile) {
   const current = loadState();
-  const knownStudents = allKnownStudents();
+  const owned = current.classes.filter((item) => item.teacherAccountId === teacherProfile?.accountId);
+  const names = new Set(owned.map((item) => item.name));
+  const knownStudents = allKnownStudents().filter((student) => !teacherProfile || !current.classes.length || names.has(student.className));
   const students = knownStudents.map((student) => ({
     accountId: student.accountId,
     account: student.account ?? "",
@@ -435,10 +436,56 @@ export function teacherData() {
   }));
   return {
     students,
-    runs: current.runs.map((run) => ({ ...run })),
+    runs: current.runs.filter((run) => students.some((student) => student.accountId === run.accountId)).map((run) => ({ ...run })),
     classes: [...new Set(students.filter((student) => student.className).map((student) => student.className))],
-    assignments: listAssignmentsForTeacher(knownStudents),
+    classDetails: owned.map((item) => ({ ...classDetails(item), ...classSummary(item.name) })),
+    assignments: listAssignmentsForTeacher(teacherProfile, knownStudents),
   };
+}
+
+export function sharedDataPersistenceEnabled() { return Boolean(persistence); }
+
+function classSummary(name) {
+  const classmates = allKnownStudents().filter((item) => item.className === name);
+  return classRanking(classmates, loadState().runs);
+}
+
+function classDetails(item) {
+  if (!item) return {};
+  return { id: item.id, name: item.name, code: item.code, term: item.term,
+    teacherAccountId: item.teacherAccountId,
+    teacherName: findAccountById(item.teacherAccountId)?.nickname || "教师" };
+}
+
+export function createClass(teacher, payload) {
+  const current = loadState();
+  const name = cleanString(payload?.name, 30);
+  const code = cleanString(payload?.code, 24).toUpperCase();
+  if (!name || !/^[A-Z0-9-]{4,24}$/.test(code)) return { error: "请填写班级名和 4–24 位字母数字口令" };
+  const existing = current.classes.find((item) => item.name === name || item.code === code);
+  if (existing) return existing.teacherAccountId === teacher.accountId && existing.name === name && existing.code === code
+    ? { class: classDetails(existing) } : { error: "班级名或口令已被使用" };
+  const item = { id: nextId("cls"), name, code, term: cleanString(payload.term, 30),
+    teacherAccountId: teacher.accountId, createdAt: new Date().toISOString() };
+  current.classes.push(item);
+  persist();
+  return { class: classDetails(item) };
+}
+
+export function findClass(code) {
+  const item = loadState().classes.find((item) => item.code === cleanString(code, 24).toUpperCase());
+  return item ? { ...classDetails(item), students: allKnownStudents().filter((student) => student.className === item.name).length } : null;
+}
+
+export function changeClass(profile, code) {
+  if (profile.role !== "student") return { error: "仅学员可以加入班级" };
+  const item = code === null ? null : findClass(code);
+  if (code !== null && !item) return { error: "班级口令不存在" };
+  const result = updateClassName(profile.accountId, item?.name || "");
+  if (result.error) return result;
+  upsertStudent(result.record);
+  persist();
+  return studentSummary(result.record);
 }
 
 export function storeStats() {

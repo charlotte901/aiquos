@@ -314,6 +314,13 @@ export function AdminApp() {
           </div>
         </header>
         {notice && <div className="admin-notice" role="status">{notice}</div>}
+        {dataStatus === "ready" && ["overview", "students"].includes(view) && teacherData?.classDetails?.length > 0 && (
+          <div className="admin-notice" aria-label="我的班级信息">
+            {teacherData.classDetails.map((item) => <p key={item.id}>
+              {item.name} · {item.teacherName} · 班级口令 {item.code} · {item.studentCount} 人 · 班级均分 {item.classAverage ?? "暂无"}
+            </p>)}
+          </div>
+        )}
         {dataStatus === "error" && view !== "bank" && view !== "settings" && (
           <div className="admin-warn" role="alert">
             服务端数据不可用（{dataError}）。当前显示本机演示名册，学生真实数据需服务恢复后可见。

@@ -234,7 +234,7 @@ test("scope by studentIds only accepts registered students", async () => {
   assert.deepEqual((await all.json()).assignment.scope, { all: true, classNames: [], studentIds: [] });
 });
 
-test("student summary carries class stats with rank over latest runs", async () => {
+test("student summary carries class stats with rank over personal average scores", async () => {
   freshStores();
   const classEnv = { className: "AI 应用 1 班" };
   const weak = await makeAccount("13800138000", classEnv);

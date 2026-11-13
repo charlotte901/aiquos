@@ -7,7 +7,9 @@ import { chatDeepSeek } from "./deepseek";
 import {
   latestCompletedSnapshot,
 } from "./assessment-attempt";
-import { readProfile } from "./auth-client";
+import { readProfile, authFetch } from "./auth-client";
+import { useAccount } from "./account-store";
+import { assessmentLabel, latestReportSnapshot } from "./server-records.js";
 import { buildRecommendations } from "./report-recommendations";
 
 // Demo scores shown when no completed comprehensive attempt exists yet. Real
@@ -98,7 +100,10 @@ function reportModel(snapshot, demoPreview = false) {
   // 旧快照没有 composite 时按 vendor IRT 结果渲染，行为与升级前一致。
   const composite = snapshot.composite && Array.isArray(snapshot.composite.dimensions) ? snapshot.composite : null;
   const source = composite ?? snapshot.result;
+  const questionCountText = Number.isFinite(snapshot.result.answeredCount) && Number.isFinite(snapshot.result.totalQuestions)
+    ? `${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题` : "";
   return {
+    assessmentId: snapshot.assessmentId || "comprehensive",
     dimensions: source.dimensions.map((item) => ({
       key: item.key,
       name: item.name,
@@ -110,7 +115,7 @@ function reportModel(snapshot, demoPreview = false) {
     })),
     overallScore: source.overallScore,
     grade: source.grade ?? grade(source.overallScore ?? 0),
-    meta: `综合测评 · 完成于 ${formatCompletedAt(snapshot.completedAt)} · ${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题`,
+    meta: `${assessmentLabel(snapshot.assessmentId || "comprehensive")} · 完成于 ${formatCompletedAt(snapshot.completedAt)}${questionCountText ? ` · ${questionCountText}` : ""}`,
     versions: {
       scoring: snapshot.scoringVersion,
       bank: snapshot.questionBankVersion,
@@ -119,10 +124,10 @@ function reportModel(snapshot, demoPreview = false) {
     // 封面信息栏用的结构化元数据（meta 是面向 UI 的拼好的字符串）。
     detail: {
       completedAtText: formatCompletedAt(snapshot.completedAt),
-      questionCountText: `${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题`,
+      questionCountText,
       modelText: composite
         ? `六维评分模型 v${snapshot.scoringVersion} · 三通道加权 v${composite.weightingVersion}`
-        : `六维评分模型 v${snapshot.scoringVersion}`,
+        : snapshot.scoringVersion ? `评分版本 ${snapshot.scoringVersion}` : "",
     },
     composite,
     channelOveralls: composite
@@ -131,7 +136,7 @@ function reportModel(snapshot, demoPreview = false) {
         interview: composite.channels.interview.overallScore,
         practical: composite.channels.practical.overallScore,
       }
-      : null,
+      : snapshot.channelOveralls || null,
     recommendations: composite ? buildRecommendations(composite) : null,
     isDemo: false,
   };
@@ -250,16 +255,36 @@ export function AwakeningReport({ onBack, onStartAssessment, busy, active = fals
   // completed account-scoped snapshot; this never creates or persists a run.
   const demoPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("report-preview") === "demo";
   const [snapshot, setSnapshot] = useState(() => latestCompletedSnapshot());
+  const { accountId } = useAccount();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   useEffect(() => {
-    if (active) setSnapshot(latestCompletedSnapshot());
-  }, [active]);
+    if (!active) return undefined;
+    const local = latestCompletedSnapshot();
+    setSnapshot(local);
+    setError("");
+    if (!readProfile() || demoPreview) { setLoading(false); return undefined; }
+    let alive = true;
+    setLoading(true);
+    authFetch("/api/data/me")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("读取测评记录失败");
+        return response.json();
+      })
+      .then((payload) => { if (alive) setSnapshot(latestReportSnapshot(payload.runs, local)); })
+      .catch(() => { if (alive) setError(local ? "暂时无法查询最新测评，当前显示本机已保存的报告。" : "暂时无法查询最新测评，请稍后重新进入报告查询。"); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [active, accountId, demoPreview]);
   return (
     <main className="awakening-screen" aria-label="智核觉醒报告">
       <button className="report-back" type="button" onClick={onBack} disabled={busy}>
         <ArrowLeft size={18} /> 返回选择
       </button>
-      <AwakeningReportContent snapshot={snapshot} demoPreview={demoPreview} active={active} />
-      {!demoPreview && !snapshot && readProfile() && (
+      {loading ? <section className="awakening-report-card is-empty" aria-label="正在查询最新报告"><div className="report-empty-cta"><h2>正在查询最新报告…</h2></div></section>
+        : <AwakeningReportContent snapshot={snapshot} demoPreview={demoPreview} active={active} />}
+      {error && <p role="status">{error}</p>}
+      {!loading && !error && !demoPreview && !snapshot && readProfile() && (
         <div className="ability-start"><button type="button" onClick={onStartAssessment}>开始综合测评</button></div>
       )}
     </main>

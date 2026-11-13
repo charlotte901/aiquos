@@ -22,6 +22,7 @@ import {
   handleAuthRegister,
 } from "./worker/auth.js";
 import {
+  DATA_CLASSES_PATH, handleDataClasses,
   DATA_ASSIGNMENTS_PATH,
   DATA_ASSIGNMENT_STATUS_PATH,
   DATA_DRAFT_PATH,
@@ -38,6 +39,7 @@ import {
 import { STAGE_LAYOUT_TUNING_PATH, handleStageLayoutTuning, CHARACTER_TUNING_PATH, handleCharacterTuning } from "./worker/stage-layout-tuning.js";
 import { setBankPersistence } from "./worker/bank-store.js";
 import { setAccountPersistence } from "./worker/account-store.js";
+import { bootstrapInitialCohort } from "./worker/initial-cohort.js";
 import { setSharedDataPersistence } from "./worker/data-store.js";
 import { filePersistenceAdapters } from "./worker/storage.js";
 
@@ -51,10 +53,12 @@ const characterTuningPath = fileURLToPath(new URL("./src/character-tuning.json",
 // auth-accounts.json（同时保管令牌签名密钥，首次注册随机生成）、
 // aiquos-shared-data.json。
 const workerDir = fileURLToPath(new URL("./worker", import.meta.url));
+bootstrapInitialCohort(`${workerDir}/auth-accounts.json`, `${workerDir}/aiquos-shared-data.json`, fileURLToPath(new URL("./worker/initial-cohort.json", import.meta.url)));
 const devAdapters = filePersistenceAdapters(fs, (dir, name) => `${dir}/${name}`, workerDir);
 setBankPersistence(devAdapters.bank);
 setAccountPersistence(devAdapters.account);
 setSharedDataPersistence(devAdapters.shared);
+
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -217,7 +221,9 @@ export default defineConfig(({ mode }) => {
             const chunks = [];
             for await (const chunk of req) chunks.push(chunk);
             const base = `http://${req.headers.host || "127.0.0.1"}`;
-            const response = await handler(new Request(new URL(path, base), {
+            const endpoint = new URL(path, base);
+            endpoint.search = new URL(req.url, base).search;
+            const response = await handler(new Request(endpoint, {
               method: req.method,
               headers: {
                 "content-type": req.headers["content-type"] || "application/json",
@@ -232,6 +238,7 @@ export default defineConfig(({ mode }) => {
           };
           server.middlewares.use(AUTH_PROFILE_PATH, jsonHandler(handleAuthProfile, AUTH_PROFILE_PATH, { authorization: true }));
           server.middlewares.use(AUTH_PASSWORD_PATH, jsonHandler(handleAuthPassword, AUTH_PASSWORD_PATH, { authorization: true }));
+          server.middlewares.use(DATA_CLASSES_PATH, jsonHandler(handleDataClasses, DATA_CLASSES_PATH));
           server.middlewares.use(DATA_RUNS_PATH, jsonHandler(handleDataRuns, DATA_RUNS_PATH));
           server.middlewares.use(DATA_ME_PATH, jsonHandler(handleDataMe, DATA_ME_PATH));
           server.middlewares.use(DATA_ASSIGNMENTS_PATH, jsonHandler(handleDataAssignments, DATA_ASSIGNMENTS_PATH));

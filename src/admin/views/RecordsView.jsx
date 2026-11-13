@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ArrowClockwise, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { assessmentLabel } from "../../server-records.js";
 import { allRuns } from "../cohort.js";
 
 function formatDateTime(iso) {
@@ -51,14 +52,14 @@ export function RecordsView({ roster, onRefreshRoster }) {
       ) : (
         <table className="admin-table is-hover">
           <thead>
-            <tr><th>完成时间</th><th>学员</th><th>班级</th><th>总分</th><th>等级</th><th>六维</th><th>来源</th><th>快照</th></tr>
+            <tr><th>完成时间</th><th>学员</th><th>班级</th><th>测评类型</th><th>总分</th><th>等级</th><th>六维</th><th>来源</th><th>快照</th></tr>
           </thead>
           <tbody>
             {filtered.map((run) => (
               <tr key={run.id}>
                 <td className="is-mono">{formatDateTime(run.completedAt)}</td>
                 <td><b>{run.studentName}</b></td>
-                <td>{run.className}</td>
+                <td>{run.className}</td><td>{assessmentLabel(run.assessmentId)}</td>
                 <td><b>{run.overallScore}</b></td>
                 <td>{run.grade
                   ? <span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span>

@@ -21,6 +21,7 @@ import {
   storeStats,
   studentSummary,
   teacherData,
+  createClass, findClass, changeClass,
 } from "./data-store.js";
 
 export const DATA_RUNS_PATH = "/api/data/runs";
@@ -29,6 +30,22 @@ export const DATA_ASSIGNMENTS_PATH = "/api/data/assignments";
 export const DATA_ASSIGNMENT_STATUS_PATH = "/api/data/assignment-status";
 export const DATA_TEACHER_OVERVIEW_PATH = "/api/data/teacher/overview";
 export const DATA_DRAFT_PATH = "/api/data/draft";
+export const DATA_CLASSES_PATH = "/api/data/classes";
+
+export async function handleDataClasses(request) {
+  const auth = await authenticate(request);
+  if (auth.error) return auth.error;
+  if (request.method === "GET") {
+    const item = findClass(new URL(request.url).searchParams.get("code"));
+    return item ? json({ class: item }) : json({ error: "未找到班级" }, 404);
+  }
+  if (request.method !== "POST") return json({ error: "方法不允许" }, 405);
+  const payload = await readJson(request);
+  if (!payload) return json({ error: "请求体非法" }, 400);
+  const result = auth.profile.role === "teacher" ? createClass(auth.profile, payload)
+    : changeClass(auth.profile, payload.leave === true ? null : payload.code);
+  return json(result, result.error ? 400 : 200);
+}
 
 async function authenticate(request) {
   const verified = await verifyToken(bearerToken(request));
@@ -116,5 +133,5 @@ export async function handleDataTeacherOverview(request) {
   if (auth.profile.role !== "teacher") {
     return json({ error: "仅教师账号可以查看整体数据" }, 403);
   }
-  return json({ ...teacherData(), store: storeStats() });
+  return json({ ...teacherData(auth.profile), store: storeStats() });
 }
