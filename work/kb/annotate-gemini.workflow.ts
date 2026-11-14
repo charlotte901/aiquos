@@ -24,7 +24,7 @@ interface WorkflowReport {
 }
 
 const REPO = "/Users/lunaecho/.zcode/workspace/draft-c879bc09-ee4a-4dd1-beb0-a89d9f5f6c7a/aiquos";
-const SLICES = Array.from({ length: 53 }, (_, i) => String(i + 1).padStart(2, "0"));
+const SLICES = Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0"));
 
 artifact.metrics("annot-progress", {
   title: "标注合并进度",

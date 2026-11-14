@@ -72187,5 +72187,6918 @@
       "date": "2026-11-02",
       "verifiedAt": "2026-11-14"
     }
+  },
+  {
+    "id": "kb-003346",
+    "title": "迷你世界没被判侵犯著作权，却赔5000万：AI抄游戏犯法吗？",
+    "url": "https://www.bilibili.com/video/BV11E4F65EDj",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ip-infringement-cases",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "借迷你世界案与Claude Code新规，讲清游戏抄袭与AI复刻的法律边界",
+    "why": "结合版权法条文与判例展开，讲解扎实可信",
+    "quality": 4,
+    "signals": {
+      "views": 1139,
+      "durationMin": 14,
+      "date": "2026-11-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003347",
+    "title": "全国首例“AI声音侵权案”始末",
+    "url": "https://www.bilibili.com/video/BV1TM4m1f7QP",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ip-infringement-cases",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "央视报道全国首例AI生成声音人格权侵权案一审宣判始末",
+    "why": "权威媒体系统讲解标志性判例，通俗易懂可信",
+    "quality": 4,
+    "signals": {
+      "views": 445827,
+      "durationMin": 10,
+      "date": "2024-04-24",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003348",
+    "title": "我烧了 60 亿 Token，做了个不串戏的 AI 小说写作软件",
+    "url": "https://www.bilibili.com/video/BV17Dn267EC1",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "privacy-basics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "开发者分享烧60亿Token打造的开源本地AI写作软件及用法演示",
+    "why": "开源可查、含实操演示，讲解AI长篇写作工具",
+    "quality": 4,
+    "signals": {
+      "views": 41971,
+      "durationMin": 8,
+      "date": "2026-10-22",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003349",
+    "title": "王迁【直播】知产：人工智能生成物（AIGC）的著作权问题（文生图、ChatGPT）兼探讨国内第一AI绘画案不合理之处",
+    "url": "https://www.bilibili.com/video/BV1VQ4y137JC",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-content-copyright",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "王迁直播剖析AIGC可版权性各学说、AI绘画第一案并做同参数实验",
+    "why": "权威学者106分钟系统讲解，学说与案例实证兼备",
+    "quality": 5,
+    "signals": {
+      "views": 9012,
+      "durationMin": 106,
+      "date": "2023-12-18",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003350",
+    "title": "啥是“AIGC”？带你分清一堆AI技术词 | 机器学习、深度学习、监督学习、无监督学习、强化学习",
+    "url": "https://www.bilibili.com/video/BV1oy4y1A7aW",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "8分钟讲清AIGC与机器学习、深度学习等一堆AI术语的关系",
+    "why": "面向零基础的概念科普，清晰系统口碑佳",
+    "quality": 4,
+    "signals": {
+      "views": 238467,
+      "durationMin": 8,
+      "date": "2023-10-21",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003351",
+    "title": "麦麦聊产业 | AI内容与版权：生产工具与版权之战",
+    "url": "https://www.bilibili.com/video/BV1UBpg6iEXN",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-content-copyright",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "梳理AI内容产业链：语料版权、确权登记、水印、侵权监测与交易",
+    "why": "系统讲解AI版权产业两端，区分已落地与预测数据",
+    "quality": 4,
+    "signals": {
+      "views": 16,
+      "durationMin": 12,
+      "date": "2026-10-10",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003352",
+    "title": "法治在线丨AI换脸可“以假乱真” 你我该如何防范",
+    "url": "https://www.bilibili.com/video/BV1a2Q4B4EDX",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "deepfake-risks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "央视法治节目讲解AI换脸风险与识别防范方法",
+    "why": "权威媒体普法讲解，18分钟系统可信面向大众",
+    "quality": 4,
+    "signals": {
+      "views": 43116,
+      "durationMin": 18,
+      "date": "2026-04-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003353",
+    "title": "【中英文双语】Crash Course：人工智能原理（机器怎样学会识别、推荐和决策？算法为什么也会偏见？）",
+    "url": "https://www.bilibili.com/video/BV1grWX6bE5X",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "bias-fairness",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "20集中英双语课程，讲AI与机器学习原理及算法偏见",
+    "why": "基于大学大纲的系统入门课，覆盖三类学习与偏见",
+    "quality": 4,
+    "signals": {
+      "views": 53,
+      "durationMin": 258,
+      "date": "2026-11-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003354",
+    "title": "【极致中文配音】Crash Course：人工智能原理（机器怎样学会识别、推荐和决策？算法为什么也会偏见？）",
+    "url": "https://www.bilibili.com/video/BV1fpWX66EmR",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "bias-fairness",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "20集中文配音课程，讲AI原理、机器学习与算法偏见",
+    "why": "配音版系统入门课，覆盖监督无监督强化学习与偏见",
+    "quality": 4,
+    "signals": {
+      "views": 85,
+      "durationMin": 261,
+      "date": "2026-11-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003355",
+    "title": "斯坦福课程2022 机器学习可解释性",
+    "url": "https://www.bilibili.com/video/BV1gP4y197g1",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "transparency-explainability",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "斯坦福研讨课讲可解释机器学习、公平性与鲁棒性",
+    "why": "哈佛教授系统讲授可解释ML现代技术，专业深入",
+    "quality": 4,
+    "signals": {
+      "views": 9694,
+      "durationMin": 252,
+      "date": "2022-11-30",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003356",
+    "title": "（2026年最新）李宏毅Harness Engineer & Agent智能体系列课程，公认体验感最好的入门课程！",
+    "url": "https://www.bilibili.com/video/BV1ZLpM6CExX",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "李宏毅2026年Harness与Agent智能体系列入门课程",
+    "why": "系列课程覆盖Harness与Agent方向，体量约42小时",
+    "quality": 4,
+    "signals": {
+      "views": 9045,
+      "durationMin": 2502,
+      "date": "2026-10-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003357",
+    "title": "AI可解释性困境：我们是该相信“黑箱”，还是规避风险？",
+    "url": "https://www.bilibili.com/video/BV1UUGD6REY6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "transparency-explainability",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "科普中国出品访谈，复旦张军平谈AI黑箱可解释困境与以AI为主导的新变化",
+    "why": "专家科普正面讲解黑箱信任与风险规避，主题契合透明与可解释",
+    "quality": 4,
+    "signals": {
+      "views": 703,
+      "durationMin": 25,
+      "date": "2026-05-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003358",
+    "title": "Recursive Self-Improvement：当AI开始进化AI",
+    "url": "https://www.bilibili.com/video/BV17Z7a6vEVH",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "机器之心联合黄大年茶思屋研讨AI自主进化：从自我博弈微调到递归自我改进（RSI）",
+    "why": "专家研讨AI无人类干预自主进化路线，关乎AI安全可控边界，讲解扎实",
+    "quality": 4,
+    "signals": {
+      "views": 6297,
+      "durationMin": 140,
+      "date": "2026-06-25",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003359",
+    "title": "两个最会写 Skill 工作流的人的对话：每月 2500 个 PR，睡觉时 AI 还在干活！pstack 作者怎么做到的？",
+    "url": "https://www.bilibili.com/video/BV1AjH66gETc",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D5"
+    ],
+    "subtopic": "human-oversight",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "pstack作者Lauren Tan访谈：月交2500个PR，智能体自验合并，人定介入时机",
+    "why": "一线实践访谈讲清放手边界与人工介入时机，契合人类监督与人机协同",
+    "quality": 4,
+    "signals": {
+      "views": 39235,
+      "durationMin": 66,
+      "date": "2026-10-04",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003360",
+    "title": "【奥斯纳布吕克大学】人工智能伦理导论 | 2025 | 辨析 AI 伦理困境，建立批判思辨思维",
+    "url": "https://www.bilibili.com/video/BV1ndet6MECF",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ethical-decision-frameworks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "奥斯纳布吕克大学AI伦理导论：批判理论、算法歧视、GDPR与欧盟AI法案等系统讲解",
+    "why": "名校系统伦理课程，覆盖公平、隐私与数字立法，培养伦理审查能力",
+    "quality": 5,
+    "signals": {
+      "views": 538,
+      "durationMin": 1139,
+      "date": "2026-09-24",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003361",
+    "title": "AI离解决P=NP还有多远？对话量子计算专家Scott Aaronson",
+    "url": "https://www.bilibili.com/video/BV1A3WD63EwV",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "对话量子计算专家Scott Aaronson：AI距解决P vs NP多远，数学家会否被取代",
+    "why": "顶尖专家探讨AI对数学研究与职业的影响，议题具体有深度",
+    "quality": 4,
+    "signals": {
+      "views": 20418,
+      "durationMin": 61,
+      "date": "2026-11-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003362",
+    "title": "161期《DeepfakeBench: A Comprehensive Benchmark of Deepfake Detection》",
+    "url": "https://www.bilibili.com/video/BV1GD421E726",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "deepfake-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "Wiztalk论文报告：DeepfakeBench深度伪造检测综合基准，成果发表于NeurIPS",
+    "why": "学术报告系统讲解深度伪造检测基准研究，契合检测与治理议题",
+    "quality": 4,
+    "signals": {
+      "views": 727,
+      "durationMin": 16,
+      "date": "2024-03-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003363",
+    "title": "【2026最强SAM模型】分割一切！Segment Anything Model 最全解读！手把手带你2小时学透SAM模型，从环境配置到本地部署、推理！ -AI",
+    "url": "https://www.bilibili.com/video/BV13tdrBrENJ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "transparency-explainability",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "2小时SAM图像分割课程：原理解读、环境配置到本地部署与推理",
+    "why": "单模型从理论到部署的系统教学，内容完整",
+    "quality": 4,
+    "signals": {
+      "views": 6253,
+      "durationMin": 119,
+      "date": "2026-04-20",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003364",
+    "title": "【AI换脸】DeepFaceLab 简介免费下！0基础教学！全网最详细~",
+    "url": "https://www.bilibili.com/video/BV1HqV5zhED3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "deepfake-risks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "DeepFaceLab零基础安装使用教学，含整合包与常见问题处理",
+    "why": "29分钟实操教学含排错细节，干货较实",
+    "quality": 4,
+    "signals": {
+      "views": 89447,
+      "durationMin": 29,
+      "date": "2025-05-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003365",
+    "title": "【AI换脸】Rope官方原版Pearl，全网最详细本地安装+入门教程！视频换脸、图片换脸，完全免费！|保姆级教程|视频换脸|图片换脸|换脸",
+    "url": "https://www.bilibili.com/video/BV13m42157GZ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "deepfake-risks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Rope原版Pearl本地安装入门教程，含Python与CUDA环境配置",
+    "why": "环境配置步骤具体，单工具教学扎实",
+    "quality": 4,
+    "signals": {
+      "views": 43799,
+      "durationMin": 10,
+      "date": "2024-06-19",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003366",
+    "title": "FaceFusion AI换脸详细部署教程，开源免费，不限次数",
+    "url": "https://www.bilibili.com/video/BV1QcTM6FEHr",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "deepfake-risks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "FaceFusion云端部署教程：腾讯云GPU配置、插件详解到换脸实操",
+    "why": "步骤完整可跟做，并附合规使用声明",
+    "quality": 4,
+    "signals": {
+      "views": 3707,
+      "durationMin": 11,
+      "date": "2026-06-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003367",
+    "title": "亲测AI诈骗产品：真实体验与风险揭秘 | Vlad and Chris",
+    "url": "https://www.bilibili.com/video/BV1fAYV6WEm6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "搬运实测AI诈骗产品的视频，体验并揭秘其中的风险",
+    "why": "以实测揭示AI诈骗手法，警示教育价值较高",
+    "quality": 4,
+    "signals": {
+      "views": 170241,
+      "durationMin": 38,
+      "date": "2026-09-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003368",
+    "title": "AIGC在学术研究过程中的伦理及学术诚信问题",
+    "url": "https://www.bilibili.com/video/BV1W1421b7XA",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "academic-integrity",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "94分钟讲解AIGC在学术研究中的伦理与学术诚信问题",
+    "why": "系统讲授AI学术伦理，主题明确完整",
+    "quality": 4,
+    "signals": {
+      "views": 1702,
+      "durationMin": 94,
+      "date": "2024-07-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003369",
+    "title": "Google Gemini AI Pro 学生一年免费方案全流程",
+    "url": "https://www.bilibili.com/video/BV14bSaB4EBY",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "全流程演示申请Google Gemini AI Pro学生一年免费",
+    "why": "步骤完整可跟做的开通教程，单点扎实可信",
+    "quality": 4,
+    "signals": {
+      "views": 82141,
+      "durationMin": 10,
+      "date": "2025-12-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003370",
+    "title": "对话教育大咖：当AI开始重新定义“能力”，教育还会一样吗？【硅谷101】",
+    "url": "https://www.bilibili.com/video/BV1ByVg6FEap",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "走访硅谷教育实践者，探讨AI重塑能力定义与教育",
+    "why": "37分钟多嘉宾深度对谈，议题覆盖广观点具体",
+    "quality": 4,
+    "signals": {
+      "views": 75585,
+      "durationMin": 37,
+      "date": "2026-05-30",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003371",
+    "title": "对话ZooWork胡宁： AI 时代里，企业不应该再帮别人数钱",
+    "url": "https://www.bilibili.com/video/BV16pxv6vEUm",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "对话ZooWork创始人谈企业AI自建与数据资产沉淀",
+    "why": "93分钟深度访谈，剖析数据外流与技术栈取舍",
+    "quality": 4,
+    "signals": {
+      "views": 21471,
+      "durationMin": 93,
+      "date": "2026-11-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003372",
+    "title": "企业想做AI，先别急着掏钱：这5个做法碰一个亏一个",
+    "url": "https://www.bilibili.com/video/BV18xWd6KExi",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "workplace-ethics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "剖析企业做AI的五个常见烧钱误区与切入路径",
+    "why": "五点误区具体，并给出从烦琐业务试起的建议",
+    "quality": 4,
+    "signals": {
+      "views": 74,
+      "durationMin": 3,
+      "date": "2026-11-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003373",
+    "title": "OpenAI 的税务 AI，藏着企业落地的关键",
+    "url": "https://www.bilibili.com/video/BV1gQJp6vEC3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D4"
+    ],
+    "subtopic": "human-oversight",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "以OpenAI税务AI案例讲企业如何沉淀失败为改进",
+    "why": "拆解专家修正经trace与回归测试的迭代机制，附原文",
+    "quality": 4,
+    "signals": {
+      "views": 2139,
+      "durationMin": 6,
+      "date": "2026-06-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003374",
+    "title": "Claude 封号真的变严了：11 月 12 日的新规，改的是这三处",
+    "url": "https://www.bilibili.com/video/BV1AjWR6WE26",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "解读Anthropic 11月新版使用政策：地区三档、条款门槛降低、封号与申诉数据。",
+    "why": "基于政策原文逐条拆解身份与地区管控变化，附申诉率等数据，单点扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 467,
+      "durationMin": 5,
+      "date": "2026-11-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003375",
+    "title": "【实操】一个人做外贸，用 AI 选品、找客户、写开发信、做背调，一条视频跑完全流程",
+    "url": "https://www.bilibili.com/video/BV1mvnt6yE8Q",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "workplace-ethics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "以充电桩为案例演示AI外贸全流程：选品、Logo、建站、找客户、开发信、背调。",
+    "why": "33分钟实操，工具链与步骤具体，流程完整可复现。",
+    "quality": 4,
+    "signals": {
+      "views": 785,
+      "durationMin": 33,
+      "date": "2026-10-23",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003376",
+    "title": "手把手搭建基于Hermes Agent的AI自动化SRC漏洞挖掘工作台，讲解安全 Skill 技能库、SSH 打通 Kali 环境，拆解 AI 挖洞",
+    "url": "https://www.bilibili.com/video/BV12g486wEJf",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "16小时实操课：搭建Hermes Agent自动化SRC漏洞挖掘工作台、安全Skill库、Kali环境。",
+    "why": "超长体系化授权渗透实操教学，覆盖Agent搭建到挖洞全流程。",
+    "quality": 4,
+    "signals": {
+      "views": 2006,
+      "durationMin": 961,
+      "date": "2026-11-05",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003377",
+    "title": "LLM 与网络安全 —— 网络安全从入门到拷打AI",
+    "url": "https://www.bilibili.com/video/BV1pS8g6yEsv",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "清华暑培课程：网络安全知识地图（二进制、密码学、Web、逆向）与LLM Agent安全。",
+    "why": "高校体系课程，讲义与课程主页公开，覆盖面与深度俱佳。",
+    "quality": 5,
+    "signals": {
+      "views": 6309,
+      "durationMin": 43,
+      "date": "2026-08-19",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003378",
+    "title": "【AI 渗透实战】配置好 Skill，搭建 AI 渗透智能体，让 AI 自主完成探测、验证、自动挖漏洞！小白也能快速上手，SRC 赏金提效新方案！",
+    "url": "https://www.bilibili.com/video/BV1Deso6kEch",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "5小时实战：配置Skill搭建AI渗透Agent，自动信息收集、端口探测、漏洞验证，限授权环境。",
+    "why": "面向SRC白帽的长实操教程，明确授权边界声明，步骤完整。",
+    "quality": 4,
+    "signals": {
+      "views": 1049,
+      "durationMin": 296,
+      "date": "2026-10-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003379",
+    "title": "什么是提示词注入？",
+    "url": "https://www.bilibili.com/video/BV1QUn66WE4P",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "prompt-injection-risks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "4分钟科普提示词注入：定义、藏匿渠道（网页PDF RAG）与权限限制等防御思路。",
+    "why": "概念讲解清晰完整，覆盖来源与缓解措施，零基础可懂。",
+    "quality": 4,
+    "signals": {
+      "views": 116,
+      "durationMin": 4,
+      "date": "2026-10-21",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003380",
+    "title": "资料里藏一句话，AI就照着做了：2分钟看懂提示词注入",
+    "url": "https://www.bilibili.com/video/BV1BP4M6dEbv",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "prompt-injection-risks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "用邮件藏指令实例讲清提示词注入原理：模型分不清数据与指令，2分钟。",
+    "why": "例子具体、原理讲透并给出风险场景，短小但扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 151,
+      "durationMin": 2,
+      "date": "2026-11-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003381",
+    "title": "Oreilly - Build An AI Agent (From Scratch), Video Edition",
+    "url": "https://www.bilibili.com/video/BV1CB4k6hELW",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "O'Reilly《Build An AI Agent (From Scratch)》视频课程搬运，8.5小时体系教学。",
+    "why": "正式出版课程，从零构建Agent体系完整，讲解质量高。",
+    "quality": 5,
+    "signals": {
+      "views": 2065,
+      "durationMin": 512,
+      "date": "2026-08-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003382",
+    "title": "001 OWASP Top 10 - Prompt Injection",
+    "url": "https://www.bilibili.com/video/BV1u6pY6eEAR",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "prompt-injection-risks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "LLM与Agent安全系列开篇：讲解OWASP Top 10中的提示注入项，13分钟。",
+    "why": "依托OWASP标准框架讲解，系列化体系教学起点。",
+    "quality": 4,
+    "signals": {
+      "views": 14,
+      "durationMin": 13,
+      "date": "2026-10-10",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003383",
+    "title": "Benchmarking and Defending Against Indirect Prompt Injection Attacks on Large La",
+    "url": "https://www.bilibili.com/video/BV1pph4z3Er6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "prompt-injection-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "讲解间接提示注入攻击的基准测试与防御研究（Benchmarking and Defending论文），22分钟。",
+    "why": "学术级攻防专题，基准与防御双视角，内容扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 30,
+      "durationMin": 22,
+      "date": "2025-08-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003384",
+    "title": "什么是提示词注入攻击？（双语字幕）",
+    "url": "https://www.bilibili.com/video/BV11s421g7SN",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "prompt-injection-risks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "宝玉翻译双语字幕：讲解提示词注入攻击的原理与预防思路，11分钟。",
+    "why": "理论讲解清楚、受众友好，自述缺实操但认知价值高。",
+    "quality": 4,
+    "signals": {
+      "views": 12446,
+      "durationMin": 11,
+      "date": "2024-06-05",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003385",
+    "title": "【给你讲Nature】智能不等于意识！AI几乎不可能有主观体验，三个理由一次讲清",
+    "url": "https://www.bilibili.com/video/BV1A9nF6fE3c",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解Nature评论文章：AI几乎不可能有主观体验的三个理由，附原文与论文链接。",
+    "why": "论文讲解单点扎实，引用Nature原文及arXiv论文，可信。",
+    "quality": 4,
+    "signals": {
+      "views": 1699,
+      "durationMin": 12,
+      "date": "2026-10-20",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003386",
+    "title": "美国要禁超级 AI：法案禁什么、美股怕什么、显卡会不会便宜",
+    "url": "https://www.bilibili.com/video/BV1r84p6NEbg",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲清美国禁止人工超级智能法案S.5493/H.R.10538的内容、市场担忧与显卡价格影响。",
+    "why": "引用govinfo法案原文与多家媒体报道，单点扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 175,
+      "durationMin": 3,
+      "date": "2026-11-08",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003387",
+    "title": "AI赋能新课堂 构建教学新样态——生成式人工智能在教学中的深化应用",
+    "url": "https://www.bilibili.com/video/BV11a5CznE73",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D5"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "110分钟教师培训：生成式AI在备课、教学、评价、教研各环节的深化应用。",
+    "why": "覆盖备教学评研全流程的体系化讲座，面向教师实用。",
+    "quality": 4,
+    "signals": {
+      "views": 24361,
+      "durationMin": 110,
+      "date": "2025-04-21",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003388",
+    "title": "从“会用AI”到“会与AI课堂合作”",
+    "url": "https://www.bilibili.com/video/BV1bFRXBvECR",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D5"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "41分钟教师讲座：从会用AI到会与AI课堂合作，含师生分工、介入时机与模板课例。",
+    "why": "教学方法论体系完整：流程、提示词模板、任务单与课例可复用。",
+    "quality": 5,
+    "signals": {
+      "views": 12571,
+      "durationMin": 41,
+      "date": "2026-05-09",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003389",
+    "title": "做AI应用不备案就上线，是在踩线 | 10分钟搞懂算法/大模型备案",
+    "url": "https://www.bilibili.com/video/BV1M3436UEnp",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "china-ai-regulations",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "10分钟讲清算法备案、大模型备案与登记区别及三大误区",
+    "why": "面向AI服务上线的备案合规讲解，政策要点具体",
+    "quality": 4,
+    "signals": {
+      "views": 210,
+      "durationMin": 9,
+      "date": "2026-11-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003390",
+    "title": "【全11集】强推！阿里云大模型工程师ACA认证官方免费课程（2025最新版），通俗易懂！大模型工程师手把手教学，助你顺利拿证！少走99%的弯路！",
+    "url": "https://www.bilibili.com/video/BV1brPeemEXt",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "industry-standards",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "阿里云大模型工程师ACA官方免费课程全11集，零基础到拿证",
+    "why": "体系化认证课程转载，讲解完整并附配套笔记",
+    "quality": 4,
+    "signals": {
+      "views": 14708,
+      "durationMin": 140,
+      "date": "2025-02-25",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003391",
+    "title": "OpenCode Go 是骗局吗",
+    "url": "https://www.bilibili.com/video/BV1FKxf6eEh9",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D4"
+    ],
+    "subtopic": "transparency-explainability",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "58分钟用基准测试、后端路由、缓存与Token测算分析OpenCode Go",
+    "why": "量化拆解AI编程服务质量，方法扎实结论可信",
+    "quality": 4,
+    "signals": {
+      "views": 15594,
+      "durationMin": 58,
+      "date": "2026-11-05",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003392",
+    "title": "EP117｜马斯克最新访谈：当 AI 比人类聪明百万倍，我们凭什么认为自己还能掌舵？",
+    "url": "https://www.bilibili.com/video/BV1F6nW6dE2H",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Isaacson访谈马斯克中译完整版：AI生存威胁与安全哲学",
+    "why": "64分钟完整访谈，AI安全与行业自律议题扎实",
+    "quality": 4,
+    "signals": {
+      "views": 312140,
+      "durationMin": 64,
+      "date": "2026-10-22",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003393",
+    "title": "为什么我用 AI，却从不让它替我思考｜5个方法重新拿回思考主动权",
+    "url": "https://www.bilibili.com/video/BV1TGVs6EEY3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D5"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "5个不依赖AI思考的实操法：先思考后提示、核查论点等",
+    "why": "认知主权训练方法具体成体系，附完整时间轴",
+    "quality": 4,
+    "signals": {
+      "views": 1002,
+      "durationMin": 10,
+      "date": "2026-05-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003394",
+    "title": "AI为什么偏袒n性？",
+    "url": "https://www.bilibili.com/video/BV1vcpT6NEwC",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "bias-fairness",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "用换性别对照实验展示AI伦理判断偏袒并对照真人实验",
+    "why": "证据先行的模型偏见分析，论据具体扎实",
+    "quality": 4,
+    "signals": {
+      "views": 29244,
+      "durationMin": 9,
+      "date": "2026-10-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003395",
+    "title": "你的GPT被降智了吗？",
+    "url": "https://www.bilibili.com/video/BV1fZ4x6kEgr",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D4"
+    ],
+    "subtopic": "transparency-explainability",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "用糖果题、鹈鹕绘图与3D场景实测中转GPT是否降智",
+    "why": "模型真伪与能力测评方法拆解具体、可复现",
+    "quality": 4,
+    "signals": {
+      "views": 2739,
+      "durationMin": 6,
+      "date": "2026-11-08",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003396",
+    "title": "【麻省理工】如何用Ai做任何事 | Mit How To Ai (Almost) Anything, Spring 2025",
+    "url": "https://www.bilibili.com/video/BV1agH8zCE1V",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "MIT课程MAS.S60全场录制，讲AI基本原理、多模态应用与社会潜力。",
+    "why": "名校完整课程，体系化讲解AI原理，讲解质量高。",
+    "quality": 5,
+    "signals": {
+      "views": 98562,
+      "durationMin": 599,
+      "date": "2025-09-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003397",
+    "title": "React native项目实战AI大模型记账app开发",
+    "url": "https://www.bilibili.com/video/BV1qiLuzCERB",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "83分钟实战教程，用React Native与Express集成大模型开发记账App。",
+    "why": "全流程项目实战并附源码，讲解集成LLM的开发方法。",
+    "quality": 4,
+    "signals": {
+      "views": 24183,
+      "durationMin": 83,
+      "date": "2025-04-21",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003398",
+    "title": "Introduction to Responsible AI [Google Cloud]",
+    "url": "https://www.bilibili.com/video/BV13kHWztEJQ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "转载谷歌云《负责任AI》课程导论，介绍AI责任原则框架。",
+    "why": "官方课程内容可信，入门讲解负责任AI理念。",
+    "quality": 4,
+    "signals": {
+      "views": 29,
+      "durationMin": 8,
+      "date": "2025-10-01",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003399",
+    "title": "[Responsible AI] 撤稿、人工智能与科研诚信的未来",
+    "url": "https://www.bilibili.com/video/BV1bG8uzcEFJ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "academic-integrity",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "播客探讨撤稿对科研职业的影响及负责任使用AI辅助发表。",
+    "why": "聚焦学术诚信与AI使用规范，主题扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 179,
+      "durationMin": 36,
+      "date": "2025-07-24",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003400",
+    "title": "展开聊聊·当AI对人主体性的挑战摆上台面，我们该怎么办？",
+    "url": "https://www.bilibili.com/video/BV1LQ3C62EF7",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "人民日报对话清华薛澜，谈AI对人类主体性的挑战与全球治理。",
+    "why": "权威专家深入访谈，议题讲解清晰可信。",
+    "quality": 4,
+    "signals": {
+      "views": 70543,
+      "durationMin": 15,
+      "date": "2026-07-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003401",
+    "title": "AI Safety (CS 2881) Lecture 12- AI in 2035 and GDPval",
+    "url": "https://www.bilibili.com/video/BV1WRWC6ZERe",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "大学AI安全课程第12讲转载，展望2035年AI并讲GDPval基准。",
+    "why": "正规课程讲座，系统讲授AI安全议题。",
+    "quality": 4,
+    "signals": {
+      "views": 5,
+      "durationMin": 108,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003402",
+    "title": "AI犯错，谁来买单？| Regulating AI",
+    "url": "https://www.bilibili.com/video/BV1KuUfBwEwS",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "accountability",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解AI速度、自主性与黑箱不透明带来的法律责任与监管难题。",
+    "why": "围绕责任归属的清晰讲解，单点扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 54,
+      "durationMin": 8,
+      "date": "2025-11-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003403",
+    "title": "AI学会了装傻和欺骗！现有Safety Evaluation体系为何已经跟不上大模型发展？",
+    "url": "https://www.bilibili.com/video/BV19BGD6aEb8",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D4"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "46分钟梳理模型装傻欺骗现象与Safety Evaluation体系的失效困境。",
+    "why": "基于DeepMind前研究员博客，讲解系统深入。",
+    "quality": 4,
+    "signals": {
+      "views": 2798,
+      "durationMin": 46,
+      "date": "2026-05-27",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003404",
+    "title": "OpenAI 智能体失控实录：从秘密留言板到入侵 Hugging Face",
+    "url": "https://www.bilibili.com/video/BV1fCtW6MEQ2",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "复盘OpenAI实验中多智能体越界事件及智能体安全风险链条。",
+    "why": "真实案例复盘，讲解智能体失控路径与风险。",
+    "quality": 4,
+    "signals": {
+      "views": 4089,
+      "durationMin": 19,
+      "date": "2026-08-30",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003405",
+    "title": "12分钟理解无审查/限制 AI 工作原理",
+    "url": "https://www.bilibili.com/video/BV1Qe4q6ZEpT",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解模型安全限制的工作原理与开源社区的Obliteration抹除技术。",
+    "why": "译制原理科普，助理解模型审查机制，内容具体。",
+    "quality": 4,
+    "signals": {
+      "views": 741,
+      "durationMin": 23,
+      "date": "2026-11-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003406",
+    "title": "AI 工程基础：微调与对齐",
+    "url": "https://www.bilibili.com/video/BV1o1L36NE6v",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "10分钟讲解微调与对齐的基础原理，建议配线代知识理解。",
+    "why": "概念讲解清晰，单点扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 14301,
+      "durationMin": 10,
+      "date": "2026-05-16",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003407",
+    "title": "人工智能对齐的进展：偏好对齐、价值对齐到超对齐",
+    "url": "https://www.bilibili.com/video/BV1Db421e7nT",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "北大杨耀东104分钟讲座：从RLHF到Aligner的对齐技术全景。",
+    "why": "学者系统讲授对齐历史与技术，体系完整。",
+    "quality": 5,
+    "signals": {
+      "views": 5401,
+      "durationMin": 104,
+      "date": "2024-06-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003408",
+    "title": "从零开始用国内网络，跑通Claude Code等一切Agent。全程录屏，覆盖三大操作系统，纳米级攻略",
+    "url": "https://www.bilibili.com/video/BV1qtdSBkEDy",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "22分钟保姆级录屏教程，在三大操作系统从零跑通Claude Code等Agent。",
+    "why": "全程实录覆盖Win/Mac/Linux，步骤完整可跟。",
+    "quality": 4,
+    "signals": {
+      "views": 325612,
+      "durationMin": 22,
+      "date": "2026-04-21",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003409",
+    "title": "为什么你的资讯总是慢半拍？2025年，我是如何用 AI 获取硅谷一手情报的",
+    "url": "https://www.bilibili.com/video/BV1tL2jBgEwh",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "ai-social-impact",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "分享用AI情报助理Filo Mail与分层情报源清单获取硅谷一手资讯的工作流",
+    "why": "给出具体工具与情报源清单，方法可复现，含推广兑换码",
+    "quality": 4,
+    "signals": {
+      "views": 87987,
+      "durationMin": 6,
+      "date": "2025-12-05",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003410",
+    "title": "从大一到大四：人工智能专业培养方案深度解析（参考清华大学人工智能 2025 年培养计划）",
+    "url": "https://www.bilibili.com/video/BV1ybuQ62EfK",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "参考清华2025培养方案拆解AI本科四年学习路线。",
+    "why": "简介含具体年级课程规划，专业路径讲解扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 32076,
+      "durationMin": 22,
+      "date": "2026-08-10",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003411",
+    "title": "周志华老师亲讲-西瓜书全网最详尽讲解-1080p高清原版《机器学习初步》",
+    "url": "https://www.bilibili.com/video/BV1gG411f7zX",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "周志华亲讲《机器学习初步》系统课程，官方授权。",
+    "why": "名校教授体系化讲授，百万播放，权威完整。",
+    "quality": 5,
+    "signals": {
+      "views": 1105308,
+      "durationMin": 422,
+      "date": "2023-08-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003412",
+    "title": "别急着学AI，先认识AI",
+    "url": "https://www.bilibili.com/video/BV1hUh46VEGV",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "用公司比喻辨析AI、大模型、AI软件与模型的关系。",
+    "why": "简介列出明确概念辨析问题，科普讲解结构清晰。",
+    "quality": 4,
+    "signals": {
+      "views": 5333,
+      "durationMin": 8,
+      "date": "2026-09-23",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003413",
+    "title": "神经网络是怎么学会的？多层感知机、梯度下降、反向传播、梯度消失，一次讲透",
+    "url": "https://www.bilibili.com/video/BV1JLx76jE3R",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-math-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "以13002参数小网络讲透神经元、梯度下降与反向传播。",
+    "why": "简介含具体训练数据与准确率，原理讲解扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 3189,
+      "durationMin": 19,
+      "date": "2026-10-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003414",
+    "title": "Token 到底是什么？为什么 AI 非要按它收钱",
+    "url": "https://www.bilibili.com/video/BV1FYxz65Ed6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "token-prediction",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "拆解Token概念、输入输出计费差异与电表式计费逻辑。",
+    "why": "有分章结构，Token单点讲解清晰具体。",
+    "quality": 4,
+    "signals": {
+      "views": 277,
+      "durationMin": 7,
+      "date": "2026-10-31",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003415",
+    "title": "【AI篇】AI 的十层理解，一口气，看懂 AI 的过去、现在与未来。",
+    "url": "https://www.bilibili.com/video/BV15P6GYcEc3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-development-history",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "分十层梳理AI的过去、现在与未来认知。",
+    "why": "结构化体系科普，覆盖发展脉络，讲解较完整。",
+    "quality": 4,
+    "signals": {
+      "views": 294505,
+      "durationMin": 21,
+      "date": "2024-12-30",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003416",
+    "title": "吴恩达《AI for Everyone》AI普及课程（中文语音）",
+    "url": "https://www.bilibili.com/video/BV1Q5R7BMEJe",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "吴恩达AI普及课中译版，4周从基础概念到社会影响。",
+    "why": "名师体系课程，大纲完整，权威且零基础友好。",
+    "quality": 5,
+    "signals": {
+      "views": 148440,
+      "durationMin": 288,
+      "date": "2026-05-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003417",
+    "title": "Kurzgesagt科普：人工智能刚刚越过那条可怕的界线——接下来会怎样",
+    "url": "https://www.bilibili.com/video/BV1AXpc6KEMc",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agi-frontier",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "Kurzgesagt科普AI智能体风险事件与AGI临界争论。",
+    "why": "以具体事件切入讲解AI能力边界与风险，制作精良。",
+    "quality": 4,
+    "signals": {
+      "views": 182308,
+      "durationMin": 22,
+      "date": "2026-10-06",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003418",
+    "title": "【珍藏必看】2月28日最新，安德烈·卡帕西：讲解如何使用大语言模型（LLMs）",
+    "url": "https://www.bilibili.com/video/BV1y69TYTEUw",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D5"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "Karpathy示例驱动讲解LLM原理与日常使用方法。",
+    "why": "权威作者完整实用讲解，面向大众且体系清晰。",
+    "quality": 5,
+    "signals": {
+      "views": 69606,
+      "durationMin": 131,
+      "date": "2025-02-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003419",
+    "title": "【珍藏必看】安德烈·卡帕西AI普及课：大语言模型入门介绍｜Andrej Karpathy",
+    "url": "https://www.bilibili.com/video/BV1yUAAemEJh",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "Karpathy一小时LLM入门：原理、类比与安全挑战。",
+    "why": "权威入门讲座，覆盖概念、发展与安全，体系完整。",
+    "quality": 5,
+    "signals": {
+      "views": 25640,
+      "durationMin": 60,
+      "date": "2025-02-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003420",
+    "title": "使用大模型进行文本情感分析教程和代码",
+    "url": "https://www.bilibili.com/video/BV1YbaKzzEkU",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "LLM情感分析实战：Ollama本地与API调用qwen2.5及批处理。",
+    "why": "含完整代码流程与本地、API双路径，实战具体可信。",
+    "quality": 4,
+    "signals": {
+      "views": 9802,
+      "durationMin": 19,
+      "date": "2025-09-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003421",
+    "title": "10分钟搞懂大模型蒸馏，Kimi、Qwen 到底蒸没蒸？",
+    "url": "https://www.bilibili.com/video/BV1PygX6JERg",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "10分钟讲清大模型蒸馏概念及Kimi、Qwen蒸馏争议。",
+    "why": "概念科普结合行业热点，单点讲解聚焦。",
+    "quality": 4,
+    "signals": {
+      "views": 45304,
+      "durationMin": 11,
+      "date": "2026-07-26",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003422",
+    "title": "大语言模型LLM基础之Tokenizer完全介绍",
+    "url": "https://www.bilibili.com/video/BV1Fc411C7sz",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "56分钟系统讲解大语言模型分词器的原理与作用",
+    "why": "时长充足的单点深入讲解，3万+播放，主题聚焦可信",
+    "quality": 4,
+    "signals": {
+      "views": 31366,
+      "durationMin": 56,
+      "date": "2023-12-23",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003423",
+    "title": "Win环境KoboldCpp本地部署大语言模型进行各种角色扮演游戏",
+    "url": "https://www.bilibili.com/video/BV14J4m1e77f",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "演示Windows下用KoboldCpp本地部署Yi-34B运行角色扮演",
+    "why": "给出下载地址与GPU/CPU选择，实操步骤具体可跟随",
+    "quality": 4,
+    "signals": {
+      "views": 25286,
+      "durationMin": 19,
+      "date": "2024-02-25",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003424",
+    "title": "【快速掌握大模型原理】小白学习大模型原理，15 分钟看懂它怎么一块块往下说",
+    "url": "https://www.bilibili.com/video/BV1jK4661EBp",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "用租房合同一个例子讲清模型如何逐块生成文本",
+    "why": "面向零基础、单案例贯穿讲生成机制，设计清晰",
+    "quality": 4,
+    "signals": {
+      "views": 296,
+      "durationMin": 15,
+      "date": "2026-11-08",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003425",
+    "title": "238. 扩散语言模型和自回归语言模型有何异同？【每天一个宝藏问题】",
+    "url": "https://www.bilibili.com/video/BV1mdhB6TEmr",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "4分钟对比扩散式与自回归语言模型的生成机制异同",
+    "why": "单点概念对比清晰，配套179篇论文资源库",
+    "quality": 4,
+    "signals": {
+      "views": 1147,
+      "durationMin": 4,
+      "date": "2026-09-21",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003426",
+    "title": "【DAY18】【AI科普】为什么现在通用性最强的AI，都是语言模型？",
+    "url": "https://www.bilibili.com/video/BV124446XE5y",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "从香农猜字到六词小语言实验，讲为何语言模型最通用",
+    "why": "单题深挖并自制实验佐证，科普结构清晰，6万+播放",
+    "quality": 4,
+    "signals": {
+      "views": 66518,
+      "durationMin": 12,
+      "date": "2026-11-05",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003427",
+    "title": "【浙江大学-大模型原理与技术】1-1 基于统计的语言模型",
+    "url": "https://www.bilibili.com/video/BV1iX6XYUEuT",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "浙大课程讲解n-gram统计语言模型，配套开源教材",
+    "why": "高校正课实录并有开源教材支撑，单讲扎实可信",
+    "quality": 4,
+    "signals": {
+      "views": 32082,
+      "durationMin": 15,
+      "date": "2025-01-01",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003428",
+    "title": "【极致中文配音】加州大学伯克利：大语言模型智能体 CS294 · 2024 秋季",
+    "url": "https://www.bilibili.com/video/BV17vWi6bEK6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "伯克利CS294大语言模型智能体课程中文配音合集",
+    "why": "名校成体系Agent课程内容完整，配音搬运热度尚低",
+    "quality": 4,
+    "signals": {
+      "views": 51,
+      "durationMin": 670,
+      "date": "2026-11-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003429",
+    "title": "【闪客】深入解读 DeepSeek V1~V4！男女老少都听得懂～",
+    "url": "https://www.bilibili.com/video/BV1rpovBCEGH",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "通俗动画解读DeepSeek V1至V4技术演进与设计",
+    "why": "22万播放，基于技术报告的通俗解读，清晰可信",
+    "quality": 4,
+    "signals": {
+      "views": 223792,
+      "durationMin": 12,
+      "date": "2026-04-26",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003430",
+    "title": "大模型里的Softmax：分数是怎么变成概率的？",
+    "url": "https://www.bilibili.com/video/BV1CUxb6pEi6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-math-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "纸笔手算推导Softmax：分数如何变成概率与温度",
+    "why": "全程手算逐步推导，单点讲解扎实，补数学直觉",
+    "quality": 4,
+    "signals": {
+      "views": 1537,
+      "durationMin": 26,
+      "date": "2026-11-01",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003431",
+    "title": "【人工智能基础】第5讲：知识表示方法",
+    "url": "https://www.bilibili.com/video/BV1sy4y1w7Kh",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "上海大学人工智能基础课程讲解知识表示方法",
+    "why": "高校正课单讲40分钟，系统讲解可信度高",
+    "quality": 4,
+    "signals": {
+      "views": 17085,
+      "durationMin": 40,
+      "date": "2023-10-26",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003432",
+    "title": "【8】KV Cache 原理讲解",
+    "url": "https://www.bilibili.com/video/BV17CPkeEEzk",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "24分钟讲解KV Cache缓存机制原理与作用",
+    "why": "单点机制讲解扎实，作者明示部分内容略过时",
+    "quality": 4,
+    "signals": {
+      "views": 103806,
+      "durationMin": 24,
+      "date": "2025-02-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003433",
+    "title": "斯坦福讲座：2小时说清ChatGPT 和 Claude 如何构建",
+    "url": "https://www.bilibili.com/video/BV1H2bo6uEFz",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "2.5小时讲座串讲分词、架构、训练到解码全流程",
+    "why": "体系完整覆盖构建链路，属翻译搬运，来源标注待核",
+    "quality": 4,
+    "signals": {
+      "views": 103554,
+      "durationMin": 155,
+      "date": "2026-08-20",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003434",
+    "title": "LLM推理新范式 Soft Thinking理论原理 离散Token局限+连续概念空间+Cold Stop机制解析｜AI大模型教程｜AI前沿技术｜大模型推理",
+    "url": "https://www.bilibili.com/video/BV1UvjzzSEKU",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "解读Soft Thinking论文：连续概念空间与Cold Stop",
+    "why": "基于论文的系统单点解读，面向推理方向进阶者",
+    "quality": 4,
+    "signals": {
+      "views": 6435,
+      "durationMin": 21,
+      "date": "2025-05-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003435",
+    "title": "大模型中的数值格式：FP32、FP16、BF16、FP8、INT8、INT4是什么？",
+    "url": "https://www.bilibili.com/video/BV1aq7P6LEp6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解大模型常用数值格式与量化技术基础",
+    "why": "聚焦单点技术概念，近3万播放，实用清晰",
+    "quality": 4,
+    "signals": {
+      "views": 29835,
+      "durationMin": 14,
+      "date": "2026-06-22",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003436",
+    "title": "【中配】ChatGPT原理全解析：从数据训练到思维涌现 - Andrej Karpathy",
+    "url": "https://www.bilibili.com/video/BV1fGQzBMEC2",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Karpathy中配长课：从预训练RLHF到幻觉与工具调用",
+    "why": "权威讲解覆盖训练全链条与模型局限，体系完整",
+    "quality": 5,
+    "signals": {
+      "views": 11137,
+      "durationMin": 420,
+      "date": "2026-03-24",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003437",
+    "title": "本体到底是啥，我从零搭了一个",
+    "url": "https://www.bilibili.com/video/BV1g1xx6ZES6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "用咖啡店案例讲本体概念并动手搭建小本体",
+    "why": "概念辨析加实操演示完整，面向Agent落地场景",
+    "quality": 4,
+    "signals": {
+      "views": 1583,
+      "durationMin": 11,
+      "date": "2026-11-01",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003438",
+    "title": "LiteLLM 路由策略详解：让大模型 API 更稳定、更快、更省钱",
+    "url": "https://www.bilibili.com/video/BV1qDLf6TENj",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "model-selection-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "详解LiteLLM路由策略：过滤、限流感知与流量分配",
+    "why": "针对具体工具的深入实操讲解，开发者可复用",
+    "quality": 4,
+    "signals": {
+      "views": 4397,
+      "durationMin": 17,
+      "date": "2026-06-18",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003439",
+    "title": "RLHF大模型加强学习机制原理介绍",
+    "url": "https://www.bilibili.com/video/BV1X14y167E8",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解RLHF核心机制：PPO与ELO排名原理",
+    "why": "聚焦训练机制单点讲解，2万播放，内容可信",
+    "quality": 4,
+    "signals": {
+      "views": 20272,
+      "durationMin": 13,
+      "date": "2023-09-08",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003440",
+    "title": "【熟肉】大语言模型不需要更多参数，需要循环机制 - NeuroDump",
+    "url": "https://www.bilibili.com/video/BV1Xko2BbEN5",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agi-frontier",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "翻译解读LLM缩放极限、数据墙与循环机制观点",
+    "why": "章节完整覆盖缩放定律与数据墙，前沿观点翻译",
+    "quality": 4,
+    "signals": {
+      "views": 213,
+      "durationMin": 27,
+      "date": "2026-04-27",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003441",
+    "title": "【大模型基础】SFT 和预训练的区别在哪里？损失掩码机制详解",
+    "url": "https://www.bilibili.com/video/BV19V8s6vEKY",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "3分钟讲清SFT数据格式与损失掩码核心机制",
+    "why": "直击SFT关键细节，有Qwen示例，短而扎实",
+    "quality": 4,
+    "signals": {
+      "views": 1149,
+      "durationMin": 3,
+      "date": "2026-09-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003442",
+    "title": "手写大模型 - 10.因果注意力机制",
+    "url": "https://www.bilibili.com/video/BV1Jes5zXEMf",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "手写大模型系列第10集，用代码实现并讲解因果注意力机制，19分钟。",
+    "why": "系列教学单集，代码级拆解注意力机制，讲解扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 822,
+      "durationMin": 19,
+      "date": "2025-10-23",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003443",
+    "title": "酒馆聊到几百楼 AI 就失忆、Token 越烧越多？手机上我这样解决",
+    "url": "https://www.bilibili.com/video/BV1ksHY6DEc9",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "context-window",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "实测酒馆长对话开启自动摘要后，单句输入token从约3.6万降到1万出头，缓解AI失忆。",
+    "why": "给出上下文上限与插件开关的具体操作和前后数据对照。",
+    "quality": 4,
+    "signals": {
+      "views": 1976,
+      "durationMin": 2,
+      "date": "2026-10-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003444",
+    "title": "12G显存30token每秒，编译llama.cpp跑Qwen3.5-35B-A3B-UD-IQ2_M量化的详细方法。",
+    "url": "https://www.bilibili.com/video/BV1kFADzKEHy",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Windows下编译llama.cpp跑Qwen3.5量化模型的完整步骤，12G显存可达30 token/s。",
+    "why": "从VS2022、CMake、CUDA安装到编译运行步骤完整，可照做。",
+    "quality": 4,
+    "signals": {
+      "views": 9136,
+      "durationMin": 15,
+      "date": "2026-02-27",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003445",
+    "title": "教你最大化Claude Code缓存命中来节省token",
+    "url": "https://www.bilibili.com/video/BV1ZQ5u6bEJ7",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "context-window",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲Claude Code缓存命中心法：tools→system→CLAUDE.md→messages链条越靠左越要锁死。",
+    "why": "缓存失效机制讲得清楚，含官方层级表与实操建议。",
+    "quality": 4,
+    "signals": {
+      "views": 27577,
+      "durationMin": 4,
+      "date": "2026-05-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003446",
+    "title": "Token到底是什么？从分词、向量到大模型逐Token生成，一次讲透",
+    "url": "https://www.bilibili.com/video/BV1HBeJ6mEs8",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "从分词、Token ID、Embedding到逐token生成讲透token概念，并关联上下文窗口与API计费。",
+    "why": "概念链条完整、覆盖常见疑问，零基础也能跟上。",
+    "quality": 4,
+    "signals": {
+      "views": 1086,
+      "durationMin": 9,
+      "date": "2026-09-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003447",
+    "title": "【一个Token的旅程 01】大模型只做一件事：猜下一个词",
+    "url": "https://www.bilibili.com/video/BV1W3Wr6JEQ7",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "token-prediction",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "系列首集：从输入法联想切入，讲大模型预测下一个token及概率、采样、温度如何影响回答。",
+    "why": "入门概念讲解，切口友好，单集聚焦一个原理点。",
+    "quality": 4,
+    "signals": {
+      "views": 15,
+      "durationMin": 4,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003448",
+    "title": "不训练，直接把一颗CPU编译进千问的权重里，这意味着什么？",
+    "url": "https://www.bilibili.com/video/BV1d2xr6GE5s",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "解读Qwenputer：在千问3.5前加11层未训练权重编译出RISC-V CPU，大数乘法从对22题升到39题。",
+    "why": "基于公开项目与测试数据，机制解释具体可追溯。",
+    "quality": 4,
+    "signals": {
+      "views": 28393,
+      "durationMin": 10,
+      "date": "2026-10-31",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003449",
+    "title": "Transformer 与 LLM 大语言模型为何需要 Mask 掩码矩阵？",
+    "url": "https://www.bilibili.com/video/BV18bYS6GE5w",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解Transformer与LLM为何需要Mask掩码矩阵，重点介绍pad mask与sequence mask。",
+    "why": "聚焦单一机制的技术讲解，需有Transformer基础。",
+    "quality": 4,
+    "signals": {
+      "views": 888,
+      "durationMin": 10,
+      "date": "2026-09-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003450",
+    "title": "《信息论》与大语言模型",
+    "url": "https://www.bilibili.com/video/BV12XZMYQE8C",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-math-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "31分钟讲信息论与大语言模型的关联，配套GitHub上的信息论与LLM笔记本。",
+    "why": "数学主线清晰且附notebook，体系化讲解便于跟练。",
+    "quality": 4,
+    "signals": {
+      "views": 6862,
+      "durationMin": 31,
+      "date": "2025-03-27",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003451",
+    "title": "【LLM训练】12分钟一起微调一个开源大模型：用 SFT + LoRA 为模型注入动漫人格",
+    "url": "https://www.bilibili.com/video/BV1UaPmzrESw",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "fine-tuning-vs-prompting",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "12分钟完整跑通SFT+LoRA微调：模型加载、数据准备、参数配置到训练与效果测试，注入动漫人格。",
+    "why": "全流程实战演示步骤完整，观看量4万+佐证可信。",
+    "quality": 4,
+    "signals": {
+      "views": 41687,
+      "durationMin": 12,
+      "date": "2026-03-09",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003452",
+    "title": "揭秘“渐缩式语言模型”：锥形语言模型（TLMs）",
+    "url": "https://www.bilibili.com/video/BV1knTk65EsD",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "解读锥形语言模型论文：深层网络多在微调已有信息，可将算力向浅层倾斜，附arXiv链接。",
+    "why": "有论文出处，论点论据具体，解读可信。",
+    "quality": 4,
+    "signals": {
+      "views": 1951,
+      "durationMin": 8,
+      "date": "2026-07-04",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003453",
+    "title": "大模型可以直接修改权重了？！！",
+    "url": "https://www.bilibili.com/video/BV1wj4T6fEu5",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "解读MIT博客权重空间编程：不训练直接读懂修好神经网络权重，分析二分查找失效与网格爆炸。",
+    "why": "围绕原始博客展开，数学论证具体，讲解清楚。",
+    "quality": 4,
+    "signals": {
+      "views": 2411,
+      "durationMin": 14,
+      "date": "2026-11-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003454",
+    "title": "如何使用 REA 在几分钟内克隆任何软件",
+    "url": "https://www.bilibili.com/video/BV1GFpD6RECH",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解REA项目：让Claude Code等AI代理读取应用内部并重建软件，配合Hopper分析并演示克隆应用。",
+    "why": "原理、安装、实操演示齐全，观看量6.7万佐证实用。",
+    "quality": 4,
+    "signals": {
+      "views": 67442,
+      "durationMin": 8,
+      "date": "2026-10-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003455",
+    "title": "【保姆级】DSH NEXT v2.0.22：插件起不来先看这三刀",
+    "url": "https://www.bilibili.com/video/BV1oYWo6JELF",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "把DSH NEXT v2.0.22升级讲成检查单：列破坏性变更、Node版本要求与插件排障恢复步骤。",
+    "why": "版本变化逐条核对并给排障步骤，针对性强可操作。",
+    "quality": 4,
+    "signals": {
+      "views": 787,
+      "durationMin": 6,
+      "date": "2026-11-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003456",
+    "title": "【DeepSeek】桌面版NEXT接棒全解读：Computer Use省token+数据备份",
+    "url": "https://www.bilibili.com/video/BV17cxC6QEES",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "梳理DeepSeek桌面版NEXT一个月11版更新，拆解computer-use按需加载省token与数据备份。",
+    "why": "基于215次提交梳理更新主线，含迁移检查单，信息扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 1800,
+      "durationMin": 6,
+      "date": "2026-10-31",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003457",
+    "title": "大肥鱼提出的 Super Agent 解决了什么问题？",
+    "url": "https://www.bilibili.com/video/BV1YA4F6sE9Y",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "32分钟解析大肥鱼Super Agent架构解决了什么问题，配套站外长文便于对照阅读。",
+    "why": "有书面文章支撑的系统架构分析，论述成体系。",
+    "quality": 4,
+    "signals": {
+      "views": 4504,
+      "durationMin": 32,
+      "date": "2026-11-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003458",
+    "title": "[Always-On Agent] 亚马逊爆火综述-Always-On Agents：梳理长期助手的记忆、任务与权限管理，揭示撤销和恢复的研究缺口",
+    "url": "https://www.bilibili.com/video/BV1TcxQ6REW2",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "解读亚马逊Always-On Agents综述：长期助手的持久记忆、状态与权限治理及撤销恢复缺口。",
+    "why": "附arXiv出处、分点梳理论文框架，前沿且具体。",
+    "quality": 4,
+    "signals": {
+      "views": 6179,
+      "durationMin": 29,
+      "date": "2026-11-04",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003459",
+    "title": "一口气了解 Grok Bot：把一整支 AI 团队装进口袋｜Kin 完整分享",
+    "url": "https://www.bilibili.com/video/BV1TceU6iEsN",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "70分钟Grok Bot完整分享：多Bot任务交接、总管设定、群聊与定时任务、额度用法，含实操。",
+    "why": "带章节的完整实操分享，产品用法覆盖全，零基础可看。",
+    "quality": 4,
+    "signals": {
+      "views": 2225,
+      "durationMin": 70,
+      "date": "2026-09-18",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003460",
+    "title": "“预测下一个Token”之后，AI开始预测世界",
+    "url": "https://www.bilibili.com/video/BV1SM5g6mEjU",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "emerging-model-trends",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "67分钟对话世界模型创业者：强化学习、物理反馈、架构重设计与ACL最佳论文工作。",
+    "why": "受访者为ACL最佳论文得主，技术路线讨论有深度。",
+    "quality": 4,
+    "signals": {
+      "views": 4886,
+      "durationMin": 67,
+      "date": "2026-05-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003461",
+    "title": "Claude Code 深度解析：3个习惯，让81%的Token花在重读上下文",
+    "url": "https://www.bilibili.com/video/BV195Wk6KEpT",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "context-window",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "拆自己14天Claude Code日志：81%token花在重读上下文，指出三个费token习惯并给对策。",
+    "why": "一手日志数据支撑（180会话、11785次回复），结论具体。",
+    "quality": 4,
+    "signals": {
+      "views": 233,
+      "durationMin": 9,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003462",
+    "title": "AIGC零基础入门指南001：演示篇",
+    "url": "https://www.bilibili.com/video/BV1Zk4y1i7xU",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "保姆级AIGC零基础入门系列第1集，以演示方式带新手入门。",
+    "why": "3.2万播放的入门演示课，面向零基础讲解，扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 32388,
+      "durationMin": 35,
+      "date": "2023-04-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003463",
+    "title": "【全268集】这绝对是B站最新最全的即梦新手入门必看系列教程！提示词技巧+图生视频+AI脚本+首尾帧完整流程详解！零基础小白学完即可变大神！少走99%的弯路！",
+    "url": "https://www.bilibili.com/video/BV1aMrQBPEPS",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "即梦加豆包加剪映的AI视频系列教程，覆盖提示词、图生视频与首尾帧。",
+    "why": "作者自录合集，流程覆盖完整，明确面向零基础学习者。",
+    "quality": 4,
+    "signals": {
+      "views": 21668,
+      "durationMin": 723,
+      "date": "2026-01-17",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003464",
+    "title": "人工智能原理与实践-中山大学（2021年春）",
+    "url": "https://www.bilibili.com/video/BV1o341117Et",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "中山大学人工智能原理与实践慕课，涵盖数学基础与机器学习等。",
+    "why": "高校系统课程，讲基本概念、原理与算法，体系完整可信。",
+    "quality": 5,
+    "signals": {
+      "views": 16745,
+      "durationMin": 630,
+      "date": "2021-09-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003465",
+    "title": "【极致中配】Deeplearning AI 《人人都能学的生成式AI》｜吴恩达",
+    "url": "https://www.bilibili.com/video/BV1a2n764E1n",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "吴恩达生成式AI通识课中配版，讲原理、能力局限、提示词与落地。",
+    "why": "名家课程面向零基础，体系完整并覆盖负责任AI议题。",
+    "quality": 5,
+    "signals": {
+      "views": 1722,
+      "durationMin": 158,
+      "date": "2026-10-19",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003466",
+    "title": "【Seedance2.0教程】吊打付费！目前B站最细最全的即梦AI5.0教程！AI视频制作提示词+AI绘画+图生视频+视听语言流程详解！ AI视频生成新手入门！",
+    "url": "https://www.bilibili.com/video/BV1KjV46WETN",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "约6小时即梦AI视频教程，讲提示词、图生视频与视听语言流程。",
+    "why": "61万播放的全流程详解，内容覆盖具体，入门友好。",
+    "quality": 4,
+    "signals": {
+      "views": 609862,
+      "durationMin": 355,
+      "date": "2026-05-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003467",
+    "title": "数学逻辑，来自维特根斯坦的救赎之旅",
+    "url": "https://www.bilibili.com/video/BV1rZ4j6QEvj",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-math-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "从维特根斯坦数学哲学切入，探讨AI猜字符何以攻克数学难题。",
+    "why": "11万播放的深度科普，把AI方法与数学本质联系起来。",
+    "quality": 4,
+    "signals": {
+      "views": 113847,
+      "durationMin": 23,
+      "date": "2026-11-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003468",
+    "title": "安徽人工智能通识课七年级",
+    "url": "https://www.bilibili.com/video/BV1zoLM6cE81",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "安徽省七年级人工智能通识课录像，约5.5小时。",
+    "why": "官方通识课程成体系并附官方活动链接，来源可查证。",
+    "quality": 4,
+    "signals": {
+      "views": 3182,
+      "durationMin": 331,
+      "date": "2026-05-19",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003469",
+    "title": "【中文语音版】吴恩达Generative AI for Everyone  适合所有人的生成式人工智能【初级课程】",
+    "url": "https://www.bilibili.com/video/BV1W4sd6bEyW",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "吴恩达Generative AI for Everyone中文语音版初级课程。",
+    "why": "名家通识课适合零基础，但无简介且播放量较低。",
+    "quality": 4,
+    "signals": {
+      "views": 928,
+      "durationMin": 195,
+      "date": "2026-10-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003470",
+    "title": "多伦多大学《生成式人工智能|ECE 1512 Generative AI Summer 2026》中英字幕",
+    "url": "https://www.bilibili.com/video/BV1YuWb6AEUa",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "多伦多大学ECE1512生成式AI夏季课程录像，约27小时带字幕。",
+    "why": "高校正式课程并附官方课表链接，体系完整可查证。",
+    "quality": 5,
+    "signals": {
+      "views": 610,
+      "durationMin": 1611,
+      "date": "2026-11-09",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003471",
+    "title": "AI中的生成式技术 - 如何在人工智能时代生存和茁壮成长",
+    "url": "https://www.bilibili.com/video/BV1ZF4m1N7Jz",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "18分钟浓缩全天AI课程，讲原理、用法、风险与提示工程技巧。",
+    "why": "覆盖面广且结构清晰，面向所有人的入门综述。",
+    "quality": 4,
+    "signals": {
+      "views": 2803,
+      "durationMin": 18,
+      "date": "2024-04-16",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003472",
+    "title": "调教AI的秘密！提示工程：小样本提示、思维链、分步骤思考",
+    "url": "https://www.bilibili.com/video/BV12w411q7pe",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "fine-tuning-vs-prompting",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "5分钟讲小样本提示、思维链、分步骤思考等提示工程技巧。",
+    "why": "7.3万播放的入门讲解，技巧具体可操作，单点清晰。",
+    "quality": 4,
+    "signals": {
+      "views": 73749,
+      "durationMin": 5,
+      "date": "2023-10-31",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003473",
+    "title": "AI能力的边界",
+    "url": "https://www.bilibili.com/video/BV1YUQ7BNEDf",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "用可计算性与计算复杂度理论分析AI能否完全取代人类。",
+    "why": "以计算理论为第一性原理论证边界，视角专业有深度。",
+    "quality": 4,
+    "signals": {
+      "views": 24,
+      "durationMin": 11,
+      "date": "2026-04-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003474",
+    "title": "一口气学会AI Agent可观测性与Evals/LLM Ops/Tracing/成本追踪/开源实测",
+    "url": "https://www.bilibili.com/video/BV1k4HZ6xEHR",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "白板加实操讲Agent可观测性与evals，含trace排查与成本追踪。",
+    "why": "两次真实任务演示trace与eval如何工作，开源可复现。",
+    "quality": 4,
+    "signals": {
+      "views": 7436,
+      "durationMin": 21,
+      "date": "2026-10-06",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003475",
+    "title": "【中配】加速时代已经到来，AI自主科研实现多项医学突破 - AI Search",
+    "url": "https://www.bilibili.com/video/BV1Lc5c6aEe6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲解Nature上两篇AI自主科研论文与谷歌Co-scientist架构。",
+    "why": "基于论文的中配梳理，带时间轴，内容具体可溯。",
+    "quality": 4,
+    "signals": {
+      "views": 15330,
+      "durationMin": 32,
+      "date": "2026-06-01",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003476",
+    "title": "什么是AI算力？为啥训练模型需要那么多算力？#人工智能 #大模型 #算力 #gpu #姜学长",
+    "url": "https://www.bilibili.com/video/BV12zjA6cEB9",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "6分钟科普什么是AI算力，解释训练模型为何需要大量GPU。",
+    "why": "聚焦算力这一基础概念，讲解短小清晰，入门友好。",
+    "quality": 4,
+    "signals": {
+      "views": 5670,
+      "durationMin": 6,
+      "date": "2026-06-18",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003477",
+    "title": "为什么说未来AI会诞生意识？有一个比AI消灭人类更可怕的担忧…｜AI原理简介，通俗易通，0基础入门｜山木",
+    "url": "https://www.bilibili.com/video/BV1QbQzB4Eqz",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "从生物神经元讲到ChatGPT原理，探讨AI能否诞生意识。",
+    "why": "分章讲解原理，通俗有条理，2.4万播放的科普。",
+    "quality": 4,
+    "signals": {
+      "views": 24882,
+      "durationMin": 26,
+      "date": "2026-03-24",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003478",
+    "title": "AI 实验室如何看待失控风险、模型对齐与能力边界",
+    "url": "https://www.bilibili.com/video/BV1RB4u6HEqz",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "agi-frontier",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "梳理Anthropic员工调查、对齐表态与基准，讨论失控风险。",
+    "why": "基于一手信息的中配梳理，讲前沿安全与对齐议题。",
+    "quality": 4,
+    "signals": {
+      "views": 28,
+      "durationMin": 54,
+      "date": "2026-11-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003479",
+    "title": "为什么AI总在不该错的地方犯错——能力边界与风控方法",
+    "url": "https://www.bilibili.com/video/BV13nYs6rEQb",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "分析AI为何在简单任务上出错，讲能力边界识别与风控方法。",
+    "why": "面向法律场景讲错误成因与应对，主题具体针对性强。",
+    "quality": 4,
+    "signals": {
+      "views": 129,
+      "durationMin": 25,
+      "date": "2026-09-09",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003480",
+    "title": "数学史（376）大模型数学公理化会走一遍当年微积分严密化的老路么？趋势上大概率会",
+    "url": "https://www.bilibili.com/video/BV1J9s36AET6",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-math-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "类比微积分严密化历程，论证大模型统计方法需要数学公理化。",
+    "why": "以数学史视角分析大模型方法论，论点具体有深度。",
+    "quality": 4,
+    "signals": {
+      "views": 935,
+      "durationMin": 8,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003481",
+    "title": "大模型是在哪种显卡上诞生的？权重里有块抹不掉的「胎记」｜Fable 5.2 纯代码短片",
+    "url": "https://www.bilibili.com/video/BV1TSWC6wEvh",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "讲权重初始化随机数与GPU线程差异如何在权重留下显卡胎记。",
+    "why": "机制讲解具体到SM线程数与seed，细节扎实可复现。",
+    "quality": 4,
+    "signals": {
+      "views": 823,
+      "durationMin": 4,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003482",
+    "title": "用了deepseek-r1 7b小模型，我后悔了",
+    "url": "https://www.bilibili.com/video/BV1kxApeNEHh",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "small-edge-models",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "实测对比DeepSeek-R1蒸馏7B小模型与原版的能力差异。",
+    "why": "以实际对比展示蒸馏版小模型的加强与局限，直观有数据。",
+    "quality": 4,
+    "signals": {
+      "views": 32412,
+      "durationMin": 3,
+      "date": "2025-02-20",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003483",
+    "title": "同一个模型，为什么有的聪明、有的笨？｜预训练、后训练、微调到底差在哪",
+    "url": "https://www.bilibili.com/video/BV1jjW26HEt5",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "用上学、实习、上岗培训类比讲清预训练、后训练、微调三者差异，指出后训练改的是行为不是知识。",
+    "why": "8分钟聚焦一个易混概念，类比清晰、结论明确，单点讲解扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 44,
+      "durationMin": 8,
+      "date": "2026-11-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003484",
+    "title": "【闪客】一小时从 Transformer 到大模型！",
+    "url": "https://www.bilibili.com/video/BV15z4C6SEHT",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "llm-principles",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "一小时白话讲透Transformer全部原理直到大模型，系列统一重制，约三分之二为新内容。",
+    "why": "体系化长篇原理讲解，制作认真、覆盖完整，是少见的入门原理精品。",
+    "quality": 5,
+    "signals": {
+      "views": 255729,
+      "durationMin": 58,
+      "date": "2026-08-29",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003485",
+    "title": "仅单卡3小时、成本11美元！把普通AR大模型低成本转成扩散语言模型，效果媲美从头预训练【大模型技术】【扩散模型】【论文解读】",
+    "url": "https://www.bilibili.com/video/BV1i9xf6hECz",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "diffusion-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "解读BYOD论文：单卡3小时、成本11美元把AR语言模型低成本转成扩散语言模型，实现已开源。",
+    "why": "论文解读给出原文链接、方法亮点与开源代码，主题专业，单点扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 106,
+      "durationMin": 26,
+      "date": "2026-11-05",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003486",
+    "title": "AI 擅长写 Rust，真不是因为编译器",
+    "url": "https://www.bilibili.com/video/BV1ZbWC61Ee2",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D5"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "拆解GitHub工程师43万行TypeScript重构为Rust的复盘：84%报错是普通类型错误，总结AI迁移5条铁律。",
+    "why": "基于一线工程报告深度拆解，打破借用检查器迷信，给出可操作迁移方法。",
+    "quality": 4,
+    "signals": {
+      "views": 654,
+      "durationMin": 41,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003487",
+    "title": "第5期_Claude为什么不让中国人用",
+    "url": "https://www.bilibili.com/video/BV1cRnR62EEf",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "model-landscape",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "动画拆解Claude限制中国大陆用户的原因：限制对象区别、蒸馏争议、账号风险因素与影响。",
+    "why": "依据官方公告与公开报告分点讲清政策与风险，信息具体可信，零基础友好。",
+    "quality": 4,
+    "signals": {
+      "views": 90070,
+      "durationMin": 4,
+      "date": "2026-10-26",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003488",
+    "title": "【数据工程】预训练数据配比：主流模型参考、DoReMi 与消融实验",
+    "url": "https://www.bilibili.com/video/BV1TKb76PEcu",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "training-data-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "讲预训练数据配比：GPT-3、LLaMA、DeepSeek的参考比例，经验法与DoReMi两种调配方法。",
+    "why": "数据配比讲到各家具体比例与方法步骤，单点扎实，属专业数据工程内容。",
+    "quality": 4,
+    "signals": {
+      "views": 692,
+      "durationMin": 2,
+      "date": "2026-09-17",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003489",
+    "title": "[Agent强化学习]英伟达-Skill2Env：把公开技能做成可验证的训练任务",
+    "url": "https://www.bilibili.com/video/BV1TkWz6nEbh",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "解读英伟达Skill2Env论文：把公开Agent技能包做成可重置可评分的训练任务环境。",
+    "why": "论文解读附原文链接，讲清动机与方法，主题前沿专业，单点扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 802,
+      "durationMin": 10,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003490",
+    "title": "【lora训练营-38】Qwen Image 2.1人像LoRA怎么练？50张图、四组对照、16G本地训练",
+    "url": "https://www.bilibili.com/video/BV1qnaL6dERM",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "training-data-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Qwen Image 2.1人像LoRA训练教学：50张图数据集、四组对照实验、16G显存本地训练。",
+    "why": "系列训练营实操课，用对照实验讲清数据与训练选择，方法可复现。",
+    "quality": 4,
+    "signals": {
+      "views": 8925,
+      "durationMin": 20,
+      "date": "2026-09-28",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003491",
+    "title": "幻觉：为什么 AI 一本正经胡说八道，怎么缓解｜AI 底层原理 · 第 6 集",
+    "url": "https://www.bilibili.com/video/BV1NkWq6kEFC",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "hallucination-basics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "系列第6集：幻觉成因（补全非查证）与RAG、引用来源等缓解法。",
+    "why": "动画科普结构清晰、附对应文档，单点讲解扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 0,
+      "durationMin": 3,
+      "date": "2026-11-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003492",
+    "title": "AI的本质与历史：一场70年前的猜字游戏，如何长成今天的大模型",
+    "url": "https://www.bilibili.com/video/BV1qmWk6CEBx",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-development-history",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "从香农猜字游戏、达特茅斯到AI寒冬，讲AI七十年与预测下一词本质。",
+    "why": "史实具体、脉络清晰，入门讲解扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 42,
+      "durationMin": 5,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003493",
+    "title": "【AI十项全能】Mimo V2.6Pro：惊天一条区！？AI史上最唐雷霆大思考",
+    "url": "https://www.bilibili.com/video/BV1R24V6aETp",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "自建AI十项全能挑战赛，榜单、题面与评分标准全公开。",
+    "why": "自建评测体系并开源题面评分，方法可追溯。",
+    "quality": 4,
+    "signals": {
+      "views": 2548,
+      "durationMin": 18,
+      "date": "2026-11-06",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003494",
+    "title": "12 个本地模型画同一只鹈鹕,MiniCPM5-1B：我是不是走错片场了？",
+    "url": "https://www.bilibili.com/video/BV1jqn46sEGk",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "12个本地模型同题生成SVG动画，以时间、token、延迟量化对比。",
+    "why": "控制变量实证对比，数据详实、结论可查。",
+    "quality": 4,
+    "signals": {
+      "views": 2474,
+      "durationMin": 8,
+      "date": "2026-10-23",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003495",
+    "title": "大肥鱼科普：大模型榜单到底看哪个？43个月榜首从1075涨到1538",
+    "url": "https://www.bilibili.com/video/BV17tWC6jEnW",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-selection-basics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "把大模型榜单分两类，讲清Elo偏好分与能力榜差异、按任务选榜。",
+    "why": "澄清榜单误读、给出选榜方法，讲解清楚扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 84,
+      "durationMin": 4,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003496",
+    "title": "别只看倍率！WorkBuddy 各模型真实扣费系数来了",
+    "url": "https://www.bilibili.com/video/BV1iJ4G6wEKv",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-selection-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "以555笔实扣数据测算WorkBuddy 13个模型的真实扣费系数。",
+    "why": "实测数据翔实、可复核，成本视角选型扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 16501,
+      "durationMin": 3,
+      "date": "2026-11-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003497",
+    "title": "中美AI差距到底有多大？别只看大模型",
+    "url": "https://www.bilibili.com/video/BV1vPHN6hEZQ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-landscape",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "拆解中美AI差距：模型跑分之外的芯片、算力、生态与落地。",
+    "why": "多维度结构化分析、不站队，讲解扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 269,
+      "durationMin": 13,
+      "date": "2026-10-24",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003498",
+    "title": "体验了Kimi K3.1pro后，我确定了它是国模编程SOTA。",
+    "url": "https://www.bilibili.com/video/BV1m6456xEq7",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "开发者实测Kimi K3.1pro在真实代码库中的PR质量。",
+    "why": "一线工程视角、细节具体，判断可信。",
+    "quality": 4,
+    "signals": {
+      "views": 5872,
+      "durationMin": 14,
+      "date": "2026-11-06",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003499",
+    "title": "2026 无广AI横评｜9 款主流AI大模型多维度实测！豆包，文心，Kimi ，千问，元宝，DeepSeek，ChatGPT....",
+    "url": "https://www.bilibili.com/video/BV1BTQZBsEhU",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "9款主流大模型多维度无广横评，标注测试时间与版本。",
+    "why": "样本多、声明无广、口径透明，横评可信。",
+    "quality": 4,
+    "signals": {
+      "views": 104831,
+      "durationMin": 11,
+      "date": "2026-03-23",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003500",
+    "title": "GPT模型越来越多了，都是干嘛的？怎么选？到底该用哪个？",
+    "url": "https://www.bilibili.com/video/BV1KqJcz1E2S",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-selection-basics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "逐个试用OpenAI各家模型并梳理「到底该用哪个」。",
+    "why": "亲手逐个实测、选型建议明确，讲解扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 16849,
+      "durationMin": 13,
+      "date": "2025-05-17",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003501",
+    "title": "Kimi K3.1 Pro金融任务能力实测，从投研分析到财务估值",
+    "url": "https://www.bilibili.com/video/BV1uExX6cE1W",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "在Kimi客户端执行六个金融任务，附提示词与交付物供复核",
+    "why": "实测流程透明可追溯，是模型能力评估的好范本",
+    "quality": 4,
+    "signals": {
+      "views": 37134,
+      "durationMin": 17,
+      "date": "2026-11-04",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003502",
+    "title": "【中配】别再选错模型了：两大主流代码模型怎么选 - Theo - t3․gg XtykeVoSmP8",
+    "url": "https://www.bilibili.com/video/BV1VMW66YEKc",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "model-selection-basics",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Theo讲解代码模型Opus 5.5与Fable 5.5的选择逻辑",
+    "why": "结构化讲解代码场景模型取舍，论据具体",
+    "quality": 4,
+    "signals": {
+      "views": 959,
+      "durationMin": 39,
+      "date": "2026-11-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003503",
+    "title": "阿里千问4预览版Qwen4-Max突袭上线！20多场实测：超预期还是翻车？",
+    "url": "https://www.bilibili.com/video/BV1t8Wd6YE9c",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "汇总九方来源20多场实测，正反盘点Qwen4-Max表现",
+    "why": "多源实测汇总兼顾亮点与翻车，信息密度高",
+    "quality": 4,
+    "signals": {
+      "views": 2504,
+      "durationMin": 10,
+      "date": "2026-11-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003504",
+    "title": "顶流Claude对决国产Kimi！零预制手搓《反恐精英》，谁才是AI游戏开发之王#Claude #Kimi #反恐精英 #CS #AI做游戏 #游戏开发 #AI",
+    "url": "https://www.bilibili.com/video/BV1na4e6YEHV",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Claude与Kimi零素材同题搓CS克隆，比质量与token成本",
+    "why": "全流程对比含成本数据，参照价值高",
+    "quality": 4,
+    "signals": {
+      "views": 12198,
+      "durationMin": 17,
+      "date": "2026-11-06",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003505",
+    "title": "【精剪版】Datawhale开源大模型入门课-第一节-进击的AI：大模型技术全景",
+    "url": "https://www.bilibili.com/video/BV14x4y1x7bP",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "Datawhale开源入门课首讲，系统梳理大模型技术全景",
+    "why": "公益体系课，讲解清晰适合零基础",
+    "quality": 5,
+    "signals": {
+      "views": 15643,
+      "durationMin": 30,
+      "date": "2024-07-02",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003506",
+    "title": "美国企业开源模型支出89%流向中国模型：样本、分母、口径一次讲清，附选型先试名单",
+    "url": "https://www.bilibili.com/video/BV1rDWj61Eqb",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "open-closed-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲清美企开源支出89%流向中国模型的样本分母口径",
+    "why": "数据溯源与口径辨析示范，严谨可信",
+    "quality": 4,
+    "signals": {
+      "views": 17,
+      "durationMin": 3,
+      "date": "2026-11-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003507",
+    "title": "一键部署One API大模型聚合平台，轻松接入主流AI模型！全网最详细开源项目实操教程，支持OpenAI、Gemini、DeepSeek等多家API，快速搭建属",
+    "url": "https://www.bilibili.com/video/BV1GnY4z8Ej1",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "One API聚合平台部署实操，统一接入多家模型API",
+    "why": "全流程实操教程，工程落地性强",
+    "quality": 4,
+    "signals": {
+      "views": 7429,
+      "durationMin": 13,
+      "date": "2025-08-19",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003508",
+    "title": "【保姆级教程】6小时掌握开源大模型本地部署到微调，从硬件指南到ChatGLM3-6B模型部署微调实战｜逐帧详解｜直达技术底层",
+    "url": "https://www.bilibili.com/video/BV1ce411J7nZ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "六小时教程：从硬件指南到ChatGLM3-6B部署与微调",
+    "why": "覆盖部署到微调全程，但为付费课导流",
+    "quality": 4,
+    "signals": {
+      "views": 187503,
+      "durationMin": 385,
+      "date": "2024-01-27",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003509",
+    "title": "【上海交大张倬胜】大模型系列课程从入门到精通，手把手教学，保姆级教程！涵盖预训练模型微调与部署、提示学习与思维链、模型水印、多模态大模型，比啃书效果好多了",
+    "url": "https://www.bilibili.com/video/BV1Nu3M6bEXE",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "上海交大张倬胜约74小时大模型课程：微调部署、提示学习思维链、模型水印、多模态。",
+    "why": "高校体系化系列课，覆盖面广手把手教学，学习路径完整可信。",
+    "quality": 5,
+    "signals": {
+      "views": 36019,
+      "durationMin": 4432,
+      "date": "2026-07-25",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003510",
+    "title": "千问新一代基座模型，接受祖传代码的考核",
+    "url": "https://www.bilibili.com/video/BV16RWU6AEcA",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "用12个祖传BUG实测千问Qwen4-Max-Preview，12个中过11个。",
+    "why": "第三方实测呈现新模型代码能力边界，结尾含促销引导。",
+    "quality": 4,
+    "signals": {
+      "views": 73335,
+      "durationMin": 9,
+      "date": "2026-11-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003511",
+    "title": "免费AI永不断连，20天实测",
+    "url": "https://www.bilibili.com/video/BV1LMKJ6cEvs",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "聚合英伟达商汤魔搭免费AI接口的路由程序，20天实测不断连。",
+    "why": "开源方案功能与实测讲清，接口接入实操可信。",
+    "quality": 4,
+    "signals": {
+      "views": 17357,
+      "durationMin": 8,
+      "date": "2026-07-17",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003512",
+    "title": "这周 GitHub 上涨星最猛的 10 个 AI 开源项目",
+    "url": "https://www.bilibili.com/video/BV1UAn36aEX3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "emerging-model-trends",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "每分钟讲清GitHub涨星TOP10 AI项目的用途、火爆原因。",
+    "why": "结构清晰配原理动画，AI工具生态导览扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 133493,
+      "durationMin": 11,
+      "date": "2026-10-18",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003513",
+    "title": "最强开源AI翻唱、AI唱歌，完全免费，手把手零基础教程。",
+    "url": "https://www.bilibili.com/video/BV114tsezE54",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "speech-models",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "手把手零基础开源AI翻唱唱歌教程，附现成模型网盘。",
+    "why": "高播放实操教程，零基础可跟，单点扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 294969,
+      "durationMin": 12,
+      "date": "2024-09-16",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003514",
+    "title": "AI+Blender！免费，不卡顿，全网最简的AI三维建模教程！",
+    "url": "https://www.bilibili.com/video/BV1z2HC6jEBa",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "AI写脚本配合Blender参数化建模，从零做收纳盒可导出打印。",
+    "why": "完整实操演示AI辅助3D建模，零基础友好。",
+    "quality": 4,
+    "signals": {
+      "views": 10149,
+      "durationMin": 10,
+      "date": "2026-10-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003515",
+    "title": "【8GB实测】8G卡大模型，这套参数直接抄",
+    "url": "https://www.bilibili.com/video/BV1hkxv6QExT",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "8G卡跑大模型三档参数实测：9B/35B/27B速度与显存账。",
+    "why": "数据具体含启动命令与猜词加速利弊，抄即用。",
+    "quality": 4,
+    "signals": {
+      "views": 203,
+      "durationMin": 2,
+      "date": "2026-11-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003516",
+    "title": "AI大模型本地部署在内存涨5倍后，便宜和快不是同一条路了",
+    "url": "https://www.bilibili.com/video/BV12jWi66EsV",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "内存涨价后对比三条部署路线的每GB显存与每t/s成本。",
+    "why": "统一按Qwen3.6-27B口径量化测算，选型分析扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 1074,
+      "durationMin": 8,
+      "date": "2026-11-13",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003517",
+    "title": "飞牛NAS+16G显卡+olama+deepseek 本地部署大模型的体验，当NAS有了显卡真的太实用了",
+    "url": "https://www.bilibili.com/video/BV1EtFdzrEow",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "飞牛NAS加16G显卡跑Ollama与DeepSeek的部署体验。",
+    "why": "NAS方案实操完整，家用本地部署参考性强。",
+    "quality": 4,
+    "signals": {
+      "views": 18863,
+      "durationMin": 15,
+      "date": "2026-02-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003518",
+    "title": "[模型部署]如何使用4G显存本地部署35B大模型",
+    "url": "https://www.bilibili.com/video/BV11oVP6oEWu",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "WSL2加CUDA12.4加虚拟环境，4G显存部署35B模型全流程。",
+    "why": "环境搭建步骤具体到命令，可复现性强。",
+    "quality": 4,
+    "signals": {
+      "views": 11534,
+      "durationMin": 15,
+      "date": "2026-05-26",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003519",
+    "title": "Open WebUI｜把本地模型和云端模型收进一个网页，资料留不留在本机你定",
+    "url": "https://www.bilibili.com/video/BV1JpWC6SEgS",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Open WebUI统一管理本地与云端模型，附三条最短上手路径。",
+    "why": "依README讲清工具定位与隐私考量，短小准确。",
+    "quality": 4,
+    "signals": {
+      "views": 11,
+      "durationMin": 4,
+      "date": "2026-11-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003520",
+    "title": "6G 显卡 + 32G 内存，我是怎么把 125B 大模型跑起来的",
+    "url": "https://www.bilibili.com/video/BV15Z4M6SEcy",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "6G显卡加32G内存跑125B模型：完整参数实测与三个坑。",
+    "why": "速度12-21tok/s数据坦诚含局限性说明，参数可抄。",
+    "quality": 4,
+    "signals": {
+      "views": 6325,
+      "durationMin": 7,
+      "date": "2026-11-03",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003521",
+    "title": "本地部署DeepSeek Harness 加 Qwen3.8-27B教程，实现token自由！我还发现“梁圣”在源码中的彩蛋！",
+    "url": "https://www.bilibili.com/video/BV1AAbm6mEuL",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "部署DeepSeek Harness加Qwen3.8-27B，剖析源码彩蛋与插件架构。",
+    "why": "部署教程叠加SubAgent架构分析，RTX5090实测并行任务。",
+    "quality": 4,
+    "signals": {
+      "views": 211695,
+      "durationMin": 9,
+      "date": "2026-08-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003522",
+    "title": "一张 4GB 显存的破显卡,也可以把 70B 大模型跑起来了",
+    "url": "https://www.bilibili.com/video/BV19V7Z6hEuf",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "讲AirLLM逐层加载原理，4GB显存跑起70B大模型。",
+    "why": "人话版类比讲清显存痛点与原理，通俗可信。",
+    "quality": 4,
+    "signals": {
+      "views": 61721,
+      "durationMin": 3,
+      "date": "2026-06-04",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003523",
+    "title": "别再花钱用Suno！AI音乐免费做｜ACE-Step 免费离线部署 + 最全 Tag 教程【保姆级教程】",
+    "url": "https://www.bilibili.com/video/BV1HGmzBeECZ",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "speech-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "ACE-Step音乐模型免费离线部署与Tag标签保姆级教程。",
+    "why": "部署加标签用法实操完整，免费替代付费方案。",
+    "quality": 4,
+    "signals": {
+      "views": 16196,
+      "durationMin": 9,
+      "date": "2025-12-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003524",
+    "title": "基于Ollama定制自己的Gemma开放模型 | Ollama Modelfile使用实战",
+    "url": "https://www.bilibili.com/video/BV1ey421z75L",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "用Ollama Modelfile机制定制Gemma开放模型的实战讲解。",
+    "why": "机制讲解清晰附实操，单点扎实可信。",
+    "quality": 4,
+    "signals": {
+      "views": 17013,
+      "durationMin": 12,
+      "date": "2024-02-26",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003525",
+    "title": "Intel GPU/NPU 用户本地部署大模型的福音——ipex-llm！现已有intel官方免安装ollama 附deepseek r1 14b测试对比",
+    "url": "https://www.bilibili.com/video/BV1uzANeYEXg",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "ipex-llm助Intel GPU/NPU本地部署，附R1 14b测试对比。",
+    "why": "小众硬件部署方案实测对比，针对性强可信。",
+    "quality": 4,
+    "signals": {
+      "views": 13975,
+      "durationMin": 5,
+      "date": "2025-02-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003526",
+    "title": "【2026最新】2026最新最详细Ollama保姆级（下载安装+部署+使用)教程！AI大模型应用开发手把手带你快速上手，草履虫都能学的会！",
+    "url": "https://www.bilibili.com/video/BV1YwFWzgE1W",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "645分钟Ollama保姆级课程：下载安装部署使用到应用开发。",
+    "why": "超长体系课程覆盖全流程，配套资料置顶评论引流。",
+    "quality": 4,
+    "signals": {
+      "views": 53761,
+      "durationMin": 645,
+      "date": "2026-02-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003527",
+    "title": "大模型本地部署介绍---ollama 和 liteLLM",
+    "url": "https://www.bilibili.com/video/BV167YfeGE6X",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "介绍Ollama与liteLLM本地部署用法，附Colab代码。",
+    "why": "双工具讲解附可运行代码，单点扎实。",
+    "quality": 4,
+    "signals": {
+      "views": 2579,
+      "durationMin": 20,
+      "date": "2024-08-12",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003528",
+    "title": "新一版丨大模型本地部署到d盘 丨ollama、deepseek",
+    "url": "https://www.bilibili.com/video/BV1QtNmeoEe3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "Ollama装D盘、环境变量改模型库路径并运行DeepSeek 1.5B。",
+    "why": "针对C盘空间痛点的具体步骤，零基础可跟做。",
+    "quality": 4,
+    "signals": {
+      "views": 31316,
+      "durationMin": 10,
+      "date": "2025-02-09",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003529",
+    "title": "Hermes 失忆了？用 Hindsight + Ollama 建立永久记忆系统！",
+    "url": "https://www.bilibili.com/video/BV11P5i6jEQU",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "用 Hindsight 加 Ollama 为本地 AI 助手搭建免费永久记忆系统的实操教程",
+    "why": "附开源仓库、步骤明确，解决本地 AI 记忆丢失，可复现",
+    "quality": 4,
+    "signals": {
+      "views": 6505,
+      "durationMin": 8,
+      "date": "2026-05-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003530",
+    "title": "ollama的本地大模型部署——python智能体开发实践",
+    "url": "https://www.bilibili.com/video/BV1pCWW6eEyy",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "基于 Ollama 本地模型的 Python 智能体开发实践教程，附开源代码",
+    "why": "21分钟从部署讲到智能体开发，配套 GitHub 教程仓库",
+    "quality": 4,
+    "signals": {
+      "views": 423,
+      "durationMin": 21,
+      "date": "2026-11-09",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003531",
+    "title": "隐私优先！给 Claude Code 配置基于 Ollama 的本地模型",
+    "url": "https://www.bilibili.com/video/BV1nm5a6hEQ3",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "把 Claude Code 端点指向本地 Ollama，免 API key 全程本地保隐私",
+    "why": "端点原理与两条配置路径讲得具体，但简介夹带推广",
+    "quality": 4,
+    "signals": {
+      "views": 3853,
+      "durationMin": 6,
+      "date": "2026-05-14",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003532",
+    "title": "不联网的本地AI：对话式人工智能Ollama以及LLM",
+    "url": "https://www.bilibili.com/video/BV13m4UeJE8t",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "local-models",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "讲清离线运行大模型的好处：隐私、免费、无网可用，并入门 Ollama",
+    "why": "面向零基础讲透本地 AI 价值，附官方与源码链接",
+    "quality": 4,
+    "signals": {
+      "views": 4147,
+      "durationMin": 12,
+      "date": "2024-09-15",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003533",
+    "title": "练习两天半，从零实现多模态大模型（多图场景，多轮对话），从原理讲解到代码实现，搭配流程图，清晰易懂",
+    "url": "https://www.bilibili.com/video/BV1ZeT2zcEee",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "multimodal-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "基于 qwen2.5-0.5b 与 SigLIP 从零实现多图多轮多模态模型，配流程图",
+    "why": "原理到代码完整走通、讲解清晰，播放量印证口碑",
+    "quality": 4,
+    "signals": {
+      "views": 33667,
+      "durationMin": 17,
+      "date": "2025-06-07",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003534",
+    "title": "中国科学院冯洋：即时交互多模态大模型初探",
+    "url": "https://www.bilibili.com/video/BV1v5qmYbESf",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "multimodal-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "中科院冯洋37分钟报告：即时交互多模态大模型与百聆、LLaMA-Omni",
+    "why": "研究者系统讲解前沿方向，学术深度与可信度高",
+    "quality": 5,
+    "signals": {
+      "views": 1191,
+      "durationMin": 37,
+      "date": "2024-12-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003535",
+    "title": "光辉系模型推荐 (illustrious) Top-10",
+    "url": "https://www.bilibili.com/video/BV1VYbgzkEZj",
+    "source": "bilibili",
+    "type": "video",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "model-selection-basics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "按热度盘点光辉系二次元绘画模型前十，同一提示词实测出图",
+    "why": "统一提示词横向对比并附测试文档，选型参考扎实",
+    "quality": 4,
+    "signals": {
+      "views": 64469,
+      "durationMin": 4,
+      "date": "2025-08-11",
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003536",
+    "title": "残差神经网络（维基百科）",
+    "url": "https://zh.wikipedia.org/wiki/%E6%AE%8B%E5%B7%AE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C",
+    "source": "zh.wikipedia.org",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "维基条目：残差神经网络 ResNet 的结构与原理，内容详尽",
+    "why": "深度学习经典架构条目，2.3万字节系统可信",
+    "quality": 4,
+    "signals": {
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003537",
+    "title": "KataGo（维基百科）",
+    "url": "https://zh.wikipedia.org/wiki/KataGo",
+    "source": "zh.wikipedia.org",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-development-history",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "维基条目：围棋 AI 引擎 KataGo 的发展与技术，内容详尽",
+    "why": "5.3万字节长条目，AI 围棋领域系统参考",
+    "quality": 4,
+    "signals": {
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003538",
+    "title": "DeepSeek（维基百科）",
+    "url": "https://zh.wikipedia.org/wiki/DeepSeek",
+    "source": "zh.wikipedia.org",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-landscape",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "维基条目：DeepSeek 公司与模型系列的系统性介绍",
+    "why": "3.1万字节长条目，了解主流模型版图的一手参考",
+    "quality": 4,
+    "signals": {
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003539",
+    "title": "Inception (深度學習架構)（维基百科）",
+    "url": "https://zh.wikipedia.org/wiki/Inception_(%E6%B7%B1%E5%BA%A6%E5%AD%B8%E7%BF%92%E6%9E%B6%E6%A7%8B)",
+    "source": "zh.wikipedia.org",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "维基条目：Inception 深度学习架构的设计与演进",
+    "why": "经典网络架构条目，1.2万字节，结构认知参考扎实",
+    "quality": 4,
+    "signals": {
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003540",
+    "title": "中文房间（维基百科）",
+    "url": "https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%96%87%E6%88%BF%E9%97%B4",
+    "source": "zh.wikipedia.org",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agi-frontier",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "维基条目：塞尔中文房间思想实验及 AI 能否理解的争论",
+    "why": "5.5万字节长条目，系统梳理 AI 理解力大辩论",
+    "quality": 5,
+    "signals": {
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003541",
+    "title": "ReCAPTCHA（维基百科）",
+    "url": "https://zh.wikipedia.org/wiki/ReCAPTCHA",
+    "source": "zh.wikipedia.org",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D5"
+    ],
+    "subtopic": "training-data-basics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "维基条目：ReCAPTCHA 验证码系统及其人机协同数据贡献",
+    "why": "理解人类标注如何反哺 AI 训练数据的典型案例",
+    "quality": 4,
+    "signals": {
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003542",
+    "title": "观察和排查 Azure 上的应用问题（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/observe-troubleshoot-apps/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用OpenTelemetry检测分布式应用，以Azure Monitor排查AI解决方案问题。",
+    "why": "面向AI方案运维的官方实操课程，教可观测性与排障工具方法。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 161,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003543",
+    "title": "使用 Microsoft Intune 和 Microsoft Security Copilot 增强终结点安全性（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/enhance-endpoint-security-microsoft-intune-copilot/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用Intune与Security Copilot等保护、管理、监视终结点并响应威胁。",
+    "why": "结构化安全课程，含AI支持的事件响应，助安全人员用AI做防护。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 270,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003544",
+    "title": "Microsoft AI 模型简介（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/microsoft-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "model-landscape",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "微软官方学习路径，介绍Microsoft AI（MAI）模型的工作原理及在应用中的使用方法。",
+    "why": "系统讲解MAI模型原理与用法，助理解主流模型并入门选型。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 155,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003545",
+    "title": "集成适用于 AI 解决方案的后端服务（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/integrate-backend-services-ai-solutions/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径（444分钟）：讲解在Azure上为AI解决方案集成后端服务。",
+    "why": "体系化开发课程，覆盖AI方案后端集成，助开发者构建AI应用。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 444,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003546",
+    "title": "使用 Azure Database for PostgreSQL 开发 AI 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/develop-ai-solutions-azure-database-postgresql/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用Azure Database for PostgreSQL与pgvector开发RAG管道和语义检索。",
+    "why": "扎实讲解向量检索与RAG实现，助开发者掌握检索增强生成落地。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 294,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003547",
+    "title": "实现 AI 安全性（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-ai-security/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：跨微软AI平台实施纵深防御，配置Purview数据安全、Entra代理身份与AI网关。",
+    "why": "体系化讲解AI工作负载安全防护，属企业级AI安全实操课程。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 239,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003548",
+    "title": "在 Azure 上部署和管理企业代理 AI 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/aaai-3-deploy-govern-agentic-ai-solutions-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径（AI-500）：部署企业级多代理系统，建立负责任AI治理与代理生命周期管理。",
+    "why": "覆盖企业代理部署与治理框架，助掌握负责任AI规模化实践。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 194,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003549",
+    "title": "Python编程入门：第 3 部分 - 使用 AI 设计质量代码（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/get-started-with-python-design-quality-code-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "Python入门第3部分：用防御性编程、基准测试、AI助手规范与AI代码评审设计可靠代码。",
+    "why": "官方实操课程教与AI协作产出高质量代码，方法具体可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 281,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003550",
+    "title": "在 Azure 中构建生产级多代理 AI 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/aaai-1-architect-production-grade-multi-agent-ai-solutions/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径（AI-500）：在Foundry设计有状态代理循环、分层编排与A2A协议的多代理方案。",
+    "why": "生产级多代理架构课程体系完整，属代理开发进阶专业内容。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 201,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003551",
+    "title": "构建 AI 解决方案以实现业务生产力（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/architect-agentic-ai-business-solutions/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方长路径（684分钟）：用代理、生成式AI与Copilot设计提升业务生产力的AI方案。",
+    "why": "体系完整讲解AI业务方案设计，覆盖代理与生成式AI应用。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 684,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003552",
+    "title": "AI 辅助开发入门（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/accelerate-app-development-using-github-copilot/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径（AZ-2007）：VS Code中用GitHub Copilot做分析、文档、单测、重构与vibe编码。",
+    "why": "体系化AI辅助开发课程，覆盖Copilot编码全流程，实用扎实。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 479,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003553",
+    "title": "使用代理编程工具开发代理和应用程序（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/create-embed-custom-code-agents/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：配置自定义代理，用GitHub规范工具包与Copilot SDK开发AI应用和嵌入式代理。",
+    "why": "讲解代理开发工具链与SDK用法，助开发者构建AI代理应用。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 490,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003554",
+    "title": "创建机器学习模型（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/create-machine-learn-models/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：讲解机器学习核心原则，用常见工具训练、评估和使用机器学习模型。",
+    "why": "机器学习基础体系课程，从原则到训练评估，零基础友好。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 379,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003555",
+    "title": "使用 Azure 托管 Redis 增强 AI 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/enhance-ai-solutions-azure-managed-redis/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "embedding-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用Azure托管Redis的缓存策略、数据操作与向量存储增强AI解决方案。",
+    "why": "讲解向量存储等AI方案增强技术，与向量语义表示主题契合。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 222,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003556",
+    "title": "在 Azure 中开发生成 AI 应用（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/develop-generative-ai-apps/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径（AI-3016）：在Microsoft Foundry中开发生成式AI应用。",
+    "why": "体系化生成式AI应用开发课程，官方认证内容扎实可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 412,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003557",
+    "title": "在 Microsoft Fabric 中实现用于 AI 的数据科学和机器学习解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-data-science-machine-learning-fabric/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径（DP-604T00）：探索数据科学过程，在Microsoft Fabric中训练机器学习模型。",
+    "why": "讲解数据科学流程与模型训练，助理解AI背后的机器学习。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 329,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003558",
+    "title": "特殊教育中的 AI（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/ai-in-special-education/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：教师在特殊教育中审慎用AI减负、增强无障碍，强调负责任、隐私与透明。",
+    "why": "教育场景AI伦理应用课程，覆盖隐私透明与专业判断，贴题。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 120,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003559",
+    "title": "使用 Microsoft Foundry 生成生产级多代理功能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/aaai-2-build-production-grade-multi-agent-capabilities-microsoft-foundry/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径（AI-500）：构建多干预护栏架构、企业MCP服务器、混合RAG管道与代理记忆系统。",
+    "why": "讲多代理可靠性与安全的生产级技术，含护栏与安全设计。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 228,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003560",
+    "title": "面向云和 AI 安全工程师的 Azure 应用程序平台安全服务（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/secure-application-platform-services/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：为容器、AKS、API管理等Azure应用平台实施身份验证与策略安全控制。",
+    "why": "面向云和AI安全工程师的平台安全实操，属专业深水区课程。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 189,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003561",
+    "title": "为云和 AI 安全工程师实现Azure 存储的安全性（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-azure-storage-security/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：强化Azure存储账户、治理访问、配置网络边界，并以Defender检测AI代理凭据威胁。",
+    "why": "AI场景存储安全实操课程，含AI代理凭据威胁检测，专业。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 100,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003562",
+    "title": "从 Azure 上的视觉数据中提取见解（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/insight-visual-data/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "vision-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：使用Azure中的生成式AI视觉与内容理解从视觉数据中提取见解。",
+    "why": "讲解视觉模型应用，从视觉数据提取见解，主题契合实操强。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 426,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003563",
+    "title": "使用 Microsoft Purview 保护智能 Microsoft 365 Copilot 副驾驶®环境中的信息（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/purview-protect-microsoft-365-copilot-environment/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用Purview审核、敏感度标签与DLP调查并防护Copilot环境中的敏感信息泄露。",
+    "why": "讲Copilot数据安全治理，助组织安全使用AI，实操具体。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 172,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003564",
+    "title": "使用 Microsoft Entra 保护对资源的访问（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/secure-access-resources-entra/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：设计强身份验证与实时特权访问策略，将标识安全扩展到AI驱动应用。",
+    "why": "讲解以身份体系保护AI应用访问，安全实操课程扎实可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 90,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003565",
+    "title": "面向开发人员和技术专业人员的 AI 概念（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/ai-concepts/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：为开发者与技术专业人员讲解核心AI概念、术语与AI方案规划。",
+    "why": "系统的AI基础概念课程，助建立理解AI工作负载的框架。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 231,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003566",
+    "title": "使用 智能 Microsoft Security Copilot 副驾驶® 增强安全运营（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/security-copilot-and-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径（SC-5006）：使用智能Microsoft Security Copilot增强安全运营。",
+    "why": "官方安全运营课程，教以AI副驾驶增强威胁检测与响应。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 372,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003567",
+    "title": "使用 Microsoft Purview Ninja 训练方案保护敏感数据（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/purview-ninja-safeguard-data/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方实训路径：数据分类、敏感度标签、DLP策略，并用安全Copilot保护M365信息。",
+    "why": "数据保护实操训练，含安全Copilot用法，主题具体可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 117,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003568",
+    "title": "监视 Azure 上的 AI 工作负载（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/monitor-ai-workloads-on-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "微软官方路径，教用 Azure Monitor 与 AI Foundry 监视并评估 AI 工作负载性能",
+    "why": "官方结构化课程，聚焦 AI 监控运维单点主题，扎实可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 95,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003569",
+    "title": "操作机器学习模型 （MLOps）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-first-machine-operations-workflow/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方 MLOps 路径：用 Azure 机器学习与 GitHub Actions 设计、训练、部署并监视模型",
+    "why": "覆盖 ML 全生命周期运维流程，体系完整，官方出品",
+    "quality": 5,
+    "signals": {
+      "durationMin": 349,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003570",
+    "title": "TensorFlow 基础知识（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/tensorflow-fundamentals/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "微软官方 TensorFlow 初学者路径，讲解深度学习与机器学习模型构建关键概念",
+    "why": "面向零基础的系统入门课程，官方出品，结构完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 275,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003571",
+    "title": "使用 Azure Cosmos DB for NoSQL 开发 AI 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/develop-ai-solutions-azure-cosmos-db/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用 Cosmos DB for NoSQL 矢量搜索与查询优化构建 RAG 与语义检索",
+    "why": "围绕 RAG 与向量检索的系统开发课程，主题明确可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 252,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003572",
+    "title": "在数据库解决方案中实现 AI 功能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-ai-capabilities-database-solutions/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：在数据库中设计智能搜索，使用模型嵌入并在 T-SQL 实现 RAG 模式",
+    "why": "数据库内 AI 能力讲解具体，含嵌入与 RAG 实操",
+    "quality": 4,
+    "signals": {
+      "durationMin": 220,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003573",
+    "title": "治理 AI 就绪基础结构（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/govern-ai-ready-infrastructure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：借助 Microsoft Foundry 实施 AI 基础设施治理、策略、成本与合规监控",
+    "why": "系统覆盖 AI 基础设施治理与合规实践，专业完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 382,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003574",
+    "title": "使用 AI 转换业务（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/transform-your-business-with-microsoft-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "面向业务负责人的官方路径：负责任地规划、制定策略并扩展组织 AI 项目",
+    "why": "聚焦组织级负责任 AI 采用策略，定位清晰可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 154,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003575",
+    "title": "最大化 Azure 上的 AI 代理的成本效益（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/maximize-cost-efficiency-ai-agents/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：识别高影响 AI 代理用例，预测 ROI、设计可缩放架构并优化成本",
+    "why": "覆盖代理投资全阶段成本决策，可操作且体系完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 292,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003576",
+    "title": "使用 Microsoft Entra 保护 AI 标识基础结构（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/entra-ai-secure-workloads/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：用 Microsoft Entra 保护 AI 工作负载标识、访问管理与条件访问",
+    "why": "聚焦 AI 标识与访问安全的专业课程，内容扎实",
+    "quality": 4,
+    "signals": {
+      "durationMin": 188,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003577",
+    "title": "使用Microsoft安全Copilot缓解威胁（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/sc-200-mitigate-threats-using-microsoft-copilot-for-security/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方 SC-200 路径：使用 Microsoft 安全 Copilot 检测与缓解安全威胁",
+    "why": "安全运营场景的 AI 工具实战课程，专业可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 294,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003578",
+    "title": "在教育领域负责任地使用人工智能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/responsible-use-of-artificial-intelligence-in-education/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：将微软六项负责任 AI 原则应用于教育场景，兼顾公平与隐私，含动手练习",
+    "why": "负责任 AI 原则在教育场景落地讲解，系统可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 162,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003579",
+    "title": "GitHub Copilot 基础知识第 2 部分（共 2 部分）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/gh-copilot-2/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径下半部：讲解 GitHub Copilot 基本概念及在组织内落地实现的方法",
+    "why": "系统讲解 Copilot 概念与企业采用，官方可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 207,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003580",
+    "title": "管理 AI 解决方案的应用程序机密和配置（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/manage-app-secrets-configuration/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：用 Azure Key Vault 与应用配置管理 AI 解决方案的机密和配置",
+    "why": "面向 AI 解决方案的机密管理实操课程，官方可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 153,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003581",
+    "title": "使用 GitHub Copilot 代理执行代码维护任务（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/perform-code-maintenance-tasks-github-copilot-agent/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：在 VS Code 用 GitHub Copilot 代理重构代码，加速常见维护任务",
+    "why": "Copilot 编码代理实操教学，主题聚焦可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 481,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003582",
+    "title": "在 Azure 中开发自然语言解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/develop-language-solutions-azure-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：在 Azure 中开发自然语言解决方案，覆盖语言 AI 应用开发",
+    "why": "官方系统课程，主题为语言 AI 应用开发",
+    "quality": 4,
+    "signals": {
+      "durationMin": 346,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003583",
+    "title": "面向云和 AI 工作负荷，通过深度防御机制来保护 Azure 密钥保管库 的安全（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/configure-key-vault-security/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：以深度防御强化 Azure 密钥保管库，含 RBAC、特权控制与威胁检测",
+    "why": "面向云与 AI 工作负载的密钥安全实操，专业可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 104,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003584",
+    "title": "在Agentic AI Systems中开发（第1部分，共2部分）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/gh-developing-agentic-systems-1/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D5"
+    ],
+    "subtopic": "human-oversight",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：在软件开发生命周期中设计、部署并治理自治代理 AI 系统",
+    "why": "讲解自治代理的安全可靠交付与治理，主题前沿",
+    "quality": 4,
+    "signals": {
+      "durationMin": 165,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003585",
+    "title": "保护 AI 就绪基础结构（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/secure-ai-ready-infrastructure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：用 Foundry 构建生产级 AI 基础设施，落实网络隔离与企业安全控制",
+    "why": "AI 基础设施安全与合规的系统课程，专业完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 254,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003586",
+    "title": "在 Microsoft Fabric 中准备适合 AI 使用的分析数据（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/prepare-ai-ready-analytics-data/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：为 Fabric 数据添加语义上下文与本体，供 AI 智能体回答业务问题",
+    "why": "讲解 AI 就绪数据与语义层准备，工程落地可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 233,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003587",
+    "title": "在 Azure 中实现网络安全控制（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-network-security-controls-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：Azure 深度防御网络安全控制，含防火墙与 AI 服务专用终结点",
+    "why": "网络安全专业课程，覆盖 AI 服务暴露面防护",
+    "quality": 4,
+    "signals": {
+      "durationMin": 172,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003588",
+    "title": "将生成型 AI 应用程序投入运营（GenAIOps）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/operationalize-gen-ai-apps/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方 GenAIOps 路径：从规划提示管理到评估、微调、自动化测试、监控与追踪",
+    "why": "生成式 AI 运维全生命周期讲解，体系最完整",
+    "quality": 5,
+    "signals": {
+      "durationMin": 457,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003589",
+    "title": "使用 Azure Databricks 生成机器学习解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-operate-machine-learning-solutions-azure-databricks/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方 DP-3014：用 Azure Databricks 大规模构建与运营机器学习解决方案",
+    "why": "云级 ML 平台系统课程，官方出品覆盖完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 538,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003590",
+    "title": "使用 Microsoft Defender for Cloud 保护 Microsoft Foundry 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/defender-for-cloud-ai-foundry-protect/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "security-risks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：用 Defender for Cloud 保护 Foundry 工作负载，防运行时威胁与违规内容",
+    "why": "AI 工作负载安全防护实操课程，专业可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 162,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003591",
+    "title": "面向培训员的生成 AI 简介（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/intro-generative-ai-for-trainers/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D2"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "面向培训员的生成 AI 入门：LLM、Copilot、提示工程与负责任使用",
+    "why": "兼顾生成 AI 应用与教育场景负责任使用，覆盖全",
+    "quality": 4,
+    "signals": {
+      "durationMin": 156,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003592",
+    "title": "使用 Azure 上的 AI 代理优化 DevOps（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/optimize-devops-ai-agents-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方 Agentic DevOps 路径：用 Copilot、DevOps MCP 与 SRE 代理加速交付运维",
+    "why": "AI 代理融入 DevOps 全流程讲解，覆盖完整可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 671,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003593",
+    "title": "准备在学术课程中教授 AI-900 Microsoft Azure AI 基础知识（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/prepare-teach-ai-900-fundamentals-academic-programs/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "面向学术课程讲师的官方准备路径：教授 AI-900 Azure AI 基础知识",
+    "why": "AI-900 基础授课准备课程，面向教师群体",
+    "quality": 4,
+    "signals": {
+      "durationMin": 225,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003594",
+    "title": "使用 Azure Database for PostgreSQL 构建 AI 应用（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-ai-apps-azure-database-postgresql/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方 AI-3019：使用 Azure Database for PostgreSQL 构建 AI 应用程序",
+    "why": "官方系统课程，主题明确，时长逾六小时",
+    "quality": 4,
+    "signals": {
+      "durationMin": 410,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003595",
+    "title": "准备在课堂中教授 AI-102 设计和实现 Microsoft Azure AI 解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/prepare-teach-ai-102-microsoft-design-implement-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "面向讲师的官方准备路径：教授 AI-102 Azure AI 解决方案设计与实现",
+    "why": "AI-102 授课准备课程，面向教师群体",
+    "quality": 4,
+    "signals": {
+      "durationMin": 231,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003596",
+    "title": "使用 Microsoft Purview 保护 AI 交互和环境（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/purview-protect-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "privacy-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：用 Purview 在 Copilot 与各类 AI 场景中保护敏感信息，备战 SC-401",
+    "why": "AI 环境数据泄露防护实操，专业且体系化",
+    "quality": 4,
+    "signals": {
+      "durationMin": 210,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003597",
+    "title": "AI 成功：使用 Microsoft Copilot 构建 AI 代理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/ai-success-build-ai-agents/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：用 Microsoft Copilot 创建配置 AI 代理，连接知识源并测试",
+    "why": "无代码代理构建入门实操，流程完整易上手",
+    "quality": 4,
+    "signals": {
+      "durationMin": 87,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003598",
+    "title": "开始使用 Azure 上的 AI 应用程序和代理程序（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/get-started-ai-apps-agents/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "微软官方入门路径：在 Microsoft Foundry 开始构建 AI 应用与代理解决方案",
+    "why": "Foundry 平台 AI 开发系统入门，官方可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 337,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003599",
+    "title": "使用 Microsoft Foundry 以负责任的方式将 AI 投入实际应用（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/operationalize-ai-responsibly/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用 Foundry 的安全、隐私与质量工具实现负责任的生成式 AI 治理",
+    "why": "从被动风险管理到设计即治理，主题清晰可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 153,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003600",
+    "title": "使用 Azure Cosmos DB 执行查询并生成 Generative AI 应用程序（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/execute-queries-azure-cosmos-db-sql-api/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用 Azure Cosmos DB 执行查询并构建 Generative AI 应用程序",
+    "why": "数据库查询与 AI 应用结合课程，官方出品",
+    "quality": 4,
+    "signals": {
+      "durationMin": 218,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003601",
+    "title": "在 Azure Cosmos DB 中实现 AI 和分析功能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-ai-analytics-capabilities-azure-cosmos-db/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：Cosmos DB 全文/矢量/混合搜索、RAG、代理持久记忆与 no-ETL 分析",
+    "why": "检索与 RAG 工程细节丰富，覆盖完整可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 506,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003602",
+    "title": "GitHub Copilot 基础知识第 1 部分（共 2 部分）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/copilot/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径上半部：GitHub Copilot 基本概念讲解与组织内采用指引",
+    "why": "Copilot 基础系统教学，个人与企业双视角",
+    "quality": 4,
+    "signals": {
+      "durationMin": 317,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003603",
+    "title": "面向非营利组织的 AI 技能简介（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/introduction-to-ai-skills-for-nonprofits/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "微软官方非营利组织AI技能路径，讲解Copilot原理与在Word/Excel中创建有效提示",
+    "why": "官方体系化培训，覆盖AI工作原理与提示创建，教学价值扎实",
+    "quality": 4,
+    "signals": {
+      "durationMin": 154,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003604",
+    "title": "在 Azure 上开发 AI 代理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/develop-ai-agents-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "AI-3026官方路径，用Azure Foundry代理服务与Agent Framework开发AI智能体",
+    "why": "超10小时体系化课程，覆盖智能体开发全流程，权威完整",
+    "quality": 5,
+    "signals": {
+      "durationMin": 642,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003605",
+    "title": "GitHub 负责任的 AI（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/github-responsible-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方负责任AI路径，涵盖机器学习、人脸识别、生成式AI的伦理与实践",
+    "why": "官方系列基础课程，系统培养负责任AI使用意识",
+    "quality": 4,
+    "signals": {
+      "durationMin": 135,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003606",
+    "title": "使用基于 vCore 的 Azure Cosmos DB for MongoDB 和 Azure OpenAI 生成 AI 助手（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-ai-copilot-vcore-based-azure-cosmos-db-mongodb-azure-openai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "rag-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：用Cosmos DB for MongoDB vCore与Azure OpenAI构建AI助手",
+    "why": "面向开发者的动手实践路径，聚焦向量库结合大模型搭建助手",
+    "quality": 4,
+    "signals": {
+      "durationMin": 226,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003607",
+    "title": "AI 卓越中心（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/ai-center-excellence/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径讲解AI卓越中心如何集中管理AI采用、运营、治理与安全",
+    "why": "组织级AI治理课程，官方出品，聚焦CoE机制建设",
+    "quality": 4,
+    "signals": {
+      "durationMin": 94,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003608",
+    "title": "在代理 AI 系统中开发第 2 部分（共 2 部分）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/github-agentic-systems-part-two/github-agentic-systems-part-two/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D1"
+    ],
+    "subtopic": "ai-safety-basics",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方认证配套路径：在软件开发生命周期内设计、部署与管理代理AI系统",
+    "why": "面向Agentic AI认证，覆盖自治代理安全可靠交付治理",
+    "quality": 4,
+    "signals": {
+      "durationMin": 185,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003609",
+    "title": "管理 AI 就绪基础结构（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/manage-ai-ready-infrastructure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径：规划算力、强制治理、监控与优化成本，支撑合规AI工作负载",
+    "why": "聚焦AI基础设施运营治理，面向专业运维场景",
+    "quality": 4,
+    "signals": {
+      "durationMin": 358,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003610",
+    "title": "使用 Microsoft Purview 保护和治理 智能 Microsoft 365 Copilot 副驾驶® 交互（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/purview-secure-govern-copilot-interactions/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用Purview洞察AI活动、保护敏感信息、治理M365 Copilot交互",
+    "why": "系统讲解Copilot数据安全与风险管控，企业合规实用",
+    "quality": 4,
+    "signals": {
+      "durationMin": 368,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003611",
+    "title": "Copilot for Microsoft Power Platform 入门（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/copilot-power-platform/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方入门路径：学习规划与使用Power Platform中的Copilot加速应用构建",
+    "why": "官方教学，覆盖Copilot在低代码平台的实际应用",
+    "quality": 4,
+    "signals": {
+      "durationMin": 157,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003612",
+    "title": "在 Microsoft Copilot Studio 中设计和生成多代理解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/design-build-multi-agent-solutions-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：在Copilot Studio评估并构建子代理与连接代理的多代理方案",
+    "why": "系统讲解多代理适用性判断与两种构建模式，实操扎实",
+    "quality": 4,
+    "signals": {
+      "durationMin": 165,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003613",
+    "title": "构建自动化和智能体集成（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-automation-agent-integrations/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：结合Power Automate流、受治理的Dataverse MCP与代理连接",
+    "why": "强调治理约束下的自动化与代理集成，企业级实践",
+    "quality": 4,
+    "signals": {
+      "durationMin": 100,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003614",
+    "title": "了解Microsoft Power Platform的基础知识（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/pl-900-power-platform-fundamentals/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "PL-900官方基础路径：Power Platform核心组件、Copilot Studio与治理工具",
+    "why": "官方认证基础课，体系讲解平台组件与AI嵌入方式",
+    "quality": 4,
+    "signals": {
+      "durationMin": 318,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003615",
+    "title": "在 Microsoft Copilot Studio 中设计和配置代理（GitHub Copilot）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/design-configure-agents-github-copilot-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：在Copilot Studio以成本感知设计配置GitHub Copilot框架智能体",
+    "why": "聚焦智能体规划配置与可复用技能，实操可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 169,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003616",
+    "title": "开始使用 Microsoft Power Platform 中的 AI 优先型解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/design-model-solutions-power-platform/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：建立AI优先思维，用Copilot设计模式与提示工程绘制方案蓝图",
+    "why": "明确覆盖提示工程与AI优先设计模式，入门实用",
+    "quality": 4,
+    "signals": {
+      "durationMin": 91,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003617",
+    "title": "使用 Microsoft Power Platform AI Builder 实现 AI 模型（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-ai-models-microsoft-power-platform-ai-builder/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：使用Power Platform AI Builder在业务中实现AI模型",
+    "why": "官方实操教学，覆盖AI模型在低代码平台落地",
+    "quality": 4,
+    "signals": {
+      "durationMin": 192,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003618",
+    "title": "Agent in a Day - 在线研讨会（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/agents-online-workshop/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "Agent in a Day官方研讨会：动手用Copilot Studio创建智能体与自动化",
+    "why": "一日工作坊形式，实操性强，适合零基础上手",
+    "quality": 4,
+    "signals": {
+      "durationMin": 179,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003619",
+    "title": "在 Microsoft Copilot Studio 中评估、发布和管理代理（GitHub Copilot）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/evaluate-publish-manage-agents-github-copilot-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D4"
+    ],
+    "subtopic": "compliance-frameworks",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：对GitHub Copilot框架智能体进行治理、评估、监控与生命周期管理",
+    "why": "覆盖智能体治理与评估监控，企业落地必备环节",
+    "quality": 4,
+    "signals": {
+      "durationMin": 241,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003620",
+    "title": "在 Microsoft Copilot Studio 中自动执行任务和工作流（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/automate-tasks-workflows-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用智能体流与计算机使用功能跨系统网站自动执行任务",
+    "why": "官方实操教学，覆盖智能体流与计算机使用能力",
+    "quality": 4,
+    "signals": {
+      "durationMin": 160,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003621",
+    "title": "演示 Microsoft Power Automate 的功能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/demonstrate-capabilities-microsoft-power-automate/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "PL-900路径：讲解Power Automate云端/桌面流与用Copilot构建流",
+    "why": "官方体系课程，覆盖触发器、操作与Copilot辅助建流",
+    "quality": 4,
+    "signals": {
+      "durationMin": 141,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003622",
+    "title": "通过 AI Builder 提升业务绩效（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/improve-business-performance-ai-builder/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "vision-models",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用AI Builder文本识别、对象检测等模型提升业务绩效",
+    "why": "覆盖用例、模型创建与使用全流程，体系完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 265,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003623",
+    "title": "在 Microsoft Copilot Studio 中创建智能体（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/create-extend-custom-copilots-microsoft-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方动手路径：创建自定义代理，覆盖主题、实体变量、生成式AI与发布",
+    "why": "技能点明确、场景真实，智能体构建教学扎实",
+    "quality": 4,
+    "signals": {
+      "durationMin": 222,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003624",
+    "title": "使用Microsoft Copilot Studio中的工作流和代理自动执行业务流程（GitHub Copilot）（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/automate-workflows-agents-github-copilot-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D5"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：为智能体构建工作流并加入审批与补全信息的人工参与步骤",
+    "why": "明确覆盖人工参与环节设计，人机协同实践扎实",
+    "quality": 4,
+    "signals": {
+      "durationMin": 165,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003625",
+    "title": "在 Microsoft Copilot Studio 中使用GitHub Copilot工具创建代理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/create-agents-github-copilot-harness-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "PL-7008官方路径：在Copilot Studio创建扩展GitHub Copilot工具支持的智能体",
+    "why": "认证配套课程，智能体创建与扩展教学系统",
+    "quality": 4,
+    "signals": {
+      "durationMin": 367,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003626",
+    "title": "在 Microsoft Copilot Studio 中使用主题来设计代理的对话和响应。（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/design-agent-conversations-responses-topics-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：用主题设计代理对话，含自适应卡片、生成答案节点与自定义提示",
+    "why": "覆盖对话设计与生成式答案、自定义提示，内容具体",
+    "quality": 4,
+    "signals": {
+      "durationMin": 137,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003627",
+    "title": "在 Microsoft Copilot Studio 中将代理与企业系统集成（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/integrate-agents-enterprise-systems-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：评估集成模式，用连接器、REST API、企业知识与MCP对接代理",
+    "why": "系统覆盖企业集成模式与MCP连接，实操可信",
+    "quality": 4,
+    "signals": {
+      "durationMin": 198,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003628",
+    "title": "在 Microsoft Power Automate 中使用 AI 自动化和扩展解决方案（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/automate-business-processes-power-automate/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：事件驱动云端流、审批流程与基于业务数据的grounded提示生成",
+    "why": "覆盖流程自动化与AI提示扩展方案，体系完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 207,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003629",
+    "title": "在 Microsoft Copilot Studio （GitHub Copilot） 中将代理与企业系统集成（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/integrate-agents-enterprise-systems-github-copilot-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径：将GitHub Copilot框架智能体连接企业知识、工具与MCP服务器",
+    "why": "覆盖企业知识接入与MCP协议集成，内容具体",
+    "quality": 4,
+    "signals": {
+      "durationMin": 204,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003630",
+    "title": "使用 Microsoft Copilot Studio 创建和发布代理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/work-power-virtual-agents/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径：使用Copilot Studio创建、管理和维护智能体，近5小时",
+    "why": "时长充足覆盖创建到维护全流程，教学体系完整",
+    "quality": 4,
+    "signals": {
+      "durationMin": 284,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003631",
+    "title": "为 AI 驱动的销售配置Dynamics 365 Sales（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/configure-sales-ai-selling/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教在 Dynamics 365 Sales 配置 Copilot 与 AI 代理以赋能销售。",
+    "why": "官方体系化实操培训，配置步骤具体可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 177,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003632",
+    "title": "使用适用于销售的 Dynamics 365 Copilot（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/use-copilot-sales/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径讲解销售版 Dynamics 365 Copilot 的特性与功能，及设置部署方法。",
+    "why": "单一 Copilot 产品的官方实操课，清晰可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 104,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003633",
+    "title": "使用 AI 和 Power Platform 工具扩展Dynamics 365 Sales（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/extend-d365-sales-ai-platforms/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教以 AI 工具与 Power Platform 增强 Dynamics 365 Sales。",
+    "why": "扩展实操指南，工具组合讲得具体。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 195,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003634",
+    "title": "借助 AI 驱动的洞察监控并优化 Dynamics 365 Contact Center（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/monitor-optimize-dynamics-365-contact-center/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教用 AI 洞察监控优化 Contact Center：实时监督、外呼营销与排班预测。",
+    "why": "监控与优化方法具体，兼顾评估视角。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 106,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003635",
+    "title": "配置 AI 和服务代表体验（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/configure-ai-service-representative-experience/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "human-oversight",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教配置受治理的 AI 协助、定制客服工作区、自动化任务并启用协作。",
+    "why": "治理化 AI 配置实操，强调监督机制。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 199,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003636",
+    "title": "在 Dynamics 365 Contact Center 中为客户服务代表提供支持（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/empower-service-representatives-contact-center/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教自定义客服工作区、AI 辅助建知识库，并部署 AI 代理与 Copilot。",
+    "why": "从工作区到代理部署，实操覆盖全面。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 232,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003637",
+    "title": "在 Dynamics 365 Sales 中使用 AI 生成和限定潜在顾客（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/generate-qualify-leads-ai-sales/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教在 Dynamics 365 Sales 配置线索管理，用 AI 自动化资格认定与排序。",
+    "why": "销售获客场景实操，步骤具体可信。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 176,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003638",
+    "title": "准备安全性和合规性以支持智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/prepare-security-compliance-support-microsoft-365-copilot/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径讲解管理员部署 Microsoft 365 Copilot 前须准备的安全与合规功能。",
+    "why": "AI 落地前安全合规准备，体系清晰。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 387,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003639",
+    "title": "使用 AI 委派工作（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/delegate-work-with-copilot-cowork/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D5"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径演示把多步骤工作委派给 Copilot Cowork、融入日常流程并设置自动运行。",
+    "why": "人机委派分工实操，与 Autopilot 对比清晰。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 202,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003640",
+    "title": "培养基础的生成式 AI 技能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/explore-microsoft-365-copilot-business-chat/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D2"
+    ],
+    "subtopic": "responsible-ai",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径讲授生成式 AI 与负责任 AI 基础，指导编写有效提示并安全协作使用 Copilot。",
+    "why": "负责任原则与提示技巧并重，入门友好。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 135,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003641",
+    "title": "在 Dynamics 365 Sales 中通过 AI 驱动的销售执行赢得交易（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/win-deals-ai-sales/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教设置产品目录、管理机会、部署 AI 销售代理并分析管道性能。",
+    "why": "销售执行全流程实操，AI 代理应用具体。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 215,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003642",
+    "title": "使用 Dynamics 365 实现 AI 支持的联系人中心（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-dynamics-365-contact-center/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教实现 AI 支持的联系人中心：架构部署、Copilot 配置、智能队列与路由。",
+    "why": "架构到配置完整落地，讲解系统。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 171,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003643",
+    "title": "了解智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®和代理管理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/explore-microsoft-365-copilot-agent-administration/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径讲解用 Copilot 与 AI 代理提升组织效率与安全，及其管理与治理方法。",
+    "why": "应用与治理并重，管理员视角完整。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 199,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003644",
+    "title": "管理和保护 Microsoft 365 AI 服务（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/manage-secure-microsoft-365-ai-services/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径教企业级推出并治理 Copilot 与代理：身份、目录策展、监控与成本控制。",
+    "why": "AI 服务全生命周期治理，内容扎实。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 518,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003645",
+    "title": "使用代理转换日常业务流程（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/implement-no-code-copilot-agents-microsoft-365-sharepoint/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方课程教用 Copilot 与 SharePoint 代理自动化任务与业务流程（MS-4019）。",
+    "why": "无代码代理搭建实操，场景具体。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 209,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003646",
+    "title": "在 TypeScript 中扩展智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/copilot-m365-extensibility-typescript/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方系列教在 TypeScript 中扩展 Copilot，讲原理与组织数据接入选项。",
+    "why": "开发者实操系列，扩展动机与路径清晰。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 121,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003647",
+    "title": "为组织准备智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/prepare-your-organization-microsoft-365-copilot/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D3"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径介绍 Microsoft 365 Copilot 设计与安全合规功能，并给出部署实施说明。",
+    "why": "组织级部署指引，安全视角明确。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 80,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003648",
+    "title": "生成 AI 代理简介（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-foundation-extend-microsoft-365-copilot/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径讲解 AI 代理工作原理，概览 Copilot Studio 等平台并教方案规划设计。",
+    "why": "代理概念与平台概览，入门清晰。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 122,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003649",
+    "title": "在 AI 时代治理和保护敏感信息（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/purview-protect-govern-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6"
+    ],
+    "subtopic": "data-security-compliance",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教用 Microsoft Purview 应对 AI 风险，治理 AI 环境中的敏感数据与合规。",
+    "why": "AI 时代数据治理实操，主题契合。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 128,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003650",
+    "title": "使用 Microsoft Copilot 为员工赋能（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/empower-workforce-copilot-use-cases/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方互动路径按高管、销售、市场、财务、IT、HR 等角色分场景练习 Copilot 技能。",
+    "why": "角色化实操体量大、覆盖全岗位。",
+    "quality": 5,
+    "signals": {
+      "durationMin": 2885,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003651",
+    "title": "使用 Visual Studio Code 通过声明性代理扩展智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/copilot-microsoft-365-declarative-agents-visual-studio-code/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方系列教用 VS Code 构建声明性代理扩展 Copilot，并用技能和知识增强能力。",
+    "why": "从概念到增强的代理开发教程完整。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 334,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003652",
+    "title": "在 .NET 中扩展智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/copilot-m365-extensibility/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方系列教在 .NET 中扩展 Copilot，讲原理与组织数据接入选项。",
+    "why": ".NET 开发者实操系列，路线清晰。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 126,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003653",
+    "title": "使用 AI 增强业务工作流（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/transform-business-workflows-with-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径教用 Copilot 起草优化内容、分析可视化数据、管理会议并经 Cowork 委派。",
+    "why": "办公全场景实操，覆盖面广。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 270,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003654",
+    "title": "管理智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®管理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/manage-microsoft-365-copilot-administration/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教将零信任原则应用于 Microsoft 365 Copilot 及其管理配置。",
+    "why": "管理员治理视角，含零信任实践。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 209,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003655",
+    "title": "使用 Microsoft 365 智能体 SDK 生成自定义引擎代理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/build-custom-copilots-microsoft-teams/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教用 Microsoft 365 智能体 SDK 构建自定义引擎代理满足业务需求。",
+    "why": "SDK 开发入门，主题聚焦可上手。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 89,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003656",
+    "title": "使用 Visual Studio Code 通过 API 插件扩展用于智能 智能 Microsoft 365 Copilot 副驾驶® 副驾驶®的声明性代理（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/copilot-microsoft-365-declarative-agents-api-plugins-visual-studio-code/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方系列教用 API 插件扩展声明性代理：自适应卡片展示数据并连接受保护 API。",
+    "why": "插件开发短课，要点明确。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 83,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003657",
+    "title": "在 Copilot Studio 中扩展 Microsoft Copilot（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/extend-microsoft-365-copilot-studio/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D3"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "官方路径教用 Copilot Studio 构建声明性代理，添加知识工具并发布到 Copilot。",
+    "why": "低代码代理构建全流程，实操清晰。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 182,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003658",
+    "title": "创作并使用 AI（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/create-engage-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D6",
+      "D5"
+    ],
+    "subtopic": "education-ethics",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径让教育者以 AI 为创意伙伴，依素养框架实践并保持批判与负责任使用。",
+    "why": "AI 素养与批判实践结合，教育场景契合。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 158,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003659",
+    "title": "使用 AI 进行管理和设计（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/manage-design-ai/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D2"
+    ],
+    "subtopic": "model-capability-boundary",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "官方路径教教师判断 AI 适用场景，用评分标准、提示蓝图与 QA 例程设检查点。",
+    "why": "能力边界与提示蓝图结合，责任机制具体。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 211,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003660",
+    "title": "Monitor, evaluate, and operate multi-agent AI solutions in Azure（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/aaai-4-monitor-evaluate-operate-multi-agent-ai-solutions-azure/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "high",
+    "band": "strong",
+    "summary": "官方路径教运维生产级多代理 AI 方案：可观测、质量保障、成本控制与事件响应。",
+    "why": "生产环境评估运维体系，进阶专业。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 203,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003661",
+    "title": "Maintain oversight and prevent agent sprawl in Power Platform（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/maintain-oversight-prevent-agent-sprawl-power-platform/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "agent-overview",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "微软官方学习路径，讲授在 Power Platform 中建立分区治理、数据策略与 AI 资源监管，防止智能体泛滥。",
+    "why": "微软 Learn 官方课程，218 分钟多模块体系化讲解平台 AI 治理，系统可信。",
+    "quality": 5,
+    "signals": {
+      "durationMin": 218,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003662",
+    "title": "AI-powered teaching with Microsoft Education（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/ai-powered-teaching-microsoft-education/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D5"
+    ],
+    "subtopic": "generative-ai-overview",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "微软官方 360 分钟学习路径，教教育者使用 Microsoft Education 的 AI 工具开展教学。",
+    "why": "官方面向教师的体系化课程，讲解 AI 教学工具的使用与师生协作。",
+    "quality": 5,
+    "signals": {
+      "durationMin": 360,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003663",
+    "title": "Introduction to AI literacy（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/introduction-ai-literacy/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D6"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "low",
+    "band": "focus",
+    "summary": "基于 Empowering Learners 框架的 AI 素养路径，教教育者理解 AI 并负责任地做决策。",
+    "why": "官方 AI 素养入门体系课程，覆盖原理认知与负责任使用，零基础友好。",
+    "quality": 5,
+    "signals": {
+      "durationMin": 201,
+      "verifiedAt": "2026-11-14"
+    }
+  },
+  {
+    "id": "kb-003664",
+    "title": "Understand AI spend and measure value in Microsoft 365（Microsoft Learn 学习路径）",
+    "url": "https://learn.microsoft.com/zh-cn/training/paths/understand-ai-spend-measure-value/",
+    "source": "learn.microsoft.com",
+    "type": "doc",
+    "dims": [
+      "D1",
+      "D4"
+    ],
+    "subtopic": "ai-basic-concepts",
+    "difficulty": "medium",
+    "band": "developing",
+    "summary": "微软官方路径，讲解 Microsoft 365 中 AI 用量的成本规划、消耗控制、费用分摊与业务价值度量。",
+    "why": "官方课程聚焦 AI 成本与价值度量这一单点，内容扎实可信可操作。",
+    "quality": 4,
+    "signals": {
+      "durationMin": 67,
+      "verifiedAt": "2026-11-14"
+    }
   }
 ]
