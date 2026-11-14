@@ -117,6 +117,30 @@ for (const row of booksRaw) {
   bookCount++;
 }
 
+// 5) 文档与文章候选（docs-crawl / wiki-crawl 产出；权威源人工清单 + 掘金搜索，
+//    跳过视频三层过滤，仅做 https 校验 + URL 去重）
+const docsRaw = readdirSync(`${kb}raw`).includes("docs-articles.jsonl") ? readRaw("docs-articles") : [];
+for (const row of docsRaw) {
+  if (!/^https:\/\//.test(row.url)) { stats.filtered["文档非 https"] = (stats.filtered["文档非 https"] ?? 0) + 1; continue; }
+  const key = row.kind === "article" ? `article:${row.url}` : `doc:${row.url}`;
+  if (seenBvid.has(key)) { stats.duplicate++; continue; }
+  seenBvid.set(key, "docs");
+  cleanedWeb.push({
+    key,
+    kind: row.kind ?? "web",
+    origin: row.origin ?? "docs",
+    dimPriors: row.dimPriors ?? ["D1"],
+    minDifficulty: row.minDifficulty ?? null,
+    url: row.url,
+    title: row.title,
+    platform: row.platform,
+    author: row.author ?? "",
+    durationMin: row.durationMin ?? null,
+    views: row.views ?? null,
+    note: row.note ?? "",
+  });
+}
+
 const payload = { batch, videos: cleanedVideos, web: cleanedWeb };
 writeJson(`${kb}cleaned/${batch}.json`, payload);
 

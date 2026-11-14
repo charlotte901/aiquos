@@ -3,28 +3,28 @@
 > 规则：每完成一个批次立即更新本文件。中断后新会话读 AGENTS.md 末条 + 本文件即可续跑。
 > 数据落位：work/kb/{raw,cleaned,tagged,verified,rejected}/ 对应管线五层。
 
-## ⚠️ 当前阻塞（2026-11-13 09:10）
+## ⚠️ 当前阻塞（2026-11-13 21:50）
 
-**DeepSeek 账户余额耗尽（HTTP 402 Insufficient Balance）**，LLM 标注层（s3）全量失败。
-已实测：`.env.local` 的 ARK_API_KEY 指向 api.vllmproxy.com，仅生图模型无文本通道；
-本机无 ollama/lmstudio 等本地 LLM。**已重试：单条调用两次确认 402（非限流）。**
+**两个 LLM 通道相继耗尽**：
+1. DeepSeek：余额 402（2026-11-12 起），未充值。
+2. Gemini 反代（new-provider/gemini-3.8-flash-high）：2026-11-13 晚被服务方以
+   「违反服务条款」封禁（HTTP 403，需账号申诉）。工作流 dwfrun-afd37563 在第 16 个
+   切片处被停——前 9 个切片 432 条标注已落盘合并（质量抽查 0 编造）。
 
-### 解除阻塞后续跑步骤（按序执行）
+### 解除阻塞后续跑（任选其一）
 
-1. 充值/更换 `.env.local` 的 DEEPSEEK_API_KEY 后：
-   `nohup caffeinate -is bash work/kb/roll-pipeline.sh 30 >> work/kb/roll-pipeline.log 2>&1 &`
-   （剩余待标注 ~1536 条：约 4 个周期跑完；s4 已全部跟上，无积压）
-2. `node work/kb/s5-ingest.mjs --batch batch-001`（增量入库）
-3. `node scripts/build-knowledge-index.mjs && node scripts/qa-knowledge-recs.mjs`
-4. 六维配额复核（≥600/维），不足则 `collect-bili.mjs` 按缺的维度补采
-   （`--dims D5,D6`），再走 2-3。
-5. 阶段 6 终检清单（见「下一步动作」）+ AGENTS.md 终版 + push。
+- **申诉解封 Gemini 反代账号**后：`ResumeWorkflowRun dwfrun-afd37563`（已完成的
+  切片从缓存回放，只跑剩余 44 个切片），然后 s4 → s5 → 重建索引 → QA → push。
+- **充值 DeepSeek** 后：`nohup caffeinate -is bash work/kb/roll-pipeline.sh 60 >> work/kb/roll-pipeline.log 2>&1 &`
+  （剩 2085 条候选：标注 + 体检一体），然后 s5 → 重建 → QA → push。
+- 换其他已授权 LLM API：改 work/kb/lib.mjs 的 chatOnce 端点即可，管线不变。
 
 ## 已交付现状（阻塞时点）
 
-- **全库 1332 条**已入库 `src/knowledge/knowledge-base.json`（video 543 / book_chapter 746 / doc 43）
-- 六维分布：D1 599 / D2 243 / D3 595 / D4 760 / D5 99 / D6 24（终检要求各 ≥600，未达标）
+- **全库 2800 条**已入库 `src/knowledge/knowledge-base.json`（video ~1330 / book_chapter ~780 / doc ~690）
+- 六维分布：D1 1429 / D2 493 / D3 1247 / D4 1001 / D5 484 / D6 275（终检要求各 ≥600，未达标）
 - rec-index 90 槽全部有货；三画像 QA 全过；全套件 398 pass / 2 skip；build 过
+- Gemini 通道已验证可用：两批 2584 条标注 0 淘汰、质检 0 编造（annotator 字段溯源）
 - 全量 404 复检完成：剔除死链 47（视频 9 + 网页 46）；118 条网页域名不可达按口径保留
 - 抽检清单 `work/kb/audit-sample.md`（133 条分层抽样）已生成，机器预检通过，人工栏待填
 
