@@ -91,7 +91,7 @@ for (const [key, entry] of byKey) {
     pubdate: item.pubdate || null,
     relevant: ann.relevant, quality: Number(ann.quality), difficulty: ann.difficulty,
     dims: ann.dims, subtopic: ann.subtopic, summary: String(ann.summary).slice(0, 120), why: String(ann.why).slice(0, 120),
-    taggedAt: new Date().toISOString().slice(0, 10), annotator: "gemini-3.8-flash-high",
+    taggedAt: new Date().toISOString().slice(0, 10), annotator: "glm-5.3-flash（会话模型，经工作流子代理）",
   });
 }
 

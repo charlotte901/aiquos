@@ -3,30 +3,19 @@
 > 规则：每完成一个批次立即更新本文件。中断后新会话读 AGENTS.md 末条 + 本文件即可续跑。
 > 数据落位：work/kb/{raw,cleaned,tagged,verified,rejected}/ 对应管线五层。
 
-## ⚠️ 当前阻塞（2026-11-13 21:50）
+## ⚠️ 当前状态（2026-11-14 06:30）
 
-**两个 LLM 通道相继耗尽**：
-1. DeepSeek：余额 402（2026-11-12 起），未充值。
-2. Gemini 反代（new-provider/gemini-3.8-flash-high）：2026-11-13 晚被服务方以
-   「违反服务条款」封禁（HTTP 403，需账号申诉）。工作流 dwfrun-afd37563 在第 16 个
-   切片处被停——前 9 个切片 432 条标注已落盘合并（质量抽查 0 编造）。
+**标注通道已解决**：Gemini 反代被封后，按用户指示改用会话同款模型
+（account:bigmodel-individual-coding-plan/GLM-5.3-Flash，经工作流子代理派发），
+第三批 2,085 条标注零淘汰（质检：0 硬性编造，3 处轻微无依据表述）。
+annotations.jsonl 的 annotator 字段已按合并块精确区分：gemini 3,016 / glm 2,085。
 
-### 解除阻塞后续跑（任选其一）
+### 剩余路径（→ 5000）
 
-- **申诉解封 Gemini 反代账号**后：`ResumeWorkflowRun dwfrun-afd37563`（已完成的
-  切片从缓存回放，只跑剩余 44 个切片），然后 s4 → s5 → 重建索引 → QA → push。
-- **充值 DeepSeek** 后：`nohup caffeinate -is bash work/kb/roll-pipeline.sh 60 >> work/kb/roll-pipeline.log 2>&1 &`
-  （剩 2085 条候选：标注 + 体检一体），然后 s5 → 重建 → QA → push。
-- 换其他已授权 LLM API：改 work/kb/lib.mjs 的 chatOnce 端点即可，管线不变。
-
-## 已交付现状（阻塞时点）
-
-- **全库 2800 条**已入库 `src/knowledge/knowledge-base.json`（video ~1330 / book_chapter ~780 / doc ~690）
-- 六维分布：D1 1429 / D2 493 / D3 1247 / D4 1001 / D5 484 / D6 275（终检要求各 ≥600，未达标）
-- rec-index 90 槽全部有货；三画像 QA 全过；全套件 398 pass / 2 skip；build 过
-- Gemini 通道已验证可用：两批 2584 条标注 0 淘汰、质检 0 编造（annotator 字段溯源）
-- 全量 404 复检完成：剔除死链 47（视频 9 + 网页 46）；118 条网页域名不可达按口径保留
-- 抽检清单 `work/kb/audit-sample.md`（133 条分层抽样）已生成，机器预检通过，人工栏待填
+- 现状全库 3,344：D1 1507 / D2 633 / D3 1527 / D4 1099 / D5 628 / **D6 355（唯一未达标维）**
+- 第 3 轮采集：D6 定向（75 词 × pages 5-7 = 225 搜索）→ 标注 → 入库，预计 D6 达标（~600）
+- 第 4 轮采集：全维度 pages 5-6（900 搜索）→ 预计全库 ~4,400-4,600
+- 收官按「下一步动作」清单执行
 
 ## 来源进度对照（候选 → 入库）
 

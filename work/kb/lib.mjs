@@ -131,24 +131,51 @@ export async function biliView(bvid) {
   };
 }
 
-// ---------- DeepSeek 批量标注 ----------
+// ---------- 批量标注 LLM 调用 ----------
+
+/** 标注通道选择：.env.local 配了 LLM_API_KEY 就用它（GLM 等 OpenAI 兼容端点），
+ * 否则回退 DeepSeek。LLM_MODEL 默认 glm-4.6-flash（智谱免费档）。 */
+function annotationChannel() {
+  const env = readEnvLocal();
+  if (env.LLM_API_KEY) {
+    return {
+      key: env.LLM_API_KEY,
+      url: env.LLM_BASE_URL ?? "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+      model: env.LLM_MODEL ?? "glm-4.6-flash",
+      label: "llm",
+    };
+  }
+  return { key: deepseekKey(), url: "https://api.deepseek.com/chat/completions", model: "deepseek-flash", label: "deepseek" };
+}
+
+function readEnvLocal() {
+  const env = {};
+  try {
+    for (const line of readFileSync(new URL("../../.env.local", import.meta.url), "utf8").split("\n")) {
+      const index = line.indexOf("=");
+      if (index > 0) env[line.slice(0, index).trim()] = line.slice(index + 1).trim();
+    }
+  } catch { /* 无 .env.local 时全部缺省 */ }
+  return env;
+}
 
 /** 非流式 temperature=0 单次调用，返回文本。 */
 export async function chatOnce(messages, { timeoutMs = 90_000, maxRetries = 3 } = {}) {
-  const key = deepseekKey();
+  const channel = annotationChannel();
+  if (!channel.key) throw new Error("没有可用的标注通道：.env.local 缺 LLM_API_KEY 且缺 DEEPSEEK_API_KEY");
   let lastError;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch("https://api.deepseek.com/chat/completions", {
+      const response = await fetch(channel.url, {
         method: "POST",
-        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-        body: JSON.stringify({ model: "deepseek-flash", messages, temperature: 0, thinking: { type: "disabled" }, stream: false }),
+        headers: { "content-type": "application/json", authorization: `Bearer ${channel.key}` },
+        body: JSON.stringify({ model: channel.model, messages, temperature: 0, stream: false }),
         signal: AbortSignal.timeout(timeoutMs),
       });
-      if (!response.ok) throw new Error(`deepseek HTTP ${response.status}: ${(await response.text()).slice(0, 200)}`);
+      if (!response.ok) throw new Error(`${channel.label} HTTP ${response.status}: ${(await response.text()).slice(0, 200)}`);
       const payload = await response.json();
       const content = payload?.choices?.[0]?.message?.content;
-      if (typeof content !== "string" || !content) throw new Error("deepseek 空回复");
+      if (typeof content !== "string" || !content) throw new Error(`${channel.label} 空回复`);
       return content;
     } catch (error) {
       lastError = error;

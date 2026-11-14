@@ -42,4 +42,5 @@ work/kb/**
 !work/kb/*.sh
 !work/kb/PROGRESS.md
 !work/kb/audit-sample.md
+!work/kb/*.ts
 coverage/
