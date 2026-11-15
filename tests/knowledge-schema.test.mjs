@@ -122,6 +122,12 @@ test("checkDimensionQuotas：六维配额下限与缺口报告", () => {
   assert.equal(result.perDim.D1, 600);
 });
 
+test("checkDimensionQuotas：默认下限为 4000 目标口径的 480/维", () => {
+  const lib = (n) => Array.from({ length: n }, () => ({ dims: ["D1", "D2", "D3", "D4", "D5", "D6"] }));
+  assert.equal(checkDimensionQuotas(lib(480)).ok, true);
+  assert.equal(checkDimensionQuotas(lib(479)).ok, false);
+});
+
 test("findDuplicates：id 与 url 双键去重", () => {
   const a = validEntry();
   const b = { ...validEntry(), id: "kb-000002", url: "https://a.com/page" };

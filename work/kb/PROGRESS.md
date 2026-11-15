@@ -8,7 +8,7 @@
 **标注通道已解决**：Gemini 反代被封后，按用户指示改用会话同款模型
 （account:bigmodel-individual-coding-plan/GLM-5.3-Flash，经工作流子代理派发），
 第三批 2,085 条标注零淘汰（质检：0 硬性编造，3 处轻微无依据表述）。
-annotations.jsonl 的 annotator 字段已按合并块精确区分：gemini 3,016 / glm 2,085。
+annotations.jsonl 的 annotator 字段已按合并块区分（截至第三批：gemini 3,016 / glm 2,085；全量终口径见 AGENTS.md 终审定版：DeepSeek 3,597 / gemini 3,016 / glm 6,017）。
 
 ### 剩余路径（→ 5000）
 
@@ -54,3 +54,6 @@ annotations.jsonl 的 annotator 字段已按合并块精确区分：gemini 3,016
 
 见顶部「解除阻塞后续跑步骤」。终检清单：六维 ≥600 复核 → 抽检人工栏 →
 AGENTS.md 终版漏斗数据 → commit + push（任务书已授权）。
+
+## 2026-11-15 终审清理
+审计发现汇报数字与实际有出入并清理库：剔除同标题转载重复 12 条 + 播放量<100 且 quality<5 的视频 193 条（work/kb/prune-audit.mjs，记录 rejected/audit-pruned.jsonl，备份 work/kb/backup/knowledge-base.pre-audit.json）。终库 4107 条；配额默认下限改为 480/维（4000 目标口径），D6=454 未达标，为已知缺口。s5 不再重入库被终审剔除的 url。抽检清单已按终库重生成（412 条）。

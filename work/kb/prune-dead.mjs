@@ -3,7 +3,7 @@
 // 幂等：重复跑无副作用。剔除后需重建 rec-index（scripts/build-knowledge-index.mjs）。
 //
 // 用法：node work/kb/prune-dead.mjs
-import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
+import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,7 +23,8 @@ const kept = library.filter((entry) => {
 
 const removed = library.length - kept.length;
 if (removed > 0) {
-  copyFileSync(join(repo, "src/knowledge/knowledge-base.json"), join(repo, "src/knowledge/knowledge-base.backup.json"));
+  mkdirSync(join(repo, "work/kb/backup"), { recursive: true });
+  copyFileSync(join(repo, "src/knowledge/knowledge-base.json"), join(repo, "work/kb/backup/knowledge-base.pre-prune-dead.json"));
   writeFileSync(join(repo, "src/knowledge/knowledge-base.json"), JSON.stringify(kept, null, 2));
 }
-console.log(`[prune] 剔除 ${removed} 条死链，全库剩 ${kept.length} 条（备份 knowledge-base.backup.json）`);
+console.log(`[prune] 剔除 ${removed} 条死链，全库剩 ${kept.length} 条（备份 work/kb/backup/）`);

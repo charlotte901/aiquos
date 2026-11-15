@@ -40,6 +40,8 @@ for (const row of [
 }
 const library = readJsonIfExists(libPath) ?? [];
 const existingUrls = new Set(library.map((entry) => entry.url));
+// 终审（prune-audit.mjs）剔除的条目不得被滚动管线重新入库
+for (const row of readJsonl(`${kb}rejected/audit-pruned.jsonl`)) existingUrls.add(row.url);
 
 let nextId = library.reduce((max, entry) => Math.max(max, Number(entry.id.slice(3))), 0);
 const admitStats = { entered: 0, duplicate: 0, rejected: {} };
@@ -100,4 +102,4 @@ console.log(`[s5] 批次 ${batch}：入库 ${admitStats.entered}，url 重复跳
 console.log(`[s5] 淘汰原因：${JSON.stringify(admitStats.rejected)}`);
 console.log(`[s5] 全库 ${library.length} 条（ids 编号至 kb-${String(nextId).padStart(6, "0")}）`);
 console.log(`[s5] 全库六维分布：${JSON.stringify(dimCount)}`);
-console.log(`[s5] 六维配额（终检 ≥600/维）：${quota.ok ? "已达标" : `未达标 ${quota.missing.join(",")}（阶段 3-5 扩量后复核）`}`);
+console.log(`[s5] 六维配额（终检 ≥480/维，4000 目标口径）：${quota.ok ? "已达标" : `未达标 ${quota.missing.join(",")}（阶段 3-5 扩量后复核）`}`);

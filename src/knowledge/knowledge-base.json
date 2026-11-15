@@ -1116,50 +1116,6 @@
     }
   },
   {
-    "id": "kb-000051",
-    "title": "大模型到底在做什么？Token 化、逐 Token 预测与上下文窗口一次讲清",
-    "url": "https://www.bilibili.com/video/BV16i4i6BEi9",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "3分钟讲清大模型底层机制：Token化、逐Token预测、上下文窗口与token预算，并区分训练与使用两个状态。",
-    "why": "帮零基础学习者建立LLM工作原理地基，为后续学Agent、RAG打底。",
-    "quality": 4,
-    "signals": {
-      "views": 30,
-      "durationMin": 3,
-      "date": "2026-11-06",
-      "verifiedAt": "2026-11-12"
-    }
-  },
-  {
-    "id": "kb-000052",
-    "title": "【从大模型到智能体 04】10分钟看懂大模型：下一个 token 是怎么选出来的？",
-    "url": "https://www.bilibili.com/video/BV1o5W26QERR",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "token-prediction",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "10分钟讲解大模型逐token生成流程：Softmax把得分转概率，再采样出下一个token并接回输入循环生成。",
-    "why": "零基础可视化理解token预测机制，帮助建立大模型生成原理的直觉。",
-    "quality": 4,
-    "signals": {
-      "views": 55,
-      "durationMin": 10,
-      "date": "2026-11-11",
-      "verifiedAt": "2026-11-12"
-    }
-  },
-  {
     "id": "kb-000053",
     "title": "什么是生成式AI？生成AI不等于大模型，判别模型和生成模型",
     "url": "https://www.bilibili.com/video/BV1Vi421a7n2",
@@ -1222,50 +1178,6 @@
       "views": 174199,
       "durationMin": 28,
       "date": "2023-05-04",
-      "verifiedAt": "2026-11-12"
-    }
-  },
-  {
-    "id": "kb-000056",
-    "title": "006_什么是生成式AI",
-    "url": "https://www.bilibili.com/video/BV1HqnW6ZEHq",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "generative-ai-overview",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "3分钟动画讲解生成式AI基本原理：与识别分类AI的区别、为何一句话能生成内容、内容来自训练规律而非复制，以及生成结果不一定正确或独创。",
-    "why": "面向零基础，用动画和提问式讲解建立生成式AI基本概念，帮助初学者理解其能力来源与局限。",
-    "quality": 4,
-    "signals": {
-      "views": 67,
-      "durationMin": 3,
-      "date": "2026-10-22",
-      "verifiedAt": "2026-11-12"
-    }
-  },
-  {
-    "id": "kb-000057",
-    "title": "大模型是什么？10分钟讲透AI的原理与能力边界｜大模型入门 第1讲",
-    "url": "https://www.bilibili.com/video/BV199pi6HEHt",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "零公式讲解大模型是什么、如何学会说话、为何能写代码对话又会胡说，以及能力边界，属7讲入门系列第1讲。",
-    "why": "面向完全零基础，用10分钟建立大模型原理与能力边界的整体认知，适合AI基础薄弱者入门。",
-    "quality": 4,
-    "signals": {
-      "views": 71,
-      "durationMin": 9,
-      "date": "2026-10-13",
       "verifiedAt": "2026-11-12"
     }
   },
@@ -2397,28 +2309,6 @@
     }
   },
   {
-    "id": "kb-000114",
-    "title": "AI基础概念详解",
-    "url": "https://www.bilibili.com/video/BV13z486GE1B",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-basic-concepts",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "白话拆解 Token、大模型、推理、上下文窗口等基础概念，用四层剖面图讲清各词位置与用途。",
-    "why": "零基础可看，帮初学者建立 Token、推理、上下文等核心术语的直观框架，避免名词混淆。",
-    "quality": 4,
-    "signals": {
-      "views": 39,
-      "durationMin": 11,
-      "date": "2026-11-05",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000115",
     "title": "这可能是b站最全的【人工智能-数学基础】教程！129讲全！微积分、概率论、线性代数、机器学习数学基础",
     "url": "https://www.bilibili.com/video/BV1gQ4y1E7iy",
@@ -2547,28 +2437,6 @@
       "views": 124,
       "durationMin": 5,
       "date": "2026-11-07",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000121",
-    "title": "突破扩散语言模型推理瓶颈！频率感知重掩码实现测试时自适应缩放，数学/代码任务性能大幅提升 【深度学习】【扩散模型】【大语言模型】",
-    "url": "https://www.bilibili.com/video/BV1cqWh6QEoc",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "diffusion-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "解读论文：将扩散语言模型测试时缩放建模为响应数量与解码策略的自适应分配，提出频率感知重掩码方法。",
-    "why": "面向想了解扩散语言模型前沿推理优化的学习者，补充扩散模型原理与测试时缩放认知。",
-    "quality": 4,
-    "signals": {
-      "views": 10,
-      "durationMin": 27,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -3149,28 +3017,6 @@
     }
   },
   {
-    "id": "kb-000148",
-    "title": "小模型先写，大模型审核，真的更快？推测解码与接受率讲清",
-    "url": "https://www.bilibili.com/video/BV116xB6SEet",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "5分钟讲推测解码：小模型起草、大模型验证为何可能更快，涵盖候选词元、接受率、兼容条件与完整耗时对照。",
-    "why": "用短小篇幅把推测解码的接受率与耗时权衡讲清，帮助建立大模型推理机制的基础认知。",
-    "quality": 4,
-    "signals": {
-      "views": 48,
-      "durationMin": 5,
-      "date": "2026-10-30",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000149",
     "title": "别再瞎用AI了：AI Native 与 Harness 元课程｜多Agent｜智能体｜上下文工程｜Token优化｜大模型",
     "url": "https://www.bilibili.com/video/BV19EWy63ELV",
@@ -3436,28 +3282,6 @@
       "views": 2002,
       "durationMin": 8,
       "date": "2026-01-02",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000162",
-    "title": "同一个 AI 模型，Q4 和 Q8 怎么选？大小、质量、速度别只看文件名",
-    "url": "https://www.bilibili.com/video/BV1PwJY6SE2A",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "local-models",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "3分钟讲解同一模型Q4与Q8量化版本在体积、质量、速度上的差异，并给出选择与检查方法。",
-    "why": "帮助初学者理解量化精度对本地模型选型的影响，避免只看文件名误判。",
-    "quality": 4,
-    "signals": {
-      "views": 86,
-      "durationMin": 3,
-      "date": "2026-10-17",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -3843,28 +3667,6 @@
     }
   },
   {
-    "id": "kb-000180",
-    "title": "为什么AI会一本正经地胡说八道？两分钟搞懂「幻觉」",
-    "url": "https://www.bilibili.com/video/BV1uTWo6MEHp",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "hallucination-basics",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "两分钟解释AI幻觉：模型只学「说得顺」，评测只看对错，蒙答案反而得分更高；引用OpenAI 2025论文。",
-    "why": "帮零基础者快速建立「模型为何会自信编错」的认知，避免盲信输出。",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 2,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000181",
     "title": "常用大模型API与消息结构",
     "url": "https://www.bilibili.com/video/BV1Wnxq6yE9R",
@@ -3905,28 +3707,6 @@
       "views": 2402,
       "durationMin": 17,
       "date": "2026-11-10",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000183",
-    "title": "大模型七十六年：从图灵测试、Transformer 到 Agent 元年，一条主线讲透",
-    "url": "https://www.bilibili.com/video/BV1pmnt6qEuw",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-development-history",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "9分钟梳理AI七十六年主线：图灵测试、达特茅斯会议、两次寒冬、AlexNet、Transformer、GPT-3到ChatGPT与Agent。",
-    "why": "帮零基础者建立AI发展脉络，理解大模型从符号主义到深度学习的来路。",
-    "quality": 4,
-    "signals": {
-      "views": 25,
-      "durationMin": 9,
-      "date": "2026-10-23",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -3973,29 +3753,6 @@
       "views": 16792,
       "durationMin": 18,
       "date": "2026-06-02",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000186",
-    "title": "54款开源大模型认知能力大测评！对标人类13项经典认知任务，揭穿\"类人表现\"假象 【大模型评测】【认知AI】",
-    "url": "https://www.bilibili.com/video/BV1nrWY6oEQL",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "model-capability-boundary",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "解读论文CogBattery，用13项人类参照认知任务评测54款开源大模型，揭示其类人表现背后的局限。",
-    "why": "帮助学习者理解大模型能力评测方法与能力边界，避免被类人表现误导。",
-    "quality": 4,
-    "signals": {
-      "views": 2,
-      "durationMin": 21,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -4336,29 +4093,6 @@
     }
   },
   {
-    "id": "kb-000202",
-    "title": "Claude Code 源码泄露暴露了什么：Harness 才是 Agent 的核心，七大能力、DeepAgents 落码、沙箱与 Skill 自写｜智能体",
-    "url": "https://www.bilibili.com/video/BV1rpWR6JE4K",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D3"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "借 Claude Code 源码泄露事件，拆解 Agent Harness 七大能力：任务规划、虚拟文件系统、子智能体、沙箱执行、人工介入、渐进披露、Skill 管理。",
-    "why": "把 Agent 从概念落到工程架构，帮学习者理解智能体由哪些能力模块构成，而非停留在调用 API 层面。",
-    "quality": 4,
-    "signals": {
-      "views": 93,
-      "durationMin": 494,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000203",
     "title": "【2026】Function Calling 与 MCP 协议深度精讲，理清模型调用与工具标准分层逻辑，手把手落地 Agent 智能体开发，配套完整代码实战",
     "url": "https://www.bilibili.com/video/BV1ZxWR6jEod",
@@ -4378,28 +4112,6 @@
       "views": 403,
       "durationMin": 582,
       "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000204",
-    "title": "AI Agent（智能体）到底是什么？7 分钟讲清它和聊天机器人的区别【AI Agent 入门 01】",
-    "url": "https://www.bilibili.com/video/BV1XJWy66EDF",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "用杭州旅行规划的例子，7分钟讲清聊天机器人与AI Agent的区别、Agent完成任务的四步循环、Coding Agent的工作方式及人的决策边界。",
-    "why": "零基础可看，用具体例子建立Agent与聊天机器人的区分，适合刚接触AI、想理解智能体概念的初学者。",
-    "quality": 4,
-    "signals": {
-      "views": 23,
-      "durationMin": 7,
-      "date": "2026-11-11",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -4586,97 +4298,6 @@
     }
   },
   {
-    "id": "kb-000213",
-    "title": "斯坦福 CS329Z 第 3 讲：RAG 不止向量检索？从切块、RAPTOR 到 GraphRAG 与检索评估",
-    "url": "https://www.bilibili.com/video/BV1DWWd6qEku",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "斯坦福 CS329Z 第三讲，讲 RAG 从向量检索扩展到切块、RAPTOR 树索引、GraphRAG 与检索评估，并强调项目需有基线与评分表。",
-    "why": "帮初学者建立 RAG 不止向量库的整体认知，并理解检索效果评估与基线的重要性。",
-    "quality": 4,
-    "signals": {
-      "views": 43,
-      "durationMin": 51,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000214",
-    "title": "为什么你的RAG知识库又慢又胡说？",
-    "url": "https://www.bilibili.com/video/BV1dVWd65ErL",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "6分钟讲解RAG知识库文档分块、混合检索、top_k、相似度阈值等关键参数，并给出响应慢与回答失真的排查优化思路。",
-    "why": "帮助初学者建立RAG概念认知，并学会从参数层面定位与优化检索效果。",
-    "quality": 4,
-    "signals": {
-      "views": 13,
-      "durationMin": 6,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000215",
-    "title": "RAG 检索出来的东西不对？切分策略、混合检索与重排序｜RAG｜知识库｜检索优化",
-    "url": "https://www.bilibili.com/video/BV1BbWR6LE4R",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "按RAG链路逐段排查检索不准：切分策略与重叠、混合检索加权去重、粗排+重排模型精选、上下文拼装。",
-    "why": "帮初学者建立RAG检索环节的整体认知，理解切分、混合检索与重排的取舍，能定位答非所问的检索根因。",
-    "quality": 4,
-    "signals": {
-      "views": 19,
-      "durationMin": 619,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000216",
-    "title": "如何搭建企业知识库？｜RAG 先查后答全流程",
-    "url": "https://www.bilibili.com/video/BV1JxWR67EX4",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用示例报销制度演示企业知识库 RAG 全流程：资料准备、切块、向量嵌入、两路检索、RRF 合并、证据回答与引用核对，并讨论资料不足、权限、制度更新三个问题。",
-    "why": "帮初学者建立 RAG「先查后答」的完整链路认知，理解检索与生成如何配合，弥补对 RAG 概念与流程的空白。",
-    "quality": 4,
-    "signals": {
-      "views": 29,
-      "durationMin": 8,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000217",
     "title": "2026版LangChain教程，langchain快速入门， Agent智能体rag项目实战",
     "url": "https://www.bilibili.com/video/BV1rv7A6oEeP",
@@ -4696,29 +4317,6 @@
       "views": 2769462,
       "durationMin": 1285,
       "date": "2026-06-23",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000218",
-    "title": "知识库检索到了还答错？对照三种RAG架构，用LangGraph加入验证与重试｜大模型应用｜Agentic RAG｜向量检索｜检索评估｜Hybrid RAG",
-    "url": "https://www.bilibili.com/video/BV1qSWd6SEQV",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "对比 Two-Step、Agentic、Hybrid 三种 RAG 架构，用 LangGraph 代码演示检索结果验证与改写重试。",
-    "why": "帮助建立 RAG 架构认知，理解检索后验证与重试机制，弥补检索增强生成概念与效果评估的薄弱。",
-    "quality": 4,
-    "signals": {
-      "views": 9,
-      "durationMin": 830,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -4745,29 +4343,6 @@
     }
   },
   {
-    "id": "kb-000220",
-    "title": "RAG 性能优化实战：从 0 到 1 微调嵌入模型，召回不准、评估做不出来怎么破｜RAG｜检索增强｜知识库｜智能体｜大模型",
-    "url": "https://www.bilibili.com/video/BV1GgWb6aEYY",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "179分钟实战课，讲RAG检索优化：切分粒度、向量模型选型、混合检索配比，嵌入模型微调的数据构造与正负样本，以及召回率、上下文相关性、答案忠实度等评估指标。",
-    "why": "把RAG从概念落到检索与微调的具体做法，并给出可量化的评估口径，适合想补RAG原理与效果评估基础的进阶学习者。",
-    "quality": 4,
-    "signals": {
-      "views": 1250,
-      "durationMin": 179,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000221",
     "title": "【RAG】HyDE 讲透：先让 LLM\"瞎编\"答案，再用它去检索真实文档",
     "url": "https://www.bilibili.com/video/BV1vQ3R6jEds",
@@ -4787,29 +4362,6 @@
       "views": 947,
       "durationMin": 4,
       "date": "2026-08-05",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000222",
-    "title": "32-检索增强生成",
-    "url": "https://www.bilibili.com/video/BV1Nj4u6qE5b",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "以A公司内部助手为例，用六道检索题演示旧版制度、跨表金额、权限受限、缺少依据等场景的处理方式。",
-    "why": "帮助初学者建立RAG概念，并理解检索结果不可靠时的判断与处理思路。",
-    "quality": 4,
-    "signals": {
-      "views": 66,
-      "durationMin": 20,
-      "date": "2026-11-03",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -4920,51 +4472,6 @@
     "quality": 4,
     "signals": {
       "views": 1939,
-      "durationMin": 179,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000228",
-    "title": "什么是RAG？一文看懂检索增强生成技术",
-    "url": "https://www.bilibili.com/video/BV1cVx9zeELy",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "34分钟讲解RAG检索增强生成：不改模型，先从自有数据库检索相关内容再连同问题交给LLM作答，并演示爬取网站等流程。",
-    "why": "用类比和实操讲清RAG原理与流程，帮初学者理解如何让LLM回答专属知识问题。",
-    "quality": 4,
-    "signals": {
-      "views": 54,
-      "durationMin": 34,
-      "date": "2025-10-19",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000229",
-    "title": "RAG 性能优化实战：从 0 到 1 微调嵌入模型，召回不准、评估做不出来怎么破｜RAG｜检索增强｜知识库｜智能体｜大模型",
-    "url": "https://www.bilibili.com/video/BV1YGWb6cEv9",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "179分钟实战课，讲RAG检索优化：切分粒度、向量模型选型、混合检索、嵌入模型微调与数据构造、召回率与忠实度评估。",
-    "why": "系统补齐RAG检索与微调链路，并给出可落地的评估指标，适合想突破RAG效果瓶颈的进阶学习者。",
-    "quality": 4,
-    "signals": {
-      "views": 1737,
       "durationMin": 179,
       "date": "2026-11-09",
       "verifiedAt": "2026-11-13"
@@ -5950,28 +5457,6 @@
     }
   },
   {
-    "id": "kb-000274",
-    "title": "Day04_让机器理解语义_Embedding向量嵌入",
-    "url": "https://www.bilibili.com/video/BV1PSHL6rERg",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "embedding-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "5分钟讲Embedding把文本映射为语义向量，用余弦相似度衡量方向一致性，Top-K加阈值过滤构成RAG检索最小版本。",
-    "why": "用极短篇幅把向量嵌入、余弦相似度与RAG检索串成一条线，适合补齐AI基础认知中语义表示这一环。",
-    "quality": 4,
-    "signals": {
-      "views": 30,
-      "durationMin": 5,
-      "date": "2026-10-04",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000275",
     "title": "扩散模型的原理是什么？为什么可以用它生成图片、视频、音乐等内容？",
     "url": "https://www.bilibili.com/video/BV1fS7nznEUf",
@@ -6060,28 +5545,6 @@
     }
   },
   {
-    "id": "kb-000279",
-    "title": "扩散模型与布朗运动：CLIP如何控制AI生成🎨",
-    "url": "https://www.bilibili.com/video/BV1QwWe6GEzb",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "diffusion-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "借布朗运动讲扩散模型从噪声迭代生成图像视频的机制，并解析CLIP如何用文本图像共享向量空间实现控制。",
-    "why": "用物理直觉和数学解释扩散与CLIP，帮初学者建立生成式AI核心原理的体系认知。",
-    "quality": 4,
-    "signals": {
-      "views": 1,
-      "durationMin": 37,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000280",
     "title": "什么是扩散模型？",
     "url": "https://www.bilibili.com/video/BV1Vg4y1J7xs",
@@ -6144,28 +5607,6 @@
       "views": 5193,
       "durationMin": 741,
       "date": "2026-07-17",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000283",
-    "title": "【中英字幕】History of Diffusion 01｜Jascha Sohl-Dickstein：扩散模型的物理起源",
-    "url": "https://www.bilibili.com/video/BV16LWt6uE8T",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "diffusion-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "Bain Capital Ventures 访谈 Jascha Sohl-Dickstein，讲述扩散模型的思想起源与物理/热力学背景，含中英字幕。",
-    "why": "帮助学习者从历史与物理直觉理解扩散模型为何成立，补足生成式 AI 原理的底层认知。",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 32,
-      "date": "2026-11-09",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -6768,28 +6209,6 @@
     }
   },
   {
-    "id": "kb-000311",
-    "title": "什么是 context window？（还有 context engineering）",
-    "url": "https://www.bilibili.com/video/BV15Kxu6nEEQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "context-window",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "用厨房台面比喻讲解 context window 与 context engineering，指出 token 数量多但放置不当也无用。",
-    "why": "以生活化比喻帮零基础者建立上下文窗口与上下文工程的基本直觉。",
-    "quality": 4,
-    "signals": {
-      "views": 79,
-      "durationMin": 2,
-      "date": "2026-10-27",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000312",
     "title": "ComfyUI Flux.1模型终极指南(一)：In-Context-LoRa 万物一致性 x 模型大盘点 x Featurise",
     "url": "https://www.bilibili.com/video/BV1yzQBYHE2o",
@@ -6831,29 +6250,6 @@
       "views": 802,
       "durationMin": 17,
       "date": "2026-10-15",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000314",
-    "title": "deepseek 处理长文档：分块、摘要链与结构化抽取｜DeepSeek｜长文本｜信息抽取",
-    "url": "https://www.bilibili.com/video/BV1dsWD6hEzH",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D2"
-    ],
-    "subtopic": "context-window",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解长文档处理四步：分块粒度选择、两段式定位作答、逐层摘要链控制漂移、按 schema 结构化抽取。",
-    "why": "帮初学者理解上下文窗口装不下全文时该怎么切分、定位与压缩，建立长文本处理的基本思路。",
-    "quality": 4,
-    "signals": {
-      "views": 54,
-      "durationMin": 778,
-      "date": "2026-11-11",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -7567,51 +6963,6 @@
       "views": 8461,
       "durationMin": 30,
       "date": "2026-10-14",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000347",
-    "title": "【中配】超级智能会终结人类吗？ ｜人工智能",
-    "url": "https://www.bilibili.com/video/BV1HmnN6MEUT",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D6"
-    ],
-    "subtopic": "agi-frontier",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "17分钟中配视频，从智能演化讲到AGI超越人类、智能爆炸，并讨论科学机遇与失控风险。",
-    "why": "帮助零基础者建立AGI概念框架，理解能力边界与生存风险，适合作为前沿争论入门。",
-    "quality": 4,
-    "signals": {
-      "views": 20,
-      "durationMin": 17,
-      "date": "2026-10-20",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000348",
-    "title": "人工智能是如何诞生的？",
-    "url": "https://www.bilibili.com/video/BV1N9W36uELg",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-development-history",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "5分钟梳理AI七十年发展史：图灵测试、达特茅斯会议、两次AI寒冬、AlexNet、Transformer到ChatGPT。",
-    "why": "零基础可看，用时间线帮初学者建立AI发展脉络与关键节点认知。",
-    "quality": 4,
-    "signals": {
-      "views": 25,
-      "durationMin": 5,
-      "date": "2026-11-10",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -8414,28 +7765,6 @@
     }
   },
   {
-    "id": "kb-000385",
-    "title": "神经网络：神经元与多层网络｜人工智能 5分钟讲透 E06",
-    "url": "https://www.bilibili.com/video/BV12bWH6KERr",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-basic-concepts",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用具体数值演示单个神经元的加权求和与ReLU激活，并拆解2-3-1小网络的逐层计算与参数计数。",
-    "why": "把神经网络拆成加权求和加激活两件事，配具体数字算例，帮零基础者建立可验证的直观理解。",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 4,
-      "date": "2026-11-08",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000386",
     "title": "【中英双语】全网6883万播放的神经网络教程，看完真的懂了",
     "url": "https://www.bilibili.com/video/BV1TxNs6cEG3",
@@ -8786,29 +8115,6 @@
       "views": 164577,
       "durationMin": 130,
       "date": "2026-05-13",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000402",
-    "title": "第5章：提示词工程（下）：结构化框架与个人提示词库",
-    "url": "https://www.bilibili.com/video/BV1rp4n6wETw",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "prompt-templates",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "13分钟讲解CO-STAR结构化框架、少样本提示、上下文工程演进，以及提示词库的分类搭建、版本管理与复用调优方法。",
-    "why": "系统给出结构化提示框架与提示词库沉淀流程，帮助学习者摆脱零散措辞技巧，建立可复用的提示词资产。",
-    "quality": 4,
-    "signals": {
-      "views": 18,
-      "durationMin": 13,
-      "date": "2026-11-07",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -9217,28 +8523,6 @@
     }
   },
   {
-    "id": "kb-000421",
-    "title": "【英文讲解】零样本 vs 少样本提示：给 AI 几个例子，格式就稳了 | CompTIA SecAI+ 1.1",
-    "url": "https://www.bilibili.com/video/BV1KiWW6gEwb",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "few-shot",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "4分钟英文讲解零样本与少样本提示的区别：少样本给带标签示例可稳定输出格式，并提及角色设定、模板、单样本过度照抄与积极偏差。",
-    "why": "帮初学者理解示例数量如何影响输出格式稳定性，是提示词工程入门的关键概念。",
-    "quality": 4,
-    "signals": {
-      "views": 7,
-      "durationMin": 4,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000422",
     "title": "如何提取 GPT/Claude/Gemini 隐藏思维链？",
     "url": "https://www.bilibili.com/video/BV18nHD67Erh",
@@ -9420,29 +8704,6 @@
     }
   },
   {
-    "id": "kb-000430",
-    "title": "大模型如何学会推理？Chain-of-Thought论文全解析：从算术到常识 🔥",
-    "url": "https://www.bilibili.com/video/BV1nT7X6cE5T",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D1"
-    ],
-    "subtopic": "chain-of-thought",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "5分钟解析Google思维链提示论文：讲清CoT定义、为何优于仅给答案、规模涌现现象及GSM8K等任务表现。",
-    "why": "帮提示词初学者理解CoT原理与适用边界，避免对小模型误用，建立推理类提示的认知基础。",
-    "quality": 4,
-    "signals": {
-      "views": 62,
-      "durationMin": 5,
-      "date": "2026-06-03",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000431",
     "title": "SELF-CONSISTENCY IMPROVES CHAIN OF THOUGHT REASONING IN LANGUAGE MODELS (Google",
     "url": "https://www.bilibili.com/video/BV1aP411b7V3",
@@ -9505,29 +8766,6 @@
       "views": 1210,
       "durationMin": 13,
       "date": "2023-05-31",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000434",
-    "title": "面试必问！大模型规划能力，CoT ToT ReAct 到底该怎么选？【码士集团】",
-    "url": "https://www.bilibili.com/video/BV15BnB6WEvf",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D5"
-    ],
-    "subtopic": "reasoning-prompts",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "30分钟视频对比CoT、ToT、GoT推理增强路线与ReAct、Plan-and-Execute任务编排路线，分析各自成本与适用场景。",
-    "why": "帮助学习者理解推理类提示模式的取舍，避免复杂任务中选错提示策略导致模型跑偏。",
-    "quality": 4,
-    "signals": {
-      "views": 46,
-      "durationMin": 30,
-      "date": "2026-10-21",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -9691,28 +8929,6 @@
     }
   },
   {
-    "id": "kb-000442",
-    "title": "获取结构化 LLM 输出",
-    "url": "https://www.bilibili.com/video/BV1ZGhq6mEak",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "output-format-control",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "71分钟视频，基于DeepLearning.AI课程讲解如何让LLM输出结构化结果，涉及格式约束与解析。",
-    "why": "帮助学习者掌握输出格式控制，让模型稳定返回可解析的结构化数据。",
-    "quality": 4,
-    "signals": {
-      "views": 30,
-      "durationMin": 71,
-      "date": "2026-09-21",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000443",
     "title": "LLM落地应用魔咒：Grammar结构化输出",
     "url": "https://www.bilibili.com/video/BV1A47yzsEg2",
@@ -9824,29 +9040,6 @@
       "views": 45720,
       "durationMin": 32,
       "date": "2026-10-14",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000448",
-    "title": "20 测提示词：怎么知道提示词变好了没有",
-    "url": "https://www.bilibili.com/video/BV1FJ4T6oEm7",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "prompt-testing",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲提示词调优前先定成功标准、准备5-10道测试题，改一处测一次，用实测判断改动是否真变好。",
-    "why": "帮只凭感觉改提示词的学习者建立可复现的测试与验收方法，避免被单次回答误导。",
-    "quality": 4,
-    "signals": {
-      "views": 0,
-      "durationMin": 4,
-      "date": "2026-11-03",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -10102,29 +9295,6 @@
     }
   },
   {
-    "id": "kb-000460",
-    "title": "预算350元，AI却推荐380元？动画讲清“间接提示注入”",
-    "url": "https://www.bilibili.com/video/BV1RDxC67EDw",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D6"
-    ],
-    "subtopic": "context-provision",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用虚构酒店比价案例解释间接提示注入：网页夹带指令混入上下文影响模型回答，并介绍HoS在注意力头加门控按来源调节影响的研究。",
-    "why": "帮助理解向AI提供外部网页/资料时的上下文风险，学会区分资料与指令，避免被网页内容劫持。",
-    "quality": 4,
-    "signals": {
-      "views": 48,
-      "durationMin": 2,
-      "date": "2026-10-31",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000461",
     "title": "告别AI跑偏！用Markdown写提示词，精准拿捏AI写作",
     "url": "https://www.bilibili.com/video/BV1jEz7BrEAS",
@@ -10235,28 +9405,6 @@
       "views": 53094,
       "durationMin": 17,
       "date": "2025-11-29",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000466",
-    "title": "为什么不能在System Prompt 里放时间戳 ？",
-    "url": "https://www.bilibili.com/video/BV1iP4P6gERz",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "system-prompt-design",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解系统提示词中放时间戳为何导致工具定义与历史对话的缓存失效，涉及提示词结构与缓存机制。",
-    "why": "帮助已会写提示词的学习者理解系统提示词设计对缓存与成本的影响，避免常见误区。",
-    "quality": 4,
-    "signals": {
-      "views": 64,
-      "durationMin": 6,
-      "date": "2026-11-04",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -10734,29 +9882,6 @@
       "views": 279227,
       "durationMin": 17,
       "date": "2026-09-28",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000488",
-    "title": "只加一行注释，为什么要拒绝 AI 的旧补丁？｜亲手造AI编程助手03",
-    "url": "https://www.bilibili.com/video/BV1ftWo6XESS",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "coding-assistants",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "手写带前置条件的单文件编辑工具，用哈希与读回核对区分未执行、已写入、未知三种状态。",
-    "why": "帮助理解AI编程助手编辑文件的可靠性边界，学会用受控实验验证写入结果而非盲信回执。",
-    "quality": 4,
-    "signals": {
-      "views": 12,
-      "durationMin": 20,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -11969,29 +11094,6 @@
       "views": 2135,
       "durationMin": 11,
       "date": "2026-10-11",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000543",
-    "title": "放弃自研文档解析？Datasite CTO揭秘AI处理海量金融文档的避坑指南 | AI Engineer",
-    "url": "https://www.bilibili.com/video/BV1gCxZ6JEmf",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "tool-selection",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "Datasite CTO与Reducto CEO对话，讨论海量金融文档解析中自研与采购的取舍、边缘案例困境及评估体系驱动决策。",
-    "why": "帮助学习者理解企业级文档解析工具的选型逻辑与评估方法，避免盲目自研。",
-    "quality": 4,
-    "signals": {
-      "views": 77,
-      "durationMin": 20,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -28105,28 +27207,6 @@
     }
   },
   {
-    "id": "kb-001344",
-    "title": "AI最强辅助！n8n+crawl4ai工作流，一键抓取任意网站！搭建RAG知识库+MCP自动化，让你的AI更准！更强！",
-    "url": "https://www.bilibili.com/video/BV1ySW869EH1",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "rag-tooling",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "28分钟讲解利用n8n结合crawl4ai自动爬取网页数据，并搭建企业RAG知识库与MCP流程。",
-    "why": "深入演示端到端的数据采集与RAG知识库构建实操，有效解决模型知识更新与准确性痛点。",
-    "quality": 4,
-    "signals": {
-      "views": 37,
-      "durationMin": 28,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001345",
     "title": "Codex定时任务+插件保姆式教学实践自动化工作流",
     "url": "https://www.bilibili.com/video/BV1FqMa62EXU",
@@ -28794,28 +27874,6 @@
       "views": 8174,
       "durationMin": 2119,
       "date": "2026-10-24",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001375",
-    "title": "【2026最新】目前B站最详细的大模型API调用教程，手把手带你用Python调用大模型API，入门到实战，零基础也能轻松学会！少走99%的弯路！",
-    "url": "https://www.bilibili.com/video/BV1j5Wd6yEAJ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "api-basics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "262分钟教程，从入门到实战系统演示如何利用Python编写代码调用大语言模型API。",
-    "why": "内容聚焦Python大模型API调用实战，讲解细致步骤明确，适合编程初学者参考。",
-    "quality": 4,
-    "signals": {
-      "views": 71,
-      "durationMin": 262,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -29533,28 +28591,6 @@
     }
   },
   {
-    "id": "kb-001408",
-    "title": "只用第一个token就能检测大模型幻觉？性能超采样方法还省90%算力 【大模型安全】【LLM论文解读】",
-    "url": "https://www.bilibili.com/video/BV1qJd3BeE4q",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "hallucination-detection",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "14分钟解读前沿论文，剖析基于首个token单次解码置信度快速检测大模型幻觉的技术方案。",
-    "why": "深入前沿学术论文讲解低成本幻觉检测算法，理论与实验分析扎实，具深水区参考价值。",
-    "quality": 4,
-    "signals": {
-      "views": 59,
-      "durationMin": 14,
-      "date": "2026-05-08",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001409",
     "title": "【TED】如何阻止人工智能扼杀你的批判性思维?（How to stop AI from killing your critical thinking）【双语字幕",
     "url": "https://www.bilibili.com/video/BV1zpUmBXEWv",
@@ -29574,29 +28610,6 @@
       "views": 2822,
       "durationMin": 15,
       "date": "2025-11-25",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001410",
-    "title": "如何在AI Agent时代保持批判性思维？",
-    "url": "https://www.bilibili.com/video/BV14sW76pEjK",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D5"
-    ],
-    "subtopic": "output-critique",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "7分钟解读Anthropic专家文章，剖析与Agent协作时的“认知投降”现象及保持批判性思维的具体做法。",
-    "why": "直击盲目接受AI结论的核心误区，给出自我审视与输出审读的可操作建议，扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 71,
-      "durationMin": 7,
-      "date": "2026-11-08",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -30104,28 +29117,6 @@
     }
   },
   {
-    "id": "kb-001433",
-    "title": "律师怎么检查 AI 给的法条",
-    "url": "https://www.bilibili.com/video/BV1zuWx6vEQh",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "citation-checking",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "执业律师分享核对AI生成法律法条的实务经验，包括索取出处、逐条比对与官网验真。",
-    "why": "紧扣AI输出核查核心痛点，提供专业可行的法条出处验证与溯源流程，方法扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 5,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001434",
     "title": "AI是怎么认出AI视频的？",
     "url": "https://www.bilibili.com/video/BV1Nx4y1x7Wg",
@@ -30445,28 +29436,6 @@
     }
   },
   {
-    "id": "kb-001448",
-    "title": "动画拆解 RAG 评估指标体系！召回率 / MRR / 忠实度 / 相关性怎么算？没有评估就没有优化",
-    "url": "https://www.bilibili.com/video/BV14FeA6zEUm",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "quality-metrics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "7分钟动画拆解RAG评估指标体系，详解检索阶段MRR与生成阶段忠实度、相关性的计算与评估。",
-    "why": "系统建立RAG系统的量化评估标准，帮助学习者掌握检索与生成质量的客观核查指标与调优依据。",
-    "quality": 4,
-    "signals": {
-      "views": 30,
-      "durationMin": 7,
-      "date": "2026-09-16",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001449",
     "title": "超易懂的分类任务指标详解！准确率、召回率、精确率、F1-score、AUC、ROC | 机器学习 | 分类 | 回归 | 聚类 | 关联规则 | 图计算",
     "url": "https://www.bilibili.com/video/BV1YyHSekEXW",
@@ -30600,50 +29569,6 @@
     }
   },
   {
-    "id": "kb-001455",
-    "title": "18款大模型实测！模拟人类工作记忆的全新状态追踪探针WMIP发布，精准评估LLM累积状态跟踪能力 【大模型评测】【AI前沿论文】",
-    "url": "https://www.bilibili.com/video/BV1sYWY6AEp2",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "benchmark-basics",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "17分钟深度解读WMIP大模型评测论文，分析模拟人类工作记忆的探针设计与18款模型状态跟踪表现。",
-    "why": "帮助进阶学习者理解前沿大模型能力探针的设计原理，掌握评估LLM长程累积状态跟踪能力的方法。",
-    "quality": 4,
-    "signals": {
-      "views": 20,
-      "durationMin": 17,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001456",
-    "title": "史上最大规模具身智能编程机器人统考！覆盖35套基准、47种机器人、1156项任务的统一评测框架发布 【具身智能】【机器人】【大模型评测】",
-    "url": "https://www.bilibili.com/video/BV1e9WY6UEDv",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "benchmark-basics",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "21分钟解读具身智能机器人统一评测框架论文，介绍覆盖35套基准与上千项任务的评测体系。",
-    "why": "帮助深入了解具身智能领域前沿的多任务评测体系构建，拓宽对复杂AI系统基准测试的认知。",
-    "quality": 4,
-    "signals": {
-      "views": 4,
-      "durationMin": 21,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001457",
     "title": "【你的AI靠不靠谱？】大模型 Agent项目落地 评测标准：5 大类 30项指标，从技术到商业全覆盖！AI大模型项目企业实战！",
     "url": "https://www.bilibili.com/video/BV1QwdQBMEBr",
@@ -30662,28 +29587,6 @@
       "views": 9835,
       "durationMin": 53,
       "date": "2026-04-22",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001458",
-    "title": "5448道全新决策题！覆盖1024选项+64k长上下文，首个全维度多任务决策能力基准MMDM详解 【大模型评测】【AI决策】",
-    "url": "https://www.bilibili.com/video/BV1jQWd6EEpS",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "benchmark-basics",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "15分钟解读MMDM大模型多任务决策基准论文，讲解覆盖长上下文与超多选项的决策能力评测设计。",
-    "why": "帮助进阶学习者掌握复杂决策场景下AI基准测试的设计思路与评测集防污染方法。",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 15,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -30728,28 +29631,6 @@
       "views": 341,
       "durationMin": 8,
       "date": "2026-09-15",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001461",
-    "title": "AI 数据分析出错，如何校验 AI 计算结果",
-    "url": "https://www.bilibili.com/video/BV1LFth6QEri",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "numeric-verification",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "3分钟讲解校验AI数据分析与计算结果的4个实用方法，如强制分步列式以避免计算翻车。",
-    "why": "针对大模型数学与统计易出错的痛点，提供低门槛的数值核验策略，帮助新手防范虚假计算结果。",
-    "quality": 4,
-    "signals": {
-      "views": 18,
-      "durationMin": 3,
-      "date": "2026-08-31",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -31637,29 +30518,6 @@
     }
   },
   {
-    "id": "kb-001501",
-    "title": "AI时代的论文评审 审稿人视角与智能工具的融合 Andrew 老师 1103_171741",
-    "url": "https://www.bilibili.com/video/BV1cQ4v6zEUd",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D5"
-    ],
-    "subtopic": "human-review-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "22分钟学术讲座，深入探讨AI时代同行评议中审稿人专业视角与AI智能审稿工具的人机融合。",
-    "why": "系统探讨AI审稿工具辅助学术评审的实践规范与人工复核机制，对学术论文审读具有扎实指导价值。",
-    "quality": 4,
-    "signals": {
-      "views": 5,
-      "durationMin": 22,
-      "date": "2026-11-06",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001502",
     "title": "【AI+审计】利用AI复核审计报告",
     "url": "https://www.bilibili.com/video/BV1ywb46oEtf",
@@ -31752,29 +30610,6 @@
     }
   },
   {
-    "id": "kb-001506",
-    "title": "Human-in-the-Loop——不让\"人\"把关，你的Agent就是个\"定时炸弹\"",
-    "url": "https://www.bilibili.com/video/BV1EwtZ6NEvS",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D5"
-    ],
-    "subtopic": "human-review-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "通过企业踩坑案例阐述Agent风险，详解用interrupt与Checkpointer实现人工审批。",
-    "why": "针对Agent落地风险，结合真实事故与核心代码API讲解人机复核机制，实用性强。",
-    "quality": 4,
-    "signals": {
-      "views": 27,
-      "durationMin": 5,
-      "date": "2026-09-03",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001507",
     "title": "🦜🕸️ LangGraph Interrupt：Human-In-The-Loop 人机交互手到擒来！",
     "url": "https://www.bilibili.com/video/BV1fykHY6EAF",
@@ -31821,29 +30656,6 @@
     }
   },
   {
-    "id": "kb-001509",
-    "title": "【AI Agent 实战】生产级 Human-in-the-Loop 人工审批怎么做",
-    "url": "https://www.bilibili.com/video/BV1mt7z6ME1p",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D5"
-    ],
-    "subtopic": "human-review-workflow",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "译制Dave Ebbelaar实战教程，讲解在Python中通过工具调用拦截实现Agent人工审批。",
-    "why": "针对生产环境高风险动作，深入演示工具拦截与人工审批代码落地，技术扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 25,
-      "durationMin": 25,
-      "date": "2026-06-05",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001510",
     "title": "Deep Agents 安全机制：Hunman-In-Loop审批的实现方法",
     "url": "https://www.bilibili.com/video/BV1eupizaEcS",
@@ -31886,52 +30698,6 @@
       "views": 78641,
       "durationMin": 402,
       "date": "2024-03-25",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001512",
-    "title": "多个AI写代码怎么分工？派活、验收和4个坑",
-    "url": "https://www.bilibili.com/video/BV1i84E6UEFM",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D4"
-    ],
-    "subtopic": "ai-in-programming-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "演示多个AI写代码的分工流程，包括跨厂商派活、结果验收及避免常见工程踩坑。",
-    "why": "紧贴AI编程实战场景，归纳了多模型分工派活与结果复核的具体操作与避坑经验。",
-    "quality": 4,
-    "signals": {
-      "views": 32,
-      "durationMin": 3,
-      "date": "2026-11-07",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001513",
-    "title": "集群智能：一群AI如何分工协作？",
-    "url": "https://www.bilibili.com/video/BV1wcHa6EETU",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D1"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "基于Anthropic工程笔记，剖析多AI智能体的层级协作、去中心化协同架构与潜在问题。",
-    "why": "结合16个Claude协作成效案例，深度拆解多智能体分工机制与系统风险，干货度高。",
-    "quality": 4,
-    "signals": {
-      "views": 20,
-      "durationMin": 8,
-      "date": "2026-10-03",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -32001,29 +30767,6 @@
       "views": 101,
       "durationMin": 7,
       "date": "2026-07-21",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001517",
-    "title": "法律 AI 工作台五问：确定性、可回溯、审美与团队上下文",
-    "url": "https://www.bilibili.com/video/BV1n5xh6sEnM",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D4"
-    ],
-    "subtopic": "ai-in-legal-work",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "34分钟行业深度对谈，剖析法律场景下AI工作台的确定性、核验规则与团队上下文共享。",
-    "why": "针对法律垂直领域，深度探讨专业AI工作台的合规可溯性与团队人机协同边界，专业度高。",
-    "quality": 4,
-    "signals": {
-      "views": 53,
-      "durationMin": 34,
-      "date": "2026-11-02",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -32320,29 +31063,6 @@
       "views": 1433,
       "durationMin": 24,
       "date": "2024-12-23",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001531",
-    "title": "用 AI 做头脑风暴与方案规划 | AI for brainstorming and planning | Coursera & Google",
-    "url": "https://www.bilibili.com/video/BV1YEK26MEas",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D2"
-    ],
-    "subtopic": "brainstorming-with-ai",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "Google与Coursera官方课程切片，系统讲解如何利用AI进行头脑风暴与方案规划。",
-    "why": "源自谷歌权威在线课程，结构清晰、理念扎实，系统传授AI辅助发散与规划方法。",
-    "quality": 4,
-    "signals": {
-      "views": 62,
-      "durationMin": 13,
-      "date": "2026-07-20",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -34523,29 +33243,6 @@
     }
   },
   {
-    "id": "kb-001627",
-    "title": "我让AI起草合同，1小时的工作压缩到了10分钟",
-    "url": "https://www.bilibili.com/video/BV1VRtG6wEjc",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D4"
-    ],
-    "subtopic": "ai-in-legal-work",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "拆解律师用AI起草合同的体系方法：建立模板库与规则，锁定商务条件并坚持人工核验把关。",
-    "why": "提出两项前置与六步工作法，明确人机分工边界与合规脱敏要求，方法扎实极具指导性。",
-    "quality": 4,
-    "signals": {
-      "views": 97,
-      "durationMin": 5,
-      "date": "2026-09-01",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001628",
     "title": "PactExtract - 合同信息批量提取工具",
     "url": "https://www.bilibili.com/video/BV1batE63EXF",
@@ -35091,29 +33788,6 @@
       "views": 29289,
       "durationMin": 13,
       "date": "2026-07-30",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001652",
-    "title": "我几乎不自己写代码了｜把AI当成一个团队来用的3条经验",
-    "url": "https://www.bilibili.com/video/BV1m1xy66EEZ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "role-division",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "分享将AI作为团队协作的3条核心经验：动脑与动手分工、评估派活成本及明确验收标准。",
-    "why": "总结了真实编程中将AI组织为团队分工协作的实战经验，规则清晰且极具可操作性。",
-    "quality": 4,
-    "signals": {
-      "views": 65,
-      "durationMin": 5,
-      "date": "2026-10-31",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -36093,29 +34767,6 @@
     }
   },
   {
-    "id": "kb-001696",
-    "title": "Claude Code 如何减少上下文占用：用量检查、压缩清理与会话交接",
-    "url": "https://www.bilibili.com/video/BV1ZJWt6iEra",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "context-handover",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "7分钟讲解Claude Code上下文管理技巧，覆盖用量检查、历史压缩清理与跨会话交接实操。",
-    "why": "系统梳理CLI编程Agent中的上下文维护机制，对降低消耗与保持长任务连贯性很有帮助。",
-    "quality": 4,
-    "signals": {
-      "views": 28,
-      "durationMin": 7,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001697",
     "title": "MiniMax H3 真·无缝无色差的上下文长视频方案，SelfLift双采，新latent放大模型，新vae提速【ComfyUI】",
     "url": "https://www.bilibili.com/video/BV11kHs6NEef",
@@ -36499,29 +35150,6 @@
       "views": 59331,
       "durationMin": 15,
       "date": "2025-06-01",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001714",
-    "title": "一个人带 4 个 AI 员工，跑通获客、谈单、交付｜一人公司实操拆解",
-    "url": "https://www.bilibili.com/video/BV1ysWL6yE8k",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D2"
-    ],
-    "subtopic": "role-division",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "拆解一人公司架构：人负责决策，4个AI分别负责获客、谈判预演与交付。",
-    "why": "人机分工明确，结合获客与交付给出具体数字员工设定，极具落地实操参考性。",
-    "quality": 4,
-    "signals": {
-      "views": 49,
-      "durationMin": 14,
-      "date": "2026-11-11",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -37515,29 +36143,6 @@
     }
   },
   {
-    "id": "kb-001759",
-    "title": "AI的威胁 黑客和deepfake",
-    "url": "https://www.bilibili.com/video/BV1fhKTe4E6P",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6",
-      "D1"
-    ],
-    "subtopic": "deepfake-risks",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "21分钟TED演讲，深入探讨黑客如何结合AI与深度伪造发起社会工程学攻击。",
-    "why": "由网络安全专家系统阐述AI黑产与深伪威胁运作逻辑，强化学习者安全风险防范意识。",
-    "quality": 4,
-    "signals": {
-      "views": 44,
-      "durationMin": 21,
-      "date": "2025-02-14",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001760",
     "title": "又一款开源的DeepFake工具-Roop的安装和使用",
     "url": "https://www.bilibili.com/video/BV1ro4y1K7VQ",
@@ -37789,28 +36394,6 @@
     }
   },
   {
-    "id": "kb-001771",
-    "title": "【TED中配】2026-对抗虚假信息的意外有效方法",
-    "url": "https://www.bilibili.com/video/BV1n5GA6CEYu",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "misinformation",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "25分钟TED演讲译制视频，媒体人分享用幽默、透明度与持续澄清对抗网络虚假信息的创新策略。",
-    "why": "深入剖析信息生态中虚假信息的对抗策略，观点独到且具启发性，对理解虚假信息治理极具价值。",
-    "quality": 4,
-    "signals": {
-      "views": 34,
-      "durationMin": 25,
-      "date": "2026-07-31",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001772",
     "title": "【中字】虚假新闻是怎么传播的How false news can spread@阿尔法小分队科教组",
     "url": "https://www.bilibili.com/video/BV15s41127w4",
@@ -37993,28 +36576,6 @@
     }
   },
   {
-    "id": "kb-001780",
-    "title": "04-AI教育中的科技伦理 AISE",
-    "url": "https://www.bilibili.com/video/BV1db3g6pEXh",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "education-ethics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "45分钟专业讲座，深入探讨人工智能在教育场景中引发的科技伦理议题与应对框架。",
-    "why": "系统阐述AI教育领域的科技伦理与合规边界，内容完整扎实，适合深入学习教育场景伦理。",
-    "quality": 4,
-    "signals": {
-      "views": 19,
-      "durationMin": 45,
-      "date": "2026-07-25",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001781",
     "title": "AI赋能日常工作--精准拆解政策文件：3步冲突分析+智能图谱生成，让合规管理零死角",
     "url": "https://www.bilibili.com/video/BV1gEdBY6EXu",
@@ -38057,29 +36618,6 @@
       "views": 1881,
       "durationMin": 15,
       "date": "2026-11-08",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001783",
-    "title": "京东老板把广告计划交给AI员工的四个月｜AI为啥半年没落地",
-    "url": "https://www.bilibili.com/video/BV1H5xH6YEzm",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6",
-      "D5"
-    ],
-    "subtopic": "workplace-ethics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "5分钟视频，复盘电商卖家将广告投放交给AI员工的落地过程，包含场景切入、验收机制与协作经验。",
-    "why": "真实业务第一手实操复盘，详细拆解AI员工在电商职场落地的推进步骤与风险管控，具备参考价值。",
-    "quality": 4,
-    "signals": {
-      "views": 86,
-      "durationMin": 5,
-      "date": "2026-10-31",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -38736,28 +37274,6 @@
     }
   },
   {
-    "id": "kb-001813",
-    "title": "Prompt Injection 与 Jailbreak 有什么区别？",
-    "url": "https://www.bilibili.com/video/BV16cHr6uEuV",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "prompt-injection-risks",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "通过生动故事与概念映射，深入辨析提示词注入与越狱的核心区别与防线边界。",
-    "why": "厘清概念界限，纠正常见认知偏差，对系统理解LLM安全防线非常有价值。",
-    "quality": 4,
-    "signals": {
-      "views": 10,
-      "durationMin": 4,
-      "date": "2026-10-04",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001814",
     "title": "大模型提示词泄露与越狱攻击",
     "url": "https://www.bilibili.com/video/BV1DMUrYbEkC",
@@ -39095,28 +37611,6 @@
     }
   },
   {
-    "id": "kb-001829",
-    "title": "【AI伦理与治理】什么是AI伦理？｜IBM Technology",
-    "url": "https://www.bilibili.com/video/BV1hYWt6oE4R",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "responsible-ai",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "翻译IBM官方专家讲解，阐述AI伦理的核心定义及构建可信透明原则的必要性。",
-    "why": "权威科技机构科普讲解，清晰辨析算法偏见与伦理风险，适合作为AI伦理入门。",
-    "quality": 4,
-    "signals": {
-      "views": 78,
-      "durationMin": 6,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001830",
     "title": "AI时代，数仓不做治理等于白搭，DataNote数据治理模块设计思路",
     "url": "https://www.bilibili.com/video/BV1a1dhBEECS",
@@ -39180,28 +37674,6 @@
       "views": 11217,
       "durationMin": 72,
       "date": "2025-08-17",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001833",
-    "title": "【AutoDrive】汽车企业欧盟人工智能法案AIACT合规之路",
-    "url": "https://www.bilibili.com/video/BV1tLb568Ec3",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "eu-ai-act",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "18分钟行业专题分享，针对智能汽车企业出海欧洲面临的AI Act合规要求与实施路径展开讲解。",
-    "why": "垂直于自动驾驶与汽车产业的欧盟AI法案实操合规指南，内容专业深水，具实践参考价值。",
-    "quality": 4,
-    "signals": {
-      "views": 11,
-      "durationMin": 18,
-      "date": "2026-09-08",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -39726,28 +38198,6 @@
     }
   },
   {
-    "id": "kb-001857",
-    "title": "【中英字幕】3.走进AI伦理与责任 Introduction to Responsible AI",
-    "url": "https://www.bilibili.com/video/BV1uC8TzwEYG",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "responsible-ai",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "8分钟精译课程，系统介绍Google负责任AI的7大核心原则，以及如何在AI产品中融入伦理安全考量。",
-    "why": "源自谷歌官方伦理规范课程，体系权威清晰，对理解企业级负责任AI准则与安全治理极具学习价值。",
-    "quality": 4,
-    "signals": {
-      "views": 46,
-      "durationMin": 8,
-      "date": "2025-07-24",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-001858",
     "title": "精讲OpenSpec，从操作到原理，吃透这个AI编程提效的神器",
     "url": "https://www.bilibili.com/video/BV1eU5A6MERk",
@@ -39790,28 +38240,6 @@
       "views": 550,
       "durationMin": 38,
       "date": "2025-04-23",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001860",
-    "title": "【AI安全】安全与AI治理：降低AI系统风险｜IBM Technology",
-    "url": "https://www.bilibili.com/video/BV1HdW86SEkX",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "compliance-frameworks",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "15分钟IBM专家讲座，系统讲解安全与AI治理在防范漏洞、伦理失误及合规风控中的最佳实践。",
-    "why": "权威企业技术专家系统讲授AI系统治理与合规框架，内容严谨扎实，指导性强。",
-    "quality": 4,
-    "signals": {
-      "views": 12,
-      "durationMin": 15,
-      "date": "2026-11-09",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -40482,28 +38910,6 @@
       "views": 1612,
       "durationMin": 5,
       "date": "2025-03-22",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-001892",
-    "title": "中文配音【LLM 原理详解】How Transformer LLMs Work - 专家混合（MoE）",
-    "url": "https://www.bilibili.com/video/BV1V1HG62EKA",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "9分钟动画演示视频，采用中文AI配音讲解Transformer大模型中的专家混合（MoE）架构工作原理。",
-    "why": "基于优质原版课程动画清晰拆解MoE技术机制，单点扎实，有助于深入理解现代大模型底层架构。",
-    "quality": 4,
-    "signals": {
-      "views": 9,
-      "durationMin": 9,
-      "date": "2026-10-25",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -48459,27 +46865,6 @@
     }
   },
   {
-    "id": "kb-002274",
-    "title": "大模型RAG入门及实践",
-    "url": "https://juejin.cn/post/7369029201578180623",
-    "source": "juejin.cn",
-    "type": "article",
-    "dims": [
-      "D2",
-      "D1"
-    ],
-    "subtopic": "context-provision",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "剖析LLM局限性，介绍RAG流程与LangChain代码示例，并对比RAG与微调方案的技术选型。",
-    "why": "讲解逻辑清晰，兼备入门原理解析、框架代码实现与微调选型权衡，具有较好的指导意义。",
-    "quality": 4,
-    "signals": {
-      "views": 2090,
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002275",
     "title": "干货：落地企业级RAG的实践指南",
     "url": "https://juejin.cn/post/7428154063575089161",
@@ -55390,28 +53775,6 @@
     }
   },
   {
-    "id": "kb-002604",
-    "title": "中文配音【LLM 原理详解】预训练大语言模型 - 数据准备",
-    "url": "https://www.bilibili.com/video/BV1qAn96YEiG",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "training-data-basics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "DeepLearning.AI课译制版，16分钟系统解析预训练大语言模型的数据准备流程。",
-    "why": "源自经典权威课程，清晰呈现LLM海量语料清洗、准备与预训练机制，单点扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 13,
-      "durationMin": 16,
-      "date": "2026-10-26",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002605",
     "title": "大模型直接读写神经网络权重了 Weight-Space Programming (Paper Explained)",
     "url": "https://www.bilibili.com/video/BV1jB436cENV",
@@ -55682,29 +54045,6 @@
       "views": 28,
       "durationMin": 580,
       "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002617",
-    "title": "《生成式人工智能——与AI共创家乡名片》刘天乐 说课视频",
-    "url": "https://www.bilibili.com/video/BV1nfW86mEtv",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D5"
-    ],
-    "subtopic": "generative-ai-overview",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "11分钟小学信息科技说课视频，展示《与AI共创家乡名片》的教学设计与人机共创过程。",
-    "why": "教学设计结构完整，清晰展示面向青少年的生成式AI人机共创教学思路，内容扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 29,
-      "durationMin": 11,
-      "date": "2026-11-09",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -56570,28 +54910,6 @@
     }
   },
   {
-    "id": "kb-002656",
-    "title": "【从零看懂AI·第9课】AI幻觉：为什么会一本正经地胡说八道？律师因此被罚了五千美元",
-    "url": "https://www.bilibili.com/video/BV1BSWd6SEcu",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "hallucination-basics",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "结合真实案例与前沿论文，深入浅出讲解大模型词语接龙与奖励机制导致的幻觉根源。",
-    "why": "系列漫画课单集，从生成机理与评测激励双重维度透彻剖析幻觉成因，内容扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 8,
-      "durationMin": 5,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002657",
     "title": "第6章：批判性思维：识别AI幻觉与事实核查",
     "url": "https://www.bilibili.com/video/BV1cp4n6AEZw",
@@ -56680,51 +54998,6 @@
       "views": 5797,
       "durationMin": 12,
       "date": "2026-11-02",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002661",
-    "title": "Gemini 4 Carbon 大起底：旧榜称王，偏科战神？",
-    "url": "https://www.bilibili.com/video/BV1rTWq6iE8n",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "emerging-model-trends",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "结合18条实测原片与基准跑分，全面剖析谷歌Gemini 4 Carbon模型的长板与短板。",
-    "why": "12分钟详尽评测新模型的核心能力、跑分对比及实际运行表现，论据充足，讲解扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 86,
-      "durationMin": 12,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002662",
-    "title": "不靠人脸也能认出你？多模态大模型怎么做形体识别",
-    "url": "https://www.bilibili.com/video/BV1ayWi6HEiX",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "multimodal-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "详解多模态大模型利用Transformer对视频帧联合建模以实现跨遮挡形体与行为识别的原理。",
-    "why": "17分钟深入剖析多模态时序建模、特征向量表征与语义流转化的底层机理，专业度高。",
-    "quality": 4,
-    "signals": {
-      "views": 76,
-      "durationMin": 17,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -57866,29 +56139,6 @@
     }
   },
   {
-    "id": "kb-002713",
-    "title": "主代码库模式：在你的所有代码库中运行 AI Agent",
-    "url": "https://www.bilibili.com/video/BV1SMWe6METf",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D5"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "介绍跨多代码库运行AI Agent的“主代码库”模式，统一管理技能与配置文件。",
-    "why": "单点扎实解决多代码库环境下智能体工具与规则同步的痛点，具备工程参考价值。",
-    "quality": 4,
-    "signals": {
-      "views": 1,
-      "durationMin": 9,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002714",
     "title": "【2026AI教程】AI大模型高阶应用课，从AIGC到AI Agent保姆级教学视频！",
     "url": "https://www.bilibili.com/video/BV1974J62ERw",
@@ -58278,51 +56528,6 @@
     }
   },
   {
-    "id": "kb-002731",
-    "title": "知识库到底怎么选？Wiki、RAG、GraphRAG与本体一次讲清：从零搭建个人知识库，打通企业精准检索、跨文档关联与业务推理，掌握四种技术的选型方法【附资料】",
-    "url": "https://www.bilibili.com/video/BV1BFWQ6qEjY",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "从个人与企业落地视角，深入对比LLM Wiki、RAG、GraphRAG及本体技术的原理与选型。",
-    "why": "97分钟系统梳理知识库技术演进，对检索流程、实体关系与适用场景拆解透彻。",
-    "quality": 4,
-    "signals": {
-      "views": 188,
-      "durationMin": 97,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002732",
-    "title": "Milvus 2.6 高性能 RAG 实战：从向量原理到企业级智能问答落地｜RAG｜Milvus｜教程",
-    "url": "https://www.bilibili.com/video/BV1MsW96FEzv",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D3"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "结合Milvus 2.6与Spring AI深入讲解RAG向量检索原理、文档解析与高性能落地。",
-    "why": "667分钟深度长视频，涵盖向量原理、Top-K检索与多智能体容错设计，工程价值高。",
-    "quality": 4,
-    "signals": {
-      "views": 92,
-      "durationMin": 667,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002733",
     "title": "使用Python构建RAG系统 —— 用代码还原 RAG系统的每个细节",
     "url": "https://www.bilibili.com/video/BV1wc3izUEUb",
@@ -58455,28 +56660,6 @@
       "views": 83551,
       "durationMin": 59,
       "date": "2026-03-22",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002739",
-    "title": "AI Agent第三章｜用户记忆和知识库：从记得住到用得对",
-    "url": "https://www.bilibili.com/video/BV1gDWi67E4V",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "深入拆解智能体长短期记忆与共享知识库的机制区别、表示方案及检索评估。",
-    "why": "目录大纲结构严谨，概念剖析深入透彻，扎实探讨了Agent记忆表示与证据冲突。",
-    "quality": 4,
-    "signals": {
-      "views": 49,
-      "durationMin": 14,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -58955,28 +57138,6 @@
       "views": 1319,
       "durationMin": 695,
       "date": "2026-11-06",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002761",
-    "title": "Embedding向量嵌入，AI是怎么听懂你的话的？",
-    "url": "https://www.bilibili.com/video/BV17kp36XE6p",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "embedding-overview",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "5分钟科普视频，阐述Embedding语义坐标原理、余弦相似度计算及RAG检索最小闭环机制。",
-    "why": "概念凝练准确，三步串联向量坐标、余弦相似度与Top-K过滤，清晰厘清机器理解语义的基础流程。",
-    "quality": 4,
-    "signals": {
-      "views": 8,
-      "durationMin": 5,
-      "date": "2026-10-10",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -59587,28 +57748,6 @@
     }
   },
   {
-    "id": "kb-002789",
-    "title": "【Vibe 知识大赏】你以为 AI 在创作，其实它在解数学题｜文生图底层逻辑可视化",
-    "url": "https://www.bilibili.com/video/BV1jXWd6mEBX",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "diffusion-overview",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "可视化拆解扩散模型加噪、去噪、解码与成图四步底层逻辑，揭示文生图背后的计算本质。",
-    "why": "概念剖析直观精炼，通过通俗的可视化对比破除创作拟人化迷思，极具启发性。",
-    "quality": 4,
-    "signals": {
-      "views": 33,
-      "durationMin": 3,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002790",
     "title": "简单粗暴带你快速理解GNN",
     "url": "https://www.bilibili.com/video/BV1Tf4y1i7Go",
@@ -59767,28 +57906,6 @@
     }
   },
   {
-    "id": "kb-002797",
-    "title": "AI 支持超长上下文，为什么还会忘？上下文、记忆和缓存的区别",
-    "url": "https://www.bilibili.com/video/BV1ywJY6UEj4",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "context-window",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "结合资料与动画剖析超长上下文模型产生遗忘的原因，厘清上下文、记忆与缓存的区别。",
-    "why": "选题深刻准确，厘清了容易混淆的概念边界，内容有理有据，具备较高的思辨与学习价值。",
-    "quality": 4,
-    "signals": {
-      "views": 39,
-      "durationMin": 3,
-      "date": "2026-10-17",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002798",
     "title": "Cherry Studio Next：V2.0新版本详细教程！Agent+MCP+知识库！手把手教程！",
     "url": "https://www.bilibili.com/video/BV1Rygk6BEcx",
@@ -59831,29 +57948,6 @@
       "views": 29670,
       "durationMin": 30,
       "date": "2026-08-03",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002800",
-    "title": "116万字「大海捞针」实测DeepSeek V4：长文本处理真的稳吗？",
-    "url": "https://www.bilibili.com/video/BV1JGWq6AEfT",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "context-window",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "对 DeepSeek V4 进行 116 万字大海捞针评测，实测四种信息埋入方式下的长文本召回能力。",
-    "why": "评测方案设计严谨具体，通过多维度实验验证长上下文能力边界，具备可复现的参考价值。",
-    "quality": 4,
-    "signals": {
-      "views": 78,
-      "durationMin": 2,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -60332,28 +58426,6 @@
     }
   },
   {
-    "id": "kb-002822",
-    "title": "【每日前沿文章·NLP】删不到万分之五权重大模型上追平全量微调｜The Surprising Effectiveness of Deleting Weights",
-    "url": "https://www.bilibili.com/video/BV1CMWz6CE9e",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "fine-tuning-vs-prompting",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "9分钟讲解Deletion Tuning论文：删不足万分之五权重追平全量微调。",
-    "why": "论文解读附arXiv出处，方法、掩码开销与遗忘对比交代具体，扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 18,
-      "durationMin": 9,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002823",
     "title": "谷歌发布新模型：代号氢，Gemini 4 Hydrogen",
     "url": "https://www.bilibili.com/video/BV1GsWv6jEjt",
@@ -60395,28 +58467,6 @@
       "views": 54493,
       "durationMin": 93,
       "date": "2026-09-01",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002825",
-    "title": "AI 是怎么听懂你说话的？3 分钟看完语音识别",
-    "url": "https://www.bilibili.com/video/BV1bmxx64EXc",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "speech-models",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "3分钟拆解语音识别全链路：采样、分帧、傅里叶、Mel频谱到神经网络解码。",
-    "why": "用真实录音数据可视化讲解原理，链条完整清晰，语音模型优质科普。",
-    "quality": 4,
-    "signals": {
-      "views": 85,
-      "durationMin": 3,
-      "date": "2026-11-01",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -61065,29 +59115,6 @@
     }
   },
   {
-    "id": "kb-002855",
-    "title": "【ComfyUI节点详解 #2】提示词详解：CLIP文本编码、负面提示词与动态提示词",
-    "url": "https://www.bilibili.com/video/BV18xxP6wEUu",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D3"
-    ],
-    "subtopic": "negative-prompt",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解ComfyUI的CLIP文本编码、正负提示词、CFG失效原因与动态提示词技巧。",
-    "why": "系统拆解图像提示词机制与冷门技巧，附免费练习工作流，讲解扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 29,
-      "durationMin": 11,
-      "date": "2026-11-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002856",
     "title": "【极致配音】2026 年最新吴恩达完整 AI 提示词课程",
     "url": "https://www.bilibili.com/video/BV1d4G26WEGU",
@@ -61522,29 +59549,6 @@
     }
   },
   {
-    "id": "kb-002875",
-    "title": "【CVPR 2025】🥇CoT-VLA：把「子目标图像」变成 VLA 的视觉思维链",
-    "url": "https://www.bilibili.com/video/BV1SpYe6cEYQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D1"
-    ],
-    "subtopic": "chain-of-thought",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "33分钟分享CVPR 2025论文CoT-VLA：动作生成前先自回归预测子目标图像。",
-    "why": "视觉思维链接入VLA的机制拆解具体，论文分享单点扎实，播放量低。",
-    "quality": 4,
-    "signals": {
-      "views": 80,
-      "durationMin": 33,
-      "date": "2026-09-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002876",
     "title": "CoT 思维链提示为什么有效？ - 让 AI 像人一样思考",
     "url": "https://www.bilibili.com/video/BV1BMNQ64Edv",
@@ -61586,51 +59590,6 @@
       "views": 1280,
       "durationMin": 2,
       "date": "2026-09-10",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002878",
-    "title": "AI 又答非所问？漫画讲透不乱跑的提示词",
-    "url": "https://www.bilibili.com/video/BV1UgWi6yEWt",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "structured-prompt",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "3分钟漫画讲解AI答非所问的原因与三招：定角色任务、给约束格式、给示例上下文。",
-    "why": "归因清晰且三招具体可操作，对应结构化提示要素，零基础可看。",
-    "quality": 4,
-    "signals": {
-      "views": 27,
-      "durationMin": 3,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002879",
-    "title": "5个让AI回答变靠谱的提示词技巧，改的不是模型是问法",
-    "url": "https://www.bilibili.com/video/BV15FWi6pEXp",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "prompt-patterns",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "2分钟拆解5个提示词技巧：给角色背景、定输出格式、给示例、分步思考、自检。",
-    "why": "五技巧具体可套用并附模板，覆盖角色格式示例与自检，实用可信。",
-    "quality": 4,
-    "signals": {
-      "views": 21,
-      "durationMin": 2,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -61703,29 +59662,6 @@
     }
   },
   {
-    "id": "kb-002883",
-    "title": "LangChain进阶-03 · 结构化输出与 Runnable 组合",
-    "url": "https://www.bilibili.com/video/BV1eEp76YEFP",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D3"
-    ],
-    "subtopic": "output-format-control",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "LangChain进阶系列第三集，讲解结构化输出与Runnable组件的组合编排。",
-    "why": "围绕大模型结构化输出与Runnable组合讲解，单点扎实，兼具开发工具教学。",
-    "quality": 4,
-    "signals": {
-      "views": 17,
-      "durationMin": 14,
-      "date": "2026-10-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002884",
     "title": "原来AI可以这么用！5个超实用技巧（附提示词）",
     "url": "https://www.bilibili.com/video/BV1fHnF6SEag",
@@ -61768,29 +59704,6 @@
       "views": 105,
       "durationMin": 2,
       "date": "2026-10-05",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002886",
-    "title": "\"要智能要快要稳定\"不是需求：AI项目验收标准到底怎么写",
-    "url": "https://www.bilibili.com/video/BV1aUWB64EqN",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "acceptance-criteria",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解AI项目验收标准三要素：准确率与测试样本、响应时间百分位、失败判定与责任人。",
-    "why": "直播切片单点讲透需求验收写法，三要素具体可落地，扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 69,
-      "durationMin": 2,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -62317,28 +60230,6 @@
     }
   },
   {
-    "id": "kb-002910",
-    "title": "AI设计提示词拆解｜「保持风格一致」为什么不够？10张卡讲清组件复用、改动边界与交付验收",
-    "url": "https://www.bilibili.com/video/BV1ADxQ6nEEF",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "acceptance-criteria",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "10张卡拆解AI设计提示词：组件复用、改动边界与交付验收写法。",
-    "why": "针对「保持风格一致」失效问题，给可复制提示词，单点扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 65,
-      "durationMin": 2,
-      "date": "2026-11-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002911",
     "title": "你写的提示词正在让 GPT-6 Astra 变笨",
     "url": "https://www.bilibili.com/video/BV1zLYJ6zETX",
@@ -62563,29 +60454,6 @@
     }
   },
   {
-    "id": "kb-002921",
-    "title": "培训 EP03: AI 生成教案实战，DeepSeep 提示词",
-    "url": "https://www.bilibili.com/video/BV1ts476PEg9",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D3"
-    ],
-    "subtopic": "context-provision",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "一线教师实战AI生成教案，对比提示词与知识库差异并介绍ima知识库用法。",
-    "why": "一线视角观点具体：知识库提供持续背景，实战经验可信。",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 5,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-002922",
     "title": "LLMLingua: 压缩prompt构造LLMs的语言",
     "url": "https://www.bilibili.com/video/BV19K41187Ny",
@@ -62740,28 +60608,6 @@
       "views": 1601,
       "durationMin": 18,
       "date": "2024-09-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002929",
-    "title": "016｜提示词改好了，怎么证明？版本管理与回归验证",
-    "url": "https://www.bilibili.com/video/BV13TW46dEC6",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "prompt-versioning",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲提示词版本管理与回归验证：记录完整运行条件，同批任务比较修改前后。",
-    "why": "版本记录、回归测试、可检验假设三点具体，方法论清晰。",
-    "quality": 4,
-    "signals": {
-      "views": 10,
-      "durationMin": 6,
-      "date": "2026-11-10",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -63261,29 +61107,6 @@
       "views": 9189,
       "durationMin": 45,
       "date": "2025-02-06",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-002952",
-    "title": "DeepSeek 复杂任务总跑偏？思维链约束、分步拆解与结果校验｜DeepSeek｜提示词｜推理",
-    "url": "https://www.bilibili.com/video/BV1f5W56aEpf",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "chain-of-thought",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲思维链约束、分步拆解、中间结果校验与结构化输出，解决复杂任务跑偏",
-    "why": "覆盖拆解、校验、格式各环节，方法具体，含何时不用思维链的辨析",
-    "quality": 4,
-    "signals": {
-      "views": 59,
-      "durationMin": 673,
-      "date": "2026-11-10",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -64338,51 +62161,6 @@
     }
   },
   {
-    "id": "kb-003000",
-    "title": "【AI工具库 20】AI 帮你做 Excel 表格，怎么不土",
-    "url": "https://www.bilibili.com/video/BV1e24s6wE4U",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D2"
-    ],
-    "subtopic": "data-analysis-tools",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "让AI做好表格的三个规范：给数据和用途、定结构字段、先统一格式。",
-    "why": "要点具体并附可抄指令，强调防AI编造数据。",
-    "quality": 4,
-    "signals": {
-      "views": 3,
-      "durationMin": 3,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003001",
-    "title": "Claude 新三件套：白板、表格、数据，能直接吃你的 Excel 和 CSV",
-    "url": "https://www.bilibili.com/video/BV1gtWv65ETu",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "chat-assistants",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "评测Claude新白板、表格、数据三大Artifacts及CSV接入演示。",
-    "why": "多场景实测信息具体，含Zapier MCP接入示例。",
-    "quality": 4,
-    "signals": {
-      "views": 77,
-      "durationMin": 11,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003002",
     "title": "【ComfyUI教程】comfyui本地环境部署、软件安装、插件安装保姆级教程，AI绘画，AIGC教程（附最新comfyui整合包）",
     "url": "https://www.bilibili.com/video/BV1Bw8P6pE6d",
@@ -65207,28 +62985,6 @@
     }
   },
   {
-    "id": "kb-003039",
-    "title": "AI 論文寫作完整流程｜用 SciSpace Agent 完成文獻回顧、研究方法、圖表與討論",
-    "url": "https://www.bilibili.com/video/BV1UpW968EZL",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "deep-research-tools",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用SciSpace Agent完成文献回顾、图表与讨论的论文流程",
-    "why": "流程覆盖完整并解读期刊AI写作红线，实操性强",
-    "quality": 4,
-    "signals": {
-      "views": 2,
-      "durationMin": 32,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003040",
     "title": "【全108集】Workbuddy 保姆级教程，会动手的 AI 才叫助手!:素材它来整 / 表格它来算 / 文档它来写,一套课程搞定全部办公需求(附AI工具)",
     "url": "https://www.bilibili.com/video/BV1RPa56UE2K",
@@ -65431,28 +63187,6 @@
     }
   },
   {
-    "id": "kb-003049",
-    "title": "AI 编程智能体没 IDE 就是盲写？20 万行项目实测，差距很明显",
-    "url": "https://www.bilibili.com/video/BV1U2Wa6eEPH",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "coding-assistants",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "实测编程智能体在终端与IDE下处理20万行代码的差异",
-    "why": "真实实验对比有数据支撑，回答流程配置问题",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 17,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003050",
     "title": "中配+原声·我让智能体重构代码库三周，然后我读了代码 | AI Engineer",
     "url": "https://www.bilibili.com/video/BV1X3WQ6FEVP",
@@ -65494,29 +63228,6 @@
       "views": 1149,
       "durationMin": 543,
       "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003052",
-    "title": "聊天记录还在，代码却回去了：AI 编程助手怎么接着做？｜拆开一个 AI 编程助手 EP02",
-    "url": "https://www.bilibili.com/video/BV1bjWQ6dEhj",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "coding-assistants",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "三组对照实验：AI编程助手会话恢复后如何核对历史与文件改动。",
-    "why": "方法严谨强调分别验收历史与当前文件，单点扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 54,
-      "durationMin": 5,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -65764,28 +63475,6 @@
     }
   },
   {
-    "id": "kb-003064",
-    "title": "GH汉化插件的 AI 翻译怎么用？API Key 申请 + 词库导入，一次讲清",
-    "url": "https://www.bilibili.com/video/BV1FzW66GEbs",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "translation-tools",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "讲解GH汉化插件AI翻译的API Key申请与词库导入步骤",
-    "why": "面向具体工具的逐步操作教程，单点讲清",
-    "quality": 4,
-    "signals": {
-      "views": 91,
-      "durationMin": 14,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003065",
     "title": "Trados 机翻插件视频教程2025-03-24 21-32-03",
     "url": "https://www.bilibili.com/video/BV155o2YuEaY",
@@ -65965,29 +63654,6 @@
     }
   },
   {
-    "id": "kb-003073",
-    "title": "【AI工具库 18】AI 帮你整理会议纪要，怎么不记成流水账",
-    "url": "https://www.bilibili.com/video/BV19m4s6hEKK",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D2"
-    ],
-    "subtopic": "meeting-tools",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "教用AI整理会议纪要的三个规矩与可抄指令",
-    "why": "提供指令模板与核对表，方法具体可复用",
-    "quality": 4,
-    "signals": {
-      "views": 2,
-      "durationMin": 4,
-      "date": "2026-11-10",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003074",
     "title": "GPT Pro 赠送的 API Credits如何使用？（分享三种方法，含直接在Codex里使用的教程）",
     "url": "https://www.bilibili.com/video/BV1fM4h6HEiy",
@@ -66006,29 +63672,6 @@
       "views": 7141,
       "durationMin": 8,
       "date": "2026-11-05",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003075",
-    "title": "WorkBuddy实操：会议记录变3份文件，生成后这样核对",
-    "url": "https://www.bilibili.com/video/BV1ManU6ME4j",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D5"
-    ],
-    "subtopic": "meeting-tools",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "演示会议记录生成纪要清单并人工核对补漏",
-    "why": "案例实操并强调生成后人工核对环节",
-    "quality": 4,
-    "signals": {
-      "views": 25,
-      "durationMin": 6,
-      "date": "2026-10-25",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -66296,29 +63939,6 @@
       "views": 3047,
       "durationMin": 15,
       "date": "2026-11-08",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003088",
-    "title": "一个 AI 怎么替你盯着一群 AI？一个动画看懂 Super-agent",
-    "url": "https://www.bilibili.com/video/BV12vWv6zErR",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D5"
-    ],
-    "subtopic": "agent-tools",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "动画讲解DeepSeek Super-agent双层架构：主Agent分派，子会话各管一事。",
-    "why": "标注官方文章与GitHub原型出处，单点架构概念讲解清晰可信。",
-    "quality": 4,
-    "signals": {
-      "views": 32,
-      "durationMin": 9,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -67086,28 +64706,6 @@
     }
   },
   {
-    "id": "kb-003123",
-    "title": "AI为什么会把错误答案说得像真的？",
-    "url": "https://www.bilibili.com/video/BV1ASWz61Evi",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "hallucination-detection",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "用虚构博物馆案例拆解流畅表达、检索与验证三件事，附论文出处。",
-    "why": "讲解严谨有参考依据，原创示意动画，适合零基础理解幻觉。",
-    "quality": 4,
-    "signals": {
-      "views": 3,
-      "durationMin": 5,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003124",
     "title": "【2026·中英字幕】吴恩达亲授《AI代码审查》！手把手教你如何检查AI写的代码到底写的好不好？-Agent/人工智能/python",
     "url": "https://www.bilibili.com/video/BV13d8i6iEo4",
@@ -67331,28 +64929,6 @@
     }
   },
   {
-    "id": "kb-003134",
-    "title": "AI 写的代码如何审查？ Claude代码审查流程",
-    "url": "https://www.bilibili.com/video/BV12P4q6JEkf",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "human-review-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲Claude团队审查分工：机器读码、人判断担责，改动小可回滚。",
-    "why": "流程要点与成立前提讲得清楚，单点扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 88,
-      "durationMin": 5,
-      "date": "2026-11-08",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003135",
     "title": "VSCode Copilot 配置自定义大模型(无需额外插件接入deepseek,GPT等任意模型)",
     "url": "https://www.bilibili.com/video/BV1v3Y36gEMG",
@@ -67421,28 +64997,6 @@
     }
   },
   {
-    "id": "kb-003138",
-    "title": "AI能给代码做「数学证明」了：测试找bug到证明无bug",
-    "url": "https://www.bilibili.com/video/BV1F54A6yEwP",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "code-output-review",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "讲Anthropic用AI为开源代码生成机器验证的数学证明及其局限。",
-    "why": "事实具体并诚实说明边界，信息密度高。",
-    "quality": 4,
-    "signals": {
-      "views": 27,
-      "durationMin": 2,
-      "date": "2026-11-03",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003139",
     "title": "AI+软件测试第二篇_Python+Web自动测试+Git_2026最新发布超详细教程",
     "url": "https://www.bilibili.com/video/BV1PzwvzhE4P",
@@ -67507,28 +65061,6 @@
       "views": 9938,
       "durationMin": 24,
       "date": "2026-11-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003142",
-    "title": "Sakana AI Scientist V2论文通过评审：AI科研离真正发表还有多远？",
-    "url": "https://www.bilibili.com/video/BV1mepQ6nEP3",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "ai-evaluating-ai",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "拆解Sakana AI Scientist V2自动科研流程与同行评审经历",
-    "why": "单案例拆解具体可信，讲清AI科研从选题到审稿各环节",
-    "quality": 4,
-    "signals": {
-      "views": 60,
-      "durationMin": 11,
-      "date": "2026-10-12",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -68120,29 +65652,6 @@
     }
   },
   {
-    "id": "kb-003169",
-    "title": "AI Agent第二章｜上下文工程：让模型在每个决策点看见正确信息",
-    "url": "https://www.bilibili.com/video/BV1DDWi67EqQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D2"
-    ],
-    "subtopic": "context-handover",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "8分钟科普动画讲Agent上下文工程：消息结构、稳定前缀、提示缓存、技能按需加载与历史压缩",
-    "why": "系列化体系讲解上下文工程要点，结构清晰，覆盖提示词组织",
-    "quality": 4,
-    "signals": {
-      "views": 87,
-      "durationMin": 8,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003170",
     "title": "邵海东数据驱动的设备异常检测和故障诊断研究探讨",
     "url": "https://www.bilibili.com/video/BV1Ve411P7XX",
@@ -68598,28 +66107,6 @@
     }
   },
   {
-    "id": "kb-003190",
-    "title": "稳定出活的11个AI习惯总结【经验复盘】",
-    "url": "https://www.bilibili.com/video/BV1RpWt6eEht",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "role-division",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "复盘沉淀11条稳定出活的人机协作习惯，按方向分工工程复利归类",
-    "why": "经验复盘体系清晰，人管目标判断AI管执行整理，可信实用",
-    "quality": 4,
-    "signals": {
-      "views": 77,
-      "durationMin": 13,
-      "date": "2026-11-10",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003191",
     "title": "「邦尼評測」必看！三星 AI 手機 超好用完整教學 2026！Galaxy AI 使用技巧全攻略！（圖像、影片、文字、消除AI、ft.Galaxy S25 Ul",
     "url": "https://www.bilibili.com/video/BV1buwezwEzU",
@@ -68984,29 +66471,6 @@
     }
   },
   {
-    "id": "kb-003207",
-    "title": "用WorkBuddy创建合同审核专家（word带修订格式）",
-    "url": "https://www.bilibili.com/video/BV1qMWd6mEDQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D2"
-    ],
-    "subtopic": "ai-in-legal-work",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用WorkBuddy创建合同审核专家，输出带修订批注的Word",
-    "why": "完整演示技能创建、提示词写入审查习惯与连接器配置",
-    "quality": 4,
-    "signals": {
-      "views": 40,
-      "durationMin": 5,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003208",
     "title": "【AI 工作流】一人公司怎么审合同？我做了个 AI 法务智能体",
     "url": "https://www.bilibili.com/video/BV1Fr5T6bERe",
@@ -69303,28 +66767,6 @@
     }
   },
   {
-    "id": "kb-003221",
-    "title": "客户团队各有想法，设计方案到底听谁的？",
-    "url": "https://www.bilibili.com/video/BV1YUWB64EMT",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "human-in-loop",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "讲AI出稿后如何定评审标准与拍板权推进设计决策。",
-    "why": "直播实战片段观点具体，切中AI协作决策痛点。",
-    "quality": 4,
-    "signals": {
-      "views": 81,
-      "durationMin": 2,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003222",
     "title": "人机协作的新型AI开发范式——学习得物团队的AI编程最佳实践分享",
     "url": "https://www.bilibili.com/video/BV1xNfnB2Ewe",
@@ -69505,29 +66947,6 @@
     }
   },
   {
-    "id": "kb-003230",
-    "title": "DeepAgents 多智能体协作：从子 Agent 到异步任务编排｜大模型｜AI Agent｜教程",
-    "url": "https://www.bilibili.com/video/BV1xaW96WE8e",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "五百分钟课讲DeepAgents子Agent分工、异步编排、消息状态传递与重试回退",
-    "why": "体系完整，兼顾失败恢复与可观测性等工程细节",
-    "quality": 4,
-    "signals": {
-      "views": 147,
-      "durationMin": 500,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003231",
     "title": "WorkBuddy 个人工作台：微信派活、专家人设与手机主屏｜AI办公｜微信助理｜工作流",
     "url": "https://www.bilibili.com/video/BV1Co4E6cE3K",
@@ -69574,29 +66993,6 @@
     }
   },
   {
-    "id": "kb-003233",
-    "title": "DeepAgents 多智能体协作：从子 Agent 到异步任务编排｜大模型｜AI Agent｜教程",
-    "url": "https://www.bilibili.com/video/BV1m2Wa6eEzU",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "五百分钟课讲DeepAgents子Agent分工、异步编排、消息状态传递与重试回退",
-    "why": "体系完整，兼顾失败恢复与可观测性等工程细节",
-    "quality": 4,
-    "signals": {
-      "views": 207,
-      "durationMin": 500,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003234",
     "title": "Agent 长任务实战：五层记忆、Context 压缩到多智能体协作｜AI Agent｜教程｜Multi-Agent｜提示词工程｜记忆系统",
     "url": "https://www.bilibili.com/video/BV1uS4a6VEKb",
@@ -69638,29 +67034,6 @@
       "views": 42716,
       "durationMin": 9,
       "date": "2026-01-26",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003236",
-    "title": "DeepAgents 多智能体协作：从子 Agent 到异步任务编排｜大模型｜AI Agent｜教程",
-    "url": "https://www.bilibili.com/video/BV1NsxD6JEFW",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "五百分钟课讲DeepAgents子Agent分工、异步编排、消息状态传递与重试回退",
-    "why": "体系完整，兼顾失败恢复与可观测性等工程细节",
-    "quality": 4,
-    "signals": {
-      "views": 176,
-      "durationMin": 500,
-      "date": "2026-11-04",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -70118,28 +67491,6 @@
     }
   },
   {
-    "id": "kb-003257",
-    "title": "【人工智能的技术本质】麻省理工大佬讲AI 第19课 算法偏见&产生原因&缓解方法",
-    "url": "https://www.bilibili.com/video/BV1CJ6RBbEdY",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "bias-fairness",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "MIT课程第19讲：深度学习算法偏见的成因与缓解方法。",
-    "why": "系统讲解数据不平衡等成因与采样加权等缓解技术。",
-    "quality": 4,
-    "signals": {
-      "views": 58,
-      "durationMin": 36,
-      "date": "2026-01-17",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003258",
     "title": "【给你讲Nature】AI预测犯罪，真的能让城市更安全吗？算法可能正在复制人类偏见！",
     "url": "https://www.bilibili.com/video/BV1zMML6aEcB",
@@ -70474,28 +67825,6 @@
       "views": 14875,
       "durationMin": 14,
       "date": "2026-11-05",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003273",
-    "title": "TED | 如何识破AI伪造照片（Hany Farid）",
-    "url": "https://www.bilibili.com/video/BV1GNWs6JEpr",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "deepfake-risks",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "数字取证专家Hany Farid讲解AI伪造照片的识别方法与普通人可用技巧",
-    "why": "权威专家TED演讲，识别方法可信实用",
-    "quality": 4,
-    "signals": {
-      "views": 13,
-      "durationMin": 13,
-      "date": "2026-11-09",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -70974,28 +68303,6 @@
     }
   },
   {
-    "id": "kb-003295",
-    "title": "IBM《Promptware攻击链：Prompt注入如何演变成AI恶意软件》中英字幕（LLM）",
-    "url": "https://www.bilibili.com/video/BV1u2NT6XEZS",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "prompt-injection-risks",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "IBM讲解Prompt注入如何演变为AI恶意软件的攻击链，中英字幕",
-    "why": "权威机构单主题讲解，11分钟扎实可信，适合安全入门",
-    "quality": 4,
-    "signals": {
-      "views": 9,
-      "durationMin": 11,
-      "date": "2026-07-16",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003296",
     "title": "【大厂限制外部AI】大厂该不该限制员工用外部AI？从字节的网传新规说起：数据风险、合规约束和一笔效率账",
     "url": "https://www.bilibili.com/video/BV1YaW86KEVz",
@@ -71171,29 +68478,6 @@
       "views": 118096,
       "durationMin": 1103,
       "date": "2023-11-24",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003304",
-    "title": "【极致中文配音】范德堡大学：生成式 AI 管理者必修课（公司里用好 AI，管理者要先想清楚什么？）",
-    "url": "https://www.bilibili.com/video/BV12tWk64ExV",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6",
-      "D5"
-    ],
-    "subtopic": "workplace-ethics",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "范德堡大学面向管理者的生成式AI课程：概述、领导应用、员工焦虑",
-    "why": "中文配音降低门槛，章节体系较完整，领导力场景实用",
-    "quality": 4,
-    "signals": {
-      "views": 78,
-      "durationMin": 88,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -71514,28 +68798,6 @@
     }
   },
   {
-    "id": "kb-003319",
-    "title": "AI Safety (CS 2881) Lecture 9- Economic Impacts of AI",
-    "url": "https://www.bilibili.com/video/BV1xKWr69EjM",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "ai-social-impact",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "CS 2881 AI Safety 课程第九讲，153分钟系统讲授 AI 的经济影响。",
-    "why": "高校正式课程搬运，体系完整，适合理解 AI 经济与社会影响。",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 153,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003320",
     "title": "【罗翔】AI时代，文科一败涂地？拥有海量的知识会让人更幸福吗？",
     "url": "https://www.bilibili.com/video/BV1uw7Bz7Ehr",
@@ -71577,29 +68839,6 @@
       "views": 11996,
       "durationMin": 26,
       "date": "2026-11-08",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003322",
-    "title": "下半年找工作：哪些岗在缩、哪些岗在抢、简历该怎么改｜求职｜秋招｜就业｜AI冲击",
-    "url": "https://www.bilibili.com/video/BV1ejWd6GE3n",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6",
-      "D5"
-    ],
-    "subtopic": "ai-social-impact",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "535分钟12节求职课，分析 AI 冲击下岗位增减与简历对策。",
-    "why": "章节完整覆盖 AI 就业冲击与应对，但播放量极低。",
-    "quality": 4,
-    "signals": {
-      "views": 17,
-      "durationMin": 535,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -71667,29 +68906,6 @@
       "views": 18858,
       "durationMin": 14,
       "date": "2023-06-18",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003326",
-    "title": "AI应用的法律风险与权利保护-师生使用大模型的合规边界（陈姿含）20261109_141502",
-    "url": "https://www.bilibili.com/video/BV1scWq66Ech",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D6"
-    ],
-    "subtopic": "risk-assessment-output",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "95分钟讲座：师生使用大模型的法律风险与合规边界。",
-    "why": "系统讲AI使用合规与权利保护，可信度高。",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 95,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -72236,28 +69452,6 @@
     }
   },
   {
-    "id": "kb-003351",
-    "title": "麦麦聊产业 | AI内容与版权：生产工具与版权之战",
-    "url": "https://www.bilibili.com/video/BV1UBpg6iEXN",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "ai-content-copyright",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "梳理AI内容产业链：语料版权、确权登记、水印、侵权监测与交易",
-    "why": "系统讲解AI版权产业两端，区分已落地与预测数据",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 12,
-      "date": "2026-10-10",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003352",
     "title": "法治在线丨AI换脸可“以假乱真” 你我该如何防范",
     "url": "https://www.bilibili.com/video/BV1a2Q4B4EDX",
@@ -72276,52 +69470,6 @@
       "views": 43116,
       "durationMin": 18,
       "date": "2026-04-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003353",
-    "title": "【中英文双语】Crash Course：人工智能原理（机器怎样学会识别、推荐和决策？算法为什么也会偏见？）",
-    "url": "https://www.bilibili.com/video/BV1grWX6bE5X",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6",
-      "D1"
-    ],
-    "subtopic": "bias-fairness",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "20集中英双语课程，讲AI与机器学习原理及算法偏见",
-    "why": "基于大学大纲的系统入门课，覆盖三类学习与偏见",
-    "quality": 4,
-    "signals": {
-      "views": 53,
-      "durationMin": 258,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003354",
-    "title": "【极致中文配音】Crash Course：人工智能原理（机器怎样学会识别、推荐和决策？算法为什么也会偏见？）",
-    "url": "https://www.bilibili.com/video/BV1fpWX66EmR",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6",
-      "D1"
-    ],
-    "subtopic": "bias-fairness",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "20集中文配音课程，讲AI原理、机器学习与算法偏见",
-    "why": "配音版系统入门课，覆盖监督无监督强化学习与偏见",
-    "quality": 4,
-    "signals": {
-      "views": 85,
-      "durationMin": 261,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -72707,28 +69855,6 @@
     }
   },
   {
-    "id": "kb-003372",
-    "title": "企业想做AI，先别急着掏钱：这5个做法碰一个亏一个",
-    "url": "https://www.bilibili.com/video/BV18xWd6KExi",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "workplace-ethics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "剖析企业做AI的五个常见烧钱误区与切入路径",
-    "why": "五点误区具体，并给出从烦琐业务试起的建议",
-    "quality": 4,
-    "signals": {
-      "views": 74,
-      "durationMin": 3,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003373",
     "title": "OpenAI 的税务 AI，藏着企业落地的关键",
     "url": "https://www.bilibili.com/video/BV1gQJp6vEC3",
@@ -72926,50 +70052,6 @@
       "views": 2065,
       "durationMin": 512,
       "date": "2026-08-29",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003382",
-    "title": "001 OWASP Top 10 - Prompt Injection",
-    "url": "https://www.bilibili.com/video/BV1u6pY6eEAR",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "prompt-injection-risks",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "LLM与Agent安全系列开篇：讲解OWASP Top 10中的提示注入项，13分钟。",
-    "why": "依托OWASP标准框架讲解，系列化体系教学起点。",
-    "quality": 4,
-    "signals": {
-      "views": 14,
-      "durationMin": 13,
-      "date": "2026-10-10",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003383",
-    "title": "Benchmarking and Defending Against Indirect Prompt Injection Attacks on Large La",
-    "url": "https://www.bilibili.com/video/BV1pph4z3Er6",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "prompt-injection-risks",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "讲解间接提示注入攻击的基准测试与防御研究（Benchmarking and Defending论文），22分钟。",
-    "why": "学术级攻防专题，基准与防御双视角，内容扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 30,
-      "durationMin": 22,
-      "date": "2025-08-02",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -73290,28 +70372,6 @@
     }
   },
   {
-    "id": "kb-003398",
-    "title": "Introduction to Responsible AI [Google Cloud]",
-    "url": "https://www.bilibili.com/video/BV13kHWztEJQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "responsible-ai",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "转载谷歌云《负责任AI》课程导论，介绍AI责任原则框架。",
-    "why": "官方课程内容可信，入门讲解负责任AI理念。",
-    "quality": 4,
-    "signals": {
-      "views": 29,
-      "durationMin": 8,
-      "date": "2025-10-01",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003399",
     "title": "[Responsible AI] 撤稿、人工智能与科研诚信的未来",
     "url": "https://www.bilibili.com/video/BV1bG8uzcEFJ",
@@ -73352,50 +70412,6 @@
       "views": 70543,
       "durationMin": 15,
       "date": "2026-07-29",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003401",
-    "title": "AI Safety (CS 2881) Lecture 12- AI in 2035 and GDPval",
-    "url": "https://www.bilibili.com/video/BV1WRWC6ZERe",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "ai-safety-basics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "大学AI安全课程第12讲转载，展望2035年AI并讲GDPval基准。",
-    "why": "正规课程讲座，系统讲授AI安全议题。",
-    "quality": 4,
-    "signals": {
-      "views": 5,
-      "durationMin": 108,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003402",
-    "title": "AI犯错，谁来买单？| Regulating AI",
-    "url": "https://www.bilibili.com/video/BV1KuUfBwEwS",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D6"
-    ],
-    "subtopic": "accountability",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解AI速度、自主性与黑箱不透明带来的法律责任与监管难题。",
-    "why": "围绕责任归属的清晰讲解，单点扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 54,
-      "durationMin": 8,
-      "date": "2025-11-29",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -73957,28 +70973,6 @@
     }
   },
   {
-    "id": "kb-003428",
-    "title": "【极致中文配音】加州大学伯克利：大语言模型智能体 CS294 · 2024 秋季",
-    "url": "https://www.bilibili.com/video/BV17vWi6bEK6",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "伯克利CS294大语言模型智能体课程中文配音合集",
-    "why": "名校成体系Agent课程内容完整，配音搬运热度尚低",
-    "quality": 4,
-    "signals": {
-      "views": 51,
-      "durationMin": 670,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003429",
     "title": "【闪客】深入解读 DeepSeek V1~V4！男女老少都听得懂～",
     "url": "https://www.bilibili.com/video/BV1rpovBCEGH",
@@ -74375,28 +71369,6 @@
       "views": 1086,
       "durationMin": 9,
       "date": "2026-09-15",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003447",
-    "title": "【一个Token的旅程 01】大模型只做一件事：猜下一个词",
-    "url": "https://www.bilibili.com/video/BV1W3Wr6JEQ7",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "token-prediction",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "系列首集：从输入法联想切入，讲大模型预测下一个token及概率、采样、温度如何影响回答。",
-    "why": "入门概念讲解，切口友好，单集聚焦一个原理点。",
-    "quality": 4,
-    "signals": {
-      "views": 15,
-      "durationMin": 4,
-      "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -74962,28 +71934,6 @@
     }
   },
   {
-    "id": "kb-003473",
-    "title": "AI能力的边界",
-    "url": "https://www.bilibili.com/video/BV1YUQ7BNEDf",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "model-capability-boundary",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "用可计算性与计算复杂度理论分析AI能否完全取代人类。",
-    "why": "以计算理论为第一性原理论证边界，视角专业有深度。",
-    "quality": 4,
-    "signals": {
-      "views": 24,
-      "durationMin": 11,
-      "date": "2026-04-15",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003474",
     "title": "一口气学会AI Agent可观测性与Evals/LLM Ops/Tracing/成本追踪/开源实测",
     "url": "https://www.bilibili.com/video/BV1k4HZ6xEHR",
@@ -75073,29 +72023,6 @@
     }
   },
   {
-    "id": "kb-003478",
-    "title": "AI 实验室如何看待失控风险、模型对齐与能力边界",
-    "url": "https://www.bilibili.com/video/BV1RB4u6HEqz",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D6"
-    ],
-    "subtopic": "agi-frontier",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "梳理Anthropic员工调查、对齐表态与基准，讨论失控风险。",
-    "why": "基于一手信息的中配梳理，讲前沿安全与对齐议题。",
-    "quality": 4,
-    "signals": {
-      "views": 28,
-      "durationMin": 54,
-      "date": "2026-11-03",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003479",
     "title": "为什么AI总在不该错的地方犯错——能力边界与风控方法",
     "url": "https://www.bilibili.com/video/BV13nYs6rEQb",
@@ -75181,28 +72108,6 @@
       "views": 32412,
       "durationMin": 3,
       "date": "2025-02-20",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003483",
-    "title": "同一个模型，为什么有的聪明、有的笨？｜预训练、后训练、微调到底差在哪",
-    "url": "https://www.bilibili.com/video/BV1jjW26HEt5",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用上学、实习、上岗培训类比讲清预训练、后训练、微调三者差异，指出后训练改的是行为不是知识。",
-    "why": "8分钟聚焦一个易混概念，类比清晰、结论明确，单点讲解扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 44,
-      "durationMin": 8,
-      "date": "2026-11-11",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -75341,50 +72246,6 @@
     }
   },
   {
-    "id": "kb-003491",
-    "title": "幻觉：为什么 AI 一本正经胡说八道，怎么缓解｜AI 底层原理 · 第 6 集",
-    "url": "https://www.bilibili.com/video/BV1NkWq6kEFC",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "hallucination-basics",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "系列第6集：幻觉成因（补全非查证）与RAG、引用来源等缓解法。",
-    "why": "动画科普结构清晰、附对应文档，单点讲解扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 0,
-      "durationMin": 3,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003492",
-    "title": "AI的本质与历史：一场70年前的猜字游戏，如何长成今天的大模型",
-    "url": "https://www.bilibili.com/video/BV1qmWk6CEBx",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-development-history",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "从香农猜字游戏、达特茅斯到AI寒冬，讲AI七十年与预测下一词本质。",
-    "why": "史实具体、脉络清晰，入门讲解扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 42,
-      "durationMin": 5,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003493",
     "title": "【AI十项全能】Mimo V2.6Pro：惊天一条区！？AI史上最唐雷霆大思考",
     "url": "https://www.bilibili.com/video/BV1R24V6aETp",
@@ -75426,29 +72287,6 @@
       "views": 2474,
       "durationMin": 8,
       "date": "2026-10-23",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003495",
-    "title": "大肥鱼科普：大模型榜单到底看哪个？43个月榜首从1075涨到1538",
-    "url": "https://www.bilibili.com/video/BV17tWC6jEnW",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "model-selection-basics",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "把大模型榜单分两类，讲清Elo偏好分与能力榜差异、按任务选榜。",
-    "why": "澄清榜单误读、给出选榜方法，讲解清楚扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 84,
-      "durationMin": 4,
-      "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -75673,28 +72511,6 @@
       "views": 15643,
       "durationMin": 30,
       "date": "2024-07-02",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003506",
-    "title": "美国企业开源模型支出89%流向中国模型：样本、分母、口径一次讲清，附选型先试名单",
-    "url": "https://www.bilibili.com/video/BV1rDWj61Eqb",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "open-closed-models",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲清美企开源支出89%流向中国模型的样本分母口径",
-    "why": "数据溯源与口径辨析示范，严谨可信",
-    "quality": 4,
-    "signals": {
-      "views": 17,
-      "durationMin": 3,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -75969,29 +72785,6 @@
       "views": 11534,
       "durationMin": 15,
       "date": "2026-05-26",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003519",
-    "title": "Open WebUI｜把本地模型和云端模型收进一个网页，资料留不留在本机你定",
-    "url": "https://www.bilibili.com/video/BV1JpWC6SEgS",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D3"
-    ],
-    "subtopic": "local-models",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "Open WebUI统一管理本地与云端模型，附三条最短上手路径。",
-    "why": "依README讲清工具定位与隐私考量，短小准确。",
-    "quality": 4,
-    "signals": {
-      "views": 11,
-      "durationMin": 4,
-      "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -79152,29 +75945,6 @@
     }
   },
   {
-    "id": "kb-003671",
-    "title": "DeepAgents 多智能体协作：从子 Agent 到异步任务编排｜大模型｜AI Agent｜教程",
-    "url": "https://www.bilibili.com/video/BV1GtWj6aEaZ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D3"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解DeepAgents多智能体协作：子Agent分工、异步编排与失败重试",
-    "why": "覆盖架构与工程实践要点，内容体系具体扎实",
-    "quality": 4,
-    "signals": {
-      "views": 471,
-      "durationMin": 500,
-      "date": "2026-11-11",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003672",
     "title": "AI Agent 实战教程（SpringBoot+MCP+RAG）",
     "url": "https://www.bilibili.com/video/BV1gGYX6DEVG",
@@ -79216,29 +75986,6 @@
     "signals": {
       "views": 870,
       "durationMin": 704,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003674",
-    "title": "AWS 云与 AI 日完整主题演讲：企业级智能体落地的真实路径",
-    "url": "https://www.bilibili.com/video/BV1xXWa68EPh",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D3"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "AWS官方演讲讲企业级智能体落地：模型选型、数据底座、编排与治理",
-    "why": "官方演讲体系完整含客户案例，带厂商视角",
-    "quality": 4,
-    "signals": {
-      "views": 1,
-      "durationMin": 97,
       "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
@@ -79353,52 +76100,6 @@
       "views": 6693,
       "durationMin": 716,
       "date": "2025-02-11",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003680",
-    "title": "RAG R07-01 RAG的提示词怎么写",
-    "url": "https://www.bilibili.com/video/BV15KxT6kEnm",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D2"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲解RAG生成阶段提示词写法，解决模型乱加常识与答非所问",
-    "why": "系列课生成优化章节，单点问题聚焦，讲解针对性强",
-    "quality": 4,
-    "signals": {
-      "views": 20,
-      "durationMin": 6,
-      "date": "2026-10-27",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003681",
-    "title": "RAG 第7问：文档改了，多久能在系统里生效？——freshness lag 按变更率分桶与每档 p95",
-    "url": "https://www.bilibili.com/video/BV1Vd4K6VERt",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D4"
-    ],
-    "subtopic": "rag-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲RAG文档更新时效：按变更率分桶、增量索引并按档测p95",
-    "why": "知识库运维的单点量化方法具体可信，回答更新延迟怎么验收",
-    "quality": 4,
-    "signals": {
-      "views": 22,
-      "durationMin": 6,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -79717,28 +76418,6 @@
       "views": 6208,
       "durationMin": 31,
       "date": "2025-12-17",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003696",
-    "title": "【千问Embedding03】一句话怎样变成向量？从Token到最后一个有效位置",
-    "url": "https://www.bilibili.com/video/BV1yWHv6FEc2",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "embedding-overview",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "拆解一句话变向量的过程：词元编号、查表表示、上下文表示到整句向量。",
-    "why": "带时间轴分步拆解，直击token到向量的计算细节。",
-    "quality": 4,
-    "signals": {
-      "views": 13,
-      "durationMin": 7,
-      "date": "2026-10-03",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -80367,28 +77046,6 @@
       "views": 339,
       "durationMin": 5,
       "date": "2026-11-08",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003725",
-    "title": "上下文窗口是什么？AI真的能记住一整本书吗？",
-    "url": "https://www.bilibili.com/video/BV1ng4v6qE8C",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "context-window",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "用书桌比喻讲上下文窗口与Token局限，区分上下文与产品记忆，给分段阅读核对法",
-    "why": "概念准确并附Tokenizer与论文参考，方法可操作",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 5,
-      "date": "2026-11-05",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -81204,28 +77861,6 @@
     }
   },
   {
-    "id": "kb-003762",
-    "title": "AI 语音助手怎么知道你说完了？真人测试里，简单计时赢了训练的模型｜论文精读",
-    "url": "https://www.bilibili.com/video/BV1ziWB6vEBt",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "speech-models",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "论文精读：语音助手判停机制，Silero VAD计时策略实测优于训练模型",
-    "why": "用类比讲清VAD判停机制，引用论文具体数据，单点扎实",
-    "quality": 4,
-    "signals": {
-      "views": 2,
-      "durationMin": 3,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003763",
     "title": "AI语音克隆进入“零样本”时代？解析TTS模型四大流派与问鼎榜首的MiniMax【硅谷101】",
     "url": "https://www.bilibili.com/video/BV17U7jziEPD",
@@ -81270,29 +77905,6 @@
     }
   },
   {
-    "id": "kb-003765",
-    "title": "架构思维_AI 内容鉴伪 · 图像篇_13集",
-    "url": "https://www.bilibili.com/video/BV1uPnm6BEeb",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D6"
-    ],
-    "subtopic": "vision-models",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "系列课第13集：从像素原理到Python实操讲解AI换脸检测与图像鉴伪",
-    "why": "体系化讲解AI内容鉴伪原理并配实操，兼顾AI伦理议题",
-    "quality": 4,
-    "signals": {
-      "views": 78,
-      "durationMin": 10,
-      "date": "2026-10-22",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003766",
     "title": "数字图像处理-Digital Image Processing (DIP)",
     "url": "https://www.bilibili.com/video/BV1tx41147Tx",
@@ -81311,50 +77923,6 @@
       "views": 580700,
       "durationMin": 2278,
       "date": "2017-09-09",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003767",
-    "title": "什么是大模型蒸馏？为什么小模型能学会大模型",
-    "url": "https://www.bilibili.com/video/BV1wBWk6DEFk",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "讲清大模型蒸馏机制：传概率分布而非答案，及与量化的区别",
-    "why": "引用具体基准与DeepSeek-R1蒸馏数据，单点讲解扎实",
-    "quality": 4,
-    "signals": {
-      "views": 15,
-      "durationMin": 7,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003768",
-    "title": "什么是模型蒸馏？小型AI模型的学习原理",
-    "url": "https://www.bilibili.com/video/BV1cDs36NEd6",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "llm-principles",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "IBM科普翻译：模型蒸馏用软标签迁移知识，让小模型高效学习",
-    "why": "结构清晰的单点原理讲解，中英双语版本齐全",
-    "quality": 4,
-    "signals": {
-      "views": 2,
-      "durationMin": 27,
-      "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -81854,28 +78422,6 @@
     }
   },
   {
-    "id": "kb-003791",
-    "title": "AI 的“大脑”里，只有一道小学算术题：神经元与感知机｜零基础看懂 AI 07",
-    "url": "https://www.bilibili.com/video/BV1G7Wh6vEHq",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-basic-concepts",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "9分钟零基础讲人工神经元：输入、权重、求和、门槛与感知机兴衰。",
-    "why": "原创系列讲解，比喻清晰、章节明确，零基础友好。",
-    "quality": 4,
-    "signals": {
-      "views": 2,
-      "durationMin": 9,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003792",
     "title": "一个神经元很笨，一千个为什么就聪明了｜五分钟看懂 AI 02",
     "url": "https://www.bilibili.com/video/BV1JcnZ6nER2",
@@ -82004,28 +78550,6 @@
       "views": 1961,
       "durationMin": 967,
       "date": "2026-01-09",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003798",
-    "title": "8.2.1　ImageNet——细讲鱼书《深度学习入门》",
-    "url": "https://www.bilibili.com/video/BV1UXx56WEAZ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "ai-basic-concepts",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "细讲鱼书《深度学习入门》系统课程8.2.1节ImageNet，逐句精读。",
-    "why": "逐句精读经典教材、合集连贯，初学者友好。",
-    "quality": 4,
-    "signals": {
-      "views": 11,
-      "durationMin": 15,
-      "date": "2026-10-28",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -82164,29 +78688,6 @@
     }
   },
   {
-    "id": "kb-003805",
-    "title": "用AI将热门视频中的角色替换为我自己的角色【SJinn_Genjutsu】",
-    "url": "https://www.bilibili.com/video/BV1JwWk6LESd",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D3"
-    ],
-    "subtopic": "image-prompt-craft",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "11分钟演示SJinn把参考视频动作运镜复制到自定义AI角色。",
-    "why": "功能实操覆盖多场景与角色一致性保持，讲解具体。",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 11,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003806",
     "title": "Prompting 101 AI提示词入门课",
     "url": "https://www.bilibili.com/video/BV1R89dBmE38",
@@ -82227,50 +78728,6 @@
       "views": 25,
       "durationMin": 25,
       "date": "2026-03-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003808",
-    "title": "11【生成式AI】Finetuning vs. Prompting：對於大型語言模型的不同期待所衍生的兩類使用方式 (3-3)",
-    "url": "https://www.bilibili.com/video/BV1Vx4y1A7cX",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "prompt-patterns",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "16分钟生成式AI系列课片段，对比微调与提示两种使用方式。",
-    "why": "讲清两类用法的期待差异，系列课单节扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 97,
-      "durationMin": 16,
-      "date": "2023-03-22",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003809",
-    "title": "Every Google Prompting Essentials Course 1-4 _ Google Prompting Essentials",
-    "url": "https://www.bilibili.com/video/BV1kJzZBAEHv",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "prompt-patterns",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "Google Prompting Essentials官方提示词课程第1-4集合集，91分钟系统入门。",
-    "why": "完整课程合集覆盖提示词基础体系，官方内容可信，适合零基础。",
-    "quality": 4,
-    "signals": {
-      "views": 45,
-      "durationMin": 91,
-      "date": "2026-01-29",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -82388,29 +78845,6 @@
     }
   },
   {
-    "id": "kb-003815",
-    "title": "Harness 架构全解析：上下文工程、任务编排与 Skills 生命周期｜AI Agent｜大模型｜教程",
-    "url": "https://www.bilibili.com/video/BV1HB476sEK1",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D3"
-    ],
-    "subtopic": "context-provision",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "Harness架构长课：上下文工程、任务编排、Skills生命周期与沙箱实操。",
-    "why": "八小时课程体系完整覆盖Agent工程主线，配实操与部署。",
-    "quality": 4,
-    "signals": {
-      "views": 1546,
-      "durationMin": 501,
-      "date": "2026-11-07",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003816",
     "title": "AI 最可怕的，不是取代你，而是让你无效成功",
     "url": "https://www.bilibili.com/video/BV1f7aw6nEip",
@@ -82502,29 +78936,6 @@
     }
   },
   {
-    "id": "kb-003820",
-    "title": "术语表挂进转写提示词：163处没压住，反而涨到231",
-    "url": "https://www.bilibili.com/video/BV1PRWC6ZEpp",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "prompt-testing",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "实测术语表挂进转写提示词后错处从163涨到231，hotwords也翻车，给出结论。",
-    "why": "控制变量实测并量化失败结果，方法论严谨，结论可信。",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 4,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003821",
     "title": "让 AI 改页面，为什么越改越歪？",
     "url": "https://www.bilibili.com/video/BV15mW46bENQ",
@@ -82567,29 +78978,6 @@
       "views": 316642,
       "durationMin": 10,
       "date": "2026-06-05",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003823",
-    "title": "14prompt_template以及LCEL介绍",
-    "url": "https://www.bilibili.com/video/BV1kA81eYEWY",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D3"
-    ],
-    "subtopic": "prompt-templates",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "LangChain课程第14讲：prompt_template知识与LCEL，含chain.invoke源码指引。",
-    "why": "体系课程一讲，讲解直达源码层面，适合开发者进阶。",
-    "quality": 4,
-    "signals": {
-      "views": 76,
-      "durationMin": 13,
-      "date": "2024-07-21",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -82794,29 +79182,6 @@
       "views": 254,
       "durationMin": 31,
       "date": "2026-09-08",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003833",
-    "title": "【英文讲解】系统提示词、用户提示词与提示模板：写一次，处处一致 | CompTIA SecAI+ 1.1",
-    "url": "https://www.bilibili.com/video/BV1BXWx6KEXB",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D6"
-    ],
-    "subtopic": "system-prompt-design",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "英文讲解系统与用户提示词、提示模板：JSON输出一致、日志脱敏与Git版本管理。",
-    "why": "认证课程片段，概念与安全实践结合具体。",
-    "quality": 4,
-    "signals": {
-      "views": 0,
-      "durationMin": 5,
-      "date": "2026-11-10",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -83048,28 +79413,6 @@
     }
   },
   {
-    "id": "kb-003844",
-    "title": "系统1与系统2，一眼还是逐步推理 | System 1 vs System 2 Explained | 熟肉 | Prompt Engineering | 中",
-    "url": "https://www.bilibili.com/video/BV1kdaP6AEve",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "reasoning-prompts",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "11分钟熟肉讲系统1一眼作答与系统2逐步推理的适用场景与协同",
-    "why": "概念对比清晰，含实验与置信度协同结论",
-    "quality": 4,
-    "signals": {
-      "views": 70,
-      "durationMin": 11,
-      "date": "2026-09-24",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003845",
     "title": "Deepseek提示词秘籍",
     "url": "https://www.bilibili.com/video/BV16bNveBEqw",
@@ -83227,28 +79570,6 @@
     }
   },
   {
-    "id": "kb-003852",
-    "title": "Agent的记忆从哪来——AgentBridge的多源实时上下文",
-    "url": "https://www.bilibili.com/video/BV1KWJi6wEhQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "context-provision",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "讲解Agent如何经AgentBridge实时获取分散在Kafka、MySQL等系统的上下文。",
-    "why": "企业级多源上下文架构分享，痛点与方案完整。",
-    "quality": 4,
-    "signals": {
-      "views": 10,
-      "durationMin": 29,
-      "date": "2026-10-17",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003853",
     "title": "一个 Agent 服务全公司，上下文不会爆炸吗？",
     "url": "https://www.bilibili.com/video/BV17G3o6DEth",
@@ -83267,28 +79588,6 @@
       "views": 3360,
       "durationMin": 7,
       "date": "2026-08-02",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003854",
-    "title": "上下文窗口是唯一入口：Token、Prompt、Context、Memory 四个概念分清",
-    "url": "https://www.bilibili.com/video/BV13R4i6xExZ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "long-context-prompting",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "辨析Token、Prompt、Context、Memory四概念，讲上下文窗口与长上下文失败。",
-    "why": "系统入门课程单集，概念辨析清晰成体系。",
-    "quality": 4,
-    "signals": {
-      "views": 16,
-      "durationMin": 4,
-      "date": "2026-11-06",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -83497,28 +79796,6 @@
     }
   },
   {
-    "id": "kb-003864",
-    "title": "提示词工程过时了吗：从提示词工程师的退场，看一项能力如何变成地基",
-    "url": "https://www.bilibili.com/video/BV173xL63Edg",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "acceptance-criteria",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "论提示词岗位退场，但写清需求与验收标准仍是地基能力",
-    "why": "以翻车案例论证验收标准表达的价值，论述完整",
-    "quality": 4,
-    "signals": {
-      "views": 11,
-      "durationMin": 6,
-      "date": "2026-10-28",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003865",
     "title": "范德堡大学【提示词工程】Prompt Engineering",
     "url": "https://www.bilibili.com/video/BV1dPYC6NE4Y",
@@ -83537,29 +79814,6 @@
       "views": 859,
       "durationMin": 844,
       "date": "2026-09-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003866",
-    "title": "不换模型提升准确率：达美乐 AI Agent 从 41% 到 97% 的落地实践 | AI Engineer",
-    "url": "https://www.bilibili.com/video/BV1o94h6DEeF",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2",
-      "D4"
-    ],
-    "subtopic": "acceptance-criteria",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "达美乐Agent准确率41%升至97%的六步落地框架",
-    "why": "企业级方法具体含成本数据，涉及评估基准等专业内容",
-    "quality": 4,
-    "signals": {
-      "views": 41,
-      "durationMin": 13,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -83583,28 +79837,6 @@
       "views": 37746,
       "durationMin": 13,
       "date": "2026-06-10",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003868",
-    "title": "聊聊AI4-提示词工程-CO-STAR全球最火的提示词框架",
-    "url": "https://www.bilibili.com/video/BV1t8876zEzi",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D2"
-    ],
-    "subtopic": "structured-prompt",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "详解 CO-STAR 框架六维度：背景目标风格语气受众格式",
-    "why": "框架来源清晰，六要素逐一说明，结构化实用",
-    "quality": 4,
-    "signals": {
-      "views": 29,
-      "durationMin": 5,
-      "date": "2026-08-19",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -84168,51 +80400,6 @@
     }
   },
   {
-    "id": "kb-003894",
-    "title": "抽查1285条AI带出处数据6成对不上！用AI做调研怎么防坑（豆包DeepSeek未在测试内）",
-    "url": "https://www.bilibili.com/video/BV1d34h6JEzt",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "deep-research-tools",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "抽查1285条AI带出处数据仅四成对得上，教溯源核查防坑方法",
-    "why": "给出追最早原始报告的核查规则，具体可操作",
-    "quality": 4,
-    "signals": {
-      "views": 74,
-      "durationMin": 2,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003895",
-    "title": "无涯智远调研｜一次前向把文档写进参数：六条路线、22家玩家与SHINE实测",
-    "url": "https://www.bilibili.com/video/BV1rdW86SET6",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "rag-tooling",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "按知识写入位置与时机梳理六条路线、22家玩家并实测拆解SHINE",
-    "why": "技术脉络清晰含对照实测，进阶研究参考",
-    "quality": 4,
-    "signals": {
-      "views": 38,
-      "durationMin": 17,
-      "date": "2026-11-09",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003896",
     "title": "DeepSeek 官方联网搜索 API 上线!一个 skill 让 Claude Code 上网搜资料(粤语讲解)",
     "url": "https://www.bilibili.com/video/BV1arnV65Evx",
@@ -84275,29 +80462,6 @@
       "views": 4712,
       "durationMin": 5,
       "date": "2025-03-11",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003899",
-    "title": "ChatGPT 搜索挂出的链接，真的支持它旁边那句话吗",
-    "url": "https://www.bilibili.com/video/BV1huWi6jEct",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "web-search-modes",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用斯坦福等研究数据检验ChatGPT搜索引用的可靠性",
-    "why": "引用具体实测数据，讲清AI引用可信度",
-    "quality": 4,
-    "signals": {
-      "views": 3,
-      "durationMin": 7,
-      "date": "2026-11-13",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -84928,29 +81092,6 @@
     }
   },
   {
-    "id": "kb-003928",
-    "title": "自动剪辑2.0｜从零剪出AI视频",
-    "url": "https://www.bilibili.com/video/BV1iCW66BEfH",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "workflow-automation",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "讲AI自动剪辑四步法：定配音、按语义排镜头、局部修正、统一包装，附验收要点。",
-    "why": "流程方法具体含验收清单，解决音画错位问题，可操作性强。",
-    "quality": 4,
-    "signals": {
-      "views": 30,
-      "durationMin": 4,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003929",
     "title": "AI剪辑长视频完整教程：30分钟口播全程AI剪",
     "url": "https://www.bilibili.com/video/BV1ABx16NEiq",
@@ -85356,29 +81497,6 @@
     }
   },
   {
-    "id": "kb-003947",
-    "title": "Superpowers完整教程：从零安装到跑通第一个AI编程项目，全流程一次讲清，需求澄清、方案设计、任务拆解、TDD开发、代码审查与最终验收",
-    "url": "https://www.bilibili.com/video/BV12rWD6SEso",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D4"
-    ],
-    "subtopic": "coding-assistants",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "188分钟Superpowers实战教程：安装配置、需求澄清、方案设计、任务拆解、TDD、审查到验收。",
-    "why": "覆盖AI编程项目全生命周期，环节完整、可跟练，体系性强。",
-    "quality": 4,
-    "signals": {
-      "views": 196,
-      "durationMin": 188,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-003948",
     "title": "让 Codex 走完一个小需求：拆任务、写码、自测与改 diff｜Codex｜AI编程｜需求交付",
     "url": "https://www.bilibili.com/video/BV1tSWe6gEqR",
@@ -85731,28 +81849,6 @@
       "views": 56616,
       "durationMin": 15,
       "date": "2026-04-22",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003964",
-    "title": "收藏越多，学得越少？从大脑组块到个人知识库：知识的价值在于调用",
-    "url": "https://www.bilibili.com/video/BV1x4W96oEZQ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "note-knowledge-tools",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "结合《重塑学习型大脑》反思收藏式学习，谈知识库价值在调用",
-    "why": "对照书籍与AI知识库实践踩坑，论证有条理",
-    "quality": 4,
-    "signals": {
-      "views": 35,
-      "durationMin": 6,
-      "date": "2026-11-12",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -86738,28 +82834,6 @@
     }
   },
   {
-    "id": "kb-004009",
-    "title": "WorkBuddy团队级自动化-讲解版 第三讲",
-    "url": "https://www.bilibili.com/video/BV1iPWJ6yE8V",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "workflow-automation",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "WorkBuddy团队自动化第三讲：周报流水线六步与三坑三红线",
-    "why": "带时间轴、步骤与坑位具体，讲解结构化清晰",
-    "quality": 4,
-    "signals": {
-      "views": 91,
-      "durationMin": 7,
-      "date": "2026-11-08",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004010",
     "title": "【n8n】教程：超级 AI 个人助理",
     "url": "https://www.bilibili.com/video/BV14D2mYTEmN",
@@ -86778,29 +82852,6 @@
       "views": 14568,
       "durationMin": 49,
       "date": "2024-10-11",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004011",
-    "title": "n8n｜不用写代码，一句话让 AI 把每天的杂活自动跑完",
-    "url": "https://www.bilibili.com/video/BV1yMW86QEnL",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3",
-      "D6"
-    ],
-    "subtopic": "workflow-automation",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "n8n无代码自动化入门：询盘场景实操兼讲开源许可证边界",
-    "why": "场景具体，点明Sustainable Use License可用与禁转售，扎实",
-    "quality": 4,
-    "signals": {
-      "views": 45,
-      "durationMin": 4,
-      "date": "2026-11-09",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -87006,28 +83057,6 @@
     }
   },
   {
-    "id": "kb-004021",
-    "title": "资料库、知识库、AI知识库到底有什么区别",
-    "url": "https://www.bilibili.com/video/BV17zWL6NEJ2",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "rag-tooling",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "辨析资料库、知识库、AI知识库三层区别",
-    "why": "5分钟讲萃取与AI知识库工作系统概念，框架清晰",
-    "quality": 4,
-    "signals": {
-      "views": 31,
-      "durationMin": 5,
-      "date": "2026-11-11",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004022",
     "title": "最适合普通人的本地AI知识库！彻底颠覆办公/创作工作流！【小白教程】",
     "url": "https://www.bilibili.com/video/BV1j7ojYREUQ",
@@ -87068,28 +83097,6 @@
       "views": 391735,
       "durationMin": 13,
       "date": "2026-05-29",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004024",
-    "title": "[深度] 知识库系列 01｜Agent 都有记忆了，为什么还要自己的知识库？",
-    "url": "https://www.bilibili.com/video/BV1kSWj6jE4T",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "rag-tooling",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "讲清Agent记忆与自有知识库的区别与必要",
-    "why": "5分钟论证文档库不等于知识库，系列将实测不同规模",
-    "quality": 4,
-    "signals": {
-      "views": 88,
-      "durationMin": 5,
-      "date": "2026-11-11",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -88101,28 +84108,6 @@
     }
   },
   {
-    "id": "kb-004070",
-    "title": "没有调查，就没有发言权：我把 AI 的信源一条条查了",
-    "url": "https://www.bilibili.com/video/BV136xd6CEhB",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "source-verification",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "实测AI信源：84条样本872次引用落256站点统计",
-    "why": "一手抽样给出三平台信源分布数据，方法透明可核",
-    "quality": 4,
-    "signals": {
-      "views": 23,
-      "durationMin": 8,
-      "date": "2026-11-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004071",
     "title": "3分钟搞懂【AI幻觉】：为什么AI会一本正经地胡说八道？",
     "url": "https://www.bilibili.com/video/BV1fx7L6HEKk",
@@ -88192,28 +84177,6 @@
     }
   },
   {
-    "id": "kb-004074",
-    "title": "AI编的参考文献，三步查出来",
-    "url": "https://www.bilibili.com/video/BV1bZxX6eEsi",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "citation-checking",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "引研究数据并给出三步核查法：Crossref搜题、验DOI、核卷期页码",
-    "why": "流程具体可复现，方法扎实可信",
-    "quality": 4,
-    "signals": {
-      "views": 3,
-      "durationMin": 2,
-      "date": "2026-11-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004075",
     "title": "AI乱编参考文献？如何用DeepSeek服帖自动引用指定参考文献？",
     "url": "https://www.bilibili.com/video/BV18n5EzQEjL",
@@ -88256,52 +84219,6 @@
       "views": 229,
       "durationMin": 8,
       "date": "2026-10-21",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004077",
-    "title": "Addy Osmani 长文拆解｜Agent 干活时，批判性思维还剩多少（90秒）",
-    "url": "https://www.bilibili.com/video/BV1fdxS6MEqB",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D5"
-    ],
-    "subtopic": "human-review-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "90秒拆解Addy Osmani长文：任务卸载、理解债、编排税与责任自留",
-    "why": "结构化转述可信来源，概念密度高",
-    "quality": 4,
-    "signals": {
-      "views": 43,
-      "durationMin": 2,
-      "date": "2026-11-04",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004078",
-    "title": "【中字】如何阻止AI扼杀你的批判性思维 | Advait Sarkar | TED",
-    "url": "https://www.bilibili.com/video/BV16H856JEqc",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D5"
-    ],
-    "subtopic": "output-critique",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "TED演讲中英字幕：如何避免AI扼杀你的批判性思维",
-    "why": "权威讲者内容扎实，翻译完整可信",
-    "quality": 4,
-    "signals": {
-      "views": 68,
-      "durationMin": 15,
-      "date": "2026-08-19",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -88511,28 +84428,6 @@
     }
   },
   {
-    "id": "kb-004088",
-    "title": "每4个网页就有1个有AI写的字？连AI检测器都会误判｜我亲手跑了个“AI抄AI”实验",
-    "url": "https://www.bilibili.com/video/BV18Vsd6MEAZ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "ai-evaluating-ai",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "解读arXiv研究：约24%可抓取网页含AI文字，且AI检测器会误判；作者另做实验验证。",
-    "why": "有数据出处且亲手实验交叉验证，讲解扎实可信。",
-    "quality": 4,
-    "signals": {
-      "views": 38,
-      "durationMin": 3,
-      "date": "2026-10-29",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004089",
     "title": "Netflix 如何评估没有标准答案的 AI 任务？三层评估框架解析 | AI Engineer",
     "url": "https://www.bilibili.com/video/BV1NP4q6JEqG",
@@ -88688,29 +84583,6 @@
       "views": 3370,
       "durationMin": 7,
       "date": "2026-07-23",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004096",
-    "title": "【AI工具库 08】AI 查的资料，怎么验真假",
-    "url": "https://www.bilibili.com/video/BV1ShHw6LE8e",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D2"
-    ],
-    "subtopic": "fact-checking",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "给六个核查AI资料的动作：要原始链接、搜作者机构篇名等，附核对表",
-    "why": "步骤具体可操作，直指AI顺着说不可信的场景，实用性强",
-    "quality": 4,
-    "signals": {
-      "views": 23,
-      "durationMin": 4,
-      "date": "2026-10-24",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -89229,29 +85101,6 @@
     }
   },
   {
-    "id": "kb-004120",
-    "title": "上周GitHub周榜前5全实测：AI给网站做安全体检查出8个漏洞，3个AI分工写代码21个测试全过",
-    "url": "https://www.bilibili.com/video/BV1FBxC64EZD",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4",
-      "D3"
-    ],
-    "subtopic": "cross-validation",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "实测周榜安全审计技能：Claude Code埋坑验证查出8漏洞，子代理复核",
-    "why": "真机实测有数据细节，示范AI审计交叉验证流程",
-    "quality": 4,
-    "signals": {
-      "views": 92,
-      "durationMin": 3,
-      "date": "2026-10-31",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004121",
     "title": "AI生图不准怎么办？用Excalidraw圈出问题，让AI精准改图",
     "url": "https://www.bilibili.com/video/BV17ANm65Ez5",
@@ -89500,28 +85349,6 @@
     }
   },
   {
-    "id": "kb-004132",
-    "title": "别盲信AI Agent：如何像科学家一样设计可靠的评估测试 | AI Engineer",
-    "url": "https://www.bilibili.com/video/BV1jrHA6tEok",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D4"
-    ],
-    "subtopic": "benchmark-basics",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "评估专家讲Agent评估陷阱：换测试框架结果可波动30%",
-    "why": "剖析公共榜单局限，倡导科学实验式评估",
-    "quality": 4,
-    "signals": {
-      "views": 91,
-      "durationMin": 17,
-      "date": "2026-11-02",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004133",
     "title": "Agent评估中的评分器Grader怎么做:Anthropic《Demystifying evals for AI agents》②",
     "url": "https://www.bilibili.com/video/BV1oFrkBmEyg",
@@ -89746,51 +85573,6 @@
     }
   },
   {
-    "id": "kb-004143",
-    "title": "案例拆解：市面上那些问题，到底怪谁？",
-    "url": "https://www.bilibili.com/video/BV1ExWR67E8Y",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D6"
-    ],
-    "subtopic": "automation-vs-judgment",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "把智驾事故分四类：功能安全、预期功能安全、AI安全、人机共驾越界。",
-    "why": "以理想、问界等真实案例逐一对号，分类清晰附图文。",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 4,
-      "date": "2026-11-12",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004144",
-    "title": "一个人开发游戏，怎么和多个 AI 模型分工协作？",
-    "url": "https://www.bilibili.com/video/BV1RLxw6cEg6",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "role-division",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "独立游戏AI开发流：Opus管架构、Sonnet管项目、Codex执行编码。",
-    "why": "含上下文管理、人工验收与并行开发问题，坦诚具体。",
-    "quality": 4,
-    "signals": {
-      "views": 87,
-      "durationMin": 12,
-      "date": "2026-10-29",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004145",
     "title": "Grok Bot正确打开方式！一群Bot拉群自己分工，和子Agent根本不是一回事",
     "url": "https://www.bilibili.com/video/BV192xz6eECc",
@@ -89854,50 +85636,6 @@
       "views": 72691,
       "durationMin": 11,
       "date": "2026-04-02",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004148",
-    "title": "你的工作，离被 AI 替代还有多远？或许能在这里找到答案",
-    "url": "https://www.bilibili.com/video/BV1qXW26dEWZ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "automation-vs-judgment",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "电网审计员与GPT推演岗位十年，提出AI原生看行业冲击。",
-    "why": "从自身职业出发讲AI替代边界，角度具体可信。",
-    "quality": 4,
-    "signals": {
-      "views": 35,
-      "durationMin": 15,
-      "date": "2026-11-11",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004149",
-    "title": "你的工作，离被 AI 替代还有多远？或许能在这里找到答案",
-    "url": "https://www.bilibili.com/video/BV1SbW26GE7o",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "automation-vs-judgment",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "结算审计员结合自身岗位与GPT推演十年，提出AI Native岗位冲击判断框架",
-    "why": "以真实岗位案例讲解AI影响工作的逻辑",
-    "quality": 4,
-    "signals": {
-      "views": 6,
-      "durationMin": 15,
-      "date": "2026-11-11",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -90152,29 +85890,6 @@
     }
   },
   {
-    "id": "kb-004161",
-    "title": "P11 与 AI 一起头脑风暴 - AI 提示词入门",
-    "url": "https://www.bilibili.com/video/BV1Y37G6NEfq",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D2"
-    ],
-    "subtopic": "brainstorming-with-ai",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "DeepLearning.AI提示词入门课程第11讲中配：与AI一起头脑风暴",
-    "why": "吴恩达团队系统课程，权威且入门友好",
-    "quality": 4,
-    "signals": {
-      "views": 8,
-      "durationMin": 10,
-      "date": "2026-06-26",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004162",
     "title": "让Ai给内娱一点小小的震撼（不是",
     "url": "https://www.bilibili.com/video/BV1K9tL68EAy",
@@ -90382,29 +86097,6 @@
     }
   },
   {
-    "id": "kb-004171",
-    "title": "保姆级豆包工作agent教程：让AI帮你整理资料01｜64 份活动资料盘点查漏",
-    "url": "https://www.bilibili.com/video/BV1iiWi6oEhK",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "knowledge-management-ai",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "豆包工作agent教程01：64份活动资料盘点查漏与归档实操",
-    "why": "保姆级系列教程任务具体，可跟随复现，适合资料整理",
-    "quality": 4,
-    "signals": {
-      "views": 15,
-      "durationMin": 6,
-      "date": "2026-11-13",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004172",
     "title": "想让AI自己迭代先把验证做好",
     "url": "https://www.bilibili.com/video/BV1Lk4e6dE3Q",
@@ -90560,28 +86252,6 @@
       "views": 28831,
       "durationMin": 10,
       "date": "2026-08-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004179",
-    "title": "机器停了，AI怎样找到故障？用微软智能体设计一套完整设备维修方案",
-    "url": "https://www.bilibili.com/video/BV1H4436BEd4",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "workflow-design",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用微软智能体从需求到上线设计设备故障排查方案，含工单知识库。",
-    "why": "端到端讲智能体方案设计与完整业务流程，结构清晰。",
-    "quality": 4,
-    "signals": {
-      "views": 65,
-      "durationMin": 20,
-      "date": "2026-11-03",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -91106,29 +86776,6 @@
     }
   },
   {
-    "id": "kb-004203",
-    "title": "在 VS Code 中搭建智能体协作开发环境，配置三个扩展并用 worktree 并行开发",
-    "url": "https://www.bilibili.com/video/BV1iyaZ6gErJ",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "ai-in-programming-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "22分钟在VS Code搭建智能体协作环境：三扩展安装、AGENTS.md与worktree并行。",
-    "why": "以真实项目演示智能体并行开发环境搭建，步骤完整。",
-    "quality": 4,
-    "signals": {
-      "views": 93,
-      "durationMin": 22,
-      "date": "2026-09-30",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004204",
     "title": "基于多智能体与图检索的法律智能综合服务平台｜LangGraph+GraphRAG+MCP+HITL人工确认+多模态",
     "url": "https://www.bilibili.com/video/BV1uRHA6UEFh",
@@ -91648,28 +87295,6 @@
     }
   },
   {
-    "id": "kb-004227",
-    "title": "如何使用AI学习法律",
-    "url": "https://www.bilibili.com/video/BV11EHG6NEJ1",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "ai-in-learning",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "9分钟讲用AI学法律的六类用法，从解法条到追问论证逻辑",
-    "why": "用法清单具体可操作，适合法考人群借鉴",
-    "quality": 4,
-    "signals": {
-      "views": 34,
-      "durationMin": 9,
-      "date": "2026-10-25",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004228",
     "title": "律师的 AI 工作流：用 AI 重构诉讼法律研究，实战拆解",
     "url": "https://www.bilibili.com/video/BV1LaxY6DEGm",
@@ -91921,29 +87546,6 @@
     }
   },
   {
-    "id": "kb-004239",
-    "title": "S548｜【美】开源法律模型Sage实测：专训合同审查，一美元干出百美元模型的活",
-    "url": "https://www.bilibili.com/video/BV1DH4h6kEf1",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D4"
-    ],
-    "subtopic": "ai-in-legal-work",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "实测开源法律模型Sage：合同任务91%达标、成本约为闭源百分之一，附基准数据。",
-    "why": "数据翔实的模型评测，评估口径与成本对比清晰。",
-    "quality": 4,
-    "signals": {
-      "views": 3,
-      "durationMin": 2,
-      "date": "2026-11-05",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004240",
     "title": "扣子凉了？拖拽工作流的真相",
     "url": "https://www.bilibili.com/video/BV1wB476sEau",
@@ -91985,29 +87587,6 @@
     "signals": {
       "views": 535,
       "durationMin": 655,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004242",
-    "title": "中配+原声·为何无人能就AI令牌成本达成一致 | AI Engineer",
-    "url": "https://www.bilibili.com/video/BV1xxWQ6SE9T",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D4"
-    ],
-    "subtopic": "team-ai-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "36分钟AI Engineer演讲：工程师、经理、财务眼中的token成本与ROI归因差异。",
-    "why": "基于百家客户调研，讲AI成本治理视角全面。",
-    "quality": 4,
-    "signals": {
-      "views": 95,
-      "durationMin": 36,
       "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
@@ -92150,28 +87729,6 @@
     }
   },
   {
-    "id": "kb-004249",
-    "title": "把 AI 叫作队友，团队就会更好吗？｜机器作为队友、人机协作、团队分工、控制与责任｜Seeber 2020 AI 团队协作研究议程｜创学空间·论文精读09",
-    "url": "https://www.bilibili.com/video/BV1JZam6DEAP",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "team-ai-collaboration",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "精读Seeber 2020机器作为队友：AI团队协作研究议程",
-    "why": "博主导读加中英对照精读论文，覆盖分工控制与责任",
-    "quality": 4,
-    "signals": {
-      "views": 64,
-      "durationMin": 12,
-      "date": "2026-10-02",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004250",
     "title": "WorkBuddy 14大实战：第 13 课  系统设计：如何进行多 Agent 协作架构设计",
     "url": "https://www.bilibili.com/video/BV1SDu36gEsu",
@@ -92258,29 +87815,6 @@
       "views": 1397,
       "durationMin": 56,
       "date": "2026-10-21",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004254",
-    "title": "企业AI编码安全红线揭秘",
-    "url": "https://www.bilibili.com/video/BV1PGWr6SEug",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D6"
-    ],
-    "subtopic": "ai-in-programming-workflow",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "企业AI编码安全：两案例七条管控清单与验收流程",
-    "why": "面向管理层讲红线判断，案例加清单结构清晰可信",
-    "quality": 4,
-    "signals": {
-      "views": 77,
-      "durationMin": 13,
-      "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -92441,52 +87975,6 @@
       "views": 57092,
       "durationMin": 22,
       "date": "2025-04-22",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004262",
-    "title": "Herdr 实战：从零搭建 AI 一人公司，用 Claude Code、Codex 组建 AI 员工团队",
-    "url": "https://www.bilibili.com/video/BV1HbpC6QEq9",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "34分钟实战：用Herdr把Claude Code、Codex组队成AI一人公司，总经理写任务卡派活。",
-    "why": "体系化讲解一人公司架构与任务派发链路，具体可信。",
-    "quality": 4,
-    "signals": {
-      "views": 15,
-      "durationMin": 34,
-      "date": "2026-10-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004263",
-    "title": "【多agent工作室】专属自己的个人团队",
-    "url": "https://www.bilibili.com/video/BV1BSGK6jEa2",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "基于开源StaffDeck二开多agent工作室：角色带专属记忆，支持定时与协作任务、卡通化呈现。",
-    "why": "31分钟定制实操，开源项目出处明确，内容具体。",
-    "quality": 4,
-    "signals": {
-      "views": 99,
-      "durationMin": 31,
-      "date": "2026-07-31",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -92761,28 +88249,6 @@
     }
   },
   {
-    "id": "kb-004276",
-    "title": "【每日前沿文章·Agent】模型压到4位Agent几乎不掉分｜SteerDistill: Quantizing LLM Agents via Closed-Lo",
-    "url": "https://www.bilibili.com/video/BV1qwsG6oEan",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "精读清华AIR论文SteerDistill：Agent量化到4位，闭环教师引导蒸馏几乎不掉分",
-    "why": "讲清方法效果与局限并附arXiv出处，研究向单点扎实",
-    "quality": 4,
-    "signals": {
-      "views": 7,
-      "durationMin": 9,
-      "date": "2026-11-14",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004277",
     "title": "Multi-Agent 精讲｜面试项目必做的多智能体架构【码士集团】",
     "url": "https://www.bilibili.com/video/BV1oxsf6dErq",
@@ -92914,29 +88380,6 @@
       "views": 34303,
       "durationMin": 7,
       "date": "2026-10-21",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004283",
-    "title": "谷歌 Agent 1小时硬核课：5个真正工程核心（从0跑通到Multi-Agent）",
-    "url": "https://www.bilibili.com/video/BV1c8xE6dEah",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D3"
-    ],
-    "subtopic": "multi-agent-collaboration",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "谷歌1小时Agent课精要：跑通首个Agent、持久化记忆、自主循环、MCP、多智能体",
-    "why": "五大工程核心提纲挈领，适合从Demo到工程化进阶",
-    "quality": 4,
-    "signals": {
-      "views": 39,
-      "durationMin": 72,
-      "date": "2026-10-28",
       "verifiedAt": "2026-11-14"
     }
   },
@@ -93119,28 +88562,6 @@
     }
   },
   {
-    "id": "kb-004292",
-    "title": "长上下文也救不了烂交接：Agent 为什么总从头再来？",
-    "url": "https://www.bilibili.com/video/BV19U3t6YE13",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5"
-    ],
-    "subtopic": "context-handover",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "可执行任务交接6字段：目标非目标、已验证事实、版本改动、验证命令、下一步、风险",
-    "why": "框架具体可落地，并声明实验未实测，态度严谨",
-    "quality": 4,
-    "signals": {
-      "views": 49,
-      "durationMin": 2,
-      "date": "2026-07-30",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
     "id": "kb-004293",
     "title": "Codex三种实用但容易忽略的会话管理技巧",
     "url": "https://www.bilibili.com/video/BV1A3to6gEd2",
@@ -93250,29 +88671,6 @@
       "views": 491,
       "durationMin": 43,
       "date": "2026-11-05",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-004298",
-    "title": "5分钟上手❗️职场普通人怎么把codex变成个人助理 零基础",
-    "url": "https://www.bilibili.com/video/BV1QF3g6VEQ4",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D5",
-      "D2"
-    ],
-    "subtopic": "personal-assistant-setup",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "用两个提示词生成个人档案让Codex变成零基础个人工作助理",
-    "why": "直接给出可复用提示词与档案结构，照做即可上手",
-    "quality": 4,
-    "signals": {
-      "views": 31,
-      "durationMin": 2,
-      "date": "2026-07-25",
       "verifiedAt": "2026-11-14"
     }
   },

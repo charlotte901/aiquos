@@ -1,7 +1,7 @@
 # 知识库人工抽检记录
 
-- 抽检时间：2026-11-14
-- 全库：4316 条；抽检比例：10%（按类型分层、层内按维度均匀）
+- 抽检时间：2026-11-15
+- 全库：4107 条；抽检比例：10%（按类型分层、层内按维度均匀）
 
 核验口径（逐条勾选）：
 1. 链接可访问且内容与标题相符；
@@ -10,280 +10,260 @@
 4. summary 与 why 准确、无编造；
 5. 视频时长/播放量与 signals 相符（抽样开 B 站页面对照）。
 
-## video（全库 2702 条 → 抽 270 条）
+## video（全库 2495 条 → 抽 250 条）
 
 | id | 标题 | dims | 子主题 | 难度 | 链接 | 通过? | 备注 |
 |---|---|---|---|---|---|---|---|
 | kb-000001 | [中英字幕]吴恩达机器学习系列课程 | D1 | ai-basic-concepts | medium | https://www.bilibili.com/video/BV164411b7dx | ☐ | |
-| kb-000011 | 一张图搞懂机器学习是什么？ | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1de4y1E7pM | ☐ | |
-| kb-000021 | AI for everyone 系列教程原声中文版【吴恩达】 | D1/D2 | prompt-patterns | low | https://www.bilibili.com/video/BV1WvRhBwETR | ☐ | |
-| kb-000031 | AI智能体赋能课堂教学——技术很简单，难的是想法 | D5/D3 | ai-in-education-work | medium | https://www.bilibili.com/video/BV1Am9kBfEMN | ☐ | |
-| kb-000041 | 用AI加快学习的13个技巧，成长速度远超同龄人 | D1/D5 | generative-ai-overview | low | https://www.bilibili.com/video/BV1ijJY6uEym | ☐ | |
-| kb-000051 | 大模型到底在做什么？Token 化、逐 Token 预测与上下文窗口一次讲清 | D1 | llm-principles | low | https://www.bilibili.com/video/BV16i4i6BEi9 | ☐ | |
-| kb-000061 | 从零实现自己的agent第十一期：多agent协作 | D1 | agent-overview | medium | https://www.bilibili.com/video/BV1VqHM6iEXn | ☐ | |
-| kb-000115 | 这可能是b站最全的【人工智能-数学基础】教程！129讲全！微积分、概率论、线性代数、机器学习 | D1 | ai-math-basics | medium | https://www.bilibili.com/video/BV1gQ4y1E7iy | ☐ | |
-| kb-000125 | 大模型是怎么学会讲人话的？ | D1 | llm-principles | low | https://www.bilibili.com/video/BV1qrBiYPEf3 | ☐ | |
-| kb-000135 | 黑马程序员Python+AI零基础入门到大神全套视频课程，覆盖Python核心语法、AI应用 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1sHU9BmEne | ☐ | |
-| kb-000145 | Token：大模型处理文字的基本单位 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1PZhs6bEZo | ☐ | |
-| kb-000155 | 李宏毅2024春《生成式人工智能导论》 | D1 | generative-ai-overview | low | https://www.bilibili.com/video/BV1BJ4m1e7g8 | ☐ | |
-| kb-000165 | 从夯到拉，锐评 32 个 AI 编程工具！ | D1/D3 | model-landscape | low | https://www.bilibili.com/video/BV1cq5q6CEu3 | ☐ | |
-| kb-000175 | 为什么 AI 宁可编，也不说“不知道”？大模型幻觉的来源与缓解 | D1/D4 | hallucination-basics | medium | https://www.bilibili.com/video/BV16ZWX62ESj | ☐ | |
+| kb-000010 | 【中文配音】2025 吴恩达机器学习 保姆级 AI 入门教程！从零基础到实战 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1MBKRzqEBR | ☐ | |
+| kb-000020 | 【吴恩达】2025年公认最好的【提示词工程】教程！大模型入门到进阶，一套全解决！Prompt | D2 | prompt-patterns | low | https://www.bilibili.com/video/BV1173jzNELG | ☐ | |
+| kb-000030 | 【2026最新版】AI+自动化测试从入门到精通,从基础认知到源码项目,手把手带你落地 | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1u5Ej6CEb6 | ☐ | |
+| kb-000040 | 【吴恩达】给所有人的AI入门课（超爽中英字幕！）入门进阶一站式搞定，零基础也能轻松学！存下吧 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1NGVo6BEgu | ☐ | |
+| kb-000050 | 2分钟搞懂 token 缓存：为什么我的DeepSeek账单比别人贵50倍？ | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1CDnC6SEBP | ☐ | |
+| kb-000108 | AI 为什么要“做梦”？一口气看懂 AI 记忆！ | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1GvWE6vELC | ☐ | |
+| kb-000119 | 啥是大语言模型（LLM）？\| AI大模型科普2 | D1 | llm-principles | low | https://www.bilibili.com/video/BV12N411x7FL | ☐ | |
+| kb-000130 | 【中配】通俗易懂！十分钟搞懂大型语言模型（LLM）是如何工作的 - 3Blue1Brown | D1 | llm-principles | low | https://www.bilibili.com/video/BV1aDDpB5E7z | ☐ | |
+| kb-000140 | 手把手教你构建大模型评测集：从维度设计到自动化落地 | D4/D1 | model-capability-boundary | medium | https://www.bilibili.com/video/BV1aZpw6DEMg | ☐ | |
+| kb-000152 | 【庞培法布拉大学】生成式AI音乐｜2023 \| AI 创作音乐，解锁生成式音频奥秘 | D1 | generative-ai-overview | high | https://www.bilibili.com/video/BV1scdnBBEVJ | ☐ | |
+| kb-000163 | 《物理人工智能（Physical AI）》 | D1 | emerging-model-trends | high | https://www.bilibili.com/video/BV172ny6GEWd | ☐ | |
+| kb-000173 | 中文“AI味”到底是什么？基于283万字语料，拆解的11条规则 | D1/D2 | llm-principles | low | https://www.bilibili.com/video/BV1H8HZ6sEfD | ☐ | |
 | kb-000185 | 6GB显存也能玩！本地部署开源3D AI生成器 - 基于Trellis 2的Pixal3D工 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1WqVZ6gEWQ | ☐ | |
-| kb-000195 | 多模态是啥？AI用啥看你发的图片和视频 | D1 | multimodal-overview | low | https://www.bilibili.com/video/BV19d5X61EYA | ☐ | |
-| kb-000205 | 【保姆级教程】百度文心智能体平台零基础AI开发课程 | D1/D3 | agent-overview | low | https://www.bilibili.com/video/BV1m64y1K7Pi | ☐ | |
-| kb-000215 | RAG 检索出来的东西不对？切分策略、混合检索与重排序｜RAG｜知识库｜检索优化 | D1/D4 | rag-overview | medium | https://www.bilibili.com/video/BV1BbWR6LE4R | ☐ | |
+| kb-000196 | 图文多模态｜GLIP：给AI附上理解文本、理解图像且定位的能力 | D1 | multimodal-overview | medium | https://www.bilibili.com/video/BV18ZyJBnE4E | ☐ | |
+| kb-000208 | 黑马程序员大模型RAG与Agent智能体项目实战教程，基于主流的LangChain技术从大模 | D1/D2 | rag-overview | medium | https://www.bilibili.com/video/BV1yjz5BLEoY | ☐ | |
 | kb-000225 | 【2026·超爽中英】吴恩达《检索增强生成\|Retrieval Augmented Gen | D1 | rag-overview | medium | https://www.bilibili.com/video/BV1eecUz7ExG | ☐ | |
-| kb-000235 | 【喂饭教程】逼自己在一周学会微调Qwen3-0.6B小模型，原理+架构+微调+实战一次讲清的 | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1BtLq6CEHb | ☐ | |
-| kb-000245 | 50分钟一口气入门模型微调工具Swift模型训练框架，从原理到实战，全程干货建议收藏，反复观 | D1 | fine-tuning-vs-prompting | medium | https://www.bilibili.com/video/BV1YaNqz9Ebf | ☐ | |
-| kb-000255 | 15分钟弄懂Token和Embedding -- 详解LLM与RAG的数据处理机制 | D1 | embedding-overview | medium | https://www.bilibili.com/video/BV1oNv8BPE2m | ☐ | |
-| kb-000265 | RAG到底是怎么工作的？从分块、Embedding、召回到Rerank完整讲透 | D1 | rag-overview | medium | https://www.bilibili.com/video/BV1Wnep6oEwe | ☐ | |
-| kb-000275 | 扩散模型的原理是什么？为什么可以用它生成图片、视频、音乐等内容？ | D1 | diffusion-overview | medium | https://www.bilibili.com/video/BV1fS7nznEUf | ☐ | |
-| kb-000285 | 【AI模型】为什么扩散（Diffusion）模型优于自回归（Auto-Regression） | D1 | diffusion-overview | medium | https://www.bilibili.com/video/BV17idnYNEmW | ☐ | |
-| kb-000295 | 全网最详细DiT讲解 Diffusion Transformers | D1 | diffusion-overview | high | https://www.bilibili.com/video/BV1ytpfzmEPW | ☐ | |
-| kb-000305 | AI根本无记忆！一条视频搞懂 大模型上下文窗口！标签：#AI #上下文 #GPT4 #模型上 | D1 | context-window | low | https://www.bilibili.com/video/BV1cuMJztEcL | ☐ | |
-| kb-000315 | 「Python」基于BERT的文本分类任务实战（含代码与数据） | D1 | fine-tuning-vs-prompting | high | https://www.bilibili.com/video/BV1gJd5BwEwX | ☐ | |
-| kb-000325 | 从图灵到 ChatGPT : AI 的百年发展史  - Putchuon - "Put Yo | D1 | ai-development-history | low | https://www.bilibili.com/video/BV1xDYW6wEWn | ☐ | |
-| kb-000335 | 冷战下的AI萌芽：1958感知机的诞生与沉浮，人工智能第一次范式之争 | D1 | ai-development-history | low | https://www.bilibili.com/video/BV1wjwuznEEq | ☐ | |
-| kb-000345 | AI写了90%的代码，为什么还没有智能爆炸？｜递归自我改进RSI深度拆解 | D1 | agi-frontier | medium | https://www.bilibili.com/video/BV1NM4z6sEsq | ☐ | |
-| kb-000355 | 【AI论文解读】全双工语音大模型的数据瓶颈解决了！首个开源可扩展多轮语音预处理流水线Somm | D1 | speech-models | high | https://www.bilibili.com/video/BV1JSDkB2ELA | ☐ | |
-| kb-000365 | 【端侧AI】嵌入式AI教程（基于RK3588） | D1/D3 | small-edge-models | medium | https://www.bilibili.com/video/BV11DjT6uEhc | ☐ | |
-| kb-000375 | 油管顶流 StatQuest 用极简图解，秒懂机器学习核心原理！ | D1 | ai-basic-concepts | medium | https://www.bilibili.com/video/BV1esXwBbEuo | ☐ | |
-| kb-000385 | 神经网络：神经元与多层网络｜人工智能 5分钟讲透 E06 | D1 | ai-basic-concepts | medium | https://www.bilibili.com/video/BV12bWH6KERr | ☐ | |
+| kb-000237 | 2026B站最新大模型微调训练全套教程，涵盖LLaMA-Factory、LoRA/Embed | D1 | llm-principles | high | https://www.bilibili.com/video/BV1tpWQ6QEyL | ☐ | |
+| kb-000247 | 【保姆级教程】20分钟搞懂大模型微调PEFT，六个方面从原理到调参全面解析PEFT微调（全程 | D1 | fine-tuning-vs-prompting | high | https://www.bilibili.com/video/BV1kKxkzzEbJ | ☐ | |
+| kb-000257 | 大模型靠啥理解文字？通俗解释：词嵌入embedding | D1 | embedding-overview | low | https://www.bilibili.com/video/BV1bfoQYCEHC | ☐ | |
+| kb-000267 | 【硬核】Embedding：AI 如何把万物变成向量 | D1 | embedding-overview | medium | https://www.bilibili.com/video/BV1tgSdBoEsL | ☐ | |
+| kb-000278 | AI画画不是画的，是"擦"的！5分钟看懂扩散模型 | D1 | diffusion-overview | medium | https://www.bilibili.com/video/BV1VGHj6REud | ☐ | |
+| kb-000290 | 【中配】AI视频生成原理：从噪声到画面的魔法 - 3Blue1Brown | D1 | diffusion-overview | medium | https://www.bilibili.com/video/BV1XaJDzwEVx | ☐ | |
+| kb-000300 | 现场教学观摩：《“新玩法”解锁文生图》胡佳莹上海市莘光学校 | D1 | diffusion-overview | low | https://www.bilibili.com/video/BV19MoQYmEJ7 | ☐ | |
+| kb-000310 | 一条视频看懂：Codex 上下文压缩机制 | D1/D3 | context-window | high | https://www.bilibili.com/video/BV1WpYT6jEx7 | ☐ | |
+| kb-000322 | Agent和大模型，到底怎么搭配才好用？ | D1/D5 | agent-overview | low | https://www.bilibili.com/video/BV1HdHS6eEYT | ☐ | |
+| kb-000332 | 【up主强推】从感知机到DeepSeek，神经网络的逆袭之路 \| 人工智能发展史 | D1 | ai-development-history | medium | https://www.bilibili.com/video/BV1BeXoYhE9W | ☐ | |
+| kb-000342 | 为什么大家突然质疑2029年能实现通用人工智能 - SubjectZeroX | D1 | agi-frontier | medium | https://www.bilibili.com/video/BV1PkjA6FEsz | ☐ | |
+| kb-000354 | 第148期-厦大洪青阳教授-《语音大模型：从语音识别到全双工语音交互》-大数据百家讲坛-20 | D1 | speech-models | medium | https://www.bilibili.com/video/BV1TGLz6aETP | ☐ | |
+| kb-000364 | 谁是源神? 51个小模型全面评测! | D1/D4 | small-edge-models | medium | https://www.bilibili.com/video/BV1Ugtb6KEsf | ☐ | |
+| kb-000374 | 【芝加哥大学】机器学习的数学基础｜2025｜筑牢数学根基，吃透机器学习本质 | D1 | ai-math-basics | high | https://www.bilibili.com/video/BV1vuFEzFEys | ☐ | |
+| kb-000384 | 比啃书高效多了！复旦大学邱锡鹏教授亲授《神经网络与深度学习》视频教程！附教程配套课件PPT！ | D1 | ai-basic-concepts | high | https://www.bilibili.com/video/BV1ugW16qEKD | ☐ | |
 | kb-000395 | 【一起啃书】深度学习入门（二） | D1 | ai-math-basics | medium | https://www.bilibili.com/video/BV1ft411N7iX | ☐ | |
-| kb-000405 | 【中译版】吴恩达2026最新教程 《给所有人的提示》原版《AI Prompting for  | D2 | prompt-patterns | low | https://www.bilibili.com/video/BV1NJLT6qEdL | ☐ | |
-| kb-000415 | 【面试高频】Zero/One/Few-shot 与 In-Context Learning： | D2 | few-shot | medium | https://www.bilibili.com/video/BV1FVKj6cEz6 | ☐ | |
-| kb-000425 | 我的 AI 编程全流程：如何使用 AI 稳定交付一个高质量的产品 | D2/D5 | task-decomposition-prompts | medium | https://www.bilibili.com/video/BV154426xEha | ☐ | |
-| kb-000435 | CoT-VLA：让机器人先“想象未来”，再执行动作 | D2/D1 | chain-of-thought | high | https://www.bilibili.com/video/BV1eZGM6UE1o | ☐ | |
-| kb-000445 | DeepSeek R1结构化输出，如何解决function call的问题？ | D2/D3 | output-format-control | medium | https://www.bilibili.com/video/BV1KBFAeyEgX | ☐ | |
-| kb-000455 | 最常见99个AI名词全鉴 | D2/D1 | prompt-patterns | low | https://www.bilibili.com/video/BV1nbn66MEo4 | ☐ | |
-| kb-000465 | Temperature & Top-p：掌控大模型的创造力开关 | D2/D1 | prompt-iteration | medium | https://www.bilibili.com/video/BV1taSFBNEG4 | ☐ | |
-| kb-000475 | 为什么 AI 写的东西一眼就能看出来？我做了个去AI味技能 | D2/D4 | tone-style-control | medium | https://www.bilibili.com/video/BV1uQ8E6LE6G | ☐ | |
-| kb-000485 | AI聊天 SillyTavern酒馆安卓教程【从搭建到进阶】 | D3 | chat-assistants | medium | https://www.bilibili.com/video/BV17ChdzJE9R | ☐ | |
-| kb-000495 | 每个人都应该掌握的快速调研法2.0！ | D3/D2 | tool-selection | low | https://www.bilibili.com/video/BV1XXk7YUEsS | ☐ | |
-| kb-000505 | 5万Star的文档解析神器：Docling | D3 | rag-tooling | medium | https://www.bilibili.com/video/BV1n9ZWB2Eni | ☐ | |
-| kb-000515 | 如何从零到一用ai写一个数据分析工作skill-保姆级教程 | D3/D2 | data-analysis-tools | medium | https://www.bilibili.com/video/BV1NKNv69EZz | ☐ | |
-| kb-000525 | 打工人神器DeepSeek接入Office、WPS、Word、Excel、PPT | D3 | office-copilots | low | https://www.bilibili.com/video/BV1HdPpeBEaA | ☐ | |
-| kb-000535 | 国庆偷偷进步，30分钟入门AIPPT！ | D3 | presentation-tools | low | https://www.bilibili.com/video/BV1Voaz6JE6o | ☐ | |
+| kb-000406 | 提示词教程Google Prompting Essentials中英文 | D2 | prompt-patterns | medium | https://www.bilibili.com/video/BV1hbLkztEC5 | ☐ | |
+| kb-000416 | 语言模型是小样本学习者 (Language Models are Few-Shot Lear | D2/D1 | few-shot | high | https://www.bilibili.com/video/BV1S54y1m7p5 | ☐ | |
+| kb-000427 | Chain of Thought论文、代码和资源【论文精读·43】 | D2 | chain-of-thought | high | https://www.bilibili.com/video/BV1t8411e7Ug | ☐ | |
+| kb-000439 | 规则写得越多，GPT-6 越不听话，OpenAI 工程师劝你：删掉提示词 | D2/D3 | common-prompt-mistakes | medium | https://www.bilibili.com/video/BV13ubN6CEft | ☐ | |
+| kb-000451 | 【干货汇总】Qwen-Image-2.1官方示例提示词拆解 | D2 | image-prompt-craft | medium | https://www.bilibili.com/video/BV1nWhe6CE2D | ☐ | |
+| kb-000462 | 【AI+Excel宏】提示词方法论-纯提示词法详解，让AI一次性写出准确VBA代码 | D2/D5 | prompt-iteration | medium | https://www.bilibili.com/video/BV1ZZB1B9Eds | ☐ | |
+| kb-000473 | DeepSeek聊到上限换窗口就失忆？它没忘，是总结弄丢的 | D2/D4 | long-context-prompting | medium | https://www.bilibili.com/video/BV1Lxx96LEyb | ☐ | |
+| kb-000483 | 讲透《Agentic design patterns》系列（1/21）：别再用长提示词了，1 | D2 | task-decomposition-prompts | medium | https://www.bilibili.com/video/BV1YGVY6nE4n | ☐ | |
+| kb-000494 | Agent记忆框架怎么选？5大Agent Memory项目工程级横向对比，哪一种才是未来Ag | D3 | agent-tools | high | https://www.bilibili.com/video/BV1p2DyB4Ee3 | ☐ | |
+| kb-000504 | 【AI基础】8分钟解决蒙特卡洛搜索树 | D3/D1 | chat-assistants | medium | https://www.bilibili.com/video/BV1i66sBYErD | ☐ | |
+| kb-000514 | 打工人必看！AI做数据分析的全流程！18分钟学会三种实用的方法。 | D3 | data-analysis-tools | medium | https://www.bilibili.com/video/BV1ne9aBZEFQ | ☐ | |
+| kb-000524 | WorkBuddy 从0到1小白入门：用 Excel 案例学会 AI 自动化办公 | D3/D5 | office-copilots | low | https://www.bilibili.com/video/BV1qaMN6NEYa | ☐ | |
+| kb-000534 | 三招搞定 AI 配音一致性与声音克隆AI 视频画面稳了，角色一开口声音却串戏？因为声音压根不 | D3 | audio-tools | medium | https://www.bilibili.com/video/BV1vRWg6UEtV | ☐ | |
 | kb-000545 | 用WorkBuddy排版，是不是比WPS AI更高效？ | D3/D5 | tool-selection | low | https://www.bilibili.com/video/BV19DWb6PEoX | ☐ | |
 | kb-000555 | Copilot魔法学院教程第五期：Copilot在Teams中的应用教学及演示 | D3 | office-copilots | low | https://www.bilibili.com/video/BV1WH9MYuEyn | ☐ | |
 | kb-000565 | 手撕Transformer模型并实现英译中翻译任务 - Pytorch/GPU并行训练/大模 | D3/D1 | coding-assistants | high | https://www.bilibili.com/video/BV1r84y12727 | ☐ | |
-| kb-000575 | DeepSeek Harness：从单 Agent 到智能体团队，三种工作模式原理与实战 | D3/D5 | agent-tools | medium | https://www.bilibili.com/video/BV1yfak6yEhp | ☐ | |
-| kb-000585 | 主流的浏览器自动化方案一次讲透-古德白 | D3 | browser-automation | medium | https://www.bilibili.com/video/BV15b5L6zEWt | ☐ | |
+| kb-000576 | Agent 到底该放本地还是云端？一条视频讲清楚 | D3 | agent-tools | medium | https://www.bilibili.com/video/BV1QSTW6rEgW | ☐ | |
+| kb-000586 | 横评03期｜浏览器自动化怎么选：Harness、browser-use、Playwright | D3 | browser-automation | medium | https://www.bilibili.com/video/BV1TsRbBwExS | ☐ | |
 | kb-001341 | 如何将工作流添加到智能体，实现精准调用！ | D3/D2 | workflow-automation | medium | https://www.bilibili.com/video/BV1bHE1z6EnZ | ☐ | |
-| kb-001351 | 最新开源AI知识库 FastGPT 保姆级教程教学 | D3 | rag-tooling | low | https://www.bilibili.com/video/BV1sH4y1T7s9 | ☐ | |
-| kb-001361 | 【AI实战】AI智能客服和工单处理系统，基于Langchain4j+Springboot+V | D3 | chatbot-building | high | https://www.bilibili.com/video/BV1pEhV64ERV | ☐ | |
-| kb-001371 | 🚀超越Muse！OpenAI dots深度实测：GPT-6 Astra驱动云端电脑，语音实 | D3/D5 | agent-tools | medium | https://www.bilibili.com/video/BV1zjao66EhE | ☐ | |
-| kb-001381 | 叫你学会如何调用大模型 api | D3 | api-basics | medium | https://www.bilibili.com/video/BV15wDuB6EE8 | ☐ | |
-| kb-001391 | 双11买东西，豆包、千问、DeepSeek到底会推荐谁？ | D3/D4 | chat-assistants | medium | https://www.bilibili.com/video/BV1XpJ96REBR | ☐ | |
-| kb-001401 | 秒杀剪映的AI字幕工作流！准确率高达99%，完全免费！ | D3 | audio-tools | low | https://www.bilibili.com/video/BV1oS2wBSEXS | ☐ | |
-| kb-001411 | TED - 如何避免 AI 扼杀你的批判性思维 - Advait Sarkar | D4/D5 | output-critique | medium | https://www.bilibili.com/video/BV152w4z9EPU | ☐ | |
-| kb-001421 | 超细致Agent评估全流程讲解及面试真题解析 | D4/D5 | quality-metrics | high | https://www.bilibili.com/video/BV1QMTg6AE52 | ☐ | |
-| kb-001431 | 【AI游戏开发实战】第12课 测试与验收｜让AI帮你找Bug：GUT自动化测试 + Agen | D4/D3 | self-critique | medium | https://www.bilibili.com/video/BV1pLxY6aEUC | ☐ | |
-| kb-001441 | LMCC2026 大模型能力认证备考｜初赛真题逐题讲解与考点分析 | D4/D1 | benchmark-basics | low | https://www.bilibili.com/video/BV1eG8s6KETi | ☐ | |
-| kb-001451 | Roofline：什么样的算子才算快｜图解GPU编程03 | D4 | optimization-strategies | high | https://www.bilibili.com/video/BV1iJnt6dEjD | ☐ | |
-| kb-001461 | AI 数据分析出错，如何校验 AI 计算结果 | D4 | numeric-verification | low | https://www.bilibili.com/video/BV1LFth6QEri | ☐ | |
+| kb-001352 | DeepSeek本地RAG知识库(18):数据结构化和清洗详细讲解(小白也能懂)菜谱回答准确 | D3/D4 | rag-tooling | medium | https://www.bilibili.com/video/BV1dQRaYfEuy | ☐ | |
+| kb-001362 | 全网最简单！3分钟教你做个AI客服【小白教程】 | D3 | chatbot-building | low | https://www.bilibili.com/video/BV1HtP7epE7b | ☐ | |
+| kb-001372 | 不用国外账号！OpenMausBot 接国产 DeepSeek 实测，10 块钱跑起 AI  | D3 | chatbot-building | medium | https://www.bilibili.com/video/BV12yxk6YEta | ☐ | |
+| kb-001383 | 大模型中转站，凭啥这么便宜？ | D3/D6 | api-basics | medium | https://www.bilibili.com/video/BV1DQ7k6JE4P | ☐ | |
+| kb-001393 | 王自如 X 帆软CEO陈炎｜FDE专家沈涛 ，AI 热潮下盲目跟风采购，最终却看不到业务价值 | D3/D5 | tool-selection | medium | https://www.bilibili.com/video/BV1A5sf6NEqV | ☐ | |
+| kb-001403 | AI一本正经骗你时，如何不上当？ | D4 | hallucination-detection | low | https://www.bilibili.com/video/BV1GFQAYwEyV | ☐ | |
+| kb-001415 | AI 为什么总顺着你说？一追问就改口的「谄媚」｜AI 原来如此 13 | D4 | bias-in-outputs | low | https://www.bilibili.com/video/BV1aZxe6QEX1 | ☐ | |
+| kb-001425 | Mod自由！不会写代码？向 AI 许愿就能手搓专属游戏 Mod！ | D4/D2 | iterative-refinement | low | https://www.bilibili.com/video/BV1cphV69Eek | ☐ | |
+| kb-001436 | 我让 AI 帮我审原理图，BOM 和设计规范自动查 | D4/D3 | rubric-design | medium | https://www.bilibili.com/video/BV1y58t6aET8 | ☐ | |
+| kb-001446 | 【机器学习】五分钟搞懂如何评价二分类模型！混淆矩阵、召回率、精确率、准确率超简单解释，入门必 | D4/D1 | quality-metrics | low | https://www.bilibili.com/video/BV1SJ411x7jH | ☐ | |
+| kb-001460 | AI修复LSDYNA计算报错并验证结果可靠性 | D4 | numeric-verification | high | https://www.bilibili.com/video/BV1qvep67EFK | ☐ | |
 | kb-001471 | Bob大叔：AI代码我完全不看 | D4/D5 | code-output-review | medium | https://www.bilibili.com/video/BV1Wct86wE6f | ☐ | |
 | kb-001481 | 8分钟了解AI生图原理！如何自己“训练”一个生图AI模型？ | D4/D1 | optimization-strategies | medium | https://www.bilibili.com/video/BV1Pt421576G | ☐ | |
 | kb-001491 | AI搜索评估零基础到实战，ai训练师完整流程。 | D4/D5 | quality-metrics | low | https://www.bilibili.com/video/BV123zWB6EuX | ☐ | |
-| kb-001501 | AI时代的论文评审 审稿人视角与智能工具的融合 Andrew 老师 1103_171741 | D4/D5 | human-review-workflow | medium | https://www.bilibili.com/video/BV1cQ4v6zEUd | ☐ | |
-| kb-001511 | 【国一主讲】中国机器人及人工智能大赛零基础入门教程 | D5/D1 | task-decomposition-method | medium | https://www.bilibili.com/video/BV1Qx4y127GG | ☐ | |
-| kb-001521 | GPT-6 + ChatGPT Work: 3套AI自动化工作流，直接拿去用！ | D5/D3 | workflow-design | low | https://www.bilibili.com/video/BV12Yaa6QEZx | ☐ | |
-| kb-001531 | 用 AI 做头脑风暴与方案规划 \| AI for brainstorming and pl | D5/D2 | brainstorming-with-ai | low | https://www.bilibili.com/video/BV1YEK26MEas | ☐ | |
-| kb-001541 | 【网文杂谈】网文在AI上出了什么问题？ | D5/D4 | ai-in-writing | medium | https://www.bilibili.com/video/BV11kHP61ELK | ☐ | |
-| kb-001551 | WiseMindAI 详细使用教程，必备 AI 本地知识库，数据完全本地化，文档总结、对话、 | D5/D3 | knowledge-management-ai | medium | https://www.bilibili.com/video/BV1wtQTYbEUU | ☐ | |
-| kb-001561 | 我凭什么在字节跳动的 AI 大赛中拿下第二名？ | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1mEjSz3Ej4 | ☐ | |
-| kb-001571 | 清华团队新作APEX！仅需2步即可生成3分钟长流视频，训练效率碾压DMD，显存占用直降4.4 | D5/D1 | ai-in-research | high | https://www.bilibili.com/video/BV1AnWo68Ex1 | ☐ | |
-| kb-001581 | OpenHands：15个代码agent组成的AI程序员，涵盖了人类开发者所有操作：写代码、 | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1LpmmYnEUe | ☐ | |
-| kb-001591 | 「实测」越贵的AI越菜？我对各大AI工具进行了测试... | D5/D4 | ai-in-office-work | low | https://www.bilibili.com/video/BV11fJX6GEcL | ☐ | |
-| kb-001601 | 【AI广告制作】这是一条价值6位数的AI广告制作教程！AI广告制作全流程思路拆解，手把手教你 | D5/D3 | ai-in-marketing | medium | https://www.bilibili.com/video/BV1DmEq66Eh2 | ☐ | |
-| kb-001611 | 【三棵人AI教育探索第13期③】WorkBuddy 实操：AI 备课流程 | D5/D3 | ai-in-education-work | medium | https://www.bilibili.com/video/BV1R5x16DE6t | ☐ | |
-| kb-001621 | 让AI扮演法官审案，七家顶级大模型会如何判决？｜阿陈的AI考场 | D5/D4 | ai-in-legal-work | medium | https://www.bilibili.com/video/BV1gsHX6pEGp | ☐ | |
-| kb-001631 | 【2026最新版】WorkBuddy 财务自动化办公实战教程，由浅入深（全程干货） | D5/D3 | ai-in-finance-work | low | https://www.bilibili.com/video/BV1MJxX6hEj4 | ☐ | |
-| kb-001641 | 如何培养「AI」学会你的审美？ | D5/D2 | ai-in-design-work | medium | https://www.bilibili.com/video/BV14HWQ6pEpc | ☐ | |
-| kb-001651 | 我开源了一个 Skill，把项目经验沉淀成可复用的知识 | D5/D3 | knowledge-management-ai | medium | https://www.bilibili.com/video/BV14o3x6JErZ | ☐ | |
-| kb-001661 | Claude Code: 从零搭建你的 AI 工作团队（Skills + Agents）\| | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1eADaBME5z | ☐ | |
-| kb-001671 | 多智能体架构：从单 Agent 到协同系统 | D5 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV16ZNA6ZEA1 | ☐ | |
-| kb-001681 | 【中英双语】基于Gemini 4 Argon的Multi-Agent Software Fa | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1RbWX6iES2 | ☐ | |
-| kb-001691 | 多 Agent 到底怎么分工？实看 Kimi、Claude、Devin 的 3 种实践 | D5 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1Ymxt6NEou | ☐ | |
+| kb-001502 | 【AI+审计】利用AI复核审计报告 | D4/D5 | numeric-verification | medium | https://www.bilibili.com/video/BV1ywb46oEtf | ☐ | |
+| kb-001516 | 什么是多智能体？AI也开始组队协作了 | D5/D1 | multi-agent-collaboration | low | https://www.bilibili.com/video/BV13mKm6ME2r | ☐ | |
+| kb-001527 | 02-Workbuddy第二天打造自己第一个多 Agent 协作工作流 | D5/D3 | multi-agent-collaboration | low | https://www.bilibili.com/video/BV1RT836wEhn | ☐ | |
+| kb-001538 | 不是而是、没有猪蹄，AI文案为什么让人讨厌？【请减少AI味】 | D5/D4 | ai-in-writing | medium | https://www.bilibili.com/video/BV1KLxN6ZERf | ☐ | |
+| kb-001548 | 打破信息差｜教你用AI搭建自己的信息情报系统 | D5/D3 | workflow-design | medium | https://www.bilibili.com/video/BV1HQ376DEug | ☐ | |
+| kb-001558 | 【AI实战】AI Agent旅游行程智能规划平台，基于LangChain4j+记忆反思Age | D5/D3 | workflow-design | high | https://www.bilibili.com/video/BV1NMaB6PEnF | ☐ | |
+| kb-001568 | 一切AI化，普通人怎么落地？教你做自己的数字分身 | D5/D3 | personal-assistant-setup | low | https://www.bilibili.com/video/BV1Lupf6DEyh | ☐ | |
+| kb-001578 | 【AI学习路线】理工类大学生AI到底学什么？\|超详细学习路线讲解（带完整版学习路线）\|A | D5 | ai-in-learning | medium | https://www.bilibili.com/video/BV1xVuR6sE7i | ☐ | |
+| kb-001588 | 豆包工作正式发布！AI办公“三足鼎立”：WorkBuddy×千问办公×豆包工作，三家横评谁更 | D5/D4 | ai-in-office-work | low | https://www.bilibili.com/video/BV1ZhhV67E86 | ☐ | |
+| kb-001598 | 【中配】AI营销大师课：60分钟从入门到精通 - Greg Isenberg | D5/D3 | ai-in-marketing | medium | https://www.bilibili.com/video/BV1nRFSzfE4h | ☐ | |
+| kb-001608 | 如何让AI成为你的顶级私教 | D5/D3 | ai-in-learning | low | https://www.bilibili.com/video/BV15ZG766EpB | ☐ | |
+| kb-001618 | AI律师大赛，哪款AI处理日常法律问题更靠谱 | D5/D4 | ai-in-legal-work | low | https://www.bilibili.com/video/BV1xPtizeEx8 | ☐ | |
+| kb-001629 | 【全48集】目前B站最全最细 WorkBuddy 财务AI完整教学及保姆级教程，从入门到精通 | D5/D3 | ai-in-finance-work | low | https://www.bilibili.com/video/BV16kWy6REAN | ☐ | |
+| kb-001639 | 【超爽中英】吴恩达《AI for everyone》给所有人的AI课，经典重现 | D5/D1 | role-division | low | https://www.bilibili.com/video/BV1jyUHBkEtf | ☐ | |
+| kb-001649 | AI如何做光学设计[1/4] · 专利复现 50 mm F/1.8 镜头 | D5/D4 | human-in-loop | high | https://www.bilibili.com/video/BV1XZ4J6EEXU | ☐ | |
+| kb-001660 | Herdr 实战：从零搭建 AI 一人公司，用 Claude Code、Codex 组建 A | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1wgpg6dEvD | ☐ | |
+| kb-001670 | 什么是多智能体系统？3分钟看懂多智能体系统 | D5 | multi-agent-collaboration | low | https://www.bilibili.com/video/BV1DYHB6SEoW | ☐ | |
+| kb-001680 | 如何让opencode多agent多线程工作？ | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1TYud6hEk9 | ☐ | |
+| kb-001690 | Codex 多 Agent 怎么用？开启、配置、调用和避坑一次讲清楚 | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1AYgW6NE7K | ☐ | |
 | kb-001701 | AI助理真的能让人省心吗？三款个人助理两周实测 | D5/D4 | personal-assistant-setup | low | https://www.bilibili.com/video/BV1JuxL6kEP6 | ☐ | |
 | kb-001711 | AI Agent 落地实战：用 WorkBuddy 打造你的智能工作助理 | D5/D3 | personal-assistant-setup | medium | https://www.bilibili.com/video/BV1opsf6ZEq1 | ☐ | |
-| kb-001721 | EP27.【帆哥】企业把合同交给AI敢吗？数据脱敏这道坎终于被掰平了！警惕！你的标书一上传， | D6/D5 | data-desensitization | medium | https://www.bilibili.com/video/BV1Shuc6VEvX | ☐ | |
-| kb-001731 | 用AI换脸诈骗？检察官教你千层套路这样破！ | D6 | deepfake-risks | low | https://www.bilibili.com/video/BV1oH4y1U71V | ☐ | |
-| kb-001741 | 【硬核科普】什么是AI大模型的“可解释性”？ | D6/D1 | transparency-explainability | low | https://www.bilibili.com/video/BV1cbXWBKEMd | ☐ | |
-| kb-001751 | 稀疏自编码器SAE到底是什么？打开大模型黑箱的第一把钥匙 | D6/D1 | transparency-explainability | medium | https://www.bilibili.com/video/BV1ev3g6JE7Q | ☐ | |
-| kb-001761 | 【罗翔】难辨真伪！AI换脸深度伪造犯法吗？ | D6 | deepfake-risks | low | https://www.bilibili.com/video/BV1RY411p7Yq | ☐ | |
-| kb-001771 | 【TED中配】2026-对抗虚假信息的意外有效方法 | D6 | misinformation | low | https://www.bilibili.com/video/BV1n5GA6CEYu | ☐ | |
-| kb-001781 | AI赋能日常工作--精准拆解政策文件：3步冲突分析+智能图谱生成，让合规管理零死角 | D6/D3 | compliance-frameworks | medium | https://www.bilibili.com/video/BV1gEdBY6EXu | ☐ | |
-| kb-001791 | 一直说安全安全，Agent 安全到底是个啥？带你看看细节 | D6 | security-risks | low | https://www.bilibili.com/video/BV1iFaA6QERo | ☐ | |
-| kb-001801 | 当AI拥有"手脚"，谁来保证安全？聊聊智能体硬件创新与安全 \| 对话宋继强、谭晓生、吴向斌 | D6 | ai-safety-basics | medium | https://www.bilibili.com/video/BV1mexf6LESy | ☐ | |
-| kb-001811 | 【AI安全】间接提示词注入实现RCE(CVE-2025-53773绕过分析) | D6 | prompt-injection-risks | high | https://www.bilibili.com/video/BV1Gxc6zQEBi | ☐ | |
-| kb-001821 | ITIL AI Governance 主题分享（一）：为什么必须治理？ | D6 | compliance-frameworks | medium | https://www.bilibili.com/video/BV17spv6pENY | ☐ | |
-| kb-001831 | 20240315-132626-388-欧盟《人工智能法》解读 | D6 | eu-ai-act | medium | https://www.bilibili.com/video/BV1sj421o75v | ☐ | |
-| kb-001841 | 生成式人工智能与知识生产_20231114 | D6/D1 | academic-integrity | high | https://www.bilibili.com/video/BV1yQ4y1t7Ad | ☐ | |
-| kb-001851 | AI 防御性写作，越改越怂？ | D6/D2 | ai-safety-basics | medium | https://www.bilibili.com/video/BV1wNxf6NExK | ☐ | |
+| kb-001722 | 当AI颠覆游戏产业，版权还存在吗？【孙子冰法】 | D6 | ai-content-copyright | medium | https://www.bilibili.com/video/BV1HywGzZE6Q | ☐ | |
+| kb-001732 | 专家解读：“AI歌手”翻唱或涉多项侵权行为 | D6 | ip-infringement-cases | low | https://www.bilibili.com/video/BV1Sz4y1t786 | ☐ | |
+| kb-001742 | 知数咖啡厅——神经网络的可解释性 | D6/D1 | transparency-explainability | high | https://www.bilibili.com/video/BV1U54p6LE2E | ☐ | |
+| kb-001752 | [FAI] MIT 杨松琳 \| 可扩展线性RNN的进展：DeltaNet及其变体 | D6/D1 | transparency-explainability | high | https://www.bilibili.com/video/BV1Pg5JzEEad | ☐ | |
+| kb-001763 | 【论文分享】深度伪造检测——非对称锚定：打开多模态大模型的“黑箱”以进行伪造检测 | D6/D4 | deepfake-risks | high | https://www.bilibili.com/video/BV1EVx76mEUe | ☐ | |
+| kb-001774 | 【中配】我上当了100次AI诈骗广告 - yikes | D6 | misinformation | low | https://www.bilibili.com/video/BV1DX4V6bEQw | ☐ | |
+| kb-001786 | 不懂代码的外贸人，用AI搭了整套CRM｜获客、背调、开发信、单据到发货实操 | D6/D5 | human-oversight | medium | https://www.bilibili.com/video/BV1CMxM6FEWq | ☐ | |
+| kb-001796 | 2026北京智源大会丨AI智能体安全 | D6 | security-risks | high | https://www.bilibili.com/video/BV1Rhjz6VEgD | ☐ | |
+| kb-001806 | 第2章-提示词注入-03 间接提示词注入 | D6/D2 | prompt-injection-risks | medium | https://www.bilibili.com/video/BV1kQdaBAEAr | ☐ | |
+| kb-001817 | 数据合规岗位不会消失，但工作方式必须变 | D6/D5 | data-security-compliance | medium | https://www.bilibili.com/video/BV12BT16bE7h | ☐ | |
+| kb-001827 | 人工智能案例一等奖作品 | D6/D1 | education-ethics | low | https://www.bilibili.com/video/BV1gp5T6rEcY | ☐ | |
+| kb-001839 | 从0搭建人生系统Agent，拥有你完整记忆+无限进化的超级Agent，全开源！ | D6/D5 | privacy-basics | medium | https://www.bilibili.com/video/BV1Y7EC6xEMg | ☐ | |
+| kb-001849 | H3数字人整合包｜三套AI数字人工作流实测：本地免费部署、可灵数字人、48G云端生成，效果与 | D6/D3 | deepfake-risks | medium | https://www.bilibili.com/video/BV11Cso6iE2P | ☐ | |
 | kb-001861 | AI Safety (CS 2881) Fall 2026 Lecture 1- Intro | D6 | ai-safety-basics | high | https://www.bilibili.com/video/BV15GWY62EVW | ☐ | |
-| kb-001872 | 【热门拆解】为什么你老能刷到AI动画科普视频？它是怎么做的？vibe动画是什么意思？ | D1/D3 | generative-ai-overview | low | https://www.bilibili.com/video/BV1ALnw6YEM7 | ☐ | |
-| kb-001882 | 【1080P】安德烈·卡帕西：深入探索像ChatGPT这样的大语言模型｜Andrej Kar | D1 | llm-principles | medium | https://www.bilibili.com/video/BV16cNEeXEer | ☐ | |
-| kb-001892 | 中文配音【LLM 原理详解】How Transformer LLMs Work - 专家混合 | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1V1HG62EKA | ☐ | |
+| kb-001871 | AI名词解释：7分钟讲清楚10个AI名词概念 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV18aXpB5Ehf | ☐ | |
+| kb-001881 | 大语言模型（LLM）综述 | D1 | llm-principles | high | https://www.bilibili.com/video/BV1LG411v729 | ☐ | |
+| kb-001891 | P4：llama.cpp项目深度解读：本地LLM推理引擎核心原理与应用详解 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1HKXWYrExJ | ☐ | |
 | kb-001902 | Token会像电一样便宜吗？我从100年前的电力史找到了答案 | D1 | ai-development-history | medium | https://www.bilibili.com/video/BV1qh7b6xEAH | ☐ | |
-| kb-002607 | 通过角色设定改善AI味 —— AI辅助科研第九期 | D1/D2 | model-capability-boundary | low | https://www.bilibili.com/video/BV17PYp61EJp | ☐ | |
-| kb-002617 | 《生成式人工智能——与AI共创家乡名片》刘天乐 说课视频 | D1/D5 | generative-ai-overview | low | https://www.bilibili.com/video/BV1nfW86mEtv | ☐ | |
-| kb-002627 | 卡耐基梅隆【中英⚡生成式AI\|10-423 2024 Generative AI】 | D1 | generative-ai-overview | high | https://www.bilibili.com/video/BV18VN2eEE8N | ☐ | |
-| kb-002637 | 「强 AI 所难」会导致什么样的严重后果？聊聊为什么你应该重视它的能力边界 | D1 | model-capability-boundary | low | https://www.bilibili.com/video/BV1iw411X75Y | ☐ | |
-| kb-002647 | 10分钟带你学会深度学习模型调参，让你的模型性能达到极致 | D1/D4 | ai-math-basics | medium | https://www.bilibili.com/video/BV1Ef421Q7zU | ☐ | |
-| kb-002657 | 第6章：批判性思维：识别AI幻觉与事实核查 | D1/D4 | hallucination-basics | medium | https://www.bilibili.com/video/BV1cp4n6AEZw | ☐ | |
-| kb-002667 | 本地大模型提速14倍 \| 从 46  token 到 659 token！ | D1/D4 | local-models | medium | https://www.bilibili.com/video/BV1YBWe6mEbt | ☐ | |
-| kb-002677 | 780M核显修改显存跑大模型保姆教程 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV14KVC6NEhm | ☐ | |
-| kb-002687 | ollama离线AI大模型的使用(CTF线下赛辅助工具) | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV153sJeeEbD | ☐ | |
-| kb-002697 | 【多模态情感分析】2026最好发论文的新方向！1小时带你从入门到精通，论文精读+代码复现，全 | D1 | multimodal-overview | high | https://www.bilibili.com/video/BV1r14c6yE9G | ☐ | |
-| kb-002707 | 手机6G内存秒跑多模态！1.3B端侧AI新卷王实测揭秘 | D1 | small-edge-models | medium | https://www.bilibili.com/video/BV1LB5d6REth | ☐ | |
-| kb-002717 | 【AI Agent全套实战教程】从0搭建企业级智能体！Workflow、ReAct、Auto | D1/D3 | agent-overview | medium | https://www.bilibili.com/video/BV1H14g6iEq6 | ☐ | |
-| kb-002727 | 什么是智能体？豆包、DeepSeek、GPT-5他们是智能体吗？今天我一个视频给你讲明白！ | D1 | agent-overview | low | https://www.bilibili.com/video/BV1qUhvzxE5y | ☐ | |
-| kb-002737 | 《全网最硬核 RAG 精讲：一遍搞懂检索增强生成底层逻辑》 | D1 | rag-overview | low | https://www.bilibili.com/video/BV1Uc9YBuEsx | ☐ | |
-| kb-002747 | 【Stable Diffusion】全网最详细模型训练教程，手把手教学，学完你就是最强炼丹师 | D1/D3 | diffusion-overview | medium | https://www.bilibili.com/video/BV1LC4y197sT | ☐ | |
-| kb-002757 | stable diffusion训练embedding和hypernetwork详解 | D1/D3 | diffusion-overview | medium | https://www.bilibili.com/video/BV16d4y1c7dh | ☐ | |
+| kb-002608 | 深度学习主干回顾第三讲——生成模型和判别模型 | D1 | generative-ai-overview | medium | https://www.bilibili.com/video/BV1C44y1p7ud | ☐ | |
+| kb-002619 | 【国语配音】吴恩达《面向每个人的生成式AI\|Generative AI for Every | D1/D2 | generative-ai-overview | low | https://www.bilibili.com/video/BV1mADSYQEsr | ☐ | |
+| kb-002629 | 2026人工智能训练师（三级）操作题教程 [持续更新中] | D1/D4 | training-data-basics | medium | https://www.bilibili.com/video/BV1MEN36tEJb | ☐ | |
+| kb-002639 | 【17 一次讲透 AI推理】AI 的“深度思考”，到底在做什么？ | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1bex66aEye | ☐ | |
+| kb-002649 | 龙芯智能车轻量级分类模型训练教程（附数据集生成脚本） | D1/D3 | small-edge-models | high | https://www.bilibili.com/video/BV1rxPNzyERk | ☐ | |
+| kb-002660 | 漫画自由！MOSS无限漫画生成~小剧场模式，开启！附完整精选Comfyui整合包下载~ | D1/D3 | diffusion-overview | medium | https://www.bilibili.com/video/BV1bG4F6EEsU | ☐ | |
+| kb-002672 | 全网最细·AI生成3D游戏场景/Codex+Blender三维模型方法/HD-2D·原来如此 | D1/D3 | multimodal-overview | medium | https://www.bilibili.com/video/BV1T8aD6qEeg | ☐ | |
+| kb-002682 | AI本地部署是什么？和云端API有什么区别？ | D1 | local-models | low | https://www.bilibili.com/video/BV1GYjT6QEvN | ☐ | |
+| kb-002692 | ComfyUI中使用ollama进行提示词优化、训练集打标 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1rEycYREdG | ☐ | |
+| kb-002702 | Ollama正式支持Llama 3.2 Vision \| 本地运行多模态模型实现图像识别 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1kUDRYxEFL | ☐ | |
+| kb-002712 | 【2026最新版】保姆级AI Agent智能体系统教程，手把手带你从0基础开始搭建企业级AI | D1/D3 | agent-overview | medium | https://www.bilibili.com/video/BV1ZzvUBXEoL | ☐ | |
+| kb-002723 | Coze 3.0 从零搭一支 AI 团队：三类 Agent + 技能商店 + 工作流一键部署 | D1/D5 | agent-overview | medium | https://www.bilibili.com/video/BV1tvWq67Eyn | ☐ | |
+| kb-002735 | 【强化学习的数学原理】课程：从零开始到透彻理解（完结） | D1 | ai-math-basics | high | https://www.bilibili.com/video/BV1sd4y167NS | ☐ | |
+| kb-002746 | 【AI Engineer】训练前沿小模型：我的全部经验总结 —— Maxime Labonn | D1/D3 | small-edge-models | high | https://www.bilibili.com/video/BV1GD9RBLEHB | ☐ | |
+| kb-002756 | RAG 总是搜不准：造数据、微调嵌入模型、验证召回率，一条链路把准确率提上来 | D1/D4 | rag-overview | high | https://www.bilibili.com/video/BV1n7WT67E6Z | ☐ | |
 | kb-002767 | 【NLP基础技术】词法分析之短文本语义相似度 | D1/D3 | embedding-overview | medium | https://www.bilibili.com/video/BV1SC4y1p7Kz | ☐ | |
 | kb-002777 | 扩散模型开始写代码了：35B 的 Clover 硬刚 Qwen，速度还快一倍 | D1 | diffusion-overview | medium | https://www.bilibili.com/video/BV18VxE6qEUk | ☐ | |
 | kb-002787 | 7分钟完全掌握IP-Adapter：AI绘图xstable diffusionxContro | D1/D3 | diffusion-overview | medium | https://www.bilibili.com/video/BV1Zu4m137MV | ☐ | |
-| kb-002797 | AI 支持超长上下文，为什么还会忘？上下文、记忆和缓存的区别 | D1 | context-window | medium | https://www.bilibili.com/video/BV1ywJY6UEj4 | ☐ | |
-| kb-002807 | kimi k3.1 pro 接入指南：十一大 agent 逐个配，套餐价格一次讲透 | D1/D3 | agent-overview | medium | https://www.bilibili.com/video/BV1ZHHP6FEpF | ☐ | |
-| kb-002817 | AGI只是一个算力问题 | D1 | agi-frontier | medium | https://www.bilibili.com/video/BV1r8nQ6KEnY | ☐ | |
-| kb-002827 | MAC 用户有福了｜MAC 版本 indexTTS免费拿 | D1/D3 | speech-models | medium | https://www.bilibili.com/video/BV13xbi6AEfB | ☐ | |
-| kb-002838 | 18期-雷明-《机器学习中的数学》 | D1 | ai-math-basics | medium | https://www.bilibili.com/video/BV1Jh411x7eB | ☐ | |
-| kb-002848 | 神经网络：为何能够拟合万物 | D1 | ai-basic-concepts | medium | https://www.bilibili.com/video/BV1Ua4y1V7z5 | ☐ | |
-| kb-002858 | 【生成式AI】Finetuning vs. Prompting：對於大型語言模型的不同期待所 | D2/D1 | prompt-patterns | medium | https://www.bilibili.com/video/BV1GN411w7ut | ☐ | |
-| kb-002868 | Harness 架构全解析：上下文工程、任务编排与 Skills 生命周期｜AI Agent | D2/D5 | context-provision | medium | https://www.bilibili.com/video/BV1en4g6XEkc | ☐ | |
-| kb-002878 | AI 又答非所问？漫画讲透不乱跑的提示词 | D2 | structured-prompt | low | https://www.bilibili.com/video/BV1UgWi6yEWt | ☐ | |
+| kb-002799 | 20w token足矣！主动上下文压缩插件opencode-acp和 billion-con | D1/D3 | context-window | high | https://www.bilibili.com/video/BV1qAMR6MEA4 | ☐ | |
+| kb-002810 | 我靠AI+Blender半年做了几百件银饰，这期把方法全交出来！ | D1/D3 | generative-ai-overview | medium | https://www.bilibili.com/video/BV182NE6HEX3 | ☐ | |
+| kb-002820 | 【中文配音】人工智能的数学基础-学大模型必备的数学原理｜追更中｜从概率测度到万能逼近｜Fie | D1 | ai-math-basics | high | https://www.bilibili.com/video/BV16WWa6JEMC | ☐ | |
+| kb-002832 | 40亿参数小模型击败2350亿大模型：低成本金融AI训练实战 \| AI Engineer | D1 | model-selection-basics | medium | https://www.bilibili.com/video/BV1Ltpv6nEx8 | ☐ | |
+| kb-002842 | 机器学习中的数学基础（超清版） | D1 | ai-math-basics | low | https://www.bilibili.com/video/BV1b4411H7sE | ☐ | |
+| kb-002852 | deepseek Super-agent进阶教程：触发、评估、执行、提示词，全流程配置与实测 | D2/D3 | acceptance-criteria | medium | https://www.bilibili.com/video/BV1cbWi6YECD | ☐ | |
+| kb-002863 | VibeCoding 教程｜用 Codex 做高级动效网站 | D2/D3 | task-decomposition-prompts | medium | https://www.bilibili.com/video/BV1RTLo6ZERj | ☐ | |
+| kb-002873 | 【RLChina 2023】Workshop1 王立威 A Theory of Chain  | D2/D1 | chain-of-thought | high | https://www.bilibili.com/video/BV1ex42197gr | ☐ | |
 | kb-002888 | 不会写JSON也能玩转Ideogram4！KJ Prompt Builder 全新玩法 | D2/D3 | structured-prompt | low | https://www.bilibili.com/video/BV1GEER6sEhH | ☐ | |
 | kb-002898 | MiniMax H3生成视频胡言乱语乱说话如何解决，画外音，内心独白提示词如何写 | D2 | constraint-writing | medium | https://www.bilibili.com/video/BV1Lre16rEM1 | ☐ | |
 | kb-002908 | 设计师如何利用AIGC迭代传统设计流程｜Midjourney / AIGC / 服装设计 / | D2/D5 | image-prompt-craft | medium | https://www.bilibili.com/video/BV18w4m1y7kH | ☐ | |
-| kb-002918 | Humanize：让 AI Agent 从单次任务走向复杂工程协作 \| MFCP 开源实践 | D2 | task-decomposition-prompts | high | https://www.bilibili.com/video/BV1eyWB6FEkn | ☐ | |
-| kb-002928 | 【构造Prompt的26条技巧】大模型应用开发基础如何有效构造prompt，掌握核心心法，牢 | D2 | prompt-patterns | low | https://www.bilibili.com/video/BV1LwpAeUEPN | ☐ | |
-| kb-002938 | Codex教学第一课——本地文件操作 | D2/D3 | context-provision | low | https://www.bilibili.com/video/BV1NM8x6ZEuX | ☐ | |
-| kb-002948 | [IPadapter核心节点]节点讲解以及示例工作流实践搭建 | D2/D3 | image-prompt-craft | medium | https://www.bilibili.com/video/BV1cD6mY1EkG | ☐ | |
-| kb-002958 | 20分钟内，掌握ChatGPT Work 95%的用法! | D3/D2 | office-copilots | medium | https://www.bilibili.com/video/BV1B8h16MEDj | ☐ | |
-| kb-002968 | Codex (APP) 保姆级全攻略，海量实战教程， 一期精通Codex | D3 | coding-assistants | medium | https://www.bilibili.com/video/BV1Kk9kBAEJv | ☐ | |
-| kb-002978 | ChatGPT Atlas 如何帮你采集数据和调研？ | D3 | browser-automation | low | https://www.bilibili.com/video/BV1oFsqz5E1C | ☐ | |
-| kb-002988 | WorkBuddy数据分析教程：从一堆报表到专业报告，AI完整流程带你做一遍 | D3 | data-analysis-tools | low | https://www.bilibili.com/video/BV1QuxE6uEQG | ☐ | |
-| kb-002998 | 【表格应用】用WPS AI快速对数据进行分类、提出公式建议 | D3 | office-copilots | low | https://www.bilibili.com/video/BV19j411X7zG | ☐ | |
-| kb-003008 | Photoshop 彻底进入“说话”修图的时代 - Ps 27.10 Ai辅助编辑器深度实测 | D3/D5 | image-editing-tools | low | https://www.bilibili.com/video/BV156t66LEkB | ☐ | |
-| kb-003018 | 免费版Seedance 2，Minimax-H3合集，影视级视频效果！文生视频 \| 图生视 | D3/D2 | video-generation-tools | medium | https://www.bilibili.com/video/BV1BkMR6rEex | ☐ | |
-| kb-003028 | Opus 5.5永久改变视频剪辑，附免费技能 - Nate Herk \| AI Autom | D3 | coding-assistants | medium | https://www.bilibili.com/video/BV1LWas61EVb | ☐ | |
-| kb-003038 | 开源免费的 AI 小说写作软件「书童」Github 1600 star， 设定、蓝图、写稿、 | D3 | document-writing-tools | low | https://www.bilibili.com/video/BV17qn76eEcC | ☐ | |
-| kb-003048 | 【AI编程】2026最新Pi Agent完整教程：安装配置、模型选择、MCP工具接入、Ski | D3 | agent-tools | medium | https://www.bilibili.com/video/BV1LnWq6oEeA | ☐ | |
-| kb-003058 | ima.copilot保姆级教程｜实际应用方法｜有什么问题和缺点？ | D3 | note-knowledge-tools | low | https://www.bilibili.com/video/BV1vhPpeREuH | ☐ | |
+| kb-002919 | 拆分复杂任务：一步步思考（Zero-Shot CoT） - 学习使用“让我们一步步思考”来引 | D2 | chain-of-thought | low | https://www.bilibili.com/video/BV1yssAzFEFC | ☐ | |
+| kb-002931 | ClaudeCode桌面版 = 中文汉化 + 免登录 + 接入DeekSeek + 安装自己 | D2/D3 | system-prompt-design | low | https://www.bilibili.com/video/BV1RdLm6PEFF | ☐ | |
+| kb-002941 | 新手做AI视频，最容易忽略的就是“风格统一”。 学会用风格提示词固定人物、场景和画面质感，后 | D2 | image-prompt-craft | low | https://www.bilibili.com/video/BV1q6bN6HEiX | ☐ | |
+| kb-002951 | PEC-AI创新者大会-李继刚-提示词的道与术 | D2 | prompt-patterns | medium | https://www.bilibili.com/video/BV1EbNJeWEVz | ☐ | |
+| kb-002962 | GPT-6 Astra 实测：折腾一晚上，审美、Agent、3D，全都变强了！ | D3 | chat-assistants | low | https://www.bilibili.com/video/BV1PTtC6vEYD | ☐ | |
+| kb-002972 | 完整解读Deep Research深度研究｜【建议收藏】 | D3 | deep-research-tools | low | https://www.bilibili.com/video/BV1cWKNesE3d | ☐ | |
+| kb-002982 | 本地大模型联网完全指南：15个服务商深度对比+MCP配置教程 | D3 | web-search-modes | medium | https://www.bilibili.com/video/BV1RRFXzxEqk | ☐ | |
+| kb-002992 | AI更新-Deepseek数据分析报告（二） | D3 | data-analysis-tools | low | https://www.bilibili.com/video/BV1RuQoY9EBW | ☐ | |
+| kb-003004 | 2026ComfyUI使用手册-160 Qwen2.1 文生图、扩图、万物迁移 | D3 | image-generation-tools | medium | https://www.bilibili.com/video/BV18k4E66E8n | ☐ | |
+| kb-003014 | 谁是免费AI抠图之王？AI抠图大对比，提升工作效率 | D3 | image-editing-tools | low | https://www.bilibili.com/video/BV1bQQBBXEEe | ☐ | |
+| kb-003024 | （wan3.0测评）万相3.0拉了但没完全拉，四大模型对比测试。 | D3 | video-generation-tools | low | https://www.bilibili.com/video/BV13Vt963Eb7 | ☐ | |
+| kb-003034 | 别再一页页做PPT了！GitHub爆火开源神器，输入大纲直接生成高级感PPT，还能本地跑不泄 | D3 | presentation-tools | medium | https://www.bilibili.com/video/BV1jVGb6gEvF | ☐ | |
+| kb-003045 | 4 款 AI 编程 Agent 实测对比，谁更值得用？ | D3 | tool-selection | medium | https://www.bilibili.com/video/BV1SsWg6uEiD | ☐ | |
+| kb-003057 | VS Code中使用copilot | D3 | coding-assistants | medium | https://www.bilibili.com/video/BV1ti73zuETg | ☐ | |
 | kb-003068 | 机器翻译/译后编辑/翻译质量评估/翻译审校/Trados/Xbench/跟踪修订 | D3/D4 | translation-tools | medium | https://www.bilibili.com/video/BV1gs4y1g7WZ | ☐ | |
-| kb-003078 | 11 小时音频，3 分钟完成转录——本地长视频理解系统,支持MCP接入Claude Code | D3 | audio-tools | high | https://www.bilibili.com/video/BV1uWaE6HEtg | ☐ | |
-| kb-003088 | 一个 AI 怎么替你盯着一群 AI？一个动画看懂 Super-agent | D3/D5 | agent-tools | medium | https://www.bilibili.com/video/BV12vWv6zErR | ☐ | |
-| kb-003098 | 特征交叉04：SENet 和 Bilinear 交叉 | D4 | optimization-strategies | high | https://www.bilibili.com/video/BV1SY4y1M7bD | ☐ | |
-| kb-003108 | AIWIN - OCR常见模型及评估指标 | D4 | quality-metrics | medium | https://www.bilibili.com/video/BV1Kq4y1z77G | ☐ | |
-| kb-003118 | 12.【中英字幕】大模型到底有多强？从困惑度、MMLU到竞技场全拆解 \| Stanford | D4 | benchmark-basics | high | https://www.bilibili.com/video/BV1fRWq6YEHR | ☐ | |
-| kb-003128 | AI写的代码，为什么越改越乱？ | D4 | quality-metrics | low | https://www.bilibili.com/video/BV1Ht4F6MEPS | ☐ | |
-| kb-003138 | AI能给代码做「数学证明」了：测试找bug到证明无bug | D4 | code-output-review | high | https://www.bilibili.com/video/BV1F54A6yEwP | ☐ | |
-| kb-003148 | AI操控整个电脑，两种路线怎么选？ | D5/D3 | ai-in-office-work | medium | https://www.bilibili.com/video/BV1jTL16FEdV | ☐ | |
-| kb-003158 | 你还会说人话吗？盘点四大Ai八股文，让我们停止生产“正确的废话”，回归人类语言吧！如何善用A | D5 | ai-in-writing | low | https://www.bilibili.com/video/BV11xFDzqEkn | ☐ | |
-| kb-003168 | Claude工程主管：问AI这4个问题，它会给你专家级答案 ⭐推荐 | D5/D2 | human-in-loop | low | https://www.bilibili.com/video/BV1EHWX6GEQE | ☐ | |
-| kb-003178 | 【国语】Harness Engineering: AI编程智能体构建实战指南 | D5 | multi-agent-collaboration | high | https://www.bilibili.com/video/BV1CKWj62EGH | ☐ | |
-| kb-003188 | 实战演示！用Ai定制电商运营工作流，30分钟工作→3分钟，从此告别加班 | D5/D3 | workflow-design | medium | https://www.bilibili.com/video/BV1meM46VEeB | ☐ | |
-| kb-003198 | 【WorkBuddy保姆级教程】WorkBuddy官方都没想到？彻底玩明白！我把10节付费级 | D5/D3 | ai-in-office-work | low | https://www.bilibili.com/video/BV1mfNu6HE4C | ☐ | |
-| kb-003208 | 【AI 工作流】一人公司怎么审合同？我做了个 AI 法务智能体 | D5/D2 | workflow-design | medium | https://www.bilibili.com/video/BV1Fr5T6bERe | ☐ | |
-| kb-003218 | Shopify 项目实战｜如何用 AI 设计开发宠物电商独立站 | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1PC4W6LE2x | ☐ | |
+| kb-003080 | AI 记忆系统 3.0：用 Obsidian 让 AI 不再失忆，换模型也能接着干活 | D3 | note-knowledge-tools | medium | https://www.bilibili.com/video/BV1duWg6JEqA | ☐ | |
+| kb-003091 | OpenClaw小龙虾保姆级安装教程！小白10分钟搞定本地部署【Windows系统 + 接入 | D3 | agent-tools | low | https://www.bilibili.com/video/BV1UsP1zqEWc | ☐ | |
+| kb-003100 | 深度学习科研实验全解析：基础、改进、消融、对比、泛化等10大实验详解 \| 一次搞懂 | D4 | benchmark-basics | medium | https://www.bilibili.com/video/BV1czGJzrExX | ☐ | |
+| kb-003110 | 【机器学习】10分钟搞定KL散度 深入解析 \| 数学特性 \| 正向KL和反向KL \|  | D4/D1 | quality-metrics | medium | https://www.bilibili.com/video/BV1r6jHzpE1J | ☐ | |
+| kb-003120 | 如何检测ChatGPT的隐形封号、降智、限速？ | D4 | quality-metrics | medium | https://www.bilibili.com/video/BV1faJa6uE6a | ☐ | |
+| kb-003131 | （2026年最新课程）吴恩达【AI代码审查】课程，AI能生成代码，但怎么让AI靠谱地审代码、 | D4 | code-output-review | medium | https://www.bilibili.com/video/BV1d7Wx6FERW | ☐ | |
+| kb-003144 | 儿童YouTube的恐怖 - noircode - 俄语原声/中配 | D4/D6 | risk-assessment-output | low | https://www.bilibili.com/video/BV1SWWH6zE7A | ☐ | |
+| kb-003154 | 论文绘图审美提升！分享我的AI画图工作流 | D5/D3 | ai-in-research | medium | https://www.bilibili.com/video/BV1Hk4g6BEvd | ☐ | |
+| kb-003164 | SpringBoot+Vue项目集成AI大模型对话，DeepSeek/千问/豆包大模型，AI | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1PTwjz6E2S | ☐ | |
+| kb-003175 | 【AI实战】S7-200 smart PLC自由口通信deepseek自动编写 | D5/D3 | ai-in-programming-workflow | high | https://www.bilibili.com/video/BV1u3Wm6yEup | ☐ | |
+| kb-003185 | 【PS.AI美工教程】电商人必看 ！2026零基础手把手教你用即梦AI制作主图/banner | D5/D3 | ai-in-design-work | low | https://www.bilibili.com/video/BV1cXQEBHEmC | ☐ | |
+| kb-003196 | 【喂饭级教程】WorkBuddy 完整部署｜零基础一步到位，AI 自动化搭建保姆教学 | D5/D3 | personal-assistant-setup | low | https://www.bilibili.com/video/BV11mWD61EPs | ☐ | |
+| kb-003206 | 合同管理黑科技曝光：用RPA+DeepSeek，全自动生成PDF合同信息表及收款计划表 | D5/D3 | ai-in-finance-work | medium | https://www.bilibili.com/video/BV1AYZtYME32 | ☐ | |
+| kb-003217 | 如何用 AI 长期开发一个复杂项目 | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1rPWd6nEpP | ☐ | |
 | kb-003228 | 多智能体协作感知 | D5 | multi-agent-collaboration | high | https://www.bilibili.com/video/BV1MiCFYhEG6 | ☐ | |
-| kb-003238 | Deepseek Super-agent保姆级教程、从安装到多项目并行执行全流程 | D5/D3 | ai-in-programming-workflow | low | https://www.bilibili.com/video/BV1584q6aEp3 | ☐ | |
-| kb-003248 | AI Agent 落地实战：用 WorkBuddy 从安装到搭出个人工作助理｜个人工作台｜A | D5/D2 | personal-assistant-setup | low | https://www.bilibili.com/video/BV1DaWD6dEmE | ☐ | |
-| kb-003258 | 【给你讲Nature】AI预测犯罪，真的能让城市更安全吗？算法可能正在复制人类偏见！ | D6 | bias-fairness | low | https://www.bilibili.com/video/BV1zMML6aEcB | ☐ | |
-| kb-003268 | 【给你讲Nature】AI开错药害死病人，谁负责？《Nature》发出警告：医疗AI正在制造 | D6 | accountability | medium | https://www.bilibili.com/video/BV1eG3C6VEQp | ☐ | |
-| kb-003278 | 假新闻为什么能火？如何应对AI时代的假新闻？ | D6 | misinformation | low | https://www.bilibili.com/video/BV1AYQ3YrE7e | ☐ | |
-| kb-003288 | 麻省理工【如何用AI做任何事】全11讲（中英双语） | D6/D3 | ai-social-impact | low | https://www.bilibili.com/video/BV1KmGv63EAa | ☐ | |
-| kb-003298 | 曾毅：中国人工智能伦理与治理体系与实践 | D6 | responsible-ai | medium | https://www.bilibili.com/video/BV1f44y1d7mt | ☐ | |
-| kb-003308 | ICP备案-APP上架的第一道墙 | D6 | china-ai-regulations | low | https://www.bilibili.com/video/BV1CQuN6LEpq | ☐ | |
-| kb-003318 | 给 AI Agent 用户的 Git 速成｜AI 改坏了也不怕 | D6/D3 | security-risks | low | https://www.bilibili.com/video/BV1dJHV6pEPt | ☐ | |
+| kb-003241 | Orca上手系列01｜让 AI 指挥 AI：多智能体编排实战 | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1cqxp6qEXz | ☐ | |
+| kb-003251 | AI生产力On Air【AI Coding EP1】 \| 对话 Qoder 产品负责人：A | D5/D4 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1bbWd6PE2d | ☐ | |
+| kb-003262 | 同一道题问5个AI，豆包、千问、DeepSeek、元宝、Kimi谁在胡说？｜AI扫盲班 第0 | D6/D3 | misinformation | low | https://www.bilibili.com/video/BV1bnxa6uELr | ☐ | |
+| kb-003272 | 开源免费的“Adobe 全家桶”来了？实测 LightCraft 和 PhotoCraft， | D6/D3 | ai-social-impact | low | https://www.bilibili.com/video/BV1MH4K6qEf2 | ☐ | |
+| kb-003283 | GitHub 9.8 万星项目 Paperclip：AI 员工自动上班、超预算自动停机，支持 | D6/D5 | accountability | medium | https://www.bilibili.com/video/BV1EJ4t67ErM | ☐ | |
+| kb-003293 | Prompt is Search：GCG 与大模型对抗后缀攻击 | D6 | security-risks | high | https://www.bilibili.com/video/BV1sMjN6cEAL | ☐ | |
+| kb-003305 | AI产品经理做原型，AI工具到底怎么选？ | D6/D3 | responsible-ai | medium | https://www.bilibili.com/video/BV1dgnZ6VEUp | ☐ | |
+| kb-003315 | 工人被AI替代怎么办？对AI征税！【聂辉华教授】 | D6 | ai-social-impact | medium | https://www.bilibili.com/video/BV14B26BkETA | ☐ | |
 | kb-003328 | 盲目相信 AI，踩坑实录 | D4/D5 | hallucination-detection | low | https://www.bilibili.com/video/BV1muW16KEUC | ☐ | |
 | kb-003338 | 改后缀、加密码还被秒封禁？网盘到底是怎么知道你发了啥的？ | D4/D6 | visual-output-review | low | https://www.bilibili.com/video/BV1Do4f6pEPo | ☐ | |
 | kb-003348 | 我烧了 60 亿 Token，做了个不串戏的 AI 小说写作软件 | D6/D3 | privacy-basics | low | https://www.bilibili.com/video/BV17Dn267EC1 | ☐ | |
-| kb-003358 | Recursive Self-Improvement：当AI开始进化AI | D6 | ai-safety-basics | high | https://www.bilibili.com/video/BV17Z7a6vEVH | ☐ | |
-| kb-003368 | AIGC在学术研究过程中的伦理及学术诚信问题 | D6 | academic-integrity | medium | https://www.bilibili.com/video/BV1W1421b7XA | ☐ | |
-| kb-003378 | 【AI 渗透实战】配置好 Skill，搭建 AI 渗透智能体，让 AI 自主完成探测、验证、 | D6/D3 | security-risks | high | https://www.bilibili.com/video/BV1Deso6kEch | ☐ | |
-| kb-003388 | 从“会用AI”到“会与AI课堂合作” | D6/D5 | education-ethics | low | https://www.bilibili.com/video/BV1bFRXBvECR | ☐ | |
-| kb-003398 | Introduction to Responsible AI [Google Cloud] | D6 | responsible-ai | low | https://www.bilibili.com/video/BV13kHWztEJQ | ☐ | |
-| kb-003408 | 从零开始用国内网络，跑通Claude Code等一切Agent。全程录屏，覆盖三大操作系统， | D6/D3 | ai-social-impact | low | https://www.bilibili.com/video/BV1qtdSBkEDy | ☐ | |
-| kb-003418 | 【珍藏必看】2月28日最新，安德烈·卡帕西：讲解如何使用大语言模型（LLMs） | D1/D5 | llm-principles | low | https://www.bilibili.com/video/BV1y69TYTEUw | ☐ | |
-| kb-003428 | 【极致中文配音】加州大学伯克利：大语言模型智能体 CS294 · 2024 秋季 | D1 | agent-overview | high | https://www.bilibili.com/video/BV17vWi6bEK6 | ☐ | |
+| kb-003361 | AI离解决P=NP还有多远？对话量子计算专家Scott Aaronson | D6 | ai-social-impact | medium | https://www.bilibili.com/video/BV1A3WD63EwV | ☐ | |
+| kb-003371 | 对话ZooWork胡宁： AI 时代里，企业不应该再帮别人数钱 | D6 | data-security-compliance | medium | https://www.bilibili.com/video/BV16pxv6vEUm | ☐ | |
+| kb-003384 | 什么是提示词注入攻击？（双语字幕） | D6 | prompt-injection-risks | low | https://www.bilibili.com/video/BV11s421g7SN | ☐ | |
+| kb-003394 | AI为什么偏袒n性？ | D6 | bias-fairness | low | https://www.bilibili.com/video/BV1vcpT6NEwC | ☐ | |
+| kb-003407 | 人工智能对齐的进展：偏好对齐、价值对齐到超对齐 | D6 | ai-safety-basics | high | https://www.bilibili.com/video/BV1Db421e7nT | ☐ | |
+| kb-003417 | Kurzgesagt科普：人工智能刚刚越过那条可怕的界线——接下来会怎样 | D1 | agi-frontier | low | https://www.bilibili.com/video/BV1AXpc6KEMc | ☐ | |
+| kb-003427 | 【浙江大学-大模型原理与技术】1-1 基于统计的语言模型 | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1iX6XYUEuT | ☐ | |
 | kb-003438 | LiteLLM 路由策略详解：让大模型 API 更稳定、更快、更省钱 | D1/D3 | model-selection-basics | medium | https://www.bilibili.com/video/BV1qDLf6TENj | ☐ | |
-| kb-003448 | 不训练，直接把一颗CPU编译进千问的权重里，这意味着什么？ | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1d2xr6GE5s | ☐ | |
-| kb-003458 | [Always-On Agent] 亚马逊爆火综述-Always-On Agents：梳理长 | D1 | agent-overview | medium | https://www.bilibili.com/video/BV1TcxQ6REW2 | ☐ | |
-| kb-003468 | 安徽人工智能通识课七年级 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1zoLM6cE81 | ☐ | |
-| kb-003478 | AI 实验室如何看待失控风险、模型对齐与能力边界 | D1/D6 | agi-frontier | medium | https://www.bilibili.com/video/BV1RB4u6HEqz | ☐ | |
-| kb-003488 | 【数据工程】预训练数据配比：主流模型参考、DoReMi 与消融实验 | D1 | training-data-basics | high | https://www.bilibili.com/video/BV1TKb76PEcu | ☐ | |
-| kb-003498 | 体验了Kimi K3.1pro后，我确定了它是国模编程SOTA。 | D1 | model-capability-boundary | medium | https://www.bilibili.com/video/BV1m6456xEq7 | ☐ | |
-| kb-003508 | 【保姆级教程】6小时掌握开源大模型本地部署到微调，从硬件指南到ChatGLM3-6B模型部署 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1ce411J7nZ | ☐ | |
-| kb-003518 | [模型部署]如何使用4G显存本地部署35B大模型 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV11oVP6oEWu | ☐ | |
+| kb-003449 | Transformer 与 LLM 大语言模型为何需要 Mask 掩码矩阵？ | D1 | llm-principles | medium | https://www.bilibili.com/video/BV18bYS6GE5w | ☐ | |
+| kb-003459 | 一口气了解 Grok Bot：把一整支 AI 团队装进口袋｜Kin 完整分享 | D1/D3 | agent-overview | low | https://www.bilibili.com/video/BV1TceU6iEsN | ☐ | |
+| kb-003469 | 【中文语音版】吴恩达Generative AI for Everyone  适合所有人的生成 | D1 | generative-ai-overview | low | https://www.bilibili.com/video/BV1W4sd6bEyW | ☐ | |
+| kb-003481 | 大模型是在哪种显卡上诞生的？权重里有块抹不掉的「胎记」｜Fable 5.2 纯代码短片 | D1 | llm-principles | high | https://www.bilibili.com/video/BV1TSWC6wEvh | ☐ | |
+| kb-003496 | 别只看倍率！WorkBuddy 各模型真实扣费系数来了 | D1 | model-selection-basics | medium | https://www.bilibili.com/video/BV1iJ4G6wEKv | ☐ | |
+| kb-003507 | 一键部署One API大模型聚合平台，轻松接入主流AI模型！全网最详细开源项目实操教程，支持 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1GnY4z8Ej1 | ☐ | |
+| kb-003517 | 飞牛NAS+16G显卡+olama+deepseek 本地部署大模型的体验，当NAS有了显卡 | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1EtFdzrEow | ☐ | |
 | kb-003528 | 新一版丨大模型本地部署到d盘 丨ollama、deepseek | D1/D3 | local-models | low | https://www.bilibili.com/video/BV1QtNmeoEe3 | ☐ | |
 | kb-003667 | 可视化跨模态Transformer：让AI理解你的图片和文字 | D1 | multimodal-overview | medium | https://www.bilibili.com/video/BV15H1FBMEH8 | ☐ | |
-| kb-003677 | RAG快速入门教程,从零到实战，零基础也能玩转大模型RAG！RAG理论＋RAG优化方法+RA | D1/D4 | rag-overview | medium | https://www.bilibili.com/video/BV1ug3qzhEp9 | ☐ | |
-| kb-003687 | LangChain进阶 - 高质量内容检索 01 多重提问检索器 | D1/D3 | rag-overview | medium | https://www.bilibili.com/video/BV1AN4y1f7zW | ☐ | |
-| kb-003697 | 本地大模型部署-向量模型embedding选型 | D1 | model-selection-basics | medium | https://www.bilibili.com/video/BV1ozEDzYEGw | ☐ | |
-| kb-003707 | 真正的本地Agent！Qwen3.8Flash和27B的粗浅对比，16+32g平台Agent | D1/D3 | local-models | medium | https://www.bilibili.com/video/BV1JCWH6dEKR | ☐ | |
-| kb-003717 | 从零开始认识SD模型体系：版本、功能、风格和获取渠道——如何选择合适的AI绘图模型？｜AI绘 | D1/D3 | model-selection-basics | low | https://www.bilibili.com/video/BV1YdYszoEcj | ☐ | |
-| kb-003727 | 【VCP】上下文太长？模型变笨？一键解锁VCP上下文折叠的正确姿势！ | D1/D3 | context-window | medium | https://www.bilibili.com/video/BV1cRQTBnExV | ☐ | |
-| kb-003737 | ChatGPT是陷阱？回顾AI爆发元年，我们似乎走错了路【大模型年终随想】 | D1 | model-landscape | medium | https://www.bilibili.com/video/BV1Lc411m72n | ☐ | |
-| kb-003747 | 挑战2026最细深度学习环境搭建教程 就不信你学不会！！--Anaconda+PyTorch | D1/D3 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1Wqr5BUEVU | ☐ | |
-| kb-003757 | 蚂蚁集团开源 Ming-3.0-TTS，AI语音TTS，音色克隆，2G显存，本地部署，多角色 | D1/D3 | speech-models | medium | https://www.bilibili.com/video/BV1izxE6UE1H | ☐ | |
-| kb-003767 | 什么是大模型蒸馏？为什么小模型能学会大模型 | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1wBWk6DEFk | ☐ | |
-| kb-003777 | iPhone 18 Pro的端侧AI要付费订阅才能使用？ | D1 | small-edge-models | medium | https://www.bilibili.com/video/BV14HYu6RENQ | ☐ | |
-| kb-003787 | 给我一小时，让你彻底搞懂机器学习 - Zachary Huang | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1dn4G6hECD | ☐ | |
+| kb-003679 | RAG训练营 -  AI Engineering Bootcamp: Retrieval A | D1/D3 | rag-overview | medium | https://www.bilibili.com/video/BV1vkNqeqEin | ☐ | |
+| kb-003691 | 4.0 RAGFlow0.26.0零基础教程-知识库11种内置解析方法详解 | D1/D3 | rag-overview | low | https://www.bilibili.com/video/BV1YULX65EWq | ☐ | |
+| kb-003702 | 从编解码和词嵌入开始，一步一步理解Transformer，注意力机制(Attention)的 | D1 | llm-principles | medium | https://www.bilibili.com/video/BV1XH4y1T76e | ☐ | |
+| kb-003712 | stable diffusion高清修复,重绘幅度(超细教程) | D1/D3 | generative-ai-overview | medium | https://www.bilibili.com/video/BV1QX4y1n7pE | ☐ | |
+| kb-003722 | 还在用姿态洗图？KREA2完美图生图方案，堪比1比1复刻，千问+KREA2完美搭配（含模型+ | D1/D3 | vision-models | medium | https://www.bilibili.com/video/BV1xvK56TEye | ☐ | |
+| kb-003733 | Jev模型是什么：只做选择题的决策模型，两周后亚马逊们同一天围剿 | D1 | emerging-model-trends | medium | https://www.bilibili.com/video/BV17vHv6XE6K | ☐ | |
+| kb-003743 | 深度学习第一课 | D1 | ai-basic-concepts | low | https://www.bilibili.com/video/BV1rARgBYE3J | ☐ | |
+| kb-003753 | 【经验开源】AI 做动画视频完全指南：原理、技巧、Skill 一次给全 | D1/D3 | agent-overview | medium | https://www.bilibili.com/video/BV1f94c6uEr3 | ☐ | |
+| kb-003764 | 【小白CV教程】图像识别算法入门 | D1 | vision-models | low | https://www.bilibili.com/video/BV1P54y1v7Tw | ☐ | |
+| kb-003776 | 端侧AI真正的门槛，不在模型 | D1 | emerging-model-trends | medium | https://www.bilibili.com/video/BV1rm3w6MEYF | ☐ | |
+| kb-003786 | 【研究生数学】CMU机器学习数学基础全25讲（10-606/10-607·2017秋）概率· | D1 | ai-math-basics | high | https://www.bilibili.com/video/BV1n9ckzgE5B | ☐ | |
 | kb-003797 | 【中英字幕完结】原作者亲自带读《理解深度学习》\| github爆火的深度学习入门书籍！ | D1 | ai-basic-concepts | medium | https://www.bilibili.com/video/BV1gUrKBuEaz | ☐ | |
-| kb-003807 | Prompting 101 ｜ Code w⧸ Claude | D2 | prompt-patterns | low | https://www.bilibili.com/video/BV1HTcQzYEzR | ☐ | |
-| kb-003817 | LangChain 功能模块解析（五）Agents 思考链 | D2/D3 | chain-of-thought | medium | https://www.bilibili.com/video/BV1UF41127i6 | ☐ | |
-| kb-003827 | 【AI+手绘创作】画力加倍，PS加stable diffusion商业插画教程，AIGC配合 | D2/D5 | image-prompt-craft | medium | https://www.bilibili.com/video/BV1js4y1q7U2 | ☐ | |
-| kb-003837 | 【提示词全解】王车易位 | D2 | prompt-patterns | high | https://www.bilibili.com/video/BV1xL7K6MENG | ☐ | |
-| kb-003847 | 深入解析Claude Fable 5系统提示词泄漏：你可以为你的AI应用借鉴什么 | D2 | system-prompt-design | medium | https://www.bilibili.com/video/BV1Q8Mh6aEeZ | ☐ | |
-| kb-003857 | 往转写提示词里塞术语表：专名多对四个，错字一个没少，片尾还多念了三十五个字 | D2/D4 | prompt-testing | medium | https://www.bilibili.com/video/BV1vunc6mEpG | ☐ | |
-| kb-003867 | 【中配】别再给Claude写提示词了，试试卡帕西的方法 - Austin Marchese | D2/D5 | prompt-patterns | medium | https://www.bilibili.com/video/BV1SzEQ6GEEV | ☐ | |
-| kb-003877 | LLM AI prompt提示词入门 | D2 | prompt-patterns | low | https://www.bilibili.com/video/BV19RABehEA9 | ☐ | |
-| kb-003887 | 研究生必备15个AI神器！从文献检索到论文发表全流程自动化 | D3 | tool-landscape | medium | https://www.bilibili.com/video/BV1BNtzz8EpZ | ☐ | |
-| kb-003897 | DeepSeek 放大招！整个 App 能力全面开放 API，联网搜索、OCR、ASR、TT | D3 | api-basics | medium | https://www.bilibili.com/video/BV1bwWr6xEe4 | ☐ | |
-| kb-003907 | 【2026保姆级ComfyUI教程】从零基础到精通（2026新手入门实用版ComfyUI教程 | D3 | image-generation-tools | low | https://www.bilibili.com/video/BV1aCNX6HEog | ☐ | |
-| kb-003917 | Photoshop Beta AI版9大新功能，一键换装，Generative Fill文字 | D3 | image-editing-tools | low | https://www.bilibili.com/video/BV1GV4y1m78x | ☐ | |
-| kb-003927 | 快速上手Pika Labs，免费生成动态视频！｜Discord Bot｜Pika Labs｜ | D3 | video-generation-tools | low | https://www.bilibili.com/video/BV1JN4y1J7HR | ☐ | |
-| kb-003937 | 如何用AI快速高质量做完PPT\|附实用宝藏工具 | D3/D2 | presentation-tools | low | https://www.bilibili.com/video/BV1QP4UeUEC2 | ☐ | |
-| kb-003947 | Superpowers完整教程：从零安装到跑通第一个AI编程项目，全流程一次讲清，需求澄清、 | D3/D4 | coding-assistants | medium | https://www.bilibili.com/video/BV12rWD6SEso | ☐ | |
-| kb-003957 | 【Agent 图鉴 017】WPS AI 深拆：6.78 亿月活背后的 AI 化之路 | D3/D4 | office-copilots | low | https://www.bilibili.com/video/BV1xJ4i6JE9G | ☐ | |
+| kb-003811 | 大模型输出直接翻倍！Agent必学：Zero-Shot / CoT 提示词实战 | D2 | chain-of-thought | medium | https://www.bilibili.com/video/BV1FR8g63ERX | ☐ | |
+| kb-003824 | 如何使用负向提示词 Stable Diffusion Prompt part2 + Nega | D2 | negative-prompt | medium | https://www.bilibili.com/video/BV1Tc411G78w | ☐ | |
+| kb-003835 | Midjourney教程:100秒成为Mj提示词高手【免费关键词生成器】 | D2/D3 | image-prompt-craft | low | https://www.bilibili.com/video/BV1za4y197KR | ☐ | |
+| kb-003846 | 你的提示词写得有点烂 - Theo - t3․gg - 中配 | D2/D5 | prompt-patterns | medium | https://www.bilibili.com/video/BV1A6J965EQU | ☐ | |
+| kb-003858 | 🔥【实战教程】基于DeepSeek的社科文本挖掘！高效提取文本价值，大语言模型自动实现情感 | D2/D3 | structured-prompt | low | https://www.bilibili.com/video/BV1a33rzjEDd | ☐ | |
+| kb-003871 | Prompt提示词工程-完美的 ChatGPT 提示公式-Prompt教学 | D2 | structured-prompt | low | https://www.bilibili.com/video/BV1ju4y117bf | ☐ | |
+| kb-003881 | AI又在产生幻觉了？我把临床论文写作和润色做成了一套skill | D2/D4 | prompt-reuse | medium | https://www.bilibili.com/video/BV1j4Wr6uErc | ☐ | |
+| kb-003891 | 【2026最新版】目前B站最全最细的WorkBuddy零基础全套教程！从安装配置到AI Ag | D3 | agent-tools | low | https://www.bilibili.com/video/BV1oPxR6EEda | ☐ | |
+| kb-003904 | 全B站最细Codex+生信分析保姆级全攻略【从工作站的搭建到自动获取数据库】海量实战教程，  | D3/D2 | agent-tools | high | https://www.bilibili.com/video/BV1wtxT6tE2r | ☐ | |
+| kb-003914 | AI数字人又升级了！MiniMax H3｜一张图生成30分钟数字人视频 | D3 | video-generation-tools | low | https://www.bilibili.com/video/BV1ouxF64EpV | ☐ | |
+| kb-003924 | AI视频最大的问题，被Blender解决了 | D3/D4 | video-generation-tools | medium | https://www.bilibili.com/video/BV153XTBCEsx | ☐ | |
+| kb-003935 | 挑战全网最强爱弥斯语音模型｜V4 Pro Max | D3/D4 | audio-tools | medium | https://www.bilibili.com/video/BV1zgJY6VE1q | ☐ | |
+| kb-003945 | 设计师10分钟出图指南 \| AI+排版，设计师效率原地爆炸！ | D3 | image-editing-tools | low | https://www.bilibili.com/video/BV1zM4y1y7WP | ☐ | |
+| kb-003956 | 【回放】上海微软 Copilot 技术分享活动2026-06-21 | D3 | office-copilots | medium | https://www.bilibili.com/video/BV1tfjf6REnx | ☐ | |
 | kb-003967 | 北京语言大学《计算机辅助翻译》-韩林涛 | D3 | translation-tools | medium | https://www.bilibili.com/video/BV1i7411j7AJ | ☐ | |
 | kb-003977 | 让 Codex、WorkBuddy 等多个 AI 共享记忆！我搭建了自己的个人 AI 工作系 | D3 | rag-tooling | medium | https://www.bilibili.com/video/BV1bXWP6dEaZ | ☐ | |
 | kb-003987 | 【Agent入门】3.工具调用实现原理 | D3/D1 | api-basics | medium | https://www.bilibili.com/video/BV1ymrCBeESA | ☐ | |
 | kb-003997 | Automa教程 浏览器自动化 | D3 | browser-automation | low | https://www.bilibili.com/video/BV1pxrrYaEEy | ☐ | |
 | kb-004007 | ChatGPT Work与Codex实战：技能、插件、自动化工作流与AI智能体 | D3/D2 | workflow-automation | medium | https://www.bilibili.com/video/BV1RLxf64Ekq | ☐ | |
-| kb-004017 | AI搭建全栈Web应用？n8n + Cursor，前端、后端一次搞定！0代码\|免费\|操作 | D3 | workflow-automation | medium | https://www.bilibili.com/video/BV1jDKqzvEt2 | ☐ | |
-| kb-004027 | DeepSeek + 倪海厦：打造你的个人中医 AI 知识库（本地部署指南）本地部署 Dee | D3 | rag-tooling | medium | https://www.bilibili.com/video/BV1E2AKe2EHL | ☐ | |
-| kb-004037 | RAG为什么是重要的AI技术？什么是RAG？如何实现RAG？【渡一教育】 | D3 | rag-tooling | medium | https://www.bilibili.com/video/BV1DyCjBzE28 | ☐ | |
-| kb-004047 | 韩博士讲大模型基础B09 知识库赋予智能体灵魂：做一个智能客服 | D3 | chatbot-building | medium | https://www.bilibili.com/video/BV1jVxm6FEWD | ☐ | |
-| kb-004057 | 详解8款AI编程工具：哪款更适合你？ | D3 | coding-assistants | low | https://www.bilibili.com/video/BV1oLGcz5EEb | ☐ | |
-| kb-004067 | ① 6000+参考素材 本地运行 一键生成 AI模特图轻松做：摆姿、换装、换人、双人搭配｜模 | D3 | image-generation-tools | medium | https://www.bilibili.com/video/BV1EP4J6xECS | ☐ | |
-| kb-004077 | Addy Osmani 长文拆解｜Agent 干活时，批判性思维还剩多少（90秒） | D4/D5 | human-review-workflow | medium | https://www.bilibili.com/video/BV1fdxS6MEqB | ☐ | |
-| kb-004087 | 瘫坐！GPT能直接修改低级AI的大脑了？！ | D4/D1 | ai-evaluating-ai | medium | https://www.bilibili.com/video/BV1B4xd6pE4z | ☐ | |
+| kb-004019 | n8n + MCP = AI 超能力！使用n8n的MCP节点，打造自动搜索+存储的智能工作流 | D3 | workflow-automation | medium | https://www.bilibili.com/video/BV11QX8YNEjU | ☐ | |
+| kb-004031 | 【豆包实操】从个人知识库到自动化：Skills、飞书、定时任务一次讲清 | D3 | rag-tooling | low | https://www.bilibili.com/video/BV1FGeG6pENE | ☐ | |
+| kb-004041 | 【重制版】RAG系统怎么评估？｜RAGAS框架详解：6大指标带你科学优化RAG | D3/D4 | rag-tooling | medium | https://www.bilibili.com/video/BV1adYwzbEv6 | ☐ | |
+| kb-004051 | Open WebUI综合实测：模型、知识库、引用与边界 | D3/D4 | rag-tooling | medium | https://www.bilibili.com/video/BV1pGnR6LELg | ☐ | |
+| kb-004061 | 在AI越来越强的当下，如何利用AI高效学习？ | D3/D5 | chat-assistants | low | https://www.bilibili.com/video/BV1Z1dUB3EQ5 | ☐ | |
+| kb-004072 | 视觉十分钟｜通道注意力原理（SENet，CBAM，SRM，ECA，FcaNet）｜计算机视觉 | D4/D1 | optimization-strategies | high | https://www.bilibili.com/video/BV1gC4y1C7eb | ☐ | |
+| kb-004085 | AI视频别再生成“伪人”模型脸了！一条视频让你的AI人物拥有会“呼吸”的真实皮肤质感 | D4/D3 | optimization-strategies | low | https://www.bilibili.com/video/BV1NnhP6PEaR | ☐ | |
 | kb-004097 | 人话版GLM讲解｜20分钟彻底搞懂广义线性回归！别再混淆逻辑/泊松/伽马回归了！ | D4 | quality-metrics | medium | https://www.bilibili.com/video/BV1MK7MzAEGN | ☐ | |
 | kb-004107 | 【小萌五分钟】机器学习 \| 概率校准: Brier Score | D4 | quality-metrics | medium | https://www.bilibili.com/video/BV1454y1Q7jx | ☐ | |
 | kb-004117 | 我实测了「无审查AI」……它可能真该被禁止 | D4/D6 | risk-assessment-output | medium | https://www.bilibili.com/video/BV16ZWE6UEwX | ☐ | |
-| kb-004127 | 没有评估的 Agent，注定不可规模化：Anthropic《Demystifying eva | D4 | quality-metrics | medium | https://www.bilibili.com/video/BV1DCrVBREA8 | ☐ | |
-| kb-004137 | 阿里开源 AI Agent 评估工具，官方自评58分 | D4/D3 | rubric-design | medium | https://www.bilibili.com/video/BV1aT3x69EDk | ☐ | |
-| kb-004147 | 普通人用AI，到底能做什么？4个月的真实经历 | D5 | scaling-productivity | low | https://www.bilibili.com/video/BV1PUXfBMEiT | ☐ | |
-| kb-004157 | 实测 Orca：安装配置、Worktrees 与设计模式，这个开源 Agent 开发环境值得 | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1yGHJ6HEbe | ☐ | |
-| kb-004167 | AI与Stata：如何选模型、如何审查错误｜讲座完整版 | D5/D4 | ai-in-research | high | https://www.bilibili.com/video/BV1VmWL6fE4H | ☐ | |
-| kb-004177 | 0基础做AI应用：从想法到上线的终极教程 | D5/D3 | ai-in-programming-workflow | low | https://www.bilibili.com/video/BV1FX536qE7J | ☐ | |
-| kb-004187 | 超火AI编程工作流mattpocock-skills，保姆级教程详细讲解 | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1K6Te6bET4 | ☐ | |
-| kb-004197 | 用 Codex + worktree 做并行开发的完整流程和原理 | D5/D3 | workflow-design | medium | https://www.bilibili.com/video/BV1upMw6yEiU | ☐ | |
+| kb-004128 | Maven - AI Evals For Engineers & PMs | D4 | quality-metrics | high | https://www.bilibili.com/video/BV1FwTE6gEky | ☐ | |
+| kb-004139 | 7家AI闭卷审生活真案：高空坠物查无真凶，到底该谁赔？｜阿陈的AI考场 | D4 | cross-validation | low | https://www.bilibili.com/video/BV1M2JD6kESY | ☐ | |
+| kb-004153 | GPT Image 2一键生图，工作流搭建超简单 | D5/D3 | workflow-design | low | https://www.bilibili.com/video/BV1AnjR6KEJM | ☐ | |
+| kb-004164 | 中小卖家如何用 AI 复刻大品牌的用户调研体系？ | D5/D4 | ai-in-research | medium | https://www.bilibili.com/video/BV1m1Vn6uECX | ☐ | |
+| kb-004175 | 韩博士讲大模型基础B07 告别繁琐：用 AI 工作流实现自动化办公 | D5/D3 | workflow-design | low | https://www.bilibili.com/video/BV1bbnN6nE7c | ☐ | |
+| kb-004186 | 【中配】如何用AI快速学会复杂技能与难懂学科 - Nick Saraev FSXHk4hMr | D5 | ai-in-learning | low | https://www.bilibili.com/video/BV1LoHR6uEYn | ☐ | |
+| kb-004196 | KPanel 是怎么做出来的？公开我的多智能体协作开发方式 | D5 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV12haz6TE9E | ☐ | |
 | kb-004207 | 4小时工作法 \| 适合低精力人的高效工作流 | D5/D3 | knowledge-management-ai | low | https://www.bilibili.com/video/BV1xvKG6bEgf | ☐ | |
 | kb-004217 | 3天掌握WorkBuddy教育场景全流程实战课！针对零基础教培运营与校长，告别无效加班和繁琐 | D5/D3 | ai-in-education-work | low | https://www.bilibili.com/video/BV1Gtht62EAr | ☐ | |
-| kb-004227 | 如何使用AI学习法律 | D5 | ai-in-learning | low | https://www.bilibili.com/video/BV11EHG6NEJ1 | ☐ | |
-| kb-004237 | 在Harvey训练大模型是什么体验？ | D5 | ai-in-legal-work | medium | https://www.bilibili.com/video/BV1ooWq6wEQ7 | ☐ | |
-| kb-004247 | ChatGPT 最新图像功能深度实测：商品摄影、人像精修、SVG、GIF 它到底能干多少活？ | D5/D4 | ai-in-marketing | low | https://www.bilibili.com/video/BV1ifWU68E9q | ☐ | |
-| kb-004257 | 接入 Tavily：让 Agent 真正去网上搜｜企业级AI Agent实战 11 | D5/D3 | ai-in-programming-workflow | medium | https://www.bilibili.com/video/BV1AA4c65EdK | ☐ | |
-| kb-004267 | 最新 Langchain1.0 入门【25】多智能体-Supervisor-Agent 示例 | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV17yCsBrErN | ☐ | |
-| kb-004277 | Multi-Agent 精讲｜面试项目必做的多智能体架构【码士集团】 | D5 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1oxsf6dErq | ☐ | |
-| kb-004287 | Claude Code + Codex 联动完整教程：一句话互相派活、汇报、自动复审 | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV11BpM6ZEiq | ☐ | |
+| kb-004228 | 律师的 AI 工作流：用 AI 重构诉讼法律研究，实战拆解 | D5/D3 | ai-in-legal-work | medium | https://www.bilibili.com/video/BV1LaxY6DEGm | ☐ | |
+| kb-004238 | 【真顶啊！！】清华大佬精讲【大模型与法律应用】教程，手把手带你训练法律大语言模型！满满的干货 | D5 | ai-in-legal-work | high | https://www.bilibili.com/video/BV1cBzcY5EG7 | ☐ | |
+| kb-004251 | 【GrokBot】把5个AI拉进一个群，他们开始替我上班 | D5/D3 | personal-assistant-setup | medium | https://www.bilibili.com/video/BV1Za4u6xEbP | ☐ | |
+| kb-004264 | Claude官方：一个智能体常常胜过一群子智能体 | D5 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1hpH36kECz | ☐ | |
+| kb-004274 | Pi Agent功能不够怎么扩？从MCP与Skills到自定义插件，把项目记忆留到下一次｜A | D5/D3 | knowledge-management-ai | medium | https://www.bilibili.com/video/BV1xdWe6KEVs | ☐ | |
+| kb-004286 | [中文字幕版]《Multi-agent AI》 多智能体课程 汪军教授伦敦大学学院（更新中） | D5 | multi-agent-collaboration | high | https://www.bilibili.com/video/BV1zy4y1p7tG | ☐ | |
 | kb-004297 | Grok Bot教程：一人公司怎么组AI团队 | D5 | team-ai-collaboration | medium | https://www.bilibili.com/video/BV1F54A6yEPY | ☐ | |
-| kb-004307 | 我用 Claude Code 给我的一人公司搭了 11 人 AI 团队【30 集系列 · 第 | D5/D3 | multi-agent-collaboration | medium | https://www.bilibili.com/video/BV1pFRgBvEgT | ☐ | |
+| kb-004308 | 【入站必看】90分钟精通WorkBuddy！从入门到商业落地应用（22大实战案例+30000 | D5/D3 | personal-assistant-setup | low | https://www.bilibili.com/video/BV1NHxz6QE6W | ☐ | |
 
 ## book_chapter（全库 746 条 → 抽 75 条）
 
@@ -365,7 +345,7 @@
 | kb-001314 | 《AI System 人工智能系统》5.4-内核优化 | D4/D3 | optimization-strategies | high | https://microsoft.github.io/AI-System/#/Textbook/第5章-深度学习框架的编译与优化/5.4-内核优化 | ☐ | |
 | kb-001324 | 《AI System 人工智能系统》7.4-面向深度学习的集群管理系统 | D4/D3 | optimization-strategies | high | https://microsoft.github.io/AI-System/#/Textbook/第7章-异构计算集群调度与资源管理系统/7.4-面向深度学习的集群管理系统 | ☐ | |
 
-## doc（全库 708 条 → 抽 71 条）
+## doc（全库 707 条 → 抽 71 条）
 
 | id | 标题 | dims | 子主题 | 难度 | 链接 | 通过? | 备注 |
 |---|---|---|---|---|---|---|---|
@@ -374,25 +354,25 @@
 | kb-000082 | Diffusion Models Course | D3/D4 | image-generation-tools | medium | https://huggingface.co/learn/diffusion-course/unit0/1 | ☐ | |
 | kb-000093 | Responsible AI Practices | D6/D4 | risk-assessment-output | medium | https://ai.google/responsibilities/responsible-ai-practices/ | ☐ | |
 | kb-000103 | Gemini API Documentation | D2/D3 | output-format-control | medium | https://ai.google.dev/gemini-api/docs | ☐ | |
-| kb-001908 | 安全Microsoft 365 Copilot 与 Microsoft Purview 交互 | D1/D6 | training-data-basics | medium | https://learn.microsoft.com/zh-cn/training/modules/purview-ai-secure-copilot/ | ☐ | |
-| kb-001918 | 保护 Azure OpenAI 身份验证和授权（Microsoft Learn） | D1/D6 | model-capability-boundary | medium | https://learn.microsoft.com/zh-cn/training/modules/secure-azure-openai-authentication-authorization/ | ☐ | |
-| kb-001928 | AI 安全基础知识（Microsoft Learn） | D1/D6 | model-capability-boundary | medium | https://learn.microsoft.com/zh-cn/training/modules/fundamentals-ai-security/ | ☐ | |
-| kb-001938 | Microsoft 负责任 AI 方法简介（Microsoft Learn） | D1/D6 | model-capability-boundary | low | https://learn.microsoft.com/zh-cn/training/modules/introduction-to-microsofts-responsible-ai-approach/ | ☐ | |
-| kb-001948 | 在 Microsoft Foundry 中配置 AI 网关安全性（Microsoft Lea | D1/D6 | model-landscape | medium | https://learn.microsoft.com/zh-cn/training/modules/configure-ai-gateway-security-foundry/ | ☐ | |
-| kb-001958 | AI 工作负载的成本管理简介（Microsoft Learn） | D1/D4 | model-selection-basics | medium | https://learn.microsoft.com/zh-cn/training/modules/understand-cost-management-ai/ | ☐ | |
-| kb-001968 | 探索 AI 基础知识（Microsoft Learn） | D1 | ai-basic-concepts | low | https://learn.microsoft.com/zh-cn/training/modules/explore-ai-basics/ | ☐ | |
-| kb-001978 | 使用 Azure 服务实现安全的 AI 就绪基础结构（Microsoft Learn） | D1/D6 | ai-basic-concepts | medium | https://learn.microsoft.com/zh-cn/training/modules/implement-secure-ai-ready-infrastructure-azure-services/ | ☐ | |
-| kb-001988 | 使用生成式 AI 创建图像（Microsoft Learn） | D1/D2 | diffusion-overview | low | https://learn.microsoft.com/zh-cn/training/modules/create-images-with-generative-ai/ | ☐ | |
-| kb-001998 | 使用 GitHub Actions 自动执行模型训练（Microsoft Learn） | D1/D3 | training-data-basics | medium | https://learn.microsoft.com/zh-cn/training/modules/trigger-azure-machine-learn-jobs-github-actions/ | ☐ | |
-| kb-002008 | 使用 Microsoft Copilot 增强非营利性志愿者管理（Microsoft Lea | D1/D2 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/enhance-nonprofit-volunteer-management-microsoft-copilot/ | ☐ | |
-| kb-002018 | 使用 Microsoft Foundry 开发生成 AI 聊天应用（Microsoft Le | D1/D3 | generative-ai-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/foundry-sdk/ | ☐ | |
-| kb-002028 | 在 Microsoft Foundry 中使用托管训练微调 AI 代理的模型（Microso | D1/D4 | fine-tuning-vs-prompting | high | https://learn.microsoft.com/zh-cn/training/modules/optimize-finetune-agents/ | ☐ | |
-| kb-002038 | Azure Copilot 简介（Microsoft Learn） | D1/D3 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/intro-to-azure-copilot/ | ☐ | |
-| kb-002048 | 人工智能指南（Microsoft Learn） | D1 | ai-basic-concepts | low | https://learn.microsoft.com/zh-cn/training/modules/a-guide-to-artificial-intelligence/ | ☐ | |
-| kb-002058 | 使用 Microsoft Copilot 设计梦想目的地（Microsoft Learn） | D1/D2 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/design-dream-destination-ai-copilot/ | ☐ | |
-| kb-002068 | 探索 Internet 搜索及其他（Microsoft Learn） | D1/D2 | emerging-model-trends | low | https://learn.microsoft.com/zh-cn/training/modules/explore-internet-search-beyond/ | ☐ | |
-| kb-002078 | 使用 Python 进行 Azure OpenAI 托管标识身份验证的简介（Microsof | D1/D3 | ai-basic-concepts | medium | https://learn.microsoft.com/zh-cn/training/modules/intro-azure-openai-managed-identity-auth-python/ | ☐ | |
-| kb-002088 | 使用基于 vCore 的 Azure Cosmos DB for MongoDB 和 Azu | D1/D3 | rag-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/build-ai-copilot-vcore-based-azure-cosmos-db-mongodb/ | ☐ | |
+| kb-001909 | 在 Microsoft Fabric 中使用 MLflow 训练和跟踪机器学习模型（Micr | D1/D4 | training-data-basics | medium | https://learn.microsoft.com/zh-cn/training/modules/train-track-model-fabric/ | ☐ | |
+| kb-001919 | 使用 Azure Functions 生成无服务器 AI 后端（Microsoft Lear | D1/D3 | open-closed-models | medium | https://learn.microsoft.com/zh-cn/training/modules/build-backends-azure-functions/ | ☐ | |
+| kb-001929 | 识别和缓解 AI 数据安全风险（Microsoft Learn） | D1/D6 | model-capability-boundary | medium | https://learn.microsoft.com/zh-cn/training/modules/purview-identify-mitigate-ai-risks/ | ☐ | |
+| kb-001939 | 优化 Azure Database for PostgreSQL 中的矢量搜索（Micros | D1/D4 | embedding-overview | high | https://learn.microsoft.com/zh-cn/training/modules/optimize-vector-search-azure-database-postgresql/ | ☐ | |
+| kb-001949 | 将治理控制应用于就绪 AI 工作负荷。（Microsoft Learn） | D1/D6 | training-data-basics | high | https://learn.microsoft.com/zh-cn/training/modules/apply-governance-controls-ai-ready-workloads/ | ☐ | |
+| kb-001959 | 使用 Microsoft Fabric 中的数据整理器对数据进行预处理（Microsoft  | D1/D3 | training-data-basics | medium | https://learn.microsoft.com/zh-cn/training/modules/preprocess-data-with-data-wrangler-microsoft-fabric/ | ☐ | |
+| kb-001969 | 安全地使用 AI（Microsoft Learn） | D1/D6 | model-capability-boundary | low | https://learn.microsoft.com/zh-cn/training/modules/use-ai-safely/ | ☐ | |
+| kb-001979 | 使用 GitHub Copilot 代理提高代码性能（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/improve-code-performance-github-copilot-agent/ | ☐ | |
+| kb-001989 | 将 MCP 工具与 Azure AI 代理集成（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/connect-agent-to-mcp-tools/ | ☐ | |
+| kb-001999 | 借助面向财务专业人士的 Copilot 提示，更高效地工作（Microsoft Learn） | D1/D2 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/work-smarter-copilot-finance/ | ☐ | |
+| kb-002009 | 为生产环境中的 AI 代理设计高级提示策略（Microsoft Learn） | D1/D2 | fine-tuning-vs-prompting | high | https://learn.microsoft.com/zh-cn/training/modules/aaai-design-advanced-prompt-production-agents/ | ☐ | |
+| kb-002019 | 计算机视觉概念简介（Microsoft Learn） | D1 | vision-models | low | https://learn.microsoft.com/zh-cn/training/modules/introduction-computer-vision/ | ☐ | |
+| kb-002029 | 为 Azure 机器学习工作区实现基于标识的安全性（Microsoft Learn） | D1/D6 | model-capability-boundary | high | https://learn.microsoft.com/zh-cn/training/modules/implement-identity-based-security-azure-machine-learning/ | ☐ | |
+| kb-002039 | 为智能 Microsoft Security Copilot 副驾驶®配置工作区（Micro | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/configure-security-copilot-workspaces/ | ☐ | |
+| kb-002049 | AI 驱动的信息提取概念简介（Microsoft Learn） | D1 | ai-basic-concepts | low | https://learn.microsoft.com/zh-cn/training/modules/introduction-information-extraction/ | ☐ | |
+| kb-002059 | 为初创公司构建 copilot 的简介（Microsoft Learn） | D1 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/intro-to-copilots-for-startups/ | ☐ | |
+| kb-002069 | 开发利用工具的生成式 AI 应用（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/use-generative-ai-tools/ | ☐ | |
+| kb-002079 | 使用 AI 更智能地工作（Microsoft Learn） | D1/D5 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/explore-microsoft-copilot-business-users/ | ☐ | |
+| kb-002089 | Azure 上的 AI 代理开发入门（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/ai-agent-fundamentals/ | ☐ | |
 | kb-002098 | 使用 AI 工具简化管理任务（Microsoft Learn） | D1/D5 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/streamline-administrative-tasks-ai/ | ☐ | |
 | kb-002108 | 使用 TensorFlow 进行自然语言处理简介（Microsoft Learn） | D1/D3 | llm-principles | high | https://learn.microsoft.com/zh-cn/training/modules/intro-natural-language-processing-tensorflow/ | ☐ | |
 | kb-002118 | 使用 GitHub Copilot SDK 开发支持 AI 的应用（Microsoft Le | D1/D3 | agent-overview | high | https://learn.microsoft.com/zh-cn/training/modules/develop-ai-enabled-apps-using-github-copilot-sdk/ | ☐ | |
@@ -405,18 +385,18 @@
 | kb-002348 | AI 语音概念简介（Microsoft Learn） | D1 | speech-models | low | https://learn.microsoft.com/zh-cn/training/modules/introduction-ai-speech/ | ☐ | |
 | kb-002358 | 机器学习项目的源代码管理（Microsoft Learn） | D1/D3 | ai-basic-concepts | medium | https://learn.microsoft.com/zh-cn/training/modules/source-control-for-machine-learning-projects/ | ☐ | |
 | kb-002368 | 使用 A2A 发现 Azure AI 代理（Microsoft Learn） | D1/D3 | agent-overview | high | https://learn.microsoft.com/zh-cn/training/modules/discover-agents-with-a2a/ | ☐ | |
-| kb-002377 | 发现负责任的对话 AI 开发的Microsoft指南（Microsoft Learn） | D1/D6 | model-capability-boundary | medium | https://learn.microsoft.com/zh-cn/training/modules/responsible-conversational-ai/ | ☐ | |
-| kb-002387 | 在 Microsoft Copilot Studio 中生成智能代理（Microsoft L | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/copilot-studio-knowledge/ | ☐ | |
-| kb-002397 | 在 Copilot Chat 中生成智能体 - 在线研讨会（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/agents-copilot-chat/ | ☐ | |
-| kb-002407 | 使用 Power Platform 在 Microsoft Copilot Studio 中 | D1/D3 | agent-overview | high | https://learn.microsoft.com/zh-cn/training/modules/implement-alm-agents-power-platform/ | ☐ | |
-| kb-002417 | 让智能体基于 Microsoft Copilot Studio 中的企业知识 (GitHub | D1/D3 | rag-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/ground-agents-enterprise-knowledge-github-copilot/ | ☐ | |
-| kb-002427 | 增强 Microsoft Copilot Studio 代理（Microsoft Learn | D1/D5 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/enhance-power-virtual-agents-bots/ | ☐ | |
-| kb-002437 | 将结构化自动化添加到 Microsoft Copilot Studio 中的代理（Micro | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/copilot-studio-structured-automation/ | ☐ | |
-| kb-002447 | 在 Microsoft Copilot Studio 中使用实体和变量（Microsoft  | D1/D3 | agent-overview | low | https://learn.microsoft.com/zh-cn/training/modules/power-virtual-agents-entities/ | ☐ | |
-| kb-002457 | 在 Copilot 服务工作区中管理个案（Microsoft Learn） | D1/D5 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/manage-cases-customer-service-workspace/ | ☐ | |
-| kb-002467 | 质询项目 - 生成声明性代理以与文档聊天（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/copilot-declarative-agent-challenge-chat-with-docs/ | ☐ | |
-| kb-002477 | 挑战项目 - 生成声明性代理以与数据聊天（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/copilot-declarative-agent-challenge-chat-with-data/ | ☐ | |
-| kb-002487 | 使用 AI 智能体将信息转化为决策（Microsoft Learn） | D1/D5 | agent-overview | low | https://learn.microsoft.com/zh-cn/training/modules/turn-info-into-decisions-ai-agents/ | ☐ | |
+| kb-002378 | Microsoft Entra代理标识的安全访问（Microsoft Learn） | D1/D6 | agent-overview | high | https://learn.microsoft.com/zh-cn/training/modules/secure-access-entra-agent-identity/ | ☐ | |
+| kb-002388 | 在 Copilot Studio 中通过子代理分配代理任务（Microsoft Learn） | D1/D5 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/delegate-agent-tasks-child-agents-copilot-studio/ | ☐ | |
+| kb-002398 | 在 Microsoft Copilot Studio 中为代理设计集成策略（Microsof | D1/D3 | agent-overview | high | https://learn.microsoft.com/zh-cn/training/modules/design-enterprise-integration-strategies-agents-copilot-studio/ | ☐ | |
+| kb-002408 | 使用 Microsoft Copilot Studio 和 Dataverse for Te | D1/D3 | agent-overview | low | https://learn.microsoft.com/zh-cn/training/modules/create-chatbot-power-virtual-agents-dataverse-teams/ | ☐ | |
+| kb-002418 | 使用 Microsoft Copilot Studio 中的主题和工具从代理对话中执行操作（ | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/take-action-agent-topics-tools-flows-copilot-studio/ | ☐ | |
+| kb-002428 | 使用计算机在 Copilot Studio 中自动执行桌面和 Web 任务（Microsof | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/automate-desktop-web-tasks-computer-use-copilot-studio/ | ☐ | |
+| kb-002438 | 探索 Microsoft Copilot Studio 和智能体工具（Microsoft L | D1/D3 | agent-overview | low | https://learn.microsoft.com/zh-cn/training/modules/explore-copilot-studio-agent-harnesses/ | ☐ | |
+| kb-002448 | 使用 Microsoft Copilot Studio 中的技能设计可复用行为（Micros | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/design-reusable-behavior-skills-copilot-studio/ | ☐ | |
+| kb-002458 | 使用 Microsoft Copilot 为员工赋能：IT（Microsoft Learn） | D1/D2 | generative-ai-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/enhance-prompting-copilot-it/ | ☐ | |
+| kb-002468 | 探索预建的 Microsoft Copilot 代理（Microsoft Learn） | D1/D3 | agent-overview | low | https://learn.microsoft.com/zh-cn/training/modules/explore-prebuilt-microsoft-365-copilot-agents/ | ☐ | |
+| kb-002478 | 准备好使用 Microsoft Copilot（Microsoft Learn） | D1/D2 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/get-ready-work-microsoft-365-copilot/ | ☐ | |
+| kb-002488 | 评估准备情况并推出 Microsoft Copilot（Microsoft Learn） | D1/D6 | model-capability-boundary | medium | https://learn.microsoft.com/zh-cn/training/modules/enable-manage-microsoft-365-copilot/ | ☐ | |
 | kb-002497 | Copilot Studio中声明性代理的作简介（Microsoft Learn） | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/modules/introduction-copilot-studio-actions/ | ☐ | |
 | kb-002507 | 通过 Microsoft Copilot 为员工赋能：市场营销（Microsoft Lear | D1/D5 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/empower-workforce-copilot-marketing/ | ☐ | |
 | kb-002517 | 使用 Microsoft Foundry 工具通过 AI 提升业务价值（Microsoft  | D1/D3 | generative-ai-overview | low | https://learn.microsoft.com/zh-cn/training/modules/business-value-microsoft-azure-ai-solutions/ | ☐ | |
@@ -441,27 +421,27 @@
 | kb-003645 | 使用代理转换日常业务流程（Microsoft Learn 学习路径） | D1/D3 | agent-overview | low | https://learn.microsoft.com/zh-cn/training/paths/implement-no-code-copilot-agents-microsoft-365-sharepoint/ | ☐ | |
 | kb-003655 | 使用 Microsoft 365 智能体 SDK 生成自定义引擎代理（Microsoft L | D1/D3 | agent-overview | medium | https://learn.microsoft.com/zh-cn/training/paths/build-custom-copilots-microsoft-teams/ | ☐ | |
 
-## article（全库 160 条 → 抽 16 条）
+## article（全库 159 条 → 抽 16 条）
 
 | id | 标题 | dims | 子主题 | 难度 | 链接 | 通过? | 备注 |
 |---|---|---|---|---|---|---|---|
 | kb-002153 | 【ChatGPT】一文教你怎么编写清晰有效的（Prompt）提示词~ | D2 | prompt-patterns | low | https://juejin.cn/post/7215536461478707258 | ☐ | |
-| kb-002163 | Stable Diffusion入门使用技巧及个人试用实例分享--SD提示词及Control | D2/D3 | image-prompt-craft | low | https://juejin.cn/post/7237145375311659065 | ☐ | |
-| kb-002173 | Prompt提示工程上手指南:基础原理及实践-Prompt提示工程简述 | D2 | prompt-patterns | low | https://juejin.cn/post/7331215860059668534 | ☐ | |
-| kb-002183 | 大模型应用开发：运行你的第一个聊天程序 | D2/D3 | prompt-patterns | low | https://juejin.cn/post/7323449163420680202 | ☐ | |
-| kb-002193 | 编排AI：复杂AI工作流的事件驱动架构 | D2/D5 | task-decomposition-prompts | high | https://juejin.cn/post/7366981996621316147 | ☐ | |
-| kb-002205 | 正式发布的Spring AI，能让Java喝上AI赛道的汤吗？ | D2/D3 | prompt-patterns | medium | https://juejin.cn/post/7358753499138179107 | ☐ | |
-| kb-002215 | LLM微调方法(Efficient-Tuning)六大主流方法：思路讲解&优缺点对比[P-t | D2 | prompt-patterns | medium | https://juejin.cn/post/7381375090975457320 | ☐ | |
-| kb-002225 | 搭建你的第一个Agent智能体 | D2/D3 | system-prompt-design | low | https://juejin.cn/post/7402456457394700325 | ☐ | |
-| kb-002235 | 【ai_agent】从零写一个agent框架（一）打造最强开放agent编辑框架，拳打dif | D2/D3 | system-prompt-design | medium | https://juejin.cn/post/7380579033547227173 | ☐ | |
-| kb-002245 | 我的业务要不要用人工智能？引入AI前你需要评估的（四） | D2/D1 | constraint-writing | low | https://juejin.cn/post/6844904019551338509 | ☐ | |
-| kb-002255 | 老照片修复教程：多人老照片修复 | D2/D3 | image-prompt-craft | low | https://juejin.cn/post/7439551003315535887 | ☐ | |
-| kb-002265 | RAG 实践-Ollama+AnythingLLM 搭建本地知识库 | D2/D3 | context-provision | low | https://juejin.cn/post/7378779608353669158 | ☐ | |
+| kb-002162 | 提示词（prompt）工程指南（二）：基本提示 | D2 | prompt-patterns | low | https://juejin.cn/post/7215886869199175741 | ☐ | |
+| kb-002172 | OpenAI官方的Prompt工程指南：你可以这么玩ChatGPT | D2 | prompt-patterns | low | https://juejin.cn/post/7313753156520280075 | ☐ | |
+| kb-002182 | 纯小白的大模型入门指南 | D2/D1 | prompt-patterns | low | https://juejin.cn/post/7444467218070274058 | ☐ | |
+| kb-002192 | AI 工作流：使用coze创建高效率智能体 | D2/D3 | task-decomposition-prompts | medium | https://juejin.cn/post/7441778934942875658 | ☐ | |
+| kb-002204 | 如何构建全栈 AI 应用 | D2/D3 | output-format-control | medium | https://juejin.cn/post/7234795795216203837 | ☐ | |
+| kb-002214 | 速通llm模型微调和部署anythingllm（超详细实况三） | D2/D3 | prompt-patterns | medium | https://juejin.cn/post/7431073964179619849 | ☐ | |
+| kb-002224 | LLM Agent智能体综述(万字长文) | D2/D5 | prompt-patterns | medium | https://juejin.cn/post/7369767878781222931 | ☐ | |
+| kb-002234 | Agent调研--19类Agent框架对比 | D2/D3 | prompt-patterns | medium | https://juejin.cn/post/7356527188970569762 | ☐ | |
+| kb-002244 | 【ai_agent】从零写一个agent框架（二）如何让一个workflow/agent跑起 | D2/D3 | task-decomposition-prompts | medium | https://juejin.cn/post/7381662346274848805 | ☐ | |
+| kb-002254 | 如何高效编写 prompt | D2 | structured-prompt | low | https://juejin.cn/post/7244436632437800997 | ☐ | |
+| kb-002264 | 从RAG到GraphRAG：货拉拉元数据检索应用实践 | D2/D3 | context-provision | high | https://juejin.cn/post/7618261670406438964 | ☐ | |
 | kb-002275 | 干货：落地企业级RAG的实践指南 | D2/D4 | context-provision | medium | https://juejin.cn/post/7428154063575089161 | ☐ | |
 | kb-002285 | Micro Agent 介绍：一个可靠的 AI 编程助手【译】 | D2/D4 | acceptance-criteria | medium | https://juejin.cn/post/7488145809809457206 | ☐ | |
 | kb-002295 | Claude Code 使用心得 - 从尝鲜到日常的进阶之路 | D2/D5 | prompt-patterns | medium | https://juejin.cn/post/7611084174967914531 | ☐ | |
 | kb-002305 | DeepSeek Harness开源第一天我就上手了——和Claude Code的差距比想象 | D2/D1 | prompt-patterns | medium | https://juejin.cn/post/7673810995882672128 | ☐ | |
 
-抽检合计：432 条。结论（合格率、发现的问题与处理）：
+抽检合计：412 条。结论（合格率、发现的问题与处理）：
 
 （待人工填写）

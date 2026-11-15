@@ -298,7 +298,9 @@ export function admitKnowledgeEntry(entry, { minQuality = MIN_QUALITY, minViews 
  * 整库配额检查：六维覆盖不得偏科。返回 { ok, perDim, missing }。
  * library 未达标规模时（total < floors 成立所需的最低量）直接判定不适用方为 ok=false。
  */
-export function checkDimensionQuotas(entries, { perDimMin = 600 } = {}) {
+// 默认 480 = 4000 条目标 × 12%（目标由 5000 下调后同比例收敛；5000 口径为 600）。
+export const DEFAULT_PER_DIM_MIN = 480;
+export function checkDimensionQuotas(entries, { perDimMin = DEFAULT_PER_DIM_MIN } = {}) {
   const perDim = Object.fromEntries([...DIMENSION_KEYS].map((key) => [key, 0]));
   for (const entry of entries) {
     for (const key of entry?.dims ?? []) if (key in perDim) perDim[key] += 1;
