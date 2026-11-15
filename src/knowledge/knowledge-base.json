@@ -3217,29 +3217,6 @@
     }
   },
   {
-    "id": "kb-000151",
-    "title": "Token不够用？别升级，先看钱花哪了",
-    "url": "https://www.bilibili.com/video/BV1C84i6kEtW",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1",
-      "D5"
-    ],
-    "subtopic": "context-window",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "用14天Claude Code日志拆解Token开销：81%花在重读重载上下文，仅19%产生结果，并给出与Agent协作的三层心智模型。",
-    "why": "帮初学者建立上下文成本与Token消耗的直觉，理解为何会话越聊越贵，从而更省用地使用AI。",
-    "quality": 4,
-    "signals": {
-      "views": 390,
-      "durationMin": 9,
-      "date": "2026-11-07",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
     "id": "kb-000152",
     "title": "【庞培法布拉大学】生成式AI音乐｜2023 | AI 创作音乐，解锁生成式音频奥秘",
     "url": "https://www.bilibili.com/video/BV1scdnBBEVJ",
@@ -12620,28 +12597,6 @@
       "views": 3549,
       "durationMin": 12,
       "date": "2025-11-30",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-000571",
-    "title": "AI字体生成/AI造字，补全字体，HanziGen教程",
-    "url": "https://www.bilibili.com/video/BV1GLbpzkEdq",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D3"
-    ],
-    "subtopic": "image-generation-tools",
-    "difficulty": "medium",
-    "band": "developing",
-    "summary": "介绍HanziGen开源项目，用VQ-VAE+扩散模型学习已有TTF/OTF字体并补全缺字，含混合精度训练与断点续训。",
-    "why": "想用AI工具做字体生成/补字的学习者，可获得项目地址与实操流程，填补中文AI造字教程稀缺。",
-    "quality": 4,
-    "signals": {
-      "views": 9731,
-      "durationMin": 34,
-      "date": "2025-08-15",
       "verifiedAt": "2026-11-13"
     }
   },
@@ -40012,26 +39967,6 @@
       "views": 8065,
       "durationMin": 65,
       "date": "2026-10-22",
-      "verifiedAt": "2026-11-13"
-    }
-  },
-  {
-    "id": "kb-001868",
-    "title": "Gemini for Google Workspace",
-    "url": "https://support.google.com/a/users/answer/14287953",
-    "source": "Google Support",
-    "type": "doc",
-    "dims": [
-      "D3",
-      "D5"
-    ],
-    "subtopic": "office-copilots",
-    "difficulty": "low",
-    "band": "focus",
-    "summary": "Google 官方支持页，介绍在 Gmail、文档、表格等 Workspace 应用中嵌入 Gemini 提示，辅助邮件、写作与数据分析。",
-    "why": "面向零基础办公用户，示范如何在日常办公流程中调用 AI 并与之分工协作。",
-    "quality": 4,
-    "signals": {
       "verifiedAt": "2026-11-13"
     }
   },
@@ -75380,28 +75315,6 @@
       "views": 692,
       "durationMin": 2,
       "date": "2026-09-17",
-      "verifiedAt": "2026-11-14"
-    }
-  },
-  {
-    "id": "kb-003489",
-    "title": "[Agent强化学习]英伟达-Skill2Env：把公开技能做成可验证的训练任务",
-    "url": "https://www.bilibili.com/video/BV1TkWz6nEbh",
-    "source": "bilibili",
-    "type": "video",
-    "dims": [
-      "D1"
-    ],
-    "subtopic": "agent-overview",
-    "difficulty": "high",
-    "band": "strong",
-    "summary": "解读英伟达Skill2Env论文：把公开Agent技能包做成可重置可评分的训练任务环境。",
-    "why": "论文解读附原文链接，讲清动机与方法，主题前沿专业，单点扎实。",
-    "quality": 4,
-    "signals": {
-      "views": 802,
-      "durationMin": 10,
-      "date": "2026-11-14",
       "verifiedAt": "2026-11-14"
     }
   },
