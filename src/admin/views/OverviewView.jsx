@@ -42,7 +42,7 @@ export function OverviewView({ roster, bankMeta, dataSource }) {
           <article key={item.label} className="kpi-card">
             <span>{item.label}</span>
             <strong>{item.value}</strong>
-            <small>{item.hint}</small>
+
           </article>
         ))}
       </section>
@@ -114,12 +114,7 @@ export function OverviewView({ roster, bankMeta, dataSource }) {
         </section>
       </div>
 
-      {bankMeta && (
-        <p className="overview-foot">
-          <Sparkle size={14} weight="fill" />
-          出题引擎：自适应（服务端路由） · 评分模型 v1.0.0 · 题库 {bankMeta.bankVersion}（{bankMeta.source === "override" ? "管理端已覆盖" : "内置"}）
-        </p>
-      )}
+
     </div>
   );
 }

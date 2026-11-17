@@ -119,7 +119,7 @@ export function AccountSettings({ onBack, onLogout, busy, source = "home", varia
           <div><dt>收藏</dt><dd>{favorites.length} 条</dd></div>
         </dl>
         <p className="account-note">{authProfile
-          ? "登录后完成测评会上报成绩摘要给教师端；头像与草稿等明细仅存本机。"
+          ? "登录后完成测评会上报成绩摘要给管理端；头像与草稿等明细仅存本机。"
           : "演示资料仅在本页展示，不会保存或传输。"}</p>
       </aside>
 

@@ -1,3 +1,4 @@
+import { studentGrade as grade } from "./student-grade.js";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, DownloadSimple, X } from "@phosphor-icons/react";
 import { AbilityGlyph } from "./AbilityGlyph";
@@ -63,13 +64,7 @@ function bandOf(score) {
   return score >= 80 ? "strong" : score >= 60 ? "developing" : "focus";
 }
 
-function grade(score) {
-  if (score >= 90) return "S";
-  if (score >= 80) return "A";
-  if (score >= 70) return "B";
-  if (score >= 60) return "C";
-  return "D";
-}
+
 
 function formatCompletedAt(iso) {
   const date = new Date(iso);
@@ -77,7 +72,7 @@ function formatCompletedAt(iso) {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-function reportModel(snapshot, demoPreview = false) {
+export function reportModel(snapshot, demoPreview = false) {
   // 已登录且没有自己的快照：绝不给演示报告——新注册学员会把演示雷达误
   // 认为自己「凭空多出的报告」（2026-10-02 实测反馈）。改出空状态+去测评
   // CTA。演示数据只保留给未登录的匿名探索场景。
@@ -104,6 +99,7 @@ function reportModel(snapshot, demoPreview = false) {
     ? `${snapshot.result.answeredCount}/${snapshot.result.totalQuestions} 题` : "";
   return {
     assessmentId: snapshot.assessmentId || "comprehensive",
+    completedAt: snapshot.completedAt,
     dimensions: source.dimensions.map((item) => ({
       key: item.key,
       name: item.name,

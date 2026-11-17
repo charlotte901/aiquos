@@ -33,6 +33,7 @@ export function AssignmentsView({ status, error, teacherData, onReload, onCreate
   const [formError, setFormError] = useState("");
   const [pending, setPending] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const [rankedAssignments,setRankedAssignments]=useState(new Set());
 
   const classes = useMemo(() => teacherData?.classes ?? [], [teacherData]);
   const students = useMemo(() => teacherData?.students ?? [], [teacherData]);
@@ -238,11 +239,12 @@ export function AssignmentsView({ status, error, teacherData, onReload, onCreate
                     {assignment.note && <p className="assignment-note">{assignment.note}</p>}
                     <table className="admin-table">
                       <thead>
-                        <tr><th>学员</th><th>班级</th><th>状态</th><th>完成时间</th><th>总分</th><th>等级</th></tr>
+                        <tr>{rankedAssignments.has(assignment.id)&&<th>排名</th>}<th>学员</th><th>班级</th><th>状态</th><th>完成时间</th><th>总分</th><th>等级</th></tr>
                       </thead>
                       <tbody>
-                        {assignment.roster.map((row) => (
+                        {(rankedAssignments.has(assignment.id)?[...assignment.roster].sort((a,b)=>(b.completed&&Number.isFinite(b.overallScore)?b.overallScore:-Infinity)-(a.completed&&Number.isFinite(a.overallScore)?a.overallScore:-Infinity)):assignment.roster).map((row) => (
                           <tr key={row.accountId}>
+                            {rankedAssignments.has(assignment.id)&&<td>{row.completed&&Number.isFinite(row.overallScore)?1+assignment.roster.filter(r=>r.completed&&Number.isFinite(r.overallScore)&&r.overallScore>row.overallScore).length:"—"}</td>}
                             <td><b>{row.nickname}</b></td>
                             <td>{row.className || "未分班"}</td>
                             <td>
@@ -260,8 +262,8 @@ export function AssignmentsView({ status, error, teacherData, onReload, onCreate
                       </tbody>
                     </table>
                     <div className="assignment-admin-actions">
-                      <button type="button" className="admin-text-button" onClick={() => onReload()}>
-                        刷新完成情况
+                      <button type="button" className="admin-text-button" onClick={() => setRankedAssignments(previous=>new Set([...previous,assignment.id]))}>
+                        按分数排名
                       </button>
                       <button
                         type="button"

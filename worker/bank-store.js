@@ -1,3 +1,4 @@
+import { deduplicateQuestions } from "../src/question-dedup.js";
 // Override-aware question-bank store. The serving endpoint and the admin API
 // both read through here so an admin edit reaches students immediately.
 //

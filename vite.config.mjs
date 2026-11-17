@@ -1,3 +1,4 @@
+import { DOCUMENT_IMPORT_PATH, handleDocumentImport } from "./worker/document-import.js";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { Readable } from "node:stream";
@@ -133,11 +134,16 @@ export default defineConfig(({ mode }) => {
             if (!response.body) return res.end();
             Readable.fromWeb(response.body).pipe(res);
           });
+          server.middlewares.use(DOCUMENT_IMPORT_PATH, async (req,res)=>{
+            const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>10*1024*1024+65536){res.statusCode=413;return res.end(JSON.stringify({error:'文件不能超过 10 MB'}));}chunks.push(chunk);}
+            const response=await handleDocumentImport(new Request('http://localhost'+DOCUMENT_IMPORT_PATH,{method:req.method,headers:{'content-type':req.headers['content-type']||'application/json',authorization:req.headers.authorization||''},body:Buffer.concat(chunks)}),env);
+            res.statusCode=response.status;response.headers.forEach((v,k)=>res.setHeader(k,v));res.end(await response.text());
+          });
           server.middlewares.use(ADMIN_BANK_PATH, async (req, res) => {
             const chunks = [];
             for await (const chunk of req) chunks.push(chunk);
             const base = `http://${req.headers.host || "127.0.0.1"}`;
-            const response = await handleAdminBank(new Request(new URL(ADMIN_BANK_PATH, base), {
+            const response = await handleAdminBank(new Request(new URL(ADMIN_BANK_PATH + new URL(req.url, base).search, base), {
               method: req.method,
               // authorization 必须透传：管理端写操作（PUT/DELETE）验教师令牌，
               // 此前只带 content-type，dev 下永远 401（生产 worker 不经此层）。

@@ -140,8 +140,4 @@ export function judgeComprehensiveAnswer(question, selectedKeys) {
   return { correct, partialCorrect, answerText };
 }
 
-export const COMPREHENSIVE_TYPE_LABELS = {
-  single: "单选题",
-  multi: "多选题",
-  judge: "判断题",
-};
+export { QUESTION_TYPE_LABELS as COMPREHENSIVE_TYPE_LABELS } from "./question-types.js";

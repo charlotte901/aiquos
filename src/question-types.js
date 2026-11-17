@@ -1,0 +1,2 @@
+export const QUESTION_TYPE_LABELS={single:'单选题',multi:'多选题',judge:'判断题'};
+export function changeQuestionType(question,type){if(!QUESTION_TYPE_LABELS[type])return question;if(type==='judge')return {...question,type,options:[{key:'A',text:'正确'},{key:'B',text:'错误'}],answer:[]};const options=question.type==='judge'?[{key:'A',text:''},{key:'B',text:''},{key:'C',text:''},{key:'D',text:''}]:question.options;return {...question,type,options,answer:type==='single'?(question.answer||[]).slice(0,1):question.answer||[]};}

@@ -33,16 +33,20 @@ import { RecordsView } from "./views/RecordsView.jsx";
 import { AssignmentsView } from "./views/AssignmentsView.jsx";
 import { SettingsView } from "./views/SettingsView.jsx";
 
+import { TeachingWorkspace } from "./views/TeachingWorkspace.jsx";
+
 const NAV = [
   { id: "overview", label: "数据概览", icon: SquaresFour },
-  { id: "students", label: "学员管理", icon: Users },
-  { id: "assignments", label: "组卷中心", icon: Exam },
+  { id: "classes", label: "班级空间", icon: Users },
+  { id: "teaching", label: "提升建议", icon: ClipboardText },
   { id: "bank", label: "题库管理", icon: Database },
+  { id: "assignments", label: "组卷中心", icon: Exam },
+  { id: "students", label: "学员管理", icon: Users },
   { id: "records", label: "测评记录", icon: ClipboardText },
   { id: "settings", label: "系统设置", icon: ChartPieSlice },
 ];
 
-/** 管理端登录/注册教师：真实服务端校验（/api/auth/*），仅教师角色可进入。
+/** 管理端登录/注册管理账号：真实服务端校验（/api/auth/*），仅教师角色可进入。
  *  注册不再需要邀请码（2026-10-03 产品要求）：教师与学员同一注册口、直接
  *  可注册；服务端同样忽略该旧字段（见 auth-worker 测试）。 */
 function Gate({ onEnter }) {
@@ -102,15 +106,15 @@ function Gate({ onEnter }) {
           <span>AIQUOS</span>
           <i />
         </div>
-        <h1>教师端</h1>
-        <p>登录后可查看班级与学员测评数据、组卷并推送给学生。账号由服务端严格校验。</p>
-        <div className="gate-tabs" role="group" aria-label="登录或注册教师账号">
+        <h1>管理端</h1>
+
+        <div className="gate-tabs" role="group" aria-label="登录或注册管理账号">
           <button type="button" className={mode === "login" ? "is-active" : ""}
             aria-pressed={mode === "login"}
             onClick={() => { setMode("login"); setFieldErrors({}); setError(""); }}>登录</button>
           <button type="button" className={mode === "register" ? "is-active" : ""}
             aria-pressed={mode === "register"}
-            onClick={() => { setMode("register"); setFieldErrors({}); setError(""); }}>注册教师</button>
+            onClick={() => { setMode("register"); setFieldErrors({}); setError(""); }}>注册管理账号</button>
         </div>
         <label>
           <span>账号（手机号 / 邮箱）</span>
@@ -153,7 +157,7 @@ function Gate({ onEnter }) {
         )}
         {error && <p className="gate-error" role="alert">{error}</p>}
         <button type="submit" disabled={pending}>
-          <LockSimple size={17} weight="bold" /> {pending ? "请稍候…" : mode === "login" ? "进入教师端" : "注册并进入"}
+          <LockSimple size={17} weight="bold" /> {pending ? "请稍候…" : mode === "login" ? "进入管理端" : "注册并进入"}
         </button>
         <a href="/" className="gate-back">返回学生端</a>
       </form>
@@ -169,7 +173,7 @@ export function AdminApp() {
   const [bankStatus, setBankStatus] = useState("loading");
   const [bankError, setBankError] = useState("");
   const [notice, setNotice] = useState("");
-  // 服务端实时数据（教师端主数据源）；拉取失败时回退本地演示名册。
+  // 数据已同步（管理端主数据源）；拉取失败时回退本地演示名册。
   const [teacherData, setTeacherData] = useState(null);
   const [dataStatus, setDataStatus] = useState("loading");
   const [dataError, setDataError] = useState("");
@@ -262,16 +266,18 @@ export function AdminApp() {
     : null;
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell admin-section-${view}`}>
       <aside className="admin-side">
         <div className="admin-brand" aria-hidden="true">
           <span>AIQUOS</span>
-          <em>教师端</em>
+          <em>管理端</em>
         </div>
-        <nav aria-label="教师端导航">
+        <nav aria-label="管理端导航">
           {NAV.map((item) => {
             const Icon = item.icon;
             return (
+              <div className="admin-nav-item" key={item.id}>
+              {({overview:"工作总览",classes:"班级与能力",bank:"题库与组卷",students:"学员与测评",settings:"系统管理"})[item.id] && <span className="admin-nav-group">{({overview:"工作总览",classes:"班级与能力",bank:"题库与组卷",students:"学员与测评",settings:"系统管理"})[item.id]}</span>}
               <button
                 key={item.id}
                 type="button"
@@ -282,6 +288,7 @@ export function AdminApp() {
                 <Icon size={18} weight={view === item.id ? "fill" : "regular"} />
                 {item.label}
               </button>
+              </div>
             );
           })}
         </nav>
@@ -295,14 +302,14 @@ export function AdminApp() {
       </aside>
       <div className="admin-main">
         <header className="admin-top">
-          <h1>{NAV.find((item) => item.id === view)?.label}</h1>
+          <div className="admin-page-heading"><h1>{NAV.find((item) => item.id === view)?.label}</h1></div>
           <div className="admin-top-meta">
             <span
               className={`admin-data-chip is-${dataStatus === "ready" ? "live" : dataStatus === "error" ? "offline" : "loading"}`}
               title={dataStatus === "error" ? dataError : undefined}
             >
               <i aria-hidden="true" />
-              {dataStatus === "ready" ? "服务端实时数据" : dataStatus === "error" ? "离线 · 显示本机演示数据" : "数据加载中"}
+              {dataStatus === "ready" ? "数据已同步" : dataStatus === "error" ? "离线 · 显示本机演示数据" : "数据加载中"}
             </span>
             {bankMeta && (
               <div className="admin-bank-chip" title="当前生效题库版本">
@@ -314,18 +321,13 @@ export function AdminApp() {
           </div>
         </header>
         {notice && <div className="admin-notice" role="status">{notice}</div>}
-        {dataStatus === "ready" && ["overview", "students"].includes(view) && teacherData?.classDetails?.length > 0 && (
-          <div className="admin-notice" aria-label="我的班级信息">
-            {teacherData.classDetails.map((item) => <p key={item.id}>
-              {item.name} · {item.teacherName} · 班级口令 {item.code} · {item.studentCount} 人 · 班级均分 {item.classAverage ?? "暂无"}
-            </p>)}
-          </div>
-        )}
         {dataStatus === "error" && view !== "bank" && view !== "settings" && (
           <div className="admin-warn" role="alert">
             服务端数据不可用（{dataError}）。当前显示本机演示名册，学生真实数据需服务恢复后可见。
           </div>
         )}
+        <div className="teacher-tour" aria-label="页面切换导航"><span>管理工作台 · {NAV.findIndex(item => item.id === view) + 1} / {NAV.length} · {NAV.find(item => item.id === view)?.label}</span><div><button onClick={() => setView(NAV[(NAV.findIndex(item => item.id === view) - 1 + NAV.length) % NAV.length].id)}>← 上一页</button><button onClick={() => setView(NAV[(NAV.findIndex(item => item.id === view) + 1) % NAV.length].id)}>下一页 →</button></div></div>
+        {["classes", "analytics", "teaching"].includes(view) && <TeachingWorkspace key={view} mode={view} roster={roster} teacherData={teacherData} onNavigate={setView} />}
         {view === "overview" && <OverviewView roster={roster} bankMeta={bankMeta} dataSource={dataStatus} />}
         {view === "students" && <StudentsView roster={roster} dataSource={dataStatus} />}
         {view === "assignments" && (
@@ -355,7 +357,7 @@ export function AdminApp() {
           />
         )}
         {view === "records" && (
-          <RecordsView roster={roster} onRefreshRoster={() => loadTeacherData()} />
+          <RecordsView roster={roster} assignments={teacherData?.assignments ?? []} onRefreshRoster={() => loadTeacherData()} />
         )}
         {view === "settings" && (
           <SettingsView

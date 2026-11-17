@@ -277,12 +277,13 @@ export function buildAbilityReportPdf(model, options = {}) {
  *
  * 三样都是运行期真实数据（用户明确要求，不接受占位符）：
  *   · 证据来源固定为本次测评的三通道（客观题 CAT / 对话采访 / 实操工作台）
- *   · 生成时间取 new Date()，即导出这一刻
+ *   · 生成时间取对应测评的 completedAt
  *   · 账号信息取登录档案（昵称 + 账号），未登录时退化为「未登录本机」
  */
 export function reportFooter(model, profile = null) {
-  const now = new Date();
-  const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const completed = model?.completedAt;
+  const now = completed ? new Date(completed) : null;
+  const stamp = now && Number.isFinite(now.getTime()) ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` : "未记录";
   const who = profile
     ? `${profile.nickname ?? "学员"}（${profile.account ?? profile.accountId ?? "—"}）`
     : "未登录本机";
@@ -299,7 +300,7 @@ export function abilityReportFileName(plan) {
   return `AIQUOS-测评报告-${plan.grade}档-${plan.score}分`;
 }
 
-export async function downloadAbilityReportPdf(model, profile = null, chat = null) {
+export async function createAbilityReportPdf(model, profile = null, chat = null) {
   if (typeof document === "undefined" || typeof Blob === "undefined") return;
   const plan = buildLearningPlan(model);
   // 报告正文为纯文字 + 顶部 12 字字像；字体子集在构建期产出、运行期加载。
@@ -312,5 +313,10 @@ export async function downloadAbilityReportPdf(model, profile = null, chat = nul
   const bytes = buildAbilityReportPdf(model, {
     glyphs, fonts, text: copy.text, footer: reportFooter(model, profile),
   });
-  savePdfBytes(bytes, abilityReportFileName(plan));
+  return bytes;
+}
+
+export async function downloadAbilityReportPdf(model, profile = null, chat = null) {
+ const bytes = await createAbilityReportPdf(model, profile, chat);
+ savePdfBytes(bytes, abilityReportFileName(buildLearningPlan(model)));
 }

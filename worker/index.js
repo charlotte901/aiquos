@@ -1,3 +1,4 @@
+import { DOCUMENT_IMPORT_PATH, handleDocumentImport } from "./document-import.js";
 import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat } from "./deepseek.js";
 import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./practical-tasks.js";
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./practical-score.js";
@@ -58,6 +59,7 @@ export default {
   async fetch(request, env) {
     await resolvePersistence(env);
     const { pathname } = new URL(request.url);
+    if(pathname===DOCUMENT_IMPORT_PATH)return handleDocumentImport(request,env);
     if ((pathname.startsWith("/api/auth/") || pathname.startsWith("/api/data/"))
       && (!accountPersistenceEnabled() || !sharedDataPersistenceEnabled())) {
       // 部署不能把注册成功建立在临时内存上；数据库接通前拒绝账号和班级请求。

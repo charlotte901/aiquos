@@ -11,6 +11,9 @@
     "build:fonts": "python scripts/build-pdf-font.py"
   },
   "dependencies": {
+    "@alicloud/docmind-api20220711": "^1.4.16",
+    "@alicloud/openapi-client": "^0.4.15",
+    "@alicloud/tea-util": "^1.4.11",
     "@fontsource/dm-sans": "^5.3.0",
     "@fontsource/noto-sans-sc": "^5.3.0",
     "@phosphor-icons/react": "^2.1.10",

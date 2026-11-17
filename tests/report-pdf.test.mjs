@@ -115,15 +115,15 @@ test("the footer carries real generation time and account info", async () => {
   // 页脚三要素均为真实运行期数据（用户明确要求，不接受占位符）：
   // 证据来源说明 + 生成时间 + 账号信息，另加页码。
   const { reportFooter } = await import("../src/report-pdf.js");
-  const before = Date.now();
-  const footer = reportFooter({}, { nickname: "小林", account: "13800000002" });
-  const after = Date.now();
+  const completedAt = "2026-10-03T06:30:00.000Z";
+  const footer = reportFooter({completedAt}, { nickname: "小林", account: "13800000002" });
+
   assert.match(footer.text, /本报告基于/);
   assert.match(footer.text, /生成时间 \d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
   assert.match(footer.text, /小林（13800000002）/);
-  // 生成时间必须落在调用窗口内（真实 new Date()，不是写死的字符串）
   const stamp = Date.parse(footer.generatedAt.replace(" ", "T"));
-  assert.ok(stamp >= before - 60_000 && stamp <= after + 60_000, "generatedAt should be the current time");
+  assert.equal(stamp, Date.parse(completedAt));
+  assert.equal(reportFooter({}, null).generatedAt, "未记录");
   // 未登录时退化为明确的本机说明，而不是空白或假账号
   assert.match(reportFooter({}, null).text, /未登录本机/);
 });

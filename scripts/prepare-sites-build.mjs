@@ -28,6 +28,8 @@ const modules = [
   "worker/comprehensive-quiz.js",
   "worker/bank-store.js",
   "worker/admin.js",
+  "worker/document-import.js",
+  "src/question-dedup.js",
   "worker/auth.js",
   "worker/account-store.js",
   "worker/data.js",
