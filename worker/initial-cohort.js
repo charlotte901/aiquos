@@ -8,8 +8,8 @@ export function bootstrapInitialCohort(accountPath, dataPath, fixturePath) {
   if (hasAccounts && hasData) return false;
   if (hasAccounts || hasData) throw new Error("账号库与班级库不完整，请恢复缺失的数据文件后启动，避免覆盖已有账号");
   const fixture = JSON.parse(readFileSync(fixturePath, "utf8"));
-  if (!Array.isArray(fixture.accounts) || !fixture.data || fixture.accounts.length !== 81
-    || fixture.data.classes?.length !== 2 || fixture.data.runs?.length !== 320) {
+  if (!Array.isArray(fixture.accounts) || !fixture.data || fixture.accounts.length !== 121
+    || fixture.data.classes?.length !== 3 || fixture.data.runs?.length !== 848) {
     throw new Error("初始班级数据不完整");
   }
   // 签名密钥由每台服务独立生成，不随源码分享。
