@@ -24,9 +24,13 @@ const sessions = [];
 for (const item of inventory.classes) {
   const teacher = await login(item.teacher, inventory.teacherPassword);
   const data = await get("/api/data/teacher/overview", teacher);
-  assert.equal(data.students.length, 80); assert.equal(data.runs.length, 320);
+  assert.equal(data.students.length, inventory.students.length); assert.equal(data.runs.length, fixture.data.runs.length);
   assert.equal(data.students.filter((student) => student.className === item.name).length, 40);
-  assert.equal(data.assignments.length, 2); assert.ok(data.assignments.every((assignment) => assignment.completedCount === 40));
+  assert.equal(data.assignments.length, fixture.data.assignments.length);
+  for (const assignment of data.assignments) {
+    const expected = new Set(fixture.data.runs.filter(run => run.assignmentId === assignment.id).map(run => run.accountId)).size;
+    assert.equal(assignment.completedCount, expected);
+  }
   assert.equal(data.store.persistent, true);
   const classStats = data.classDetails.find((classroom) => classroom.name === item.name);
   let firstStudent;
@@ -37,8 +41,9 @@ for (const item of inventory.classes) {
     const lookup = await get(`/api/data/classes?code=${encodeURIComponent(classroom.code)}`, student);
     assert.equal(lookup.class.name, account.className);
     const me = await get("/api/data/me", student);
-    assert.equal(me.runs.length, 4);
-    assert.deepEqual(new Set(me.runs.map((run) => run.assessmentId)), new Set(["conversation", "objective", "practical", "comprehensive"]));
+    const expectedRuns = fixture.data.runs.filter(run => run.accountId === account.accountId);
+    assert.equal(me.runs.length, expectedRuns.length);
+    assert.deepEqual(new Set(me.runs.map((run) => run.assessmentId)), new Set(expectedRuns.map(run => run.assessmentId)));
     assert.ok(me.runs.every((run) => run.simulated && run.dimensions.length === 6));
     assert.equal(me.classStats.studentCount, classStats.studentCount);
     assert.equal(me.classStats.classAverage, classStats.classAverage);
@@ -46,7 +51,7 @@ for (const item of inventory.classes) {
     for (const run of me.runs) assert.deepEqual(run, data.runs.find((record) => record.id === run.id));
   }
   sessions.push({ item, teacher, student: firstStudent, stats: classStats });
-  console.log(`${item.name}：40 名学生、160 条记录，师生端均分 ${classStats.classAverage} 完全一致`);
+  console.log(`${item.name}：${classStats.studentCount} 名学生，师生端均分 ${classStats.classAverage} 完全一致`);
 }
 
 // 新建独立浏览器环境：不依赖原浏览器的任何账号/测评缓存。
@@ -76,13 +81,19 @@ try {
   for (const [i, session] of sessions.entries()) {
     await evaluate(`localStorage.setItem('aiquos.admin-auth.v1', ${JSON.stringify(JSON.stringify(session.teacher))})`);
     await navigate("/admin.html");
+    await evaluate("[...document.querySelectorAll('.admin-side nav button')].find(button => button.innerText.trim() === '班级空间').click()");
+    await sleep(300);
     let text = await evaluate("document.body.innerText");
     assert.ok(text.includes(session.item.name));
-    assert.ok(text.includes(String(session.stats.classAverage)));
-    assert.ok(text.includes(sessions[1 - i].item.name));
+    const classRuns = fixture.data.runs.filter(run => run.className === session.item.name);
+    const recordAverage = (classRuns.reduce((sum, run) => sum + run.overallScore, 0) / classRuns.length).toFixed(2);
+    assert.ok(text.includes(recordAverage));
+    for (const other of sessions) assert.ok(text.includes(other.item.name));
     await shot(`teacher-${i + 1}`);
     await evaluate("[...document.querySelectorAll('button')].find((button) => button.innerText.includes('测评记录')).click()");
-    await sleep(500); text = await evaluate("document.body.innerText");
+    await sleep(300);
+    await evaluate(`(()=>{const input=document.querySelector('.search-box input');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,${JSON.stringify(session.student.profile.nickname)});input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+    await sleep(300); text = await evaluate("document.body.innerText");
     for (const label of ["综合测评", "实操测评", "对话式测评", "客观题测评"]) assert.ok(text.includes(label), label);
     await shot(`teacher-${i + 1}-records`);
     await evaluate(`localStorage.setItem('aiquos.auth.v1', ${JSON.stringify(JSON.stringify(session.student))})`);
@@ -102,8 +113,8 @@ try {
     const reportText = await evaluate("document.querySelector('.ability-report')?.innerText || ''");
     assert.ok(reportText.includes('完成于'));
     const reportScore = await evaluate("document.querySelector('.ability-total strong')?.innerText");
-    assert.equal(parseInt(reportScore), Math.round(latestRun.overallScore));
-    assert.ok(reportText.includes('综合测评'));
+    assert.equal(parseFloat(reportScore), latestRun.overallScore);
+    assert.ok(reportText.includes(({comprehensive:'综合测评',objective:'客观题测评',conversation:'对话式测评',practical:'实操测评'})[latestRun.assessmentId]));
     await navigate("/#center/records");
     let shownMonth = new Date().getFullYear() * 12 + new Date().getMonth();
     const showMonth = async (date) => {
@@ -133,4 +144,4 @@ try {
     console.log(`教师 ${i + 1} / 学生 ${i + 1} 实际页面验证通过`);
   }
 } finally { clearInterval(keepAlive); socket?.close(); child.kill(); await sleep(800); rmProfile(profile); }
-console.log("80 个学生登录、320 条模拟记录、两班数据归属与师生页面验证全部通过");
+console.log(`${inventory.students.length} 个学生登录、${fixture.data.runs.length} 条模拟记录、${inventory.classes.length} 班数据归属与师生页面验证全部通过`);

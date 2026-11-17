@@ -6,17 +6,18 @@ import { fileURLToPath } from "node:url";
 export function exportInitialCohort(root = new URL("../", import.meta.url)) {
   const auth = JSON.parse(readFileSync(new URL("worker/auth-accounts.json", root), "utf8"));
   const shared = JSON.parse(readFileSync(new URL("worker/aiquos-shared-data.json", root), "utf8"));
-  // 只导出明确创建的 81 个初始账号，不携带其他注册用户、签名密钥或会话。
+  // 只导出明确创建的 121 个初始账号，不携带其他注册用户、签名密钥或会话。
   const accounts = auth.accounts.filter((item) => item.account === "virtual.teacher1@aiquos.local"
-    || /^v[12]\.student(?:0[1-9]|[1-3]\d|40)@aiquos\.local$/.test(item.account));
+    || /^v[12]\.student(?:0[1-9]|[1-3]\d|40)@aiquos\.local$/.test(item.account)
+    || /^practice\.d69688\.(?:0[1-9]|[1-3]\d|40)@aiquos\.local$/.test(item.account));
   const ids = new Set(accounts.map((item) => item.accountId));
-  const classes = shared.classes.filter((item) => ["AI2026V1", "AI2026V2"].includes(item.code) && ids.has(item.teacherAccountId));
+  const classes = shared.classes.filter((item) => ["AI2026V1", "AI2026V2", "AIPD69688"].includes(item.code) && ids.has(item.teacherAccountId));
   const names = new Set(classes.map((item) => item.name));
   const assignments = shared.assignments.filter((item) => ids.has(item.createdByAccountId)
     && item.scope?.classNames?.some((name) => names.has(name)));
   const data = { classes, students: Object.fromEntries(Object.entries(shared.students).filter(([id]) => ids.has(id))),
     runs: shared.runs.filter((item) => ids.has(item.accountId)), assignments, counter: shared.counter };
-  if (accounts.length !== 81 || classes.length !== 2 || data.runs.length !== 320) throw new Error("初始数据数量不符，停止导出");
+  if (accounts.length !== 121 || classes.length !== 3 || data.runs.length !== 848) throw new Error("初始数据数量不符，停止导出");
   const fixture = { version: 1, accounts, data };
   writeFileSync(new URL("worker/initial-cohort.json", root), JSON.stringify(fixture, null, 2));
   writeClassRoster(fixture, root);
@@ -28,7 +29,7 @@ function writeClassRoster(fixture, root) {
   const teacher = accounts.find((item) => item.role === "teacher");
   const latestRun = (id, type) => data.runs.filter((run) => run.accountId === id && (!type || run.assessmentId === type))
     .sort((a, b) => b.completedAt.localeCompare(a.completedAt))[0];
-  const groups = data.classes.slice().sort((a, b) => a.code.localeCompare(b.code)).map((classroom) => {
+  const groups = data.classes.filter(item => ["AI2026V1", "AI2026V2"].includes(item.code)).sort((a, b) => a.code.localeCompare(b.code)).map((classroom) => {
     const students = accounts.filter((item) => item.role === "student" && item.className === classroom.name)
       .sort((a, b) => a.account.localeCompare(b.account));
     const average = classRanking(students, data.runs).classAverage;
