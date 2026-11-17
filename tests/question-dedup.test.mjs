@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {deduplicateQuestions} from '../src/question-dedup.js';
+const q={q:'哪一项正确？',type:'single',options:[{key:'A',text:'核对来源'},{key:'B',text:'直接采纳'}],answer:['A']};
+test('duplicate import ignores spacing, IDs and option order but preserves conflicting answers',()=>{const reordered={...q,id:'other',q:'哪一项 正确？',options:[{key:'X',text:'直接采纳'},{key:'Y',text:'核对来源'}],answer:['Y']};const conflict={...q,answer:['B']};const r=deduplicateQuestions([q,reordered,conflict]);assert.equal(r.duplicates,1);assert.equal(r.questions.length,2);assert.equal(r.questions[0],q);});

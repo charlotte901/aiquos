@@ -1,5 +1,5 @@
 // Admin API client. All calls go to the same-origin worker endpoints.
-// 教师端自带独立会话（aiquos.admin-auth.v1）：登录走 /api/auth/login 且
+// 管理端自带独立会话（aiquos.admin-auth.v1）：登录走 /api/auth/login 且
 // 仅接受 teacher 角色；数据读写全部携带 Bearer 令牌。
 const ADMIN_SESSION_KEY = "aiquos.admin-auth.v1";
 
@@ -40,13 +40,13 @@ export async function adminLogin(account, password) {
   if (!response.ok) throw await errorMessage(response, `登录失败（${response.status}）`);
   const payload = await response.json();
   if (payload.profile?.role !== "teacher") {
-    throw new Error("该账号是学生账号，请使用教师账号登录管理端");
+    throw new Error("该账号是学生账号，请使用管理账号登录管理端");
   }
   writeAdminSession({ token: payload.token, profile: payload.profile });
   return payload.profile;
 }
 
-/** 注册教师并进入管理端。注册不再需要邀请码（2026-10-03 产品要求），请求
+/** 注册管理账号并进入管理端。注册不再需要邀请码（2026-10-03 产品要求），请求
  *  不再携带该字段；服务端同样忽略它。 */
 export async function adminRegisterTeacher({ account, password, nickname }) {
   const response = await fetch("/api/auth/register", {
@@ -108,7 +108,7 @@ async function authedFetch(path, init = {}) {
   return response.json();
 }
 
-/** 教师端全量数据：学员 / 测评记录 / 班级 / 推送作业。 */
+/** 管理端全量数据：学员 / 测评记录 / 班级 / 推送作业。 */
 export function fetchTeacherData() {
   return authedFetch("/api/data/teacher/overview");
 }
@@ -135,7 +135,7 @@ export async function fetchBank() {
   return response.json();
 }
 
-export async function saveBank(questions) {
+export async function saveBank(questions, mode = "replace") {
   const session = readAdminSession();
   if (!session) throw new Error("登录状态已失效，请重新登录");
   const response = await fetch("/api/admin/bank", {
@@ -144,7 +144,7 @@ export async function saveBank(questions) {
       "content-type": "application/json",
       authorization: `Bearer ${session.token}`,
     },
-    body: JSON.stringify({ questions }),
+    body: JSON.stringify({ questions, mode }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) throw new Error(payload?.error ?? `保存失败（${response.status}）`);
@@ -161,3 +161,5 @@ export async function resetBankToBundled() {
   if (!response.ok) throw new Error(`恢复失败（${response.status}）`);
   return response.json();
 }
+
+export function documentImport(payload, options = {}){return authedFetch("/api/admin/document-import",payload instanceof FormData?{method:"POST",body:payload,signal:options.signal}:{method:"POST",signal:options.signal,headers:{"content-type":"application/json"},body:JSON.stringify(payload)});}

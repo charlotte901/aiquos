@@ -1,3 +1,4 @@
+import { DOCUMENT_IMPORT_PATH, handleDocumentImport } from './document-import.js';
 import { ARK_IMAGE_PATH, DEEPSEEK_CHAT_PATH, handleArkImage, handleDeepSeekChat } from "./deepseek.js";
 import { PRACTICAL_TASKS_PATH, handlePracticalTasks } from "./practical-tasks.js";
 import { PRACTICAL_SCORE_PATH, handlePracticalScore } from "./practical-score.js";
@@ -59,6 +60,7 @@ export default {
       return new Response(JSON.stringify({ error: "服务端持久存储读取失败，已停止写入以保护已有数据" }), { status: 503, headers: { "content-type": "application/json; charset=utf-8" } });
     }
     const { pathname } = new URL(request.url);
+    if (pathname === DOCUMENT_IMPORT_PATH) return handleDocumentImport(request, env);
     if ((pathname.startsWith("/api/auth/") || pathname.startsWith("/api/data/"))
       && (!accountPersistenceEnabled() || !sharedDataPersistenceEnabled())) {
       return new Response(JSON.stringify({ error: "服务端持久存储尚未配置，请完成存储配置后再使用账号和班级功能" }), {

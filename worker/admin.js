@@ -2,6 +2,7 @@
 // 令牌（与 /api/data/teacher/* 同一鉴权）；GET 保持公开——题库内容本身
 // 会下发到学生端，读取无需鉴权。此前「同源零鉴权」的演示模型随严格
 // 登录体系一并收口。
+import { deduplicateQuestions, questionFingerprint } from "../src/question-dedup.js";
 import { getBankState, resetBank, setBank } from "./bank-store.js";
 import { DEFAULT_EDITION, normalizeEdition } from "../src/bank-editions.js";
 import { bearerToken, verifyToken } from "./auth.js";
@@ -43,6 +44,17 @@ export async function handleAdminBank(request) {
       return json({ error: "questions array required" }, 400);
     }
     try {
+      if (payload.mode === "append") {
+        if (payload.questions.length > 100) return json({ error: "单次最多导入 100 题" }, 400);
+        const current = getBankState(edition);
+        const existing = new Set(current.questions.map(questionFingerprint));
+        const incoming = deduplicateQuestions(payload.questions).questions
+          .filter(question => !existing.has(questionFingerprint(question)));
+        // Resolve the current bank at publication time, so other teachers' changes survive.
+        const next = incoming.length ? setBank([...current.questions, ...incoming], edition) : current;
+        return json({ ...next, importedCount: incoming.length,
+          duplicateCount: payload.questions.length - incoming.length });
+      }
       return json(setBank(payload.questions, edition));
     } catch (error) {
       return json({ error: error?.message ?? "bank validation failed" }, 400);

@@ -289,3 +289,22 @@ test("teacher gate registers without an invite code anywhere in the UI or API cl
   assert.match(api, /payload\.profile\?\.role !== "teacher"/);
   assert.match(api, /role: "teacher"/);
 });
+
+test("document import appends to the latest bank and skips duplicate content without overwriting edits", async () => {
+  setBankPersistence(null);
+  const original = getBankState();
+  const other = { ...structuredClone(original.questions[0]), id: "q-other-teacher", q: "其他教师刚刚发布的新题" };
+  setBank([...original.questions, other]);
+  const imported = { ...structuredClone(original.questions[1]), id: "q-document-import", q: "文档审核后的新增题" };
+  const response = await request("PUT", { mode: "append", questions: [imported, { ...imported, id: "q-repeat-content" }] });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.importedCount, 1);
+  assert.equal(result.duplicateCount, 1);
+  assert.ok(result.questions.some(question => question.id === other.id));
+  assert.equal(result.questions.length, original.questions.length + 2);
+  const again = await (await request("PUT", { mode: "append", questions: [imported] })).json();
+  assert.equal(again.importedCount, 0);
+  assert.equal(again.bankVersion, result.bankVersion);
+  resetBank();
+});

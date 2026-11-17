@@ -1,52 +1,34 @@
-import { useMemo, useState } from "react";
+import { assessmentLabel } from '../../server-records.js';
+import { createPortal } from 'react-dom';
+import { AbilityProgress } from './AbilityProgress.jsx';
+import { useModalFocus } from "../use-modal-focus.js";
+import { useMemo, useRef, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, MagnifyingGlass, X } from "@phosphor-icons/react";
-
 function formatDate(iso) {
   const date = new Date(iso);
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 }
-
-function MiniRadar({ dimensions }) {
-  const points = dimensions.map((dim, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    const radius = (dim.score / 100) * 74;
-    return `${80 + radius * Math.cos(angle)},${80 + radius * Math.sin(angle)}`;
-  }).join(" ");
-  const ring = (radius) => Array.from({ length: 6 }, (_, index) => {
-    const angle = (-90 + index * 60) * Math.PI / 180;
-    return `${80 + radius * Math.cos(angle)},${80 + radius * Math.sin(angle)}`;
-  }).join(" ");
-  return (
-    <svg viewBox="0 0 160 160" role="img" aria-label="六维雷达图">
-      {[24, 48, 74].map((radius) => <polygon key={radius} points={ring(radius)} className="radar-grid" />)}
-      <polygon points={points} className="radar-shape" />
-      {dimensions.map((dim, index) => {
-        const angle = (-90 + index * 60) * Math.PI / 180;
-        return (
-          <text key={dim.key} x={80 + 88 * Math.cos(angle)} y={80 + 88 * Math.sin(angle)} className="radar-tick" textAnchor="middle">
-            {dim.short}
-          </text>
-        );
-      })}
-    </svg>
-  );
-}
-
 export function StudentsView({ roster, dataSource }) {
+  const [tab,setTab]=useState("students");
   const [query, setQuery] = useState("");
   const [className, setClassName] = useState("all");
   const [selected, setSelected] = useState(null);
-
+  const dialogRef = useRef(null);
+  useModalFocus(dialogRef, () => setSelected(null), { open: Boolean(selected) });
   const classes = useMemo(() => ["all", ...new Set(roster.map((student) => student.className))], [roster]);
   const filtered = useMemo(() => roster.filter((student) => {
     if (className !== "all" && student.className !== className) return false;
     if (!query.trim()) return true;
     return student.name.includes(query.trim());
   }), [roster, query, className]);
+  const averageOf=student=>{const values=student.runs.map(r=>r.overallScore).filter(Number.isFinite);return values.length?Math.round(values.reduce((a,b)=>a+b,0)/values.length*100)/100:null;};
+  const ranked=roster.filter(s=>className==='all'||s.className===className).map(s=>({...s,average:averageOf(s)})).filter(s=>s.average!==null).sort((a,b)=>b.average-a.average);
+  const rankingRows=ranked.filter(s=>!query.trim()||s.name.includes(query.trim()));
   const sourceLabel = (source) => (source === "server" ? "服务端" : source === "local" ? "本机真实" : "演示班级");
 
   return (
     <div className="admin-view">
+      <div className="teacher-tabs" role="tablist" aria-label="学员管理视图">{[["students","学员列表"],["ranking","学员排名"]].map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?"is-active":""} onClick={()=>setTab(id)}>{label}</button>)}</div>
       <div className="toolbar">
         <label className="search-box">
           <MagnifyingGlass size={16} />
@@ -61,8 +43,7 @@ export function StudentsView({ roster, dataSource }) {
         </select>
         <span className="toolbar-count">{filtered.length} 名学员</span>
       </div>
-
-      {filtered.length === 0 ? (
+      {tab==='ranking'?<section className="panel"><h2>学员平均分排名</h2><p>按平均分排序，同分并列。</p><table className="admin-table is-hover"><thead><tr><th>排名</th><th>学员</th><th>班级</th><th>完成次数</th><th>平均分</th></tr></thead><tbody>{rankingRows.map(s=><tr key={s.id} onClick={()=>setSelected(s)}><td>{ranked.findIndex(r=>r.average===s.average)+1}</td><td><b>{s.name}</b></td><td>{s.className}</td><td>{s.runs.length}</td><td>{s.average}</td></tr>)}</tbody></table>{!rankingRows.length&&<p className="empty-state">暂无排名数据</p>}</section>:filtered.length === 0 ? (
         <div className="empty-state">
           <strong>没有匹配的学员</strong>
           <p>调整搜索词或班级筛选后重试。</p>
@@ -97,10 +78,9 @@ export function StudentsView({ roster, dataSource }) {
           </tbody>
         </table>
       )}
-
-      {selected && (
+      {selected && createPortal(
         <div className="drawer-overlay" onClick={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
-          <aside className="drawer" role="dialog" aria-label={`学员详情 ${selected.name}`}>
+          <aside ref={dialogRef} className="drawer" role="dialog" aria-modal="true" aria-label={`学员详情 ${selected.name}`}>
             <header>
               <div>
                 <h2>{selected.name}</h2>
@@ -114,24 +94,23 @@ export function StudentsView({ roster, dataSource }) {
             <div className="drawer-body">
               {selected.runs.length > 0 && (
                 <div className="drawer-radar">
-                  <MiniRadar dimensions={selected.runs[selected.runs.length - 1].dimensions} />
-                  <p>最近一次六维画像</p>
+                  <AbilityProgress key={selected.id} roster={[selected]} showStudentFilter={false} />
                 </div>
               )}
               <table className="admin-table">
                 <thead>
-                  <tr><th>完成时间</th><th>总分</th><th>等级</th><th>趋势</th></tr>
+                  <tr><th>完成时间</th><th>测评类型</th><th>总分</th><th>等级</th><th>趋势</th></tr>
                 </thead>
                 <tbody>
                   {selected.runs.length === 0 && (
-                    <tr><td colSpan={4}>该学员还没有完成记录</td></tr>
+                    <tr><td colSpan={5}>该学员还没有完成记录</td></tr>
                   )}
                   {selected.runs.map((run, index) => {
-                    const previous = selected.runs[index - 1]?.overallScore;
-                    const delta = previous === undefined ? null : run.overallScore - previous;
+                    const previous = selected.runs.slice(0, index).filter(item => (item.assessmentId || "comprehensive") === (run.assessmentId || "comprehensive")).at(-1)?.overallScore;
+                    const delta = previous === undefined ? null : Math.round((run.overallScore - previous) * 10) / 10;
                     return (
                       <tr key={run.id}>
-                        <td>{formatDate(run.completedAt)}</td>
+                        <td>{formatDate(run.completedAt)}</td><td>{assessmentLabel(run.assessmentId)}</td>
                         <td><b>{run.overallScore}</b></td>
                         <td>{run.grade
                           ? <span className={`grade-badge is-${run.grade.toLowerCase()}`}>{run.grade}</span>
@@ -148,7 +127,7 @@ export function StudentsView({ roster, dataSource }) {
               </table>
             </div>
           </aside>
-        </div>
+        </div>, document.body
       )}
     </div>
   );

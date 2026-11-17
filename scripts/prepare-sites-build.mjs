@@ -34,6 +34,8 @@ const modules = [
   "worker/comprehensive-quiz.js",
   "worker/bank-store.js",
   "worker/admin.js",
+  "worker/document-import.js",
+  "src/question-dedup.js",
   "worker/auth.js",
   "worker/account-store.js",
   "worker/data.js",
@@ -71,6 +73,10 @@ for (const relative of modules) {
   mkdirSync(path.dirname(target), { recursive: true });
   copyFileSync(path.join(root, relative), target);
 }
+// The document parser loads the official SDK lazily at runtime.
+// Ship an installable manifest and lockfile along with the server source.
+copyFileSync(path.join(root, "package.json"), path.join(serverDir, "package.json"));
+copyFileSync(path.join(root, "package-lock.json"), path.join(serverDir, "package-lock.json"));
 copyFileSync(hosting, path.join(dist, ".openai", "hosting.json"));
 
 console.log(

@@ -1,3 +1,4 @@
+import { studentGrade } from "../student-grade.js";
 // Admin data layer. Two sources merge into one roster:
 //  1. A deterministic seeded cohort (演示班级, clearly labelled) so the
 //     console has realistic volume in a demo without any backend.
@@ -63,7 +64,7 @@ function buildDemoCohort() {
         studentId: `demo-${index}`,
         completedAt: completedAt.toISOString(),
         overallScore: overall,
-        grade: gradeOf(overall),
+        grade: studentGrade(overall),
         dimensions: dims,
         answeredCount: 25,
         totalQuestions: 25,
@@ -89,7 +90,7 @@ function localStudent() {
     studentId: "local",
     completedAt: snapshot.completedAt,
     overallScore: snapshot.result.overallScore,
-    grade: snapshot.result.grade,
+    grade: studentGrade(snapshot.result.overallScore),
     dimensions: snapshot.result.dimensions.map((dimension) => ({
       key: dimension.key,
       name: dimension.name,
@@ -133,8 +134,11 @@ export function buildServerRoster(payload) {
       id: run.id,
       studentId: run.accountId,
       completedAt: run.completedAt,
+      startedAt: run.startedAt ?? null,
+      scoringVersion: run.scoringVersion ?? null,
+      channels: run.channels ?? null,
       overallScore: run.overallScore,
-      grade: run.grade ?? null,
+      grade: studentGrade(run.overallScore),
       dimensions: Array.isArray(run.dimensions) ? run.dimensions : [],
       answeredCount: run.answeredCount ?? null,
       totalQuestions: run.totalQuestions ?? null,

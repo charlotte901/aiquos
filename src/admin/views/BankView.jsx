@@ -1,3 +1,7 @@
+import { QUESTION_TYPE_LABELS,changeQuestionType } from "../../question-types.js";
+import { DocumentImportDialog } from "./DocumentImportDialog.jsx";
+import { createPortal } from 'react-dom';
+import { useTeacherConfirm } from '../TeacherConfirm.jsx';
 import { useMemo, useState } from "react";
 import {
   ArrowCounterClockwise,
@@ -15,7 +19,7 @@ import { bankAudit } from "../stats.js";
 
 const LEVEL_LABELS = { academy: "智核学院", labyrinth: "信息迷城", workshop: "创客工坊", station: "协同空间站", court: "伦理殿堂" };
 const DIFFICULTY_LABELS = { low: "低", medium: "中", high: "高" };
-const TYPE_LABELS = { single: "单选", multi: "多选", judge: "判断" };
+const TYPE_LABELS = QUESTION_TYPE_LABELS;
 const PAGE_SIZE = 10;
 
 function blankQuestion(questions) {
@@ -53,6 +57,7 @@ function EditDialog({ question, questions, onClose, onSaved }) {
     update({ options });
   };
   const toggleAnswer = (key) => {
+    if(draft.type!=="multi"){update({answer:[key]});return;}
     const answer = draft.answer.includes(key)
       ? draft.answer.filter((item) => item !== key)
       : [...draft.answer, key].sort();
@@ -102,13 +107,13 @@ function EditDialog({ question, questions, onClose, onSaved }) {
     }
   };
 
-  return (
+  return createPortal(
     <div className="drawer-overlay" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="edit-dialog" role="dialog" aria-modal="true" aria-label={creating ? "新增题目" : `编辑题目 ${question.id}`}>
         <header>
           <div>
             <h2>{creating ? "新增题目" : "编辑题目"}</h2>
-            <p>{creating ? "新题将进入题库，保存后发布新版本，学生端下一次出题即生效" : `${question.id} · 保存后将发布新题库版本，学生端下一次出题即生效`}</p>
+
           </div>
           <button type="button" onClick={onClose} aria-label="关闭编辑"><X size={18} weight="bold" /></button>
         </header>
@@ -138,7 +143,7 @@ function EditDialog({ question, questions, onClose, onSaved }) {
             </label>
             <label>
               <span>题型</span>
-              <select value={draft.type} onChange={(event) => update({ type: event.target.value, answer: [draft.answer[0]] })}>
+              <select value={draft.type} onChange={(event) => update(changeQuestionType(draft,event.target.value))}>
                 {Object.entries(TYPE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
               </select>
             </label>
@@ -156,7 +161,7 @@ function EditDialog({ question, questions, onClose, onSaved }) {
                   />
                   <b>{option.key}</b>
                 </label>
-                <input value={option.text} onChange={(event) => updateOption(index, event.target.value)} aria-label={`选项 ${option.key} 文本`} />
+                <input value={option.text} onChange={(event) => updateOption(index, event.target.value)} readOnly={draft.type === "judge"} aria-label={`选项 ${option.key} 文本`} />
               </div>
             ))}
           </fieldset>
@@ -187,17 +192,19 @@ function EditDialog({ question, questions, onClose, onSaved }) {
           </div>
         </footer>
       </div>
-    </div>
+    </div>, document.body
   );
 }
 
 export function BankView({ bankState, status, error, onReload, onNotice }) {
+  const {confirm,dialog: confirmDialog}=useTeacherConfirm();
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
   const [type, setType] = useState("all");
   const [page, setPage] = useState(0);
   const [editing, setEditing] = useState(null);       // 题目对象 = 编辑；null = 关闭
+  const [importing,setImporting]=useState(false);
   const [creating, setCreating] = useState(false);     // 新增对话框开关
   const [resetting, setResetting] = useState(false);
   const [deletingId, setDeletingId] = useState("");
@@ -220,7 +227,7 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
   const pageItems = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   const reset = async () => {
-    if (!window.confirm("确认放弃全部管理端修改，恢复内置题库？")) return;
+    if (!(await confirm("确认放弃全部管理端修改，恢复内置题库？"))) return;
     setResetting(true);
     try {
       await resetBankToBundled();
@@ -234,9 +241,9 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
   };
 
   const removeQuestion = async (question) => {
-    if (!window.confirm(`确认删除题目 ${question.id}？
+    if (!(await confirm(`确认删除题目 ${question.id}？
 「${question.q.slice(0, 24)}…」
-保存后将发布新题库版本。`)) return;
+保存后将发布新题库版本。`))) return;
     setDeletingId(question.id);
     try {
       const state = await saveBank(bankState.questions.filter((item) => item.id !== question.id));
@@ -264,6 +271,8 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
 
   return (
     <div className="admin-view">
+      {confirmDialog}
+      {importing&&<DocumentImportDialog questions={bankState.questions} onClose={()=>setImporting(false)} onSaved={state=>{setImporting(false);onReload();onNotice("导入 "+state.importedCount+" 题，跳过重复 "+state.duplicateCount+" 题 · "+state.bankVersion);}}/>}
       {audit && (
         <section className="audit-panel" aria-label="题库体检">
           <div className="audit-stats">
@@ -300,6 +309,7 @@ export function BankView({ bankState, status, error, onReload, onNotice }) {
           {Object.entries(TYPE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
         </select>
         <span className="toolbar-count">{filtered.length} 题</span>
+        <button type="button" onClick={()=>setImporting(true)}>导入 PDF / Word</button>
         <button type="button" className="toolbar-add" onClick={() => setCreating(true)}>
           <Plus size={15} weight="bold" /> 新增题目
         </button>

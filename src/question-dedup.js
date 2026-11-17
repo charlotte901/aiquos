@@ -1,0 +1,3 @@
+const normalize=s=>String(s??'').normalize('NFKC').replace(/\s+/g,'').trim();
+export function questionFingerprint(q){const options=Array.isArray(q.options)?q.options:[];const answers=new Set(q.answer||[]);return JSON.stringify([normalize(q.q),q.type,options.map(o=>[normalize(o.text),answers.has(o.key)]).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]);}
+export function deduplicateQuestions(questions){const seen=new Set(),unique=[];let duplicates=0;for(const q of questions){const key=questionFingerprint(q);if(seen.has(key)){duplicates++;continue;}seen.add(key);unique.push(q);}return {questions:unique,duplicates};}

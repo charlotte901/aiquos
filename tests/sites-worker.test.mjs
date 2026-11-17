@@ -140,6 +140,8 @@ test("emits the files required by Sites packaging", { skip: !DIST_BUILT && "dist
   // 入口在 worker/ 下：worker 模块之间是 ./ 与 ../src 的相对导入，打包结果
   // 必须保留源码层级（server/worker、server/src、server/vendor 互为兄弟）。
   await access(new URL("../dist/server/worker/index.js", import.meta.url));
+  await access(new URL("../dist/server/package.json", import.meta.url));
+  await access(new URL("../dist/server/package-lock.json", import.meta.url));
   await access(new URL("../dist/server/src/bank-editions.js", import.meta.url));
   await access(new URL("../dist/server/src/banks/comprehensive-880.json", import.meta.url));
   await access(new URL("../dist/.openai/hosting.json", import.meta.url));

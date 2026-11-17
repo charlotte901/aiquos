@@ -277,7 +277,7 @@ export function buildAbilityReportPdf(model, options = {}) {
  *
  * 三样都是运行期真实数据（用户明确要求，不接受占位符）：
  *   · 证据来源固定为本次测评的三通道（客观题 CAT / 对话采访 / 实操工作台）
- *   · 生成时间取 new Date()，即导出这一刻
+ *   · 生成时间取导出这一刻；完成时间另在报告档案行显示
  *   · 账号信息取登录档案（昵称 + 账号），未登录时退化为「未登录本机」
  */
 export function reportFooter(model, profile = null) {
@@ -299,7 +299,7 @@ export function abilityReportFileName(plan) {
   return `AIQUOS-测评报告-${plan.grade}档-${plan.score}分`;
 }
 
-export async function downloadAbilityReportPdf(model, profile = null, chat = null) {
+export async function createAbilityReportPdf(model, profile = null, chat = null) {
   if (typeof document === "undefined" || typeof Blob === "undefined") return;
   const plan = buildLearningPlan(model);
   // 报告正文为纯文字 + 顶部 12 字字像；字体子集在构建期产出、运行期加载。
@@ -312,5 +312,10 @@ export async function downloadAbilityReportPdf(model, profile = null, chat = nul
   const bytes = buildAbilityReportPdf(model, {
     glyphs, fonts, text: copy.text, footer: reportFooter(model, profile),
   });
-  savePdfBytes(bytes, abilityReportFileName(plan));
+  return bytes;
+}
+
+export async function downloadAbilityReportPdf(model, profile = null, chat = null) {
+ const bytes = await createAbilityReportPdf(model, profile, chat);
+ savePdfBytes(bytes, abilityReportFileName(buildLearningPlan(model)));
 }

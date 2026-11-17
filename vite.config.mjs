@@ -1,3 +1,4 @@
+import { DOCUMENT_IMPORT_PATH, handleDocumentImport } from './worker/document-import.js';
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { Readable } from "node:stream";
@@ -130,6 +131,30 @@ export default defineConfig(({ mode }) => {
             response.headers.forEach((value, key) => res.setHeader(key, value));
             if (!response.body) return res.end();
             Readable.fromWeb(response.body).pipe(res);
+          });
+          server.middlewares.use(DOCUMENT_IMPORT_PATH, async (req, res) => {
+            try {
+              const chunks = []; let size = 0;
+              for await (const chunk of req) {
+                size += chunk.length;
+                if (size > 10 * 1024 * 1024 + 65536) {
+                  res.statusCode = 413; res.setHeader("content-type", "application/json; charset=utf-8");
+                  return res.end(JSON.stringify({ error: "文件不能超过 10 MB" }));
+                }
+                chunks.push(chunk);
+              }
+              const response = await handleDocumentImport(new Request("http://localhost" + DOCUMENT_IMPORT_PATH, {
+                method: req.method,
+                headers: { "content-type": req.headers["content-type"] || "application/json", authorization: req.headers.authorization || "" },
+                body: ["GET", "HEAD"].includes(req.method) ? undefined : Buffer.concat(chunks),
+              }), env);
+              res.statusCode = response.status;
+              response.headers.forEach((value, key) => res.setHeader(key, value));
+              res.end(await response.text());
+            } catch {
+              res.statusCode = 400; res.setHeader("content-type", "application/json; charset=utf-8");
+              res.end(JSON.stringify({ error: "导入请求格式无效" }));
+            }
           });
           server.middlewares.use(ADMIN_BANK_PATH, async (req, res) => {
             const chunks = [];
