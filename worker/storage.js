@@ -4,8 +4,8 @@
 // Workers），因此本模块**不直接 import node:fs**——fs 实现由调用方注入：
 //   · vite dev 中间件（Node）注入静态导入的 node:fs；
 //   · 生产接线（worker/index.js 的 ensurePersistence）在环境变量
-//     AIQUOS_DATA_DIR 存在时动态 import node:fs，失败（非 Node 运行时）
-//     静默保持内存态——与打包产物「纯 Node 模块」的部署形态一致。
+//     AIQUOS_DATA_DIR 存在时动态 import node:fs。未配置目录时保持内存态；
+//     账号接口由入口拒绝，配置失败则停止写入。
 //
 // 原子写：先写 `<file>.tmp-<pid>-<seq>` 再 rename 覆盖。直接 writeFileSync
 // 在写一半崩溃/断电会留下截断的 JSON，下一次 loadState 按损坏文件处理，
@@ -16,37 +16,50 @@ let tmpSequence = 0;
 
 /** 单个 JSON 文件的原子读写（fs 实现注入）。 */
 export function createAtomicJsonFileStore(fs, filePath) {
+  const read = (path) => {
+    try { return fs.readFileSync(path, "utf8"); }
+    catch (error) { if (error.code === "ENOENT") return null; throw error; }
+  };
+  const write = (path, text) => {
+    fs.mkdirSync?.(dirnameOf(path), { recursive: true });
+    const tmp = `${path}.tmp-${globalThis.process?.pid ?? 0}-${++tmpSequence}`;
+    try { fs.writeFileSync(tmp, text); fs.renameSync(tmp, path); }
+    finally { try { fs.unlinkSync(tmp); } catch { /* rename already removed it */ } }
+  };
   return {
     load() {
-      try {
-        return fs.readFileSync(filePath, "utf8");
-      } catch {
-        return null; // 不存在或不可读：由上层按「无存档」处理。
+      const raw = read(filePath);
+      if (raw === null) return null;
+      try { JSON.parse(raw); return raw; }
+      catch (error) {
+        const backup = read(`${filePath}.bak`);
+        if (backup === null) throw error;
+        JSON.parse(backup);
+        return backup;
       }
     },
     save(text) {
-      fs.mkdirSync?.(dirnameOf(filePath), { recursive: true });
-      tmpSequence += 1;
-      const tmp = `${filePath}.tmp-${process.pid ?? 0}-${tmpSequence}`;
-      fs.writeFileSync(tmp, text);
-      fs.renameSync(tmp, filePath);
+      JSON.parse(text);
+      const previous = read(filePath);
+      if (previous !== null) {
+        let valid = false;
+        try { JSON.parse(previous); valid = true; } catch { /* preserve the last good backup */ }
+        if (valid) write(`${filePath}.bak`, previous);
+      }
+      write(filePath, text);
     },
     remove() {
-      try {
-        fs.unlinkSync(filePath);
-      } catch {
-        // 本来就没有：删除即完成。
+      for (const path of [filePath, `${filePath}.bak`]) {
+        try { fs.unlinkSync(path); }
+        catch (error) { if (error.code !== "ENOENT" && error.message !== "ENOENT") throw error; }
       }
     },
   };
 }
 
 function dirnameOf(filePath) {
-  const index = filePath.lastIndexOf("/");
-  if (index <= 0) return index === 0 ? "/" : ".";
-  // Windows 路径（打包产物也跑 Node/win）：反斜杠同样处理。
-  const winIndex = filePath.lastIndexOf("\\");
-  return filePath.slice(0, Math.max(index, winIndex) > 0 ? Math.max(index, winIndex) : index);
+  const index = Math.max(filePath.lastIndexOf("/"), filePath.lastIndexOf("\\"));
+  return index < 0 ? "." : index === 0 ? filePath[0] : filePath.slice(0, index);
 }
 
 /**
@@ -86,12 +99,19 @@ export async function ensureFilePersistence(env, inject) {
     const fs = fsModule.default ?? fsModule;
     const path = pathModule.default ?? pathModule;
     const join = pathModule.join ?? path.join.bind(path);
+    // Seed only a new installation; the Node-only bootstrap stays outside CF imports.
+    const cohortModuleName = "./initial-" + "cohort.js";
+    const { bootstrapInitialCohort } = await import(cohortModuleName);
+    fs.mkdirSync(dir, { recursive: true });
+    bootstrapInitialCohort(join(dir, "auth-accounts.json"), join(dir, "aiquos-shared-data.json"),
+      new URL("./initial-cohort.json", import.meta.url));
     const adapters = filePersistenceAdapters(fs, join, dir);
+    // Validate or recover both files before accepting any production request.
+    adapters.account.load();
+    adapters.shared.load();
     inject(adapters);
     return true;
-  } catch {
-    // 无 node:fs / 目录不可写：保持各 store 的模块内存态（per-isolate），
-    // 与未配置该变量的行为一致。
-    return false;
+  } catch (error) {
+    throw new Error("无法初始化持久存储，已停止写入", { cause: error });
   }
 }

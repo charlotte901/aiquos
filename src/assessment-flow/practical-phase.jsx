@@ -11,7 +11,7 @@ import { MarkdownLite } from "../markdown-lite";
 import { practicalAgentMessages, practicalImagePrompt, practicalImageRefs } from "../practical-agent";
 import { deliveryRequirements, scoringSchemeRows, taskImageSize } from "../practical-scoring";
 import { downloadTaskMaterialDocx } from "../task-material-docx";
-import { IMAGE_DRAG_TYPE, inputAssets, productAssets, assetLabel, MAX_GENERATIONS, PracticalImageLightbox, PhaseTimer, TaskAction, useStorySequencer } from "./flow-shared";
+import { IMAGE_DRAG_TYPE, inputAssets, productAssets, referenceDataUri, assetLabel, MAX_GENERATIONS, PracticalImageLightbox, PhaseTimer, TaskAction, useStorySequencer } from "./flow-shared";
 
 export function offlineImage(title) {
   const words = String(title ?? "AI 生成任务");

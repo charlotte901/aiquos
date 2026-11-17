@@ -29,6 +29,7 @@ export const DATA_ME_PATH = "/api/data/me";
 export const DATA_ASSIGNMENTS_PATH = "/api/data/assignments";
 export const DATA_ASSIGNMENT_STATUS_PATH = "/api/data/assignment-status";
 export const DATA_TEACHER_OVERVIEW_PATH = "/api/data/teacher/overview";
+export const DATA_DRAFT_PATH = "/api/data/draft";
 export const DATA_CLASSES_PATH = "/api/data/classes";
 
 export async function handleDataClasses(request) {
@@ -45,8 +46,6 @@ export async function handleDataClasses(request) {
     : changeClass(auth.profile, payload.leave === true ? null : payload.code);
   return json(result, result.error ? 400 : 200);
 }
-
-export const DATA_DRAFT_PATH = "/api/data/draft";
 
 async function authenticate(request) {
   const verified = await verifyToken(bearerToken(request));

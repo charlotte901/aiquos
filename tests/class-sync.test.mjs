@@ -78,3 +78,18 @@ test("未配置持久存储的部署拒绝注册，防止产生重启就丢的�
   assert.match((await response.json()).error, /持久存储/);
   assert.equal(findAccountByLogin("new@test.local"), null);
 });
+
+test("无班级教师不能读取或向他人的班级下发试卷", async () => {
+  const { createAssignment } = await import("../worker/data-store.js");
+  setAccountPersistence(null); setSharedDataPersistence(null);
+  const make = async (account, role) => (await createAccount({ account, password: "TestClass2026", role })).record;
+  const owner = await make("owner@scope.test", "teacher"), stranger = await make("stranger@scope.test", "teacher");
+  const student = await make("student@scope.test", "student");
+  createClass(owner, { name: "独立班级", code: "SCOPE123" });
+  changeClass(student, "SCOPE123");
+  assert.equal(teacherData(stranger).students.length, 0);
+  assert.ok(createAssignment(stranger, { title: "越权推送", scope: { classNames: ["独立班级"] } }).error);
+  assert.ok(createAssignment(stranger, { title: "全员越权", scope: { all: true } }).error);
+  assert.ok(createAssignment(owner, { title: "班内试卷", scope: { all: true } }).assignment);
+  setAccountPersistence(null); setSharedDataPersistence(null);
+});

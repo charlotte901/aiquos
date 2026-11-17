@@ -49,7 +49,7 @@ function loadState() {
           if (Array.isArray(parsed.classes)) state.classes = parsed.classes;
           if (Number.isFinite(parsed.counter)) state.counter = parsed.counter;
           if (parsed.drafts && typeof parsed.drafts === "object") state.drafts = parsed.drafts;
-        }
+        } else { throw new Error("班级库存档格式无效"); }
       }
     } catch (error) {
       state = null;
@@ -311,7 +311,7 @@ export function createAssignment(teacherProfile, payload) {
   const current = loadState();
   const scope = cleanScope(payload.scope, allKnownStudents());
   const owned = current.classes.filter((item) => item.teacherAccountId === teacherProfile.accountId);
-  if (owned.length) {
+  if (current.classes.length) {
     const names = new Set(owned.map((item) => item.name));
     const ids = new Set(allKnownStudents().filter((student) => names.has(student.className)).map((student) => student.accountId));
     if (scope.classNames.some((name) => !names.has(name)) || scope.studentIds.some((id) => !ids.has(id))) {
@@ -346,7 +346,7 @@ export function createAssignment(teacherProfile, payload) {
 
 /** 教师侧列表：附每个推送的完成统计与逐人完成明细。
  * knownStudents 可由调用方传入复用（teacherData 一次请求里已算过一遍）。 */
-export function listAssignmentsForTeacher(teacherProfile, knownStudents = null) {
+export function listAssignmentsForTeacher(teacherProfile = null, knownStudents = null) {
   const current = loadState();
   const students = knownStudents ?? allKnownStudents();
   // run 索引建一次：之前每个推送 × 每个学员都线性扫全部 runs
@@ -354,6 +354,7 @@ export function listAssignmentsForTeacher(teacherProfile, knownStudents = null) 
   // 可达百万级比较。
   const runByAssignmentAccount = new Map(current.runs.map((run) => [`${run.assignmentId}|${run.accountId}`, run]));
   return current.assignments.filter((assignment) => !teacherProfile || assignment.createdByAccountId === teacherProfile.accountId).map((assignment) => {
+
     const targeted = students.filter((student) => matchesIgnoringStatus(assignment, student));
     const rows = targeted.map((student) => {
       const run = runByAssignmentAccount.get(`${assignment.id}|${student.accountId}`) ?? null;
@@ -424,8 +425,8 @@ export function teacherData(teacherProfile) {
   const current = loadState();
   const owned = current.classes.filter((item) => item.teacherAccountId === teacherProfile?.accountId);
   const names = new Set(owned.map((item) => item.name));
-  const students = allKnownStudents().filter((student) => !teacherProfile || names.has(student.className)
-    || (!current.classes.some((item) => item.name === student.className) && owned.length === 0)).map((student) => ({
+  const knownStudents = allKnownStudents().filter((student) => !teacherProfile || !current.classes.length || names.has(student.className));
+  const students = knownStudents.map((student) => ({
     accountId: student.accountId,
     account: student.account ?? "",
     nickname: student.nickname,
@@ -438,7 +439,7 @@ export function teacherData(teacherProfile) {
     runs: current.runs.filter((run) => students.some((student) => student.accountId === run.accountId)).map((run) => ({ ...run })),
     classes: [...new Set(students.filter((student) => student.className).map((student) => student.className))],
     classDetails: owned.map((item) => ({ ...classDetails(item), ...classSummary(item.name) })),
-    assignments: listAssignmentsForTeacher(teacherProfile),
+    assignments: listAssignmentsForTeacher(teacherProfile, knownStudents),
   };
 }
 

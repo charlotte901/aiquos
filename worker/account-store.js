@@ -105,7 +105,7 @@ function loadState() {
             }
           }
           loaded = true;
-        }
+        } else { throw new Error("账号库存档格式无效"); }
       }
     } catch (error) {
       state = null;
@@ -333,6 +333,7 @@ export function listStudentRecords() {
     }));
 }
 
+/** Node seed and verification tools use the same normalized login lookup. */
 export function findAccountByLogin(account) {
   return loadState().accounts.get(normalizeAccount(account)) ?? null;
 }

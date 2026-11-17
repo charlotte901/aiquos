@@ -99,7 +99,7 @@ export const GRADING_TEMPERATURE = 0;
 
 export const GRADING_OPTIONS = { temperature: GRADING_TEMPERATURE, thinking: { type: "disabled" } };
 
-async function chatOnce({ messages, temperature, thinking }) {
+export async function chatOnce({ messages, temperature, thinking }) {
   // 断链自愈：连接被中途掐断（AbortError，dev 长链路偶发实测）时静默补一发；
   // 服务端明确返回的业务错误（4xx/5xx 已转 Error）不重试，浪费且无意义。
   const request = async () => {
@@ -183,7 +183,7 @@ export function PracticalImageLightbox({ image, onClose }) {
  *
  * 失败时返回空串（该张跳过），不影响评分主流程。
  */
-async function referenceDataUri(src) {
+export async function referenceDataUri(src) {
   if (typeof src !== "string" || !src) return "";
   if (src.startsWith("data:image/")) return src;
   try {

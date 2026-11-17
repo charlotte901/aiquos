@@ -1,4 +1,4 @@
-import { DOCUMENT_IMPORT_PATH, handleDocumentImport } from "./worker/document-import.js";
+import { DOCUMENT_IMPORT_PATH, handleDocumentImport } from './worker/document-import.js';
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { Readable } from "node:stream";
@@ -40,7 +40,6 @@ import {
 import { STAGE_LAYOUT_TUNING_PATH, handleStageLayoutTuning, CHARACTER_TUNING_PATH, handleCharacterTuning } from "./worker/stage-layout-tuning.js";
 import { setBankPersistence } from "./worker/bank-store.js";
 import { setAccountPersistence } from "./worker/account-store.js";
-import { filePersistence } from "./worker/file-persistence.js";
 import { bootstrapInitialCohort } from "./worker/initial-cohort.js";
 import { setSharedDataPersistence } from "./worker/data-store.js";
 import { filePersistenceAdapters } from "./worker/storage.js";
@@ -50,18 +49,17 @@ const stageLayoutTuningPath = fileURLToPath(new URL("./src/stage-layout-tuning.j
 // 角色统一微调（?tune=1 右下面板「保存」）写回这份文件。
 const characterTuningPath = fileURLToPath(new URL("./src/character-tuning.json", import.meta.url));
 
-const authAccountsPath = fileURLToPath(new URL('./worker/auth-accounts.json', import.meta.url));
-const sharedDataPath = fileURLToPath(new URL('./worker/aiquos-shared-data.json', import.meta.url));
-bootstrapInitialCohort(authAccountsPath, sharedDataPath, fileURLToPath(new URL('./worker/initial-cohort.json', import.meta.url)));
 // 三个 store 的 fs 适配器统一走 worker/storage.js 的原子写（tmp+rename）。
 // 文件落在 worker/ 目录下（均 gitignored）：bank-overrides[-full].json、
 // auth-accounts.json（同时保管令牌签名密钥，首次注册随机生成）、
 // aiquos-shared-data.json。
 const workerDir = fileURLToPath(new URL("./worker", import.meta.url));
+bootstrapInitialCohort(`${workerDir}/auth-accounts.json`, `${workerDir}/aiquos-shared-data.json`, fileURLToPath(new URL("./worker/initial-cohort.json", import.meta.url)));
 const devAdapters = filePersistenceAdapters(fs, (dir, name) => `${dir}/${name}`, workerDir);
 setBankPersistence(devAdapters.bank);
-setAccountPersistence(filePersistence(authAccountsPath));
-setSharedDataPersistence(filePersistence(sharedDataPath));
+setAccountPersistence(devAdapters.account);
+setSharedDataPersistence(devAdapters.shared);
+
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -143,7 +141,7 @@ export default defineConfig(({ mode }) => {
             const chunks = [];
             for await (const chunk of req) chunks.push(chunk);
             const base = `http://${req.headers.host || "127.0.0.1"}`;
-            const response = await handleAdminBank(new Request(new URL(ADMIN_BANK_PATH + new URL(req.url, base).search, base), {
+            const response = await handleAdminBank(new Request(new URL(ADMIN_BANK_PATH, base), {
               method: req.method,
               // authorization 必须透传：管理端写操作（PUT/DELETE）验教师令牌，
               // 此前只带 content-type，dev 下永远 401（生产 worker 不经此层）。
@@ -229,7 +227,9 @@ export default defineConfig(({ mode }) => {
             const chunks = [];
             for await (const chunk of req) chunks.push(chunk);
             const base = `http://${req.headers.host || "127.0.0.1"}`;
-            const response = await handler(new Request(new URL(path, base), {
+            const endpoint = new URL(path, base);
+            endpoint.search = new URL(req.url, base).search;
+            const response = await handler(new Request(endpoint, {
               method: req.method,
               headers: {
                 "content-type": req.headers["content-type"] || "application/json",

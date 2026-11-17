@@ -323,6 +323,24 @@ export async function handleArkImage(request, apiKey, fetcher = fetch) {
   if (typeof item.b64_json === "string" && item.b64_json) {
     return json({ image: `data:image/png;base64,${item.b64_json}` });
   }
-  if (typeof item.url === "string" && item.url) return json({ image: item.url });
+  // url 形态（实测：edits 端点在上游切换后会返回图片 URL 而不是 b64_json）：
+  // 必须在服务端转成 data URI 再交给前端。评分接口与下一轮迭代的参考图都只接受
+  // data URI（见 practical-score.js 与 ALLOWED_IMAGE_DATA_URI），直接透传 URL 会让
+  // 评委看不到产物图、迭代也无法基于上一轮修改。下载失败才退回透传 URL。
+  if (typeof item.url === "string" && item.url) {
+    try {
+      const img = await fetcher(item.url, { signal: AbortSignal.timeout(60_000) });
+      if (img.ok) {
+        const type = (img.headers.get("content-type") || "image/png").split(";")[0].trim();
+        // 用 btoa 分块编码（与 account-store.js 一致，Workers 与 Node 都可用，不依赖 Buffer）
+        const bytes = new Uint8Array(await img.arrayBuffer());
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        const b64 = btoa(binary);
+        if (/^image\//.test(type) && b64) return json({ image: `data:${type};base64,${b64}` });
+      }
+    } catch { /* 下载失败：退回透传 URL */ }
+    return json({ image: item.url });
+  }
   return json({ error: "图片服务未返回可用的图片数据。" }, 502);
 }

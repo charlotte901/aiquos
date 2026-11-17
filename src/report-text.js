@@ -36,11 +36,11 @@ const SYSTEM_PROMPT = `你是 AIQUOS 测评报告的文字撰写者。你要根�
 export function reportPromptPayload(model, plan) {
   const dimensions = (model?.dimensions ?? []).map((dimension) => ({
     name: dimension.name,
-    score: Number.isFinite(Number(dimension.score)) ? Math.round(Number(dimension.score)) : null,
+    score: dimension.score != null && Number.isFinite(Number(dimension.score)) ? Math.round(Number(dimension.score)) : null,
   }));
   return {
     assessmentType: assessmentLabel(model?.assessmentId || "comprehensive"),
-    overallScore: Number.isFinite(Number(model?.overallScore)) ? Math.round(Number(model.overallScore)) : null,
+    overallScore: model?.overallScore != null && Number.isFinite(Number(model.overallScore)) ? Math.round(Number(model.overallScore)) : null,
     grade: model?.grade ?? null,
     gradeLabel: plan?.stage?.label ?? null,
     dimensions,

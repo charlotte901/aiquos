@@ -1,5 +1,9 @@
 // 个性化学习方案下载器：根据觉醒报告的总分与六维分数生成 Word/PDF 文档。
 // 资源库是本地静态数据，不依赖模型；分数只决定评价、建议与资源匹配顺序。
+// 2026-11-12 起资源优先来自知识库预计算表（src/knowledge/rec-index.json），
+// LEARNING_RESOURCES 降级为槽位无货时的兜底池。
+
+import { queryKnowledgeResources } from "./report-recommendations.js";
 
 // Word 和 PDF 共用同一套版式口径，避免两个导出口径逐渐漂移。
 export const LEARNING_PLAN_STYLE = Object.freeze({
@@ -491,7 +495,13 @@ export function buildAdviceItems(model) {
   });
 }
 
-export function selectLearningResources(model, count = 12) {
+// 知识库条目 → 报告渲染形状的映射（PDF/Word 第三段消费的字段口径不变）。
+const KB_TYPE_LABELS = { video: "视频", book_chapter: "书籍章节", doc: "文档", article: "文章", exercise: "练习" };
+const KB_STAGE_OF_BAND = { focus: "D", developing: "C", strong: "B" };
+
+// 旧资源池选择（100 条 LEARNING_RESOURCES，按总分档邻接 + 弱优先维度轮询）。
+// 2026-11-12 起降级为兜底：知识库槽位无货或不滿额时用它补足，报告永远有资源。
+function selectLegacyResources(model, count, usedUrls) {
   const score = Math.round(Number(model?.overallScore ?? 0));
   const grade = model?.grade ?? gradeOfScore(score);
   const adjacency = {
@@ -514,7 +524,7 @@ export function selectLearningResources(model, count = 12) {
       const candidates = LEARNING_RESOURCES
         .map((resource, index) => ({ resource, index }))
         .filter((item) => item.resource.stage === stage && item.resource.dims.includes(dimension.key))
-        .filter((item) => !usedTitles.has(item.resource.title));
+        .filter((item) => !usedTitles.has(item.resource.title) && !usedUrls.has(item.resource.url));
       if (!candidates.length) continue;
       const start = (score * 7 + dimensionIndex * 13 + stage.charCodeAt(0)) % candidates.length;
       for (let step = 0; step < candidates.length && localCount < target; step += 1) {
@@ -530,11 +540,45 @@ export function selectLearningResources(model, count = 12) {
     const start = score % LEARNING_RESOURCES.length;
     for (let step = 0; picked.length < count && step < LEARNING_RESOURCES.length; step += 1) {
       const candidate = LEARNING_RESOURCES[(start + step) % LEARNING_RESOURCES.length];
-      if (!usedTitles.has(candidate.title)) {
+      if (!usedTitles.has(candidate.title) && !usedUrls.has(candidate.url)) {
         picked.push({ ...candidate, matchedDimension: "综合" });
         usedTitles.add(candidate.title);
       }
     }
+  }
+  return picked;
+}
+
+export function selectLearningResources(model, count = 12) {
+  // 优先查知识库预计算表（scripts/build-knowledge-index.mjs 构建的 90 槽位）：
+  // 弱优先维度 × 该维档位难度 × 通道落差处方，同子主题 ≤2、类型混排。
+  const ordered = orderedDimensions(model?.dimensions);
+  const quotas = [3, 3, 3, 1, 1, 1];
+  const shared = { urls: new Set(), subtopics: new Map(), lastType: null };
+  const picked = [];
+  ordered.forEach((dimension, dimensionIndex) => {
+    const want = quotas[dimensionIndex] ?? 1;
+    for (const entry of queryKnowledgeResources({
+      dim: dimension.key,
+      score: dimension.score,
+      channels: dimension.channels ?? null,
+      n: want,
+      state: shared,
+    })) {
+      picked.push({
+        title: entry.title,
+        platform: entry.source,
+        type: KB_TYPE_LABELS[entry.type] ?? entry.type,
+        stage: KB_STAGE_OF_BAND[entry.band] ?? "C",
+        dims: entry.dims,
+        note: entry.why || entry.summary,
+        url: entry.url,
+        matchedDimension: dimension.key,
+      });
+    }
+  });
+  if (picked.length < count) {
+    picked.push(...selectLegacyResources(model, count - picked.length, shared.urls));
   }
   return picked.slice(0, count);
 }

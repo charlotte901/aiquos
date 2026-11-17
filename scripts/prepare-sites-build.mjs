@@ -22,6 +22,12 @@ const worker = path.join(root, "worker", "index.js");
  */
 const modules = [
   "worker/index.js",
+  "worker/http.js",
+  "worker/storage.js",
+  "worker/file-persistence.js",
+  "worker/initial-cohort.js",
+  "worker/initial-cohort.json",
+  "worker/comprehensive-score.js",
   "worker/deepseek.js",
   "worker/practical-tasks.js",
   "worker/practical-score.js",

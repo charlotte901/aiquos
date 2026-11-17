@@ -116,17 +116,20 @@ test("worker persists accounts and drafts across a simulated restart (AIQUOS_DAT
   }
 });
 
-test("a truncated account file is preserved instead of silently replacing registered accounts", async () => {
+test("a corrupted account file is preserved and registration fails closed", async () => {
   const dir = mkdtempSync(join(tmpdir(), "aiquos-store-bad-"));
   try {
     writeFileSync(join(dir, "auth-accounts.json"), '{"secret": "trunc'); // 旧实现写一半崩溃的现场
+    writeFileSync(join(dir, "aiquos-shared-data.json"), '{"students":{},"runs":[]}');
     const assets = { fetch: async () => new Response("missing", { status: 404 }) };
     const worker = (await import(`../worker/index.js?instance=badfile-${Date.now()}`)).default;
     const env = { AIQUOS_DATA_DIR: dir, ASSETS: assets };
-    await assert.rejects(() => worker.fetch(new Request("https://example.test/api/auth/register", {
-      method: "POST", headers: { "content-type": "application/json" },
+    const register = await worker.fetch(new Request("https://example.test/api/auth/register", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
       body: jsonBody({ account: "13800139888", password: "aiquos2026play", nickname: "坏档", role: "student" }),
-    }), env), /账号库读取失败/);
+    }), env);
+    assert.equal(register.status, 503, "损坏存档不得被空库覆盖");
     assert.equal(readFileSync(join(dir, "auth-accounts.json"), "utf8"), '{"secret": "trunc');
   } finally {
     rmSync(dir, { recursive: true, force: true });

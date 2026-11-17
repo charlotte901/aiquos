@@ -8,7 +8,7 @@ import { heuristicSlotCredit } from "../interview-scoring";
 import { scoreInterview } from "../interview-scoring-model";
 import { INTERVIEW_LADDER, INTERVIEWER, interviewChatMessages, interviewClosing, interviewOpening, interviewScoreMessages, parseInterviewerJson, planDelivery } from "../interviewer";
 import { MarkdownLite } from "../markdown-lite";
-import { clearInterviewState, CHAT_TEMPERATURE, GRADING_OPTIONS, pick, PhaseTimer, TaskAction, useStorySequencer } from "./flow-shared";
+import { chatOnce, clearInterviewState, CHAT_TEMPERATURE, GRADING_OPTIONS, pick, PhaseTimer, TaskAction, useStorySequencer } from "./flow-shared";
 
 export function InterviewPhase({
   hasStory,

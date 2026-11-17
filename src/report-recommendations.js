@@ -19,6 +19,7 @@
 // 应该是规则的。
 
 import { gradeOverall } from "../vendor/aiquos-six-dimension-scoring/scripts/scoring-core.mjs";
+import REC_INDEX from "./knowledge/rec-index.json" with { type: "json" };
 
 // 通道落差阈值（展示分差）。12 分 ≈ 对数尺度 0.5 个 logit，
 // 足以越过单通道的测量噪声（对话 T=0 打分 MDC95 ≈ 1.4 分，实操 3 票取中
@@ -28,6 +29,15 @@ const GAP_THRESHOLD = 12;
 const BAND_OF = (score) => (score === null || score === undefined
   ? "unknown"
   : score >= 80 ? "strong" : score >= 60 ? "developing" : "focus");
+
+// 落差诊断 id → 预计算表变体（scripts/build-knowledge-index.mjs 的 VARIANTS 对齐）：
+// 四种处方各偏好不同的资源形态；无落差时用 balanced。
+const VARIANT_OF_GAP = {
+  "talk-strong": "concept",
+  "do-strong": "express",
+  "knowledge-gap": "practice",
+  "skill-gap": "systematic",
+};
 
 const UNKNOWN_ADVICE = "本次测评没有覆盖到这个维度的证据（可能阶段未完成或中途退出）——下次完整走完三个阶段即可获得该维度画像。";
 
@@ -113,6 +123,50 @@ function fill(text, channels) {
 }
 
 /**
+ * 知识库槽位查询：按「维度 × 被测档位难度 × 落差处方变体」从预计算表
+ * （src/knowledge/rec-index.json，scripts/build-knowledge-index.mjs 构建）取推荐。
+ * 打散规则：同子主题 ≤2 条、相邻条目类型不同（第二轮放宽混排补齐）。
+ * state 可跨维度共享（{ urls: Set, subtopics: Map }），保证整份推荐不重复不扎堆。
+ * 返回 [{ dim, band, variant, id, title, url, type, summary, why, … }]；槽位无货返回 []。
+ */
+export function queryKnowledgeResources({ dim, score, channels = null, n = 3, state = null }) {
+  const band = BAND_OF(score);
+  if (band === "unknown") return [];
+  const difficulty = { focus: "low", developing: "medium", strong: "high" }[band];
+  const pattern = channels ? GAP_PATTERNS.find((candidate) => candidate.match(channels)) : null;
+  const variant = (pattern && VARIANT_OF_GAP[pattern.id]) || "balanced";
+  const slotIds = [
+    ...(REC_INDEX.slots?.[`${dim}:${difficulty}:${variant}`] ?? []),
+    ...(variant !== "balanced" ? REC_INDEX.slots?.[`${dim}:${difficulty}:balanced`] ?? [] : []),
+  ];
+  // 同档不同人推不同资源：按被测分数做确定性轮换（同画像可复现，跨画像错开
+  // 槽头），继承旧 selectLearningResources 的 score*7 轮换口径。
+  const main = slotIds.slice(0, REC_INDEX.slots?.[`${dim}:${difficulty}:${variant}`]?.length ?? 0);
+  const rest = slotIds.slice(main.length);
+  const shift = main.length > 0 ? Math.round(score * 7) % main.length : 0;
+  const ordered = [...main.slice(shift), ...main.slice(0, shift), ...rest];
+  // state 跨维度共享（url 去重 / 子主题 ≤2 / 相邻类型不同），保证整份推荐不扎堆。
+  const shared = state ?? { urls: new Set(), subtopics: new Map(), lastType: null };
+  const picked = [];
+  const tryPick = (allowSameType) => {
+    for (const id of ordered) {
+      if (picked.length >= n) break;
+      const entry = REC_INDEX.entries?.[id];
+      if (!entry || shared.urls.has(entry.url)) continue;
+      if ((shared.subtopics.get(entry.subtopic) ?? 0) >= 2) continue;
+      if (!allowSameType && shared.lastType === entry.type) continue;
+      shared.subtopics.set(entry.subtopic, (shared.subtopics.get(entry.subtopic) ?? 0) + 1);
+      shared.urls.add(entry.url);
+      shared.lastType = entry.type;
+      picked.push({ dim, band, variant, ...entry });
+    }
+  };
+  tryPick(false);
+  tryPick(true);
+  return picked;
+}
+
+/**
  * 生成完整的个性化建议结构。
  * @param {object} composite buildComposite 的输出（可含 null 维度）
  */
@@ -165,14 +219,33 @@ export function buildRecommendations(composite) {
     }
     : { flag: false, note: null };
 
-  const resourceKeys = new Set();
+  // 资源推荐升级（2026-11-12）：从知识库预计算表按「薄弱维度 × 档位难度 × 落差处方」
+  // 取真实学习资源（视频/文档/书籍混排，同子主题 ≤2）；focus 维 3 条、developing 维
+  // 补到总额 9 为止，最强维度给 1 条进阶向。知识库槽位无货时回退 RESOURCE_POOL，
+  // 报告永远有资源可显示（阶段 3 扩量后回退渐趋于零）。
+  const shared = { urls: new Set(), subtopics: new Map(), lastType: null };
+  const knowledgeResources = [];
   for (const item of priorities) {
-    if (item.band === "focus" || item.band === "developing") resourceKeys.add(item.key);
+    if (item.band !== "focus" && item.band !== "developing") continue;
+    if (knowledgeResources.length >= 9) break;
+    knowledgeResources.push(...queryKnowledgeResources({
+      dim: item.key, score: item.score, channels: item.channels,
+      n: item.band === "focus" ? 3 : 2, state: shared,
+    }));
   }
-  if (strengths[0]) resourceKeys.add(strengths[0].key);
-  const resources = [...resourceKeys]
-    .filter((key) => RESOURCE_POOL[key])
-    .map((key) => ({ dim: key, ...RESOURCE_POOL[key] }));
+  if (strengths[0]) {
+    knowledgeResources.push(...queryKnowledgeResources({
+      dim: strengths[0].key, score: strengths[0].score, n: 1, state: shared,
+    }));
+  }
+  const fallbackKeys = new Set();
+  for (const item of priorities) {
+    if (item.band === "focus" || item.band === "developing") fallbackKeys.add(item.key);
+  }
+  if (strengths[0]) fallbackKeys.add(strengths[0].key);
+  const resources = knowledgeResources.length > 0
+    ? knowledgeResources
+    : [...fallbackKeys].filter((key) => RESOURCE_POOL[key]).map((key) => ({ dim: key, ...RESOURCE_POOL[key] }));
 
   const summary = weakest
     ? `综合评级 ${composite.grade ?? gradeOverall(composite.overallScore ?? 0)}：${strengths.map((item) => `${item.name}（${item.score}）`).join("、")} 是你的强项；优先补 ${weakest.name}（${weakest.score}），${bandCount("focus") > 0 ? "另有 " + (bandCount("focus") - 1) + " 个维度处于待提升区间" : "其余维度均在发展区间"}。`

@@ -33,6 +33,9 @@ for (const item of inventory.classes) {
   for (const account of inventory.students.filter((student) => student.className === item.name)) {
     const student = await login(account.account, inventory.studentPassword);
     firstStudent ||= student;
+    const classroom = fixture.data.classes.find((item) => item.name === account.className);
+    const lookup = await get(`/api/data/classes?code=${encodeURIComponent(classroom.code)}`, student);
+    assert.equal(lookup.class.name, account.className);
     const me = await get("/api/data/me", student);
     assert.equal(me.runs.length, 4);
     assert.deepEqual(new Set(me.runs.map((run) => run.assessmentId)), new Set(["conversation", "objective", "practical", "comprehensive"]));
@@ -102,14 +105,22 @@ try {
     assert.equal(parseInt(reportScore), Math.round(latestRun.overallScore));
     assert.ok(reportText.includes('综合测评'));
     await navigate("/#center/records");
+    let shownMonth = new Date().getFullYear() * 12 + new Date().getMonth();
+    const showMonth = async (date) => {
+      const wanted = date.getFullYear() * 12 + date.getMonth();
+      while (shownMonth !== wanted) {
+        const direction = wanted < shownMonth ? "上个月" : "下个月";
+        await evaluate(`document.querySelector('[aria-label="${direction}"]').click()`);
+        shownMonth += wanted < shownMonth ? -1 : 1;
+        await sleep(100);
+      }
+    };
+    await showMonth(new Date(latestRun.completedAt));
     assert.ok(await evaluate("!!document.querySelector('.has-record')"));
     const me = await get("/api/data/me", session.student);
-    let previousMonth = false;
     for (const run of me.runs) {
       const date = new Date(run.completedAt);
-      if (date.getMonth() === 8 && !previousMonth) {
-        await evaluate("document.querySelector('[aria-label=\"上个月\"]').click()"); previousMonth = true; await sleep(100);
-      }
+      await showMonth(date);
       await evaluate(`Array.from(document.querySelectorAll('.calendar-grid button')).find((button) => !button.disabled && button.querySelector('span')?.textContent === '${date.getDate()}').click()`);
       await sleep(100);
       const recordText = await evaluate("document.querySelector('.records-panel').innerText");
